@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bjzhianjia.scp.security.wf.mapper.WfMyProcBeanMapper">
+	<resultMap id="BaseResultMap"
+		type="com.bjzhianjia.scp.security.wf.entity.WfMyProcBean">
+		<id column="ID" property="id" jdbcType="INTEGER" />
+		<result column="PROC_INST_ID" property="procInstId" jdbcType="VARCHAR" />
+		<result column="PROC_USER" property="procUser" jdbcType="VARCHAR" />
+		<result column="PROC_USER_TYPE" property="procUserType" jdbcType="CHAR" />
+		<result column="PROC_TASKID" property="procTaskid" jdbcType="VARCHAR" />
+		<result column="PROC_TASKCODE" property="procTaskcode" jdbcType="VARCHAR" />
+		<result column="PROC_TASKNAME" property="procTaskname" jdbcType="VARCHAR" />
+		<result column="PROC_DISPLAYURL" property="procDisplayurl"
+			jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<sql id="Base_Column_List">
+		ID, PROC_INST_ID, PROC_USER,
+		PROC_USER_TYPE,PROC_TASKID,PROC_TASKCODE,PROC_TASKNAME,
+		PROC_DISPLAYURL
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Integer">
+		select
+		<include refid="Base_Column_List" />
+		from SCP_WF_MY_PROC
+		where ID = #{id,jdbcType=INTEGER}
+	</select>
+	<select id="selectByProcInstId" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from SCP_WF_MY_PROC
+		where PROC_INST_ID = #{procInstId}
+	</select>
+
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		delete from
+		SCP_WF_MY_PROC
+		where ID = #{id,jdbcType=INTEGER}
+	</delete>
+	<delete id="deleteByInstIdandUserId">
+		delete from SCP_WF_MY_PROC
+		where PROC_INST_ID =
+		#{instId,jdbcType=VARCHAR} AND PROC_USER
+		=#{userId,jdbcType=VARCHAR}
+	</delete>
+	<insert id="insert" parameterType="com.bjzhianjia.scp.security.wf.entity.WfMyProcBean">
+		insert into SCP_WF_MY_PROC
+		(ID, PROC_INST_ID, PROC_USER,
+		PROC_USER_TYPE, PROC_TASKID,PROC_TASKCODE,PROC_TASKNAME, PROC_DISPLAYURL)
+		values
+		(#{id,jdbcType=INTEGER}, #{procInstId,jdbcType=VARCHAR},
+		#{procUser,jdbcType=VARCHAR},
+		#{procUserType,jdbcType=CHAR},
+		#{procTaskid,jdbcType=VARCHAR},
+		#{procTaskcode,jdbcType=VARCHAR},
+		#{procTaskname,jdbcType=VARCHAR},
+		#{procDisplayurl,jdbcType=VARCHAR})
+	</insert>
+
+	<select id="getMyProcessByUser" resultMap="BaseResultMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM
+		SCP_WF_MY_PROC
+		WHERE
+		PROC_INST_ID = #{procInstId}
+		AND PROC_USER = #{userId}
+	</select>
+	
+	<select id="getMyProcessByUsers" resultMap="BaseResultMap">
+		SELECT DISTINCT
+		<include refid="Base_Column_List" />
+		FROM
+		SCP_WF_MY_PROC
+		WHERE
+		PROC_INST_ID = #{procInstId}
+		AND PROC_USER in
+		<foreach collection="userId" index="index" item="item"
+			open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+
+	<insert id="insertSelective" parameterType="com.bjzhianjia.scp.security.wf.entity.WfMyProcBean">
+		insert into SCP_WF_MY_PROC
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="procInstId != null">
+				PROC_INST_ID,
+			</if>
+			<if test="procUser != null">
+				PROC_USER,
+			</if>
+			<if test="procUserType != null">
+				PROC_USER_TYPE,
+			</if>
+			<if test="procTaskid != null">
+				PROC_TASKID,
+			</if>
+			<if test="procTaskcode != null">
+				PROC_TASKCODE,
+			</if>
+			<if test="procTaskname != null">
+				PROC_TASKNAME,
+			</if>
+			<if test="procDisplayurl != null">
+				PROC_DISPLAYURL,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=INTEGER},
+			</if>
+			<if test="procInstId != null">
+				#{procInstId,jdbcType=VARCHAR},
+			</if>
+			<if test="procUser != null">
+				#{procUser,jdbcType=VARCHAR},
+			</if>
+			<if test="procUserType != null">
+				#{procUserType,jdbcType=CHAR},
+			</if>
+			<if test="procTaskid != null">
+				#{procTaskid,jdbcType=VARCHAR},
+			</if>
+			<if test="procTaskcode != null">
+				#{procTaskcode,jdbcType=VARCHAR},
+			</if>
+			<if test="procTaskname != null">
+				#{procTaskname,jdbcType=VARCHAR},
+			</if>
+			<if test="procDisplayurl != null">
+				#{procDisplayurl,jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="com.bjzhianjia.scp.security.wf.entity.WfMyProcBean">
+		update SCP_WF_MY_PROC
+		<set>
+			<if test="procInstId != null">
+				PROC_INST_ID = #{procInstId,jdbcType=VARCHAR},
+			</if>
+			<if test="procUser != null">
+				PROC_USER = #{procUser,jdbcType=VARCHAR},
+			</if>
+			<if test="procUserType != null">
+				PROC_USER_TYPE = #{procUserType,jdbcType=CHAR},
+			</if>
+			<if test="procTaskid != null">
+				PROC_TASKID = #{procTaskid,jdbcType=VARCHAR},
+			</if>
+			<if test="procTaskcode != null">
+				PROC_TASKCODE = #{procTaskcode,jdbcType=VARCHAR},
+			</if>
+			<if test="procTaskname != null">
+				PROC_TASKNAME = #{procTaskname,jdbcType=VARCHAR},
+			</if>
+			<if test="procDisplayurl != null">
+				PROC_DISPLAYURL = #{procDisplayurl,jdbcType=VARCHAR},
+			</if>
+		</set>
+		where ID = #{id,jdbcType=INTEGER}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="com.bjzhianjia.scp.security.wf.entity.WfMyProcBean">
+		update
+		SCP_WF_MY_PROC
+		set PROC_INST_ID = #{procInstId,jdbcType=VARCHAR},
+		PROC_USER = #{procUser,jdbcType=VARCHAR},
+		PROC_USER_TYPE = #{procUserType,jdbcType=CHAR},
+		PROC_TASKID = #{procTaskid,jdbcType=VARCHAR},
+		PROC_TASKCODE = #{procTaskcode,jdbcType=VARCHAR},
+		PROC_TASKNAME = #{procTaskname,jdbcType=VARCHAR},
+		PROC_DISPLAYURL = #{procDisplayurl,jdbcType=VARCHAR}
+		where ID = #{id,jdbcType=INTEGER}
+	</update>
+</mapper>

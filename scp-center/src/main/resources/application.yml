@@ -1,0 +1,13 @@
+spring:
+    application:
+        name: scp-center
+
+server:
+    port: 8761 #启动端口
+
+eureka:
+    client:
+        serviceUrl:
+            defaultZone: http://127.0.0.1:8761/eureka
+        register-with-eureka: false  #false:不作为一个客户端注册到注册中心
+        fetch-registry: false      #为true时，可以启动，但报异常：Cannot execute request on any known server

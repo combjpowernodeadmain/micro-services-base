@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bjzhianjia.scp.security.wf.mapper.WfProcDelegateBeanMapper">
+	<resultMap id="BaseResultMap"
+		type="com.bjzhianjia.scp.security.wf.entity.WfProcDelegateBean">
+		<id column="ID" property="id" jdbcType="INTEGER" />
+		<result column="PROC_INST_ID" property="procInstId" jdbcType="VARCHAR" />
+		<result column="PROC_LICENSOR" property="procLicensor"
+			jdbcType="VARCHAR" />
+		<result column="PROC_LICENSOR_ROLE" property="procLicensorRole"
+			jdbcType="VARCHAR" />
+		<result column="PROC_MANDATARY" property="procMandatary"
+			jdbcType="VARCHAR" />
+		<result column="PROC_LICENSE_TIME" property="procLicenseTime"
+			jdbcType="INTEGER" />
+		<result column="PROC_CANCEL_TIME" property="procCancelTime"
+			jdbcType="INTEGER" />
+		<result column="PROC_LICENSE_ISVALID" property="procLicenseIsvalid"
+			jdbcType="CHAR" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		ID, PROC_INST_ID, PROC_LICENSOR, PROC_LICENSOR_ROLE, PROC_MANDATARY,
+		PROC_LICENSE_TIME, PROC_CANCEL_TIME,
+		PROC_LICENSE_ISVALID
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Integer">
+		select
+		<include refid="Base_Column_List" />
+		from SCP_WF_PROC_DELEGATE
+		where ID = #{id,jdbcType=INTEGER}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		delete from SCP_WF_PROC_DELEGATE
+		where ID = #{id,jdbcType=INTEGER}
+	</delete>
+	<insert id="insert"
+		parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcDelegateBean">
+		insert into SCP_WF_PROC_DELEGATE (ID, PROC_INST_ID, PROC_LICENSOR,
+		PROC_LICENSOR_ROLE,
+		PROC_MANDATARY, PROC_LICENSE_TIME, PROC_CANCEL_TIME,
+		PROC_LICENSE_ISVALID)
+		values (#{id,jdbcType=INTEGER}, #{procInstId,jdbcType=VARCHAR},
+		#{procLicensor,jdbcType=VARCHAR},
+		#{procLicensorRole,jdbcType=VARCHAR},
+		#{procMandatary,jdbcType=VARCHAR},
+		#{procLicenseTime,jdbcType=INTEGER},
+		#{procCancelTime,jdbcType=INTEGER},
+		#{procLicenseIsvalid,jdbcType=CHAR})
+	</insert>
+	<insert id="insertSelective"
+		parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcDelegateBean">
+		insert into SCP_WF_PROC_DELEGATE
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="procInstId != null">
+				PROC_INST_ID,
+			</if>
+			<if test="procLicensor != null">
+				PROC_LICENSOR,
+			</if>
+			<if test="procLicensorRole != null">
+				PROC_LICENSOR_ROLE,
+			</if>
+			<if test="procMandatary != null">
+				PROC_MANDATARY,
+			</if>
+			<if test="procLicenseTime != null">
+				PROC_LICENSE_TIME,
+			</if>
+			<if test="procCancelTime != null">
+				PROC_CANCEL_TIME,
+			</if>
+			<if test="procLicenseIsvalid != null">
+				PROC_LICENSE_ISVALID,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=INTEGER},
+			</if>
+			<if test="procInstId != null">
+				#{procInstId,jdbcType=VARCHAR},
+			</if>
+			<if test="procLicensor != null">
+				#{procLicensor,jdbcType=VARCHAR},
+			</if>
+			<if test="procLicensorRole != null">
+				#{procLicensorRole,jdbcType=VARCHAR},
+			</if>
+			<if test="procMandatary != null">
+				#{procMandatary,jdbcType=VARCHAR},
+			</if>
+			<if test="procLicenseTime != null">
+				#{procLicenseTime,jdbcType=INTEGER},
+			</if>
+			<if test="procCancelTime != null">
+				#{procCancelTime,jdbcType=INTEGER},
+			</if>
+			<if test="procLicenseIsvalid != null">
+				#{procLicenseIsvalid,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective"
+		parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcDelegateBean">
+		update SCP_WF_PROC_DELEGATE
+		<set>
+			<if test="procInstId != null">
+				PROC_INST_ID = #{procInstId,jdbcType=VARCHAR},
+			</if>
+			<if test="procLicensor != null">
+				PROC_LICENSOR = #{procLicensor,jdbcType=VARCHAR},
+			</if>
+			<if test="procLicensorRole != null">
+				PROC_LICENSOR_ROLE = #{procLicensorRole,jdbcType=VARCHAR},
+			</if>
+			<if test="procMandatary != null">
+				PROC_MANDATARY = #{procMandatary,jdbcType=VARCHAR},
+			</if>
+			<if test="procLicenseTime != null">
+				PROC_LICENSE_TIME = #{procLicenseTime,jdbcType=INTEGER},
+			</if>
+			<if test="procCancelTime != null">
+				PROC_CANCEL_TIME = #{procCancelTime,jdbcType=INTEGER},
+			</if>
+			<if test="procLicenseIsvalid != null">
+				PROC_LICENSE_ISVALID = #{procLicenseIsvalid,jdbcType=CHAR},
+			</if>
+		</set>
+		where ID = #{id,jdbcType=INTEGER}
+	</update>
+	
+	<update id="updateByPrimaryKey"
+		parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcDelegateBean">
+		update SCP_WF_PROC_DELEGATE
+		set PROC_INST_ID = #{procInstId,jdbcType=VARCHAR},
+		PROC_LICENSOR = #{procLicensor,jdbcType=VARCHAR},
+		PROC_LICENSOR_ROLE = #{procLicensorRole,jdbcType=VARCHAR},
+		PROC_MANDATARY = #{procMandatary,jdbcType=VARCHAR},
+		PROC_LICENSE_TIME = #{procLicenseTime,jdbcType=INTEGER},
+		PROC_CANCEL_TIME = #{procCancelTime,jdbcType=INTEGER},
+		PROC_LICENSE_ISVALID = #{procLicenseIsvalid,jdbcType=CHAR}
+		where ID = #{id,jdbcType=INTEGER}
+	</update>
+
+	<update id="cancelProcDelegate"
+		parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcDelegateBean">
+		update SCP_WF_PROC_DELEGATE
+			set PROC_CANCEL_TIME = #{procCancelTime,jdbcType=INTEGER},
+			PROC_LICENSE_ISVALID = #{procLicenseIsvalid,jdbcType=CHAR}
+		where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
+		and PROC_LICENSOR = #{procLicensor,jdbcType=VARCHAR}
+	</update>
+	
+	<select id="getProcInstDelegateList"
+		resultType="com.bjzhianjia.scp.security.wf.entity.WfProcDelegateBean">
+		SELECT
+		delegate.PROC_INST_ID procInstId,
+		delegate.PROC_LICENSOR procLicensor,
+		delegate.PROC_LICENSOR_ROLE procLicensorRole
+		FROM
+		SCP_WF_PROC_DELEGATE delegate
+		WHERE delegate.PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
+		AND delegate.PROC_MANDATARY = #{mandatary,jdbcType=VARCHAR}
+		AND delegate.PROC_LICENSE_ISVALID = '1'
+	</select>
+	
+	<select id="selectByInstAndLicens" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		FROM
+		SCP_WF_PROC_DELEGATE delegate
+		WHERE delegate.PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
+		AND delegate.PROC_LICENSOR = #{procLicensor,jdbcType=VARCHAR}
+		AND delegate.PROC_LICENSE_ISVALID = '1'
+	</select>
+	
+	<select id="selectByInstAndMand" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		FROM
+		SCP_WF_PROC_DELEGATE delegate
+		WHERE delegate.PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
+		AND delegate.PROC_MANDATARY = #{mandatary,jdbcType=VARCHAR}
+		AND delegate.PROC_LICENSE_ISVALID = '1'
+	</select>
+	
+
+</mapper>

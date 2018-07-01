@@ -1,0 +1,67 @@
+/*
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ */
+
+package com.bjzhianjia.scp.search.service.impl;
+
+import com.bjzhianjia.scp.search.lucene.LuceneDao;
+import com.bjzhianjia.scp.search.service.LuceneService;
+import com.bjzhianjia.scp.security.api.vo.search.IndexObject;
+import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+
+/**
+ * Description:luncene
+ *
+ * @author scp
+ * @create 2017-06-06
+ **/
+@Service
+public class LuceneServiceImpl implements LuceneService {
+
+    @Autowired
+    private LuceneDao luceneDao;
+
+
+    @Override
+    public void save(IndexObject indexObject) {
+        luceneDao.create(indexObject);
+    }
+
+
+    @Override
+    public void update(IndexObject indexObject) {
+        luceneDao.update(indexObject);
+    }
+
+    @Override
+    public void delete(IndexObject indexObject) {
+        luceneDao.delete(indexObject);
+    }
+
+    @Override
+    public void deleteAll() {
+        luceneDao.deleteAll();
+    }
+
+    @Override
+    public TableResultResponse page(Integer pageNumber, Integer pageSize, String keyword) {
+        return luceneDao.page(pageNumber,pageSize,keyword);
+    }
+}

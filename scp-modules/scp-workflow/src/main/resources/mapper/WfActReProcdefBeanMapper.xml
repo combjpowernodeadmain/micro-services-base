@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bjzhianjia.scp.security.wf.mapper.WfActReProcdefBeanMapper">
+	<resultMap id="BaseResultMap"
+		type="com.bjzhianjia.scp.security.wf.entity.WfProcActReProcdefBean">
+		<id column="ID_" property="id" jdbcType="VARCHAR" />
+		<result column="REV_" property="rev" jdbcType="INTEGER" />
+		<result column="CATEGORY_" property="category" jdbcType="VARCHAR" />
+		<result column="NAME_" property="name" jdbcType="VARCHAR" />
+		<result column="KEY_" property="key" jdbcType="VARCHAR" />
+		<result column="VERSION_" property="version" jdbcType="INTEGER" />
+		<result column="DEPLOYMENT_ID_" property="deploymentId"
+			jdbcType="VARCHAR" />
+		<result column="RESOURCE_NAME_" property="resourceName"
+			jdbcType="VARCHAR" />
+		<result column="DGRM_RESOURCE_NAME_" property="dgrmResourceName"
+			jdbcType="VARCHAR" />
+		<result column="DESCRIPTION_" property="description" jdbcType="VARCHAR" />
+		<result column="HAS_START_FORM_KEY_" property="hasStartFormKey"
+			jdbcType="TINYINT" />
+		<result column="HAS_GRAPHICAL_NOTATION_" property="hasGraphicalNotation"
+			jdbcType="TINYINT" />
+		<result column="SUSPENSION_STATE_" property="suspensionState"
+			jdbcType="INTEGER" />
+		<result column="TENANT_ID_" property="tenantId" jdbcType="VARCHAR" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		arp.ID_, ard.NAME_, arp.KEY_, arp.VERSION_,
+		arp.DEPLOYMENT_ID_,
+		arp.DGRM_RESOURCE_NAME_,
+		arp.SUSPENSION_STATE_,
+		arp.DESCRIPTION_
+	</sql>
+	<select id="processList" resultMap="BaseResultMap">
+		<!-- select <include refid="Base_Column_List" /> from (SELECT MAX(t.VERSION_),t.ID_, 
+			t.KEY_, t.VERSION_, t.DEPLOYMENT_ID_, t.DGRM_RESOURCE_NAME_, t.SUSPENSION_STATE_, 
+			t.DESCRIPTION_ FROM ACT_RE_PROCDEF t GROUP BY t.KEY_) arp LEFT JOIN ACT_RE_DEPLOYMENT 
+			ard ON arp.DEPLOYMENT_ID_ = ard.ID_ WHERE 1=1 <if test="key!=null and key!=''"> 
+			and arp.KEY_ like "%"#{key}"%" </if> <if test="name!=null and name!=''"> 
+			and ard.NAME_ like "%"#{name}"%" </if> <if test="suspensionState!=null and 
+			suspensionState!=''"> and arp.SUSPENSION_STATE_ = #{suspensionState} </if> 
+			order by DEPLOYMENT_ID_ -->
+
+		select t.VERSION_,
+		t.KEY_,
+		t.ID_,
+		m.NAME_,
+		t.DEPLOYMENT_ID_,
+		t.DGRM_RESOURCE_NAME_,
+		t.SUSPENSION_STATE_,
+		t.DESCRIPTION_ from
+		ACT_RE_PROCDEF t
+		LEFT JOIN ACT_RE_DEPLOYMENT m on t.DEPLOYMENT_ID_ = m.ID_
+		where
+		EXISTS(
+		select * from (
+		SELECT MAX(p.VERSION_) a
+		,
+		p.KEY_ FROM ACT_RE_PROCDEF p
+		GROUP BY p.KEY_) b where b.key_=t.key_
+		and
+		b.a=t.VERSION_)
+
+		<if test="key!=null and key!=''">
+			and t.KEY_ like "%"#{key}"%"
+		</if>
+		<if test="name!=null and name!=''">
+			and m.NAME_ like "%"#{name}"%"
+		</if>
+		<if test="suspensionState!=null and 
+			suspensionState!=''">
+			and t.SUSPENSION_STATE_ = #{suspensionState}
+		</if>
+		ORDER BY DEPLOYMENT_ID_
+
+
+	</select>
+</mapper>

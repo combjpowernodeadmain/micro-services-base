@@ -1,0 +1,48 @@
+MYSQL_HOST: 192.168.1.226
+MYSQL_PORT: 9025
+MYSQL_USER_NAME: dev_user
+MYSQL_PASS: iui098mm112
+REDIS_HOST: 192.168.1.226
+REDIS_PORT: 9166
+RABBIT_MQ_HOST: 192.168.1.226
+RABBIT_MQ_PORT: 5672
+
+spring:
+  rabbitmq:
+    host: ${RABBIT_MQ_HOST:127.0.0.1}
+    port: ${RABBIT_MQ_PORT:5672}
+    username: guest
+    password: guest
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/scp_zipkin?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false
+    username: ${MYSQL_USER_NAME:root}
+    password: ${MYSQL_PASS:123456}
+    driver-class-name: com.mysql.jdbc.Driver
+    initialize: true
+    continue-on-error: true
+  application:
+    name: scp-trace
+   #zipkin数据保存到数据库中需要进行如下配置
+   #表示当前程序不使用sleuth
+  sleuth:
+    enabled: false
+   #表示zipkin数据存储方式是mysql
+zipkin:
+  storage:
+    type: mysql
+
+server:
+  port: 9411
+
+eureka:
+    instance:
+        statusPageUrlPath: /info
+        healthCheckUrlPath: /health
+        # docker 部署开启,记得将IP修改为部署所在服务器的外网IP
+#        prefer-ip-address: true
+#        ip-address: 127.0.0.1
+    client:
+        serviceUrl:
+#            defaultZone: http://localhost:8761/eureka/
+                    # docker 部署开启,记得将IP修改为部署所在服务器的外网IP
+            defaultZone: http://${EUREKA_HOST:localhost}:${EUREKA_PORT:8761}/eureka/
