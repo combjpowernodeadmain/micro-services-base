@@ -23,7 +23,7 @@ import com.bjzhianjia.scp.security.gate.entity.Account;
  * 
  * 
  * @author Mr.AG
- * @email 463540703@qq.com
+ * @email 576866311@qq.com
  * @version 1.0 
  */
 public interface AccountMapper extends CommonMapper<Account> {

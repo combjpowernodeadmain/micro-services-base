@@ -26,7 +26,7 @@ import java.io.Serializable;
  * 
  * 
  * @author Mr.AG
- * @email 463540703@qq.com
+ * @email 576866311@qq.com
  * @version 1.0 
  */
 @Table(name = "prod")

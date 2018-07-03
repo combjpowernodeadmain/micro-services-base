@@ -11,7 +11,7 @@ import java.util.Date;
  * 
  * 
  * @author Mr.AG
- * @email 463540703@qq.com
+ * @email 576866311@qq.com
  * @version 1.0 
  */
 @Table(name = "depart_data_test")

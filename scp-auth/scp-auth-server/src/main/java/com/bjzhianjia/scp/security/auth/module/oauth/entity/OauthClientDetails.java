@@ -8,7 +8,7 @@ import javax.persistence.*;
 /**
  * @author Mr.AG
  * @version 1.0 
- * @email 463540703@qq.com
+ * @email 576866311@qq.com
  */
 @Table(name = "oauth_client_details")
 public class OauthClientDetails implements Serializable {

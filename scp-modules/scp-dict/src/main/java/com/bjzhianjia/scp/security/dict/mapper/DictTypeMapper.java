@@ -25,7 +25,7 @@ import com.bjzhianjia.scp.security.dict.entity.DictType;
  * 
  * 
  * @author Mr.AG
- * @email 463540703@qq.com
+ * @email 576866311@qq.com
  * @version 1.0 
  */
 public interface DictTypeMapper extends CommonMapper<DictType> {

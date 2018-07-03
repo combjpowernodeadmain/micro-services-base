@@ -20,7 +20,7 @@ package com.bjzhianjia.scp.security.generator.entity;
  * 列的属性
  *
  * @author Mr.AG
- * @email 463540703@qq.com
+ * @email 576866311@qq.com
  * @version 1.0 
  */
 public class ColumnEntity {

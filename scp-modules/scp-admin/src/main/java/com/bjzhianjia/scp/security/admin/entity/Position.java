@@ -10,7 +10,7 @@ import java.util.Date;
 /**
  * @author Mr.AG
  * @version 1.0 
- * @email 463540703@qq.com
+ * @email 576866311@qq.com
  */
 @Table(name = "base_position")
 public class Position implements Serializable {
