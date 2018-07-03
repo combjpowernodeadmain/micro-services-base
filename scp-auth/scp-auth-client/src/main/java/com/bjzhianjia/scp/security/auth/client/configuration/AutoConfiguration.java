@@ -35,7 +35,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
  * Created by scp on 2017/9/15.
  */
 @Configuration
-@ComponentScan({"com.bjzhianjia.scp.security.auth.client", "com.github.ag.core", "com.bjzhianjia.scp.security.common.util"})
+@ComponentScan({"com.bjzhianjia.scp.security.auth.client", "com.bjzhianjia.scp.core", "com.bjzhianjia.scp.security.common.util"})
 public class AutoConfiguration {
     @Bean
     ServiceAuthConfig getServiceAuthConfig() {

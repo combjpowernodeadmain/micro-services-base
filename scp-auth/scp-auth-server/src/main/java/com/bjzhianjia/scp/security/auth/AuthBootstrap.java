@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 @EnableEurekaClient
 @EnableFeignClients
 @MapperScan("com.bjzhianjia.scp.security.auth.module.*.mapper")
-@ComponentScan({"com.github.ag.core","com.bjzhianjia.scp.security.auth"})
+@ComponentScan({"com.bjzhianjia.scp.core","com.bjzhianjia.scp.security.auth"})
 @EnableAutoConfiguration
 @EnableSwagger2Doc
 @SessionAttributes("authorizationRequest")

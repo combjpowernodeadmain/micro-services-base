@@ -3,7 +3,7 @@
 
 ## 获取用户信息代码
 
-获取登录用户信息的基类是：`import com.github.ag.core.context.BaseContextHandler`
+获取登录用户信息的基类是：`import com.bjzhianjia.scp.core.context.BaseContextHandler`
 
 ### 获取登录用户信息
 
