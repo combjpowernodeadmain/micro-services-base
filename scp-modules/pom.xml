@@ -17,6 +17,7 @@
         <module>scp-dict</module>
         <module>scp-tool</module>
         <module>scp-workflow</module>
+        <module>scp-cgp</module>
     </modules>
 
 </project>
