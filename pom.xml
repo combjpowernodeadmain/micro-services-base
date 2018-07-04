@@ -68,7 +68,7 @@
         <repository>
             <id>oss</id>
             <name>oss</name>
-            <url>https://oss.sonatype.org/content/groups/public</url>
+            <url>http://blcneuxs.zxbit.cn/repository/maven-public/</url>
         </repository>
     </repositories>
     <!--依赖管理，用于管理spring-cloud的依赖，其中Camden.SR3是版本号-->
@@ -97,13 +97,13 @@
 
     <distributionManagement>
         <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <id>nexus</id>
+            <url>http://blcneuxs.zxbit.cn/repository/blc-snapshots/</url>
         </snapshotRepository>
         <repository>
-            <id>ossrh</id>
+            <id>nexus</id>
             <name>Maven Central Staging Repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <url>http://blcneuxs.zxbit.cn/repository/blc-releases/</url>
         </repository>
     </distributionManagement>
 
