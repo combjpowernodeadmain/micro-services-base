@@ -1,0 +1,15 @@
+package com.bjzhianjia.scp.cgp.mapper;
+
+import com.bjzhianjia.scp.cgp.entity.RegulaObject;
+import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
+
+/**
+ * 监管对象
+ * 
+ * @author bo
+ * @email 576866311@qq.com
+ * @version 2018-07-07 16:48:26
+ */
+public interface RegulaObjectMapper extends CommonMapper<RegulaObject> {
+	
+}
