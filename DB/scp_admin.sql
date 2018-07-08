@@ -490,6 +490,12 @@ CREATE TABLE `base_user` (
   UNIQUE KEY `unique_usernane` (`username`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+
+ALTER TABLE `base_user`
+	ADD COLUMN `order_num` INT(11) NOT NULL DEFAULT '1' COMMENT '排序' AFTER `sex`;
+ALTER TABLE `base_user`
+	CHANGE COLUMN `attr1` `attr1` VARCHAR(1020) NULL DEFAULT NULL COMMENT '图片' AFTER `upd_user_name`;  
+
 -- ----------------------------
 --  Records of `base_user`
 -- ----------------------------

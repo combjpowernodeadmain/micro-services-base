@@ -59,6 +59,10 @@ public class User implements Serializable{
 
     private String type;
 
+    // 排序
+    @Column(name = "order_num")
+    private Integer orderNum;
+
     private String description;
 
     //创建人
@@ -84,7 +88,8 @@ public class User implements Serializable{
     //最后更新时间
     @Column(name = "upd_time")
     private Date updTime;
-
+    
+    // 图片 地址
     private String attr1;
 
     private String attr2;
@@ -279,7 +284,15 @@ public class User implements Serializable{
         this.type = type;
     }
 
-    /**
+    public Integer getOrderNum() {
+		return orderNum;
+	}
+
+	public void setOrderNum(Integer orderNum) {
+		this.orderNum = orderNum;
+	}
+
+	/**
      * @return description
      */
     public String getDescription() {

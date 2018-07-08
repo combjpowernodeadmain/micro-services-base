@@ -16,6 +16,7 @@
     <result column="email" jdbcType="VARCHAR" property="email" />
     <result column="sex" jdbcType="CHAR" property="sex" />
     <result column="type" jdbcType="CHAR" property="type" />
+    <result column="order_num" javaType="INTEGER" property="orderNum"/>
     <result column="description" jdbcType="VARCHAR" property="description" />
     <result property="crtUserName" column="crt_user_name"/>
     <result property="crtUserId" column="crt_user_id"/>
