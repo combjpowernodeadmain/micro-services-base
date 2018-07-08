@@ -1,5 +1,5 @@
 /*
- * 软件著作权：北京爱钱帮财富科技有限公司
+ * 软件著作权：bjzhianjia
  * 项目名称：
  *
  * NAME : IFlowDesign.java

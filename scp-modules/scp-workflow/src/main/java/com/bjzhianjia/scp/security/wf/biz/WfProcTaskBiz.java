@@ -1,7 +1,7 @@
 /*
  * @(#) WfProcTaskBiz.java  1.0  August 22, 2016
  *
- * Copyright 2016 by 北京爱钱帮财富科技有限公司
+ * Copyright 2016 by bjzhianjia
  * All rights reserved.
  *
  * This software is the confidential and proprietary information of
@@ -43,7 +43,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.common.util.DateTools;
-import com.bjzhianjia.scp.security.wf.constant.WorkflowEnumResults;
 import com.bjzhianjia.scp.security.wf.constant.Attr.DictKeyConst;
 import com.bjzhianjia.scp.security.wf.constant.Constants.FlowStatus;
 import com.bjzhianjia.scp.security.wf.constant.Constants.ProcUserType;
@@ -53,6 +52,7 @@ import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcParallStatus;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcVotePower;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcVoteRole;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcessStartModeAttr;
+import com.bjzhianjia.scp.security.wf.constant.WorkflowEnumResults;
 import com.bjzhianjia.scp.security.wf.entity.WfMyProcBean;
 import com.bjzhianjia.scp.security.wf.entity.WfProcBean;
 import com.bjzhianjia.scp.security.wf.entity.WfProcDelegateBean;

@@ -10,7 +10,6 @@ import org.activiti.engine.task.Task;
 
 import com.bjzhianjia.scp.security.common.util.DateTools;
 import com.bjzhianjia.scp.security.wf.base.WfBaseBiz;
-import com.bjzhianjia.scp.security.wf.constant.WorkflowEnumResults;
 import com.bjzhianjia.scp.security.wf.constant.Attr.DictKeyConst;
 import com.bjzhianjia.scp.security.wf.constant.Constants.FlowStatus;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfDataValid;
@@ -19,6 +18,7 @@ import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcParallStatus;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcTaskProperty;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcVotePower;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcVoteRole;
+import com.bjzhianjia.scp.security.wf.constant.WorkflowEnumResults;
 import com.bjzhianjia.scp.security.wf.entity.WfProcBean;
 import com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean;
 import com.bjzhianjia.scp.security.wf.entity.WfProcTaskPropertiesBean;

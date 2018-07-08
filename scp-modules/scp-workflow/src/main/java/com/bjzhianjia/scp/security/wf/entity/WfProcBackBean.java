@@ -1,7 +1,7 @@
 /*
  * @(#) IqbWfProcBackBean.java  1.0  August 29, 2016
  *
- * Copyright 2016 by 北京爱钱帮财富科技有限公司
+ * Copyright 2016 by bjzhianjia
  * All rights reserved.
  *
  * This software is the confidential and proprietary information of

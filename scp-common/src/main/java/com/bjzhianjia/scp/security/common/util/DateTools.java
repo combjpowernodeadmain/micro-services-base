@@ -7,7 +7,7 @@ import java.util.Date;
 
 /**
  * 日期工具类 
- * @Copyright 北京爱钱帮财富科技有限公司
+ * @Copyright bjzhianjia
  * @author jack
  * @Date 2015年12月21日-下午2:02:58
  */

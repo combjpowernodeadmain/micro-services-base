@@ -90,11 +90,11 @@ public class Attr {
 	    /** 邮件host地址  **/
 	    public static final String MailHost = "smtp.exmail.qq.com";
 	    /** 用户名  **/
-	    public static final String MailUserName = "scp@iqianbang.com";
+	    public static final String MailUserName = "scp@bjzhianjia.com";
 	    /** 密码  **/
 	    public static final String MailPwd = "******";
 	    /** 发件人  **/
-	    public static final String MailPersonal = "爱钱帮";
+	    public static final String MailPersonal = "Bjzhianjia";
 	}
 	
 	/** 字key典常量  **/
