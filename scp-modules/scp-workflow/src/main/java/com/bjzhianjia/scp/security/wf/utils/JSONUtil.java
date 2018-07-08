@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
-import org.apache.http.impl.cookie.DateParseException;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -144,7 +143,6 @@ public class JSONUtil{
 	 * Description: 将json中的日期转换为时间戳
 	 * @param
 	 * @return JSONObject
-	 * @throws DateParseException 
 	 * @throws ParseException 
 	 * @throws
 	 * @Author scp
