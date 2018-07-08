@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.impl.cookie.DateParseException;
 
 import com.alibaba.fastjson.JSON;
@@ -15,7 +15,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.serializer.ValueFilter;
-import com.google.gson.Gson;
 
 /**
  * 操作json的工具类
@@ -23,8 +22,6 @@ import com.google.gson.Gson;
 @SuppressWarnings("unchecked")
 public class JSONUtil{
     
-    private static Gson gson = new Gson();
-
 	public static Map<?, ?> toMap(String text, boolean ordered){
 		if(ordered){
 			return JSON.parseObject(text, LinkedHashMap.class);
@@ -140,22 +137,6 @@ public class JSONUtil{
 	        return null;
 	    }
 	    return JSONObject.toJSONString(obj, SerializerFeature.SortField);
-	}
-	
-	/**
-	 * 
-	 * Description: Gson转json
-	 * @param
-	 * @return String
-	 * @throws
-	 * @Author scp
-	 * Create Date: 2016年8月31日 下午5:24:46
-	 */
-	public static String objToJsonFromGson(Object obj){
-	    if(obj == null){
-	        return null;
-	    }
-	    return gson.toJson(obj);
 	}
 	
 	/**
