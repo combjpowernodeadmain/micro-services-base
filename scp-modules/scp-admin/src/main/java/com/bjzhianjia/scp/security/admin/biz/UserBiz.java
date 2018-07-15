@@ -16,6 +16,7 @@
 
 package com.bjzhianjia.scp.security.admin.biz;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.admin.entity.User;
@@ -24,13 +25,16 @@ import com.bjzhianjia.scp.security.admin.mapper.UserMapper;
 import com.bjzhianjia.scp.security.common.biz.BaseBiz;
 import com.bjzhianjia.scp.security.common.util.*;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * ${DESCRIPTION}
@@ -160,5 +164,19 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
 
     public List<String> getUserDataDepartIds(String userId) {
         return mapper.selectUserDataDepartIds(userId);
+    }
+    
+    /**
+     * 根据ID批量获取人员
+     * @param departIDs
+     * @return
+     */
+    public Map<String,String> getUsers(String userIds){
+        if(StringUtils.isBlank(userIds)) {
+            return new HashMap<>();
+        }
+        userIds = "'"+userIds.replaceAll(",","','")+"'";
+        List<User> users = mapper.selectByIds(userIds);
+        return users.stream().collect(Collectors.toMap(User::getId, user -> JSONObject.toJSONString(user)));
     }
 }

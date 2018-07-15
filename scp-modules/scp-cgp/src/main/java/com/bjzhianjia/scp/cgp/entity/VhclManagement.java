@@ -4,6 +4,12 @@ import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.*;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
+
+import com.bjzhianjia.scp.cgp.feign.DictFeign;
+import com.bjzhianjia.scp.merge.annonation.MergeField;
+
 
 /**
  * 车辆管理
@@ -19,13 +25,19 @@ public class VhclManagement implements Serializable {
 	    //主键
     @Id
     private Integer id;
+    
+    @Column(name = "ternimal_id")
+    @NotEmpty(message="终端不能为空")
+    private Integer ternimalId;
 	
 	    //车辆牌号
     @Column(name = "vehicle_num")
+    @Length(max=10,message="车牌号长度不能超过10")
     private String vehicleNum;
 	
 	    //车辆类型
     @Column(name = "vehicle_type")
+    @MergeField(key = "root_biz_vhcl_t", feign = DictFeign.class, method = "getDictIds")
     private String vehicleType;
 	
 	    //所属部门
@@ -61,14 +73,13 @@ public class VhclManagement implements Serializable {
     private String updUserName;
 	
 	    //是否删除 1：是 0：否
-    @Column(name = "id_deleted")
-    private String idDeleted;
+    @Column(name = "is_deleted")
+    private String isDeleted;
 	
 	    //租户
     @Column(name = "tenant_id")
     private String tenantId;
 	
-
 	/**
 	 * 设置：主键
 	 */
@@ -80,6 +91,20 @@ public class VhclManagement implements Serializable {
 	 */
 	public Integer getId() {
 		return id;
+	}
+	
+	/**
+	 * 设置: 终端标识
+	 */
+	public void setTernimalId(Integer ternimalId) {
+		this.ternimalId = ternimalId;
+	}
+	
+	/**
+	 * 获取: 终端标识
+	 */
+	public Integer getTernimalId() {
+		return ternimalId;
 	}
 	/**
 	 * 设置：车辆牌号
@@ -204,14 +229,14 @@ public class VhclManagement implements Serializable {
 	/**
 	 * 设置：是否删除 1：是 0：否
 	 */
-	public void setIdDeleted(String idDeleted) {
-		this.idDeleted = idDeleted;
+	public void setIsDeleted(String isDeleted) {
+		this.isDeleted = isDeleted;
 	}
 	/**
 	 * 获取：是否删除 1：是 0：否
 	 */
-	public String getIdDeleted() {
-		return idDeleted;
+	public String getIsDeleted() {
+		return isDeleted;
 	}
 	/**
 	 * 设置：租户

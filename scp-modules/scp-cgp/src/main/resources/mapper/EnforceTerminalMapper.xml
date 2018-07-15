@@ -18,7 +18,18 @@
         <result property="updUserId" column="upd_user_id"/>
         <result property="updUserName" column="upd_user_name"/>
         <result property="tenantId" column="tenant_id"/>
-        <result property="idDeleted" column="id_deleted"/>
+        <result property="isDeleted" column="is_deleted"/>
+        <result property="isEnable" column="is_enable"/>
     </resultMap>
-
+    
+    <update id="deleteById">
+    	update enforce_terminal set is_deleted = '1' where id=#{id}
+    </update>
+    
+    <update id="deleteByIds">
+    	update enforce_terminal set is_deleted = '1' where id in
+    	<foreach collection="ids" item="id" open="(" separator="," close=")">
+    		#{id}
+    	</foreach>
+    </update>
 </mapper>

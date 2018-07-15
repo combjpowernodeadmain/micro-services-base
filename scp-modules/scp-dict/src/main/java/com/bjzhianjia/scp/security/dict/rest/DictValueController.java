@@ -71,4 +71,16 @@ public class DictValueController extends BaseController<DictValueBiz,DictValue,S
                 Collectors.toMap(DictValue::getValue, DictValue::getLabelDefault));
         return result;
     }
+    
+    @IgnoreClientToken
+    @IgnoreUserToken
+    @RequestMapping(value = "/feign/ids/{code}",method = RequestMethod.GET)
+    public Map<String,String> getDictIdByCode(@PathVariable("code") String code){
+        Example example = new Example(DictValue.class);
+        example.createCriteria().andLike("code",code+"%");
+        List<DictValue> dictValues = this.baseBiz.selectByExample(example);
+        Map<String, String> result = dictValues.stream().collect(
+                Collectors.toMap(DictValue::getId, DictValue::getLabelDefault));
+        return result;
+    }
 }

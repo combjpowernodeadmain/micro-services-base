@@ -3,6 +3,10 @@ package com.bjzhianjia.scp.cgp.entity;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
 
 
 /**
@@ -22,10 +26,14 @@ public class EventType implements Serializable {
 	
 	    //事件类别编码
     @Column(name = "type_code")
+    @NotEmpty(message="事件类别编号不能为空")
+    @Length(max=32,message="事件类别编号长度不能超过32")
     private String typeCode;
 	
 	    //事件类别名称
     @Column(name = "type_name")
+    @NotEmpty(message="事件类别名称不能为空")
+    @Length(max=32,message="事件类别名称长度不能超过32")
     private String typeName;
 	
 	    //所属业务条线
@@ -34,10 +42,12 @@ public class EventType implements Serializable {
 	
 	    //是否可用；1：是；0: 否
     @Column(name = "is_enable")
+    @NotEmpty(message="是否可用不能为空")
     private String isEnable;
 	
 	    //排序
     @Column(name = "order")
+    @NotNull(message="排序不能为空")
     private Integer order;
 	
 	    //是否删除；1：是；0: 否

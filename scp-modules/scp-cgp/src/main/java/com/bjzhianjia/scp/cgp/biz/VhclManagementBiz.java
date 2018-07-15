@@ -1,10 +1,21 @@
 package com.bjzhianjia.scp.cgp.biz;
 
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.bjzhianjia.scp.cgp.entity.EnforceTerminal;
 import com.bjzhianjia.scp.cgp.entity.VhclManagement;
 import com.bjzhianjia.scp.cgp.mapper.VhclManagementMapper;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
+import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+
+import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.entity.Example.Criteria;
 
 /**
  * 车辆管理
@@ -15,4 +26,69 @@ import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
  */
 @Service
 public class VhclManagementBiz extends BusinessBiz<VhclManagementMapper,VhclManagement> {
+	
+	@Autowired
+	private VhclManagementMapper vhclManagermentMapper;
+	
+	/**
+	 * 根据车辆号获取终端
+	 * @param terminalCode 终端号
+	 * @return
+	 */
+	public VhclManagement getByVehicleNum(String vehicleNum) {
+		
+		Example example = new Example(EnforceTerminal.class);
+		
+		Criteria criteria = example.createCriteria();
+		criteria.andEqualTo("vehicleNum", vehicleNum);
+		
+		List<VhclManagement> list = vhclManagermentMapper.selectByExample(example);
+		
+		if(list == null || list.size() == 0) {
+			return null;
+		}
+		
+		VhclManagement vhcl = list.get(0);
+		
+		if(vhcl.getIsDeleted().equals("1")) {
+			return null;
+		}
+		
+		return vhcl;
+	}
+
+	/**
+	 * 根据查询条件搜索
+	 * @param terminal
+	 * @return
+	 */
+	public TableResultResponse<VhclManagement> getList(int page, int limit, VhclManagement vhcl) {
+		Example example = new Example(EnforceTerminal.class);
+	    Example.Criteria criteria = example.createCriteria();
+	    
+	    criteria.andEqualTo("isDeleted", "0");
+	    if(StringUtils.isNotBlank(vhcl.getVehicleNum())){
+	    	criteria.andEqualTo("vehicleNum", vhcl.getVehicleNum());
+	    }
+	    if(StringUtils.isNotBlank(vhcl.getVehicleType())){
+	    	criteria.andEqualTo("vehicleType", vhcl.getVehicleType());
+	    }
+	    if(StringUtils.isNotBlank(vhcl.getDepartment())){
+	    	criteria.andEqualTo("department", vhcl.getDepartment());
+	    }
+
+	    example.setOrderByClause("id desc");
+	    
+	    Page<Object> result = PageHelper.startPage(page, limit);
+	    List<VhclManagement> list = vhclManagermentMapper.selectByExample(example);
+	    return new TableResultResponse<VhclManagement>(result.getTotal(), list);
+	}
+	
+	/**
+	 * 批量删除
+	 * @param ids id列表
+	 */
+	public void deleteByIds(Integer[] ids) {
+		vhclManagermentMapper.deleteByIds(ids);
+	}
 }

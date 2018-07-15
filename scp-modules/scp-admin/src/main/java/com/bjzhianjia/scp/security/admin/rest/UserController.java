@@ -39,6 +39,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -46,6 +47,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -138,5 +140,11 @@ public class UserController extends BaseController<UserBiz, User,String> {
             return positionBiz.getUserFlowPosition(userId).stream().map(Position::getName).collect(Collectors.toList());
         }
         return new ArrayList<>();
+    }
+    
+    @ApiOperation("批量获取人员信息")
+    @RequestMapping(value = "/getByPK/{id}",method = RequestMethod.GET)
+    public Map<String,String> getUser(@PathVariable String id){
+        return this.baseBiz.getUsers(id);
     }
 }

@@ -17,6 +17,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +64,46 @@ public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
         departIDs = "'"+departIDs.replaceAll(",","','")+"'";
         List<Depart> departs = mapper.selectByIds(departIDs);
         return departs.stream().collect(Collectors.toMap(Depart::getId, depart -> JSONObject.toJSONString(depart)));
+    }
+    
+    public Map<String,String> getLayerDeparts(String departIds) {
+    	if(StringUtils.isBlank(departIds)) {
+            return new HashMap<>();
+        }
+    	
+    	List<Depart> departs = mapper.selectAll();
+    	
+    	String[] aryId = departIds.split(",");
+    	Map<String,String> mapResult = new HashMap<>(); 
+    	for(String id:aryId) {
+    		List<Depart> result = new ArrayList<>();
+    		getDepart(departs, id, result);
+    		if(result.size() > 0) {
+    			Collections.reverse(result);
+    			List<String> names = new ArrayList<>();
+    			result.forEach(d->names.add(d.getName()));
+    			mapResult.put(id, String.join("-", names.toArray(new String[names.size()])));
+    		}
+    	}
+    	
+    	return mapResult;
+    }
+    
+    private void getDepart(List<Depart> departs, String id, List<Depart> result) {
+
+    	Depart tmpDepart = null;
+    	for(Depart depart:departs) {
+    		
+    		if(depart.getId().equals(id)) {
+    			tmpDepart = depart;
+    			break;
+    		}
+    	}
+    	
+    	if(tmpDepart != null && !tmpDepart.getParentId().equals("-1")) {
+    		result.add(tmpDepart);
+    		getDepart(departs, tmpDepart.getParentId(), result);
+    	}
     }
 
     public void delDepartUser(String departId, String userId) {

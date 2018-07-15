@@ -67,4 +67,9 @@ public class DepartController extends BaseController<DepartBiz,Depart,String> {
         return this.baseBiz.getDeparts(id);
     }
 
+    @ApiOperation("获取部门层级信息")
+    @RequestMapping(value = "getLayerByPK/{id}",method = RequestMethod.GET)
+    public Map<String,String> getLayerDepart(@PathVariable String id){
+        return this.baseBiz.getLayerDeparts(id);
+    }
 }

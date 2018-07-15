@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp;
 
+import com.bjzhianjia.scp.merge.EnableAceMerge;
 import com.bjzhianjia.scp.security.auth.client.EnableAceAuthClient;
 import com.spring4all.swagger.EnableSwagger2Doc;
 import org.mybatis.spring.annotation.MapperScan;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableFeignClients({"com.bjzhianjia.scp.security.auth.client.feign","com.bjzhianjia.scp.cgp.feign"})
 @MapperScan("com.bjzhianjia.scp.cgp.mapper")
 @EnableAceAuthClient
+@EnableAceMerge
 @EnableSwagger2Doc
 public class CgpBootstrap {
 	

@@ -1,5 +1,7 @@
 package com.bjzhianjia.scp.cgp.mapper;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.bjzhianjia.scp.cgp.entity.VhclManagement;
 import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 
@@ -12,4 +14,9 @@ import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
  */
 public interface VhclManagementMapper extends CommonMapper<VhclManagement> {
 	
+	/**
+	 * 批量删除
+	 * @param ids id列表
+	 */
+	void deleteByIds(@Param("ids")Integer[] ids);
 }

@@ -4,6 +4,12 @@ import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.*;
 
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotEmpty;
+
+import com.bjzhianjia.scp.merge.annonation.MergeField;
+import com.bjzhianjia.scp.cgp.feign.DictFeign;
+
 
 /**
  * 执法终端
@@ -22,10 +28,13 @@ public class EnforceTerminal implements Serializable {
 	
 	    //终端标识号
     @Column(name = "terminal_code")
+    @NotEmpty(message="终端标识号不能为空")
+    @Length(max=127,message="终端手机号长度不能超过127")
     private String terminalCode;
 	
 	    //终端手机号
     @Column(name = "terminal_phone")
+    @Length(max=15,message="终端手机号长度不能超过15")
     private String terminalPhone;
 	
 	    //领用部门
@@ -38,6 +47,8 @@ public class EnforceTerminal implements Serializable {
 	
 	    //属配类型
     @Column(name = "terminal_type")
+    @MergeField(key = "root_biz_trml_t", feign = DictFeign.class, method = "getDictIds")
+    @NotEmpty(message="属配类型不能为空")
     private String terminalType;
 	
 	    //创建用户Id
@@ -69,9 +80,13 @@ public class EnforceTerminal implements Serializable {
     private String tenantId;
 	
 	    //是否删除（1是/0否）
-    @Column(name = "id_deleted")
-    private String idDeleted;
-	
+    @Column(name = "is_deleted")
+    private String isDeleted;
+    
+    @Column(name = "is_enable")
+    @MergeField(key = "root_biz_enabled", feign = DictFeign.class, method = "getDictIds")
+    @NotEmpty(message="是否可用不能为空")
+    private String isEnable;
 
 	/**
 	 * 设置：主键
@@ -232,13 +247,30 @@ public class EnforceTerminal implements Serializable {
 	/**
 	 * 设置：是否删除（1是/0否）
 	 */
-	public void setIdDeleted(String idDeleted) {
-		this.idDeleted = idDeleted;
+	public void setIsDeleted(String isDeleted) {
+		this.isDeleted = isDeleted;
 	}
 	/**
 	 * 获取：是否删除（1是/0否）
 	 */
-	public String getIdDeleted() {
-		return idDeleted;
+	public String getIsDeleted() {
+		return isDeleted;
 	}
+	
+	/**
+	 * 设置是否可用
+	 * @param isEnable
+	 */
+	public void setIsEnable(String isEnable) {
+		this.isEnable = isEnable;
+	}
+	
+	/**
+	 * 获取是否可用
+	 * @return
+	 */
+	public String getIsEnable() {
+		return isEnable;
+	}
+	
 }
