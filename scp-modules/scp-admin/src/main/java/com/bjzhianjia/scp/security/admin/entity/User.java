@@ -16,17 +16,18 @@
 
 package com.bjzhianjia.scp.security.admin.entity;
 
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 import com.bjzhianjia.scp.merge.annonation.MergeField;
 import com.bjzhianjia.scp.security.admin.biz.DepartBiz;
 import com.bjzhianjia.scp.security.admin.feign.DictFeign;
 
 import jdk.nashorn.internal.ir.annotations.Ignore;
-
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import java.io.Serializable;
-import java.util.Date;
 
 @Table(name = "base_user")
 public class User implements Serializable{

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.bjzhianjia.scp.cgp.entity.RightsIssues;
 import com.bjzhianjia.scp.cgp.mapper.RightsIssuesMapper;
@@ -20,6 +21,7 @@ import tk.mybatis.mapper.entity.Example.Criteria;
  * @author zzh
  *
  */
+@Service
 public class RightsIssuesBiz extends BusinessBiz<RightsIssuesMapper,RightsIssues> {
 
 	@Autowired

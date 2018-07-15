@@ -1,8 +1,8 @@
-MYSQL_HOST: 101.201.147.172
+MYSQL_HOST: 127.0.0.1
 MYSQL_PORT: 9025
 MYSQL_USER_NAME: dev_user
 MYSQL_PASS: iui098mm112
-REDIS_HOST: 101.201.147.172
+REDIS_HOST: 127.0.0.1
 REDIS_PORT: 9081
 
 
@@ -73,6 +73,15 @@ auth:
     id: scp-cgp
     secret: cpg98siu
     token-header: client-token
+
+# 跨服务数据合并
+merge:
+  enabled: true
+  guavaCacheNumMaxSize: 1000
+  guavaCacheRefreshWriteTime: 10 # min
+  guavaCacheRefreshThreadPoolSize: 10
+  aop:
+    enabled: true
     
 mapper:
   mappers: com.bjzhianjia.scp.security.common.mapper.CommonMapper
