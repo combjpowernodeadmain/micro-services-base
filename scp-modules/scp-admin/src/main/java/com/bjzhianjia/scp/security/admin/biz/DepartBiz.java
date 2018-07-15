@@ -1,5 +1,16 @@
 package com.bjzhianjia.scp.security.admin.biz;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.merge.annonation.MergeResult;
@@ -12,19 +23,6 @@ import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.exception.base.BusinessException;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.util.UUIDUtils;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  *

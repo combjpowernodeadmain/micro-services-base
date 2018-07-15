@@ -22,6 +22,7 @@ public class SwaggerConfig implements SwaggerResourcesProvider {
         resources.add(swaggerResource("字典服务", "/api/dict/v2/api-docs", "2.0"));
         resources.add(swaggerResource("鉴权服务", "/api/auth/v2/api-docs", "2.0"));
         resources.add(swaggerResource("工作流服务", "/api/workflow/v2/api-docs", "2.0"));
+        resources.add(swaggerResource("综合执法", "/api/cgp/v2/api-docs", "2.0"));
         return resources;
     }
 
