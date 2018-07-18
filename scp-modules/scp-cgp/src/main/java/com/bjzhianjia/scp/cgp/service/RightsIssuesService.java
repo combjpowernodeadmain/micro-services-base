@@ -68,13 +68,13 @@ public class RightsIssuesService {
 		
 		RightsIssues tempRightsIssues = rightsIssuesBiz.getByCode(rightsIssues.getCode());
 		if(tempRightsIssues != null) {
-			result.setMessage("终端标识号已存在");
+			result.setMessage("权利事项编号已存在");
 			return result;
 		}
 		
 		tempRightsIssues = rightsIssuesBiz.getByUnlawfulAct(rightsIssues.getUnlawfulAct());
 		if(tempRightsIssues != null) {
-			result.setMessage("终端手机号已存在");
+			result.setMessage("法则已存在");
 			return result;
 		}
 		
@@ -85,7 +85,7 @@ public class RightsIssuesService {
 			return result;
 		}
 		
-		rightsIssuesBiz.insertSelective(tempRightsIssues);
+		rightsIssuesBiz.insertSelective(rightsIssues);
 		
 		result.setIsSuccess(true);
 		result.setMessage("成功");
@@ -103,13 +103,13 @@ public class RightsIssuesService {
 		
 		RightsIssues tempRightsIssues = rightsIssuesBiz.getByCode(rightsIssues.getCode());
 		if(tempRightsIssues != null && !tempRightsIssues.getId().equals(rightsIssues.getId())) {
-			result.setMessage("终端标识号已存在");
+			result.setMessage("权利事项编号已存在");
 			return result;
 		}
 		
 		tempRightsIssues = rightsIssuesBiz.getByUnlawfulAct(rightsIssues.getUnlawfulAct());
 		if(tempRightsIssues != null && !tempRightsIssues.getId().equals(rightsIssues.getId())) {
-			result.setMessage("终端手机号已存在");
+			result.setMessage("法则已存在");
 			return result;
 		}
 		
@@ -120,7 +120,7 @@ public class RightsIssuesService {
 			return result;
 		}
 		
-		rightsIssuesBiz.updateSelectiveById(tempRightsIssues);
+		rightsIssuesBiz.updateSelectiveById(rightsIssues);
 		
 		result.setIsSuccess(true);
 		result.setMessage("成功");

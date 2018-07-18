@@ -6,7 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.bjzhianjia.scp.cgp.entity.EnforceTerminal;
 import com.bjzhianjia.scp.cgp.entity.VhclManagement;
 import com.bjzhianjia.scp.cgp.mapper.VhclManagementMapper;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
@@ -37,7 +36,7 @@ public class VhclManagementBiz extends BusinessBiz<VhclManagementMapper,VhclMana
 	 */
 	public VhclManagement getByVehicleNum(String vehicleNum) {
 		
-		Example example = new Example(EnforceTerminal.class);
+		Example example = new Example(VhclManagement.class);
 		
 		Criteria criteria = example.createCriteria();
 		criteria.andEqualTo("vehicleNum", vehicleNum);
@@ -63,7 +62,7 @@ public class VhclManagementBiz extends BusinessBiz<VhclManagementMapper,VhclMana
 	 * @return
 	 */
 	public TableResultResponse<VhclManagement> getList(int page, int limit, VhclManagement vhcl) {
-		Example example = new Example(EnforceTerminal.class);
+		Example example = new Example(VhclManagement.class);
 	    Example.Criteria criteria = example.createCriteria();
 	    
 	    criteria.andEqualTo("isDeleted", "0");

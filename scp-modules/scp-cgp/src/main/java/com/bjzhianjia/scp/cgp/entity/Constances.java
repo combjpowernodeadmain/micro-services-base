@@ -18,4 +18,9 @@ public class Constances {
 	 */
 	public static final String ROOT_BIZ_TYPE = "root_biz_type";
 	
+	/**
+	 * 证件类型
+	 */
+	public static final String ROOT_BIZ_CERT_T = "root_biz_cert_t";
+	
 }

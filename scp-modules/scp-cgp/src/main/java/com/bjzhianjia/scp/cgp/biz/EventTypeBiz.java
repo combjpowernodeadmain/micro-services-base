@@ -1,6 +1,8 @@
 package com.bjzhianjia.scp.cgp.biz;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -147,5 +149,16 @@ public class EventTypeBiz extends BusinessBiz<EventTypeMapper,EventType> {
 	 */
 	public void deleteByIds(Integer[] ids) {
 		eventTypeMapper.deleteByIds(ids);
+	}
+	
+	/**
+	 * 根据多个id获取
+	 * @param ids
+	 */
+	public Map<String, String> getByIds(String ids) {
+		
+		List<EventType> list = eventTypeMapper.selectByIds(ids);
+		
+		return list.stream().collect(Collectors.toMap(EventType::getTypeCode, EventType::getTypeName));
 	}
 }
