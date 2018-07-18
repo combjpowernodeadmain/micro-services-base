@@ -10,6 +10,9 @@ import javax.persistence.Table;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.bjzhianjia.scp.cgp.feign.DictFeign;
+import com.bjzhianjia.scp.merge.annonation.MergeField;
+
 /**
  * 权利事项实体
  * @author zzh
@@ -27,7 +30,7 @@ public class RightsIssues implements Serializable {
 	//权利事项编号
 	@Column(name = "code")
 	@NotEmpty(message="权利事项编号不能为空")
-    @Length(max=127,message="权利事项编号长度不能超过32")
+    @Length(max=32,message="权利事项编号长度不能超过32")
 	private String code;
 	
 	//事件类别
@@ -66,6 +69,7 @@ public class RightsIssues implements Serializable {
 	//是否可用
 	@Column(name = "is_enable")
     @NotEmpty(message="是否可用不能为空")
+	@MergeField(key = "root_biz_enabled", feign = DictFeign.class, method = "getDictIds")
     private String isEnable;
 	
 	//是否删除；1：是；0: 否

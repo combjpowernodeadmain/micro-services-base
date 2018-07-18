@@ -3,7 +3,6 @@ package com.bjzhianjia.scp.cgp.entity;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -13,46 +12,66 @@ import com.bjzhianjia.scp.merge.annonation.MergeField;
 
 
 /**
- * 事件类型
+ * 巡查事项
  * 
  * @author bo
  * @email 576866311@qq.com
- * @version 2018-07-07 16:48:27
+ * @version 2018-07-16 16:08:44
  */
-@Table(name = "event_type")
-public class EventType implements Serializable {
+@Table(name = "inspect_items")
+public class InspectItems implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	    //主键
     @Id
     private Integer id;
 	
-	    //事件类别编码
-    @Column(name = "type_code")
-    @NotEmpty(message="事件类别编号不能为空")
-    @Length(max=32,message="事件类别编号长度不能超过32")
-    private String typeCode;
+	    //巡查事项编号
+    @Column(name = "code")
+    @NotEmpty(message="巡查事项编号不能为空")
+    @Length(max=32,message="巡查事项编号长度不能超过32")
+    private String code;
 	
-	    //事件类别名称
-    @Column(name = "type_name")
-    @NotEmpty(message="事件类别名称不能为空")
-    @Length(max=32,message="事件类别名称长度不能超过32")
-    private String typeName;
+	    //巡查事项名称
+    @Column(name = "name")
+    @NotEmpty(message="巡查事项编名称不能为空")
+    @Length(max=127,message="巡查事项名称长度不能超过127")
+    private String name;
 	
-	    //所属业务条线
+	    //事件类别
+    @Column(name = "type")
+    @NotEmpty(message="事件类别不能为空")
+    private String type;
+	
+	    //业务条线
     @Column(name = "biz_type")
+    @NotEmpty(message="业务条线不能为空")
     @MergeField(key = "root_biz_type", feign = DictFeign.class, method = "getDictIds")
     private String bizType;
 	
-	    //是否可用；1：是；0: 否
+	    //巡查方式
+    @Column(name = "inspect_way")
+    private String inspectWay;
+	
+	    //巡查频次
+    @Column(name = "inspect_frenquency")
+    private Integer inspectFrenquency;
+	
+	    //专项活动
+    @Column(name = "special_campaign")
+    private String specialCampaign;
+	
+	    //权力事项编号
+    @Column(name = "item_num")
+    @NotEmpty(message="权利事项编号不能为空")
+    @Length(max=32,message="权利事项编号长度不能超过32")
+    private String itemNum;
+	
+	    //是否可用
     @Column(name = "is_enable")
     @NotEmpty(message="是否可用不能为空")
+    @MergeField(key = "root_biz_enabled", feign = DictFeign.class, method = "getDictIds")
     private String isEnable;
-	
-	    //排序
-    @Column(name = "order")
-    @NotNull(message="排序不能为空")
-    private Integer order;
 	
 	    //是否删除；1：是；0: 否
     @Column(name = "is_deleted")
@@ -82,6 +101,10 @@ public class EventType implements Serializable {
     @Column(name = "upd_time")
     private Date updTime;
 	
+	    //部门ID
+    @Column(name = "depart_id")
+    private String departId;
+	
 	    //租户ID
     @Column(name = "tenant_id")
     private String tenantId;
@@ -100,64 +123,112 @@ public class EventType implements Serializable {
 		return id;
 	}
 	/**
-	 * 设置：事件类别编码
+	 * 设置：巡查事项编号
 	 */
-	public void setTypeCode(String typeCode) {
-		this.typeCode = typeCode;
+	public void setCode(String code) {
+		this.code = code;
 	}
 	/**
-	 * 获取：事件类别编码
+	 * 获取：巡查事项编号
 	 */
-	public String getTypeCode() {
-		return typeCode;
+	public String getCode() {
+		return code;
 	}
 	/**
-	 * 设置：事件类别名称
+	 * 设置：巡查事项名称
 	 */
-	public void setTypeName(String typeName) {
-		this.typeName = typeName;
+	public void setName(String name) {
+		this.name = name;
 	}
 	/**
-	 * 获取：事件类别名称
+	 * 获取：巡查事项名称
 	 */
-	public String getTypeName() {
-		return typeName;
+	public String getName() {
+		return name;
 	}
 	/**
-	 * 设置：所属业务条线
+	 * 设置：事件类别
+	 */
+	public void setType(String type) {
+		this.type = type;
+	}
+	/**
+	 * 获取：事件类别
+	 */
+	public String getType() {
+		return type;
+	}
+	/**
+	 * 设置：业务条线
 	 */
 	public void setBizType(String bizType) {
 		this.bizType = bizType;
 	}
 	/**
-	 * 获取：所属业务条线
+	 * 获取：业务条线
 	 */
 	public String getBizType() {
 		return bizType;
 	}
 	/**
-	 * 设置：是否可用；1：是；0: 否
+	 * 设置：巡查方式
+	 */
+	public void setInspectWay(String inspectWay) {
+		this.inspectWay = inspectWay;
+	}
+	/**
+	 * 获取：巡查方式
+	 */
+	public String getInspectWay() {
+		return inspectWay;
+	}
+	/**
+	 * 设置：巡查频次
+	 */
+	public void setInspectFrenquency(Integer inspectFrenquency) {
+		this.inspectFrenquency = inspectFrenquency;
+	}
+	/**
+	 * 获取：巡查频次
+	 */
+	public Integer getInspectFrenquency() {
+		return inspectFrenquency;
+	}
+	/**
+	 * 设置：专项活动
+	 */
+	public void setSpecialCampaign(String specialCampaign) {
+		this.specialCampaign = specialCampaign;
+	}
+	/**
+	 * 获取：专项活动
+	 */
+	public String getSpecialCampaign() {
+		return specialCampaign;
+	}
+	/**
+	 * 设置：权力事项编号
+	 */
+	public void setItemNum(String itemNum) {
+		this.itemNum = itemNum;
+	}
+	/**
+	 * 获取：权力事项编号
+	 */
+	public String getItemNum() {
+		return itemNum;
+	}
+	/**
+	 * 设置：是否可用
 	 */
 	public void setIsEnable(String isEnable) {
 		this.isEnable = isEnable;
 	}
 	/**
-	 * 获取：是否可用；1：是；0: 否
+	 * 获取：是否可用
 	 */
 	public String getIsEnable() {
 		return isEnable;
-	}
-	/**
-	 * 设置：排序
-	 */
-	public void setOrder(Integer order) {
-		this.order = order;
-	}
-	/**
-	 * 获取：排序
-	 */
-	public Integer getOrder() {
-		return order;
 	}
 	/**
 	 * 设置：是否删除；1：是；0: 否
@@ -242,6 +313,18 @@ public class EventType implements Serializable {
 	 */
 	public Date getUpdTime() {
 		return updTime;
+	}
+	/**
+	 * 设置：部门ID
+	 */
+	public void setDepartId(String departId) {
+		this.departId = departId;
+	}
+	/**
+	 * 获取：部门ID
+	 */
+	public String getDepartId() {
+		return departId;
 	}
 	/**
 	 * 设置：租户ID
