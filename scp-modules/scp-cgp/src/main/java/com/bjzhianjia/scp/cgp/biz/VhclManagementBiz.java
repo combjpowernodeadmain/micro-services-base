@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.biz;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.bjzhianjia.scp.cgp.entity.VhclManagement;
 import com.bjzhianjia.scp.cgp.mapper.VhclManagementMapper;
+import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
@@ -88,6 +90,6 @@ public class VhclManagementBiz extends BusinessBiz<VhclManagementMapper,VhclMana
 	 * @param ids id列表
 	 */
 	public void deleteByIds(Integer[] ids) {
-		vhclManagermentMapper.deleteByIds(ids);
+		vhclManagermentMapper.deleteByIds(ids, BaseContextHandler.getUserID(),BaseContextHandler.getName(),new Date());
 	}
 }

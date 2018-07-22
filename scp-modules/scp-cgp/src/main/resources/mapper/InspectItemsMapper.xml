@@ -26,4 +26,10 @@
         <result property="tenantId" column="tenant_id"/>
     </resultMap>
 
+	<update id="deleteByIds">
+    	update inspect_items set upd_user_id=#{updUserId},upd_user_name=#{updUserName},upd_time=#{updTime},is_deleted = '1' where id in
+    	<foreach collection="ids" item="id" open="(" separator="," close=")">
+    		#{id}
+    	</foreach>
+    </update>
 </mapper>

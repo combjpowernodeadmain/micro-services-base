@@ -27,7 +27,7 @@
     </update>
     
     <update id="deleteByIds">
-    	update enforce_terminal set is_deleted = '1' where id in
+    	update enforce_terminal set upd_user_id=#{updUserId},upd_user_name=#{updUserName},upd_time=#{updTime},is_deleted = '1' where id in
     	<foreach collection="ids" item="id" open="(" separator="," close=")">
     		#{id}
     	</foreach>

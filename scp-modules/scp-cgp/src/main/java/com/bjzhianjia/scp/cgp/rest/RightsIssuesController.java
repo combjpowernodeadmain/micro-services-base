@@ -20,15 +20,14 @@ import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
-import com.github.pagehelper.util.StringUtil;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
 @RestController
 @RequestMapping("rightsIssues")
-@CheckClientToken
-@CheckUserToken
+//@CheckClientToken
+//@CheckUserToken
 @Api(tags = "权利事项管理")
 public class RightsIssuesController extends BaseController<RightsIssuesBiz,RightsIssues,Integer> {
 
@@ -117,9 +116,9 @@ public class RightsIssuesController extends BaseController<RightsIssuesBiz,Right
 	@RequestMapping(value = "/remove/{ids}",method = RequestMethod.DELETE)
 	@ResponseBody
 	@ApiOperation("批量移除对象")
-    public ObjectRestResponse<RightsIssues> remove(@PathVariable String ids){
+    public ObjectRestResponse<RightsIssues> remove(@PathVariable Integer[] ids){
 		ObjectRestResponse<RightsIssues> result = new ObjectRestResponse<>();
-		if(StringUtil.isEmpty(ids)) {
+		if(ids == null || ids.length == 0) {
 			result.setStatus(400);;
 			result.setMessage("请选择要删除的项");
 			return result;

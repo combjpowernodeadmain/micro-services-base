@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.biz;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.bjzhianjia.scp.cgp.entity.EnforceCertificate;
 import com.bjzhianjia.scp.cgp.mapper.EnforceCertificateMapper;
+import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
@@ -126,7 +128,7 @@ public class EnforceCertificateBiz extends BusinessBiz<EnforceCertificateMapper,
 	 * 批量删除
 	 * @param ids id列表
 	 */
-	public void deleteByIds(String ids) {
-		enforceCertificateMapper.deleteByIds(ids);
+	public void deleteByIds(Integer[] ids) {
+		enforceCertificateMapper.deleteByIds(ids, BaseContextHandler.getUserID(),BaseContextHandler.getName(),new Date());
 	}
 }
