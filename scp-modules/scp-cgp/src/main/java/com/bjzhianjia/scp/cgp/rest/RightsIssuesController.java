@@ -26,8 +26,8 @@ import io.swagger.annotations.ApiOperation;
 
 @RestController
 @RequestMapping("rightsIssues")
-//@CheckClientToken
-//@CheckUserToken
+@CheckClientToken
+@CheckUserToken
 @Api(tags = "权利事项管理")
 public class RightsIssuesController extends BaseController<RightsIssuesBiz,RightsIssues,Integer> {
 
