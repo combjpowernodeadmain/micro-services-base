@@ -1,5 +1,7 @@
 package com.bjzhianjia.scp.cgp.mapper;
 
+import java.util.Date;
+
 import org.apache.ibatis.annotations.Param;
 
 import com.bjzhianjia.scp.cgp.entity.EnforceTerminal;
@@ -26,5 +28,5 @@ public interface EnforceTerminalMapper extends CommonMapper<EnforceTerminal> {
 	 * 批量删除
 	 * @param ids id列表
 	 */
-	public void deleteByIds(@Param("ids")Integer[] ids);
+	public void deleteByIds(@Param("ids")Integer[] ids, @Param("updUserId")String updUserId, @Param("updUserName")String updUserName, @Param("updTime")Date updTime);
 }

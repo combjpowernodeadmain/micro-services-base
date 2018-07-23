@@ -49,10 +49,10 @@ public class EventType implements Serializable {
     @NotEmpty(message="是否可用不能为空")
     private String isEnable;
 	
-	    //排序
-    @Column(name = "order")
+	    //排序 该字段原为‘order’，该字段与MySQL保留字冲突，后改为'order_no'
+    @Column(name = "order_no")
     @NotNull(message="排序不能为空")
-    private Integer order;
+    private Integer orderNo;
 	
 	    //是否删除；1：是；0: 否
     @Column(name = "is_deleted")
@@ -151,13 +151,13 @@ public class EventType implements Serializable {
 	 * 设置：排序
 	 */
 	public void setOrder(Integer order) {
-		this.order = order;
+		this.orderNo = order;
 	}
 	/**
 	 * 获取：排序
 	 */
 	public Integer getOrder() {
-		return order;
+		return orderNo;
 	}
 	/**
 	 * 设置：是否删除；1：是；0: 否

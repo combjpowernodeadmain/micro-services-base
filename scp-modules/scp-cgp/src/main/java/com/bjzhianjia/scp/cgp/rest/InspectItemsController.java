@@ -3,7 +3,6 @@ package com.bjzhianjia.scp.cgp.rest;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
-import com.github.pagehelper.util.StringUtil;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -117,9 +116,9 @@ public class InspectItemsController extends BaseController<InspectItemsBiz,Inspe
 	@RequestMapping(value = "/remove/{ids}",method = RequestMethod.DELETE)
 	@ResponseBody
 	@ApiOperation("批量移除对象")
-    public ObjectRestResponse<InspectItems> remove(@PathVariable String ids){
+    public ObjectRestResponse<InspectItems> remove(@PathVariable Integer[] ids){
 		ObjectRestResponse<InspectItems> result = new ObjectRestResponse<>();
-		if(StringUtil.isEmpty(ids)) {
+		if(ids == null || ids.length == 0) {
 			result.setStatus(400);;
 			result.setMessage("请选择要删除的项");
 			return result;

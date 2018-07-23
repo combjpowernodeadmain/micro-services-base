@@ -50,7 +50,7 @@ public class VhclManagementController extends BaseController<VhclManagementBiz,V
     				,@RequestParam(defaultValue = "") String department) {
 
 		VhclManagement vhcl = new VhclManagement();
-		vhcl.setVehicleNum(vehicleNum);
+//		vhcl.setVehicleNum(vehicleNum);
 		vhcl.setVehicleType(vehicleType);
 		vhcl.setDepartment(department);
 	    return vhclService.getList(page, limit, vhcl);
@@ -129,7 +129,7 @@ public class VhclManagementController extends BaseController<VhclManagementBiz,V
 			result.setMessage("请选择要删除的项");
 			return result;
 		}
-		vhclManagementBiz.deleteById(ids);
+		vhclManagementBiz.deleteByIds(ids);
         return result;
     }
 }

@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.biz;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.bjzhianjia.scp.cgp.entity.RightsIssues;
 import com.bjzhianjia.scp.cgp.mapper.RightsIssuesMapper;
+import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
@@ -126,8 +128,8 @@ public class RightsIssuesBiz extends BusinessBiz<RightsIssuesMapper,RightsIssues
 		return rightsIssues;
 	}
 	
-	public void deleteByIds(String ids) {
+	public void deleteByIds(Integer[] ids) {
 		
-		rightsIssuesMapper.deleteByIds(ids);
+		rightsIssuesMapper.deleteByIds(ids, BaseContextHandler.getUserID(),BaseContextHandler.getName(),new Date());
 	}
 }

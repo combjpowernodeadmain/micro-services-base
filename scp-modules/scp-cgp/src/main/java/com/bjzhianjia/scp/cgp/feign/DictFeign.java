@@ -22,4 +22,7 @@ public interface DictFeign {
 	
 	@RequestMapping(value = "/dictValue/feign/ids/{code}",method = RequestMethod.GET)
     public Map<String,String> getDictIds(@PathVariable("code") String code);
+	
+	@RequestMapping(value = "/dictValue/feign/id/{id}",method = RequestMethod.GET)
+	public Map<String,String> getDictValueByID(@PathVariable("id") String id);
 }

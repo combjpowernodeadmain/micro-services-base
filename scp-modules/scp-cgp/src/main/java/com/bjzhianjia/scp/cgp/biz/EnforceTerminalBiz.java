@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.biz;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.bjzhianjia.scp.cgp.entity.EnforceTerminal;
 import com.bjzhianjia.scp.cgp.mapper.EnforceTerminalMapper;
+import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
@@ -164,6 +166,6 @@ public class EnforceTerminalBiz extends BusinessBiz<EnforceTerminalMapper,Enforc
 	 * @param ids id列表
 	 */
 	public void deleteByIds(Integer[] ids) {
-		terminalMapper.deleteByIds(ids);
+		terminalMapper.deleteByIds(ids, BaseContextHandler.getUserID(),BaseContextHandler.getName(),new Date());
 	}
 }

@@ -18,6 +18,7 @@
 
 package com.bjzhianjia.scp.security.dict.rest;
 
+import com.alibaba.fastjson.JSON;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreClientToken;
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -82,5 +84,25 @@ public class DictValueController extends BaseController<DictValueBiz,DictValue,S
         Map<String, String> result = dictValues.stream().collect(
                 Collectors.toMap(DictValue::getId, DictValue::getLabelDefault));
         return result;
+    }
+    
+    /**
+     * 按ID查询特定的字典记录<br/>
+     * 返回Map集合，集合key为字典记录ID，集合value为字典记录转换后的JSON字符串
+     * @param id
+     * @return
+     */
+    @IgnoreClientToken
+    @IgnoreUserToken
+    @RequestMapping(value = "/feign/id/{id}",method = RequestMethod.GET)
+    public Map<String,String> getDictIdById(@PathVariable("id") String id){
+    	DictValue dictValue = this.baseBiz.selectById(id);
+    	
+    	if(dictValue!=null) {
+    		Map<String, String> result=new HashMap<>();
+    		result.put(dictValue.getId(), JSON.toJSONString(dictValue));
+    		return result;
+    	}
+    	return null;
     }
 }
