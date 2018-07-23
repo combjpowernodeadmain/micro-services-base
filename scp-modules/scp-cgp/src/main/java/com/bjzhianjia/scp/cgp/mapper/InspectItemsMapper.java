@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.cgp.mapper;
 
 import com.bjzhianjia.scp.cgp.entity.InspectItems;
+import com.bjzhianjia.scp.security.common.data.Tenant;
 import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 
 import tk.mybatis.mapper.common.ids.DeleteByIdsMapper;
@@ -12,6 +13,7 @@ import tk.mybatis.mapper.common.ids.DeleteByIdsMapper;
  * @email 576866311@qq.com
  * @version 2018-07-16 16:08:44
  */
+@Tenant
 public interface InspectItemsMapper extends CommonMapper<InspectItems>, DeleteByIdsMapper<InspectItems> {
 	
 }
