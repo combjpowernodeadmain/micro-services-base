@@ -13,6 +13,7 @@ import com.bjzhianjia.scp.cgp.service.EnforceTerminalService;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,7 +77,7 @@ public class EnforceTerminalController extends BaseController<EnforceTerminalBiz
     @ApiOperation("查询单个对象")
     public ObjectRestResponse<EnforceTerminal> get(@PathVariable Integer id){
         ObjectRestResponse<EnforceTerminal> entityObjectRestResponse = new ObjectRestResponse<>();
-        Object o = baseBiz.selectById(id);
+        EnforceTerminal o = terminalService.get(id);
         EnforceTerminal terminal = (EnforceTerminal)o;
         if(terminal != null && terminal.getIsDeleted().equals("1")) {
         	entityObjectRestResponse.data(null);
@@ -143,5 +144,21 @@ public class EnforceTerminalController extends BaseController<EnforceTerminalBiz
 		}
 		enforceTerminalBiz.deleteByIds(ids);
         return result;
+    }
+	
+	/**
+	 * 根据手机号片段联想查询终端
+	 * 
+	 * @author wangkaige
+	 * @param fakePhone 手机号片段
+	 * @return
+	 */
+	@RequestMapping(value = "/map/phone/{phone}", method = RequestMethod.GET)
+    @ResponseBody
+    @ApiOperation("按手机号片段联想查询终端列表")
+    public List<EnforceTerminal> mapPhone(@PathVariable(value="phone")String fakePhone) {
+
+	    return enforceTerminalBiz.mapPhone(fakePhone);
+	    
     }
 }

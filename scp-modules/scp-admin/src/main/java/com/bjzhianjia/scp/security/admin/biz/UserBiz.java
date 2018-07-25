@@ -19,6 +19,7 @@ package com.bjzhianjia.scp.security.admin.biz;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.merge.core.MergeCore;
+import com.bjzhianjia.scp.security.admin.entity.Depart;
 import com.bjzhianjia.scp.security.admin.entity.User;
 import com.bjzhianjia.scp.security.admin.mapper.DepartMapper;
 import com.bjzhianjia.scp.security.admin.mapper.UserMapper;
@@ -30,7 +31,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.entity.Example.Criteria;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +50,6 @@ import java.util.stream.Collectors;
 public class UserBiz extends BaseBiz<UserMapper, User> {
     @Autowired
     private MergeCore mergeCore;
-
     @Autowired
     private DepartMapper departMapper;
 
@@ -178,5 +180,33 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
         userIds = "'"+userIds.replaceAll(",","','")+"'";
         List<User> users = mapper.selectByIds(userIds);
         return users.stream().collect(Collectors.toMap(User::getId, user -> JSONObject.toJSONString(user)));
+    }
+    
+    /**
+     * 查询部门deptId下的人员
+     * @author 尚
+     * @param deptId
+     * @return
+     */
+    public List<User> getUserByDept(String deptId){
+    	Example example=new Example(User.class);
+    	Example.Criteria criteria=example.createCriteria();
+    	criteria.andEqualTo("departId", deptId);
+    	criteria.andEqualTo("isDeleted","0");
+    	List<User> userList = mapper.selectByExample(example);
+    	return userList;
+    }
+    
+    /**
+     * 按人名进行模糊查询
+     * @param name
+     * @return
+     */
+    public List<User> getUsersByFakeName(String name){
+    	Example example=new Example(User.class);
+    	Example.Criteria criteria=example.createCriteria();
+    	criteria.andLike("name", "%"+name+"%");
+    	List<User> userList = mapper.selectByExample(example);
+    	return userList;
     }
 }

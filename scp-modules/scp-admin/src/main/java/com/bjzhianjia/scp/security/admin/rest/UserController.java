@@ -16,6 +16,8 @@
 
 package com.bjzhianjia.scp.security.admin.rest;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.admin.biz.MenuBiz;
 import com.bjzhianjia.scp.security.admin.biz.PositionBiz;
@@ -50,6 +52,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.ws.rs.Path;
+
 /**
  * ${DESCRIPTION}
  *
@@ -71,6 +75,8 @@ public class UserController extends BaseController<UserBiz, User,String> {
 
     @Autowired
     private MenuBiz menuBiz;
+    @Autowired
+    private UserBiz userBiz;
 
     @IgnoreUserToken
     @ApiOperation("账户密码验证")
@@ -146,5 +152,30 @@ public class UserController extends BaseController<UserBiz, User,String> {
     @RequestMapping(value = "/getByPK/{id}",method = RequestMethod.GET)
     public Map<String,String> getUser(@PathVariable String id){
         return this.baseBiz.getUsers(id);
+    }
+    
+    /**
+     * @author 尚
+     * @param deptId
+     * @return
+     */
+    @ApiOperation("根据部门获取人员列表")
+    @RequestMapping(value = "/getByDept/{id}",method = RequestMethod.GET)
+    public List<User> getUserByDept(@PathVariable(value="id")String deptId){
+    	List<User> userList = userBiz.getUserByDept(deptId);
+    	return userList;
+    }
+    
+    /**
+     * @author 尚
+     * @param name
+     * @return
+     */
+    @ApiOperation("根据人名进行模糊查询")
+    @RequestMapping(value="/getByName/{name}",method = RequestMethod.GET)
+    public JSONArray getUsersByName(@PathVariable(value="name")String name){
+    	List<User> userList = userBiz.getUsersByFakeName(name);
+    	JSONArray jsonArray = JSONArray.parseArray(JSON.toJSONString(userList));
+    	return jsonArray;
     }
 }

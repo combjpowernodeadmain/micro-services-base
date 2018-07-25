@@ -41,18 +41,19 @@ public class EventType implements Serializable {
 	
 	    //所属业务条线
     @Column(name = "biz_type")
-    @MergeField(key = "root_biz_type", feign = DictFeign.class, method = "getDictIds")
+    @MergeField(key = "root_biz_type", feign = DictFeign.class, method = "getDictValueByID")
     private String bizType;
 	
-	    //是否可用；1：是；0: 否
+	    //使用字典里的是否可用标识
     @Column(name = "is_enable")
     @NotEmpty(message="是否可用不能为空")
+    @MergeField(key = "root_biz_enabled", feign = DictFeign.class, method = "getDictValueByID")
     private String isEnable;
 	
 	    //排序 该字段原为‘order’，该字段与MySQL保留字冲突，后改为'order_no'
     @Column(name = "order_no")
     @NotNull(message="排序不能为空")
-    private Integer orderNo;
+    private Integer order;
 	
 	    //是否删除；1：是；0: 否
     @Column(name = "is_deleted")
@@ -151,13 +152,13 @@ public class EventType implements Serializable {
 	 * 设置：排序
 	 */
 	public void setOrder(Integer order) {
-		this.orderNo = order;
+		this.order = order;
 	}
 	/**
 	 * 获取：排序
 	 */
 	public Integer getOrder() {
-		return orderNo;
+		return order;
 	}
 	/**
 	 * 设置：是否删除；1：是；0: 否

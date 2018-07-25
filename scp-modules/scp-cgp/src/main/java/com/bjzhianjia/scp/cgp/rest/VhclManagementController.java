@@ -50,7 +50,7 @@ public class VhclManagementController extends BaseController<VhclManagementBiz,V
     				,@RequestParam(defaultValue = "") String department) {
 
 		VhclManagement vhcl = new VhclManagement();
-//		vhcl.setVehicleNum(vehicleNum);
+		vhcl.setVehicleNum(vehicleNum);
 		vhcl.setVehicleType(vehicleType);
 		vhcl.setDepartment(department);
 	    return vhclService.getList(page, limit, vhcl);
@@ -61,7 +61,7 @@ public class VhclManagementController extends BaseController<VhclManagementBiz,V
     @ApiOperation("查询单个对象")
     public ObjectRestResponse<VhclManagement> get(@PathVariable Integer id){
         ObjectRestResponse<VhclManagement> entityObjectRestResponse = new ObjectRestResponse<>();
-        Object o = baseBiz.selectById(id);
+        VhclManagement o = vhclService.get(id);
         VhclManagement vhcl = (VhclManagement)o;
         if(vhcl != null && vhcl.getIsDeleted().equals("1")) {
         	entityObjectRestResponse.data(null);

@@ -44,6 +44,8 @@ public class EventTypeService {
 		
 		TableResultResponse<EventType> tableResult = eventTypeBiz.getList(page, limit, eventType);
 		
+		//进行是否可用(isEnable)字段数据聚积
+		
 		try {
 			mergeCore.mergeResult(EventType.class, tableResult.getData().getRows());
 		} catch(Exception ex) {

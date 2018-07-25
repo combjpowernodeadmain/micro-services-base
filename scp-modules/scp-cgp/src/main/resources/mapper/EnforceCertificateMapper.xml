@@ -24,10 +24,10 @@
         <result property="bizLists" column="biz_lists"/>
     </resultMap>
 
-<!-- 	<update id="deleteByIds"> -->
-<!--     	update enforce_certificate set upd_user_id=#{updUserId},upd_user_name=#{updUserName},upd_time=#{updTime},is_deleted = '1' where id in -->
-<!--     	<foreach collection="ids" item="id" open="(" separator="," close=")"> -->
-<!--     		#{id} -->
-<!--     	</foreach> -->
-<!--     </update> -->
+	<update id="deleteByIds">
+    	update enforce_certificate set upd_user_id=#{updUserId},upd_user_name=#{updUserName},upd_time=#{updTime},is_deleted = '1' where id in
+    	<foreach collection="ids" item="id" open="(" separator="," close=")">
+    		#{id}
+    	</foreach>
+    </update>
 </mapper>
