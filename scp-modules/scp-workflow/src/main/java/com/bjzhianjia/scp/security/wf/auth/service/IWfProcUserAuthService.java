@@ -9,7 +9,11 @@ public interface IWfProcUserAuthService {
 	public String getUserId();
 
 	public String getUserCode();
-
+	
+	public String getDeptId();
+	
+	public String getDeptId(String userCode);
+	
 	public String getOrgId();
 
 	public String getTenantId();

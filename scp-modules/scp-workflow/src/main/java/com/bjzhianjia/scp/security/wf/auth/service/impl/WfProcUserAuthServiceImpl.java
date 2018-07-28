@@ -25,6 +25,14 @@ public class WfProcUserAuthServiceImpl implements IWfProcUserAuthService {
 		return wfProcUserAuthBiz.getUserCode();
 	}
 
+	public String getDeptId() {
+		return wfProcUserAuthBiz.getDeptId();
+	}
+	
+	public String getDeptId(String userCode) {
+		return wfProcUserAuthBiz.getDeptId(userCode);
+	}
+	
 	@Override
 	public String getTenantId() {
 		return wfProcUserAuthBiz.getTenantId();
