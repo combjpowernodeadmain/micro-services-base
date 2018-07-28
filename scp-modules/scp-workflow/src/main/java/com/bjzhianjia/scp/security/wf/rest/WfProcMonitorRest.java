@@ -33,8 +33,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.wf.base.ResultUtils;
-import com.bjzhianjia.scp.security.wf.service.IWfMonitorService;
-import com.bjzhianjia.scp.security.wf.service.IWfProcTaskService;
+import com.bjzhianjia.scp.security.wf.monitor.service.IWfMonitorService;
+import com.bjzhianjia.scp.security.wf.task.service.IWfProcTaskService;
 import com.github.pagehelper.PageInfo;
 
 import io.swagger.annotations.Api;

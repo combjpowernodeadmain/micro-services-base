@@ -122,6 +122,10 @@ public class Constants{
         public static final String PROC_TASKROLES = "procTaskRoles";
         /** 流程任务处理用户所属机构代码 */
         public static final String PROC_ORGCODE = "procOrgCode"; 
+        /** 流程任务处理用户所属租户ID */
+        public static final String PROC_TENANTID = "procTenantId"; 
+        /** 流程任务处理用户授权查看的机构代码 */
+        public static final String PROC_AUTHORGCODES = "procAuthOrgCodes"; 
     }
     
     /**
@@ -526,39 +530,39 @@ public class Constants{
         }
     }
     
-    public enum ProcToken {
-        PROC_TOKEN_100("f53674938794c432e1021584ffd963a6", "331493b0b9d8815135f6361bd1f83a7c", "以租代售");
-
-        /** token user **/
-        private String tokenUser = "";
-        
-        /** token pass **/
-        private String tokenPass = "";
-        
-        /** token使用者 **/
-        private String systemName = "";
-
-        private ProcToken(String tokenUser, String tokenPass, String systemName) {
-            this.tokenUser = tokenUser;
-            this.tokenPass = tokenPass;
-            this.systemName = systemName;
-        }
-
-        public String getTokenUser() {
-            return tokenUser;
-        }
-
-        public String getTokenPass() {
-            return tokenPass;
-        }
-        
-        public String getSystemName() {
-            return systemName;
-        }
-        
-        public boolean exist(String tokenCode) {
-            ProcToken.valueOf(tokenCode);
-            return true;
-        }
-    }
+//    public enum ProcToken {
+//        PROC_TOKEN_100("f53674938794c432e1021584ffd963a6", "331493b0b9d8815135f6361bd1f83a7c", "以租代售");
+//
+//        /** token user **/
+//        private String tokenUser = "";
+//        
+//        /** token pass **/
+//        private String tokenPass = "";
+//        
+//        /** token使用者 **/
+//        private String systemName = "";
+//
+//        private ProcToken(String tokenUser, String tokenPass, String systemName) {
+//            this.tokenUser = tokenUser;
+//            this.tokenPass = tokenPass;
+//            this.systemName = systemName;
+//        }
+//
+//        public String getTokenUser() {
+//            return tokenUser;
+//        }
+//
+//        public String getTokenPass() {
+//            return tokenPass;
+//        }
+//        
+//        public String getSystemName() {
+//            return systemName;
+//        }
+//        
+//        public boolean exist(String tokenCode) {
+//            ProcToken.valueOf(tokenCode);
+//            return true;
+//        }
+//    }
 }
