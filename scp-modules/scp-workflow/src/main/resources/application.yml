@@ -80,9 +80,9 @@ auth:
 logging:
   level:
     com.bjzhianjia.scp.security.wf: DEBUG
-    tk.mybatis: DEBUG
-    org.activiti: debug
-    org.framework: debug
+    #tk.mybatis: DEBUG
+    #org.activiti: debug
+    #org.framework: debug
 
 mapper:  
   mappers: com.bjzhianjia.scp.security.common.mapper.CommonMapper

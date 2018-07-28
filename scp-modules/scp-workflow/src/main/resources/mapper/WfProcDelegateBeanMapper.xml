@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.bjzhianjia.scp.security.wf.mapper.WfProcDelegateBeanMapper">
 	<resultMap id="BaseResultMap"
-		type="com.bjzhianjia.scp.security.wf.entity.WfProcDelegateBean">
+		type="com.bjzhianjia.scp.security.wf.task.entity.WfProcDelegateBean">
 		<id column="ID" property="id" jdbcType="INTEGER" />
 		<result column="PROC_INST_ID" property="procInstId" jdbcType="VARCHAR" />
 		<result column="PROC_LICENSOR" property="procLicensor"
@@ -35,7 +35,7 @@
 		where ID = #{id,jdbcType=INTEGER}
 	</delete>
 	<insert id="insert"
-		parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcDelegateBean">
+		parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcDelegateBean">
 		insert into SCP_WF_PROC_DELEGATE (ID, PROC_INST_ID, PROC_LICENSOR,
 		PROC_LICENSOR_ROLE,
 		PROC_MANDATARY, PROC_LICENSE_TIME, PROC_CANCEL_TIME,
@@ -49,7 +49,7 @@
 		#{procLicenseIsvalid,jdbcType=CHAR})
 	</insert>
 	<insert id="insertSelective"
-		parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcDelegateBean">
+		parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcDelegateBean">
 		insert into SCP_WF_PROC_DELEGATE
 		<trim prefix="(" suffix=")" suffixOverrides=",">
 			<if test="id != null">
@@ -105,7 +105,7 @@
 		</trim>
 	</insert>
 	<update id="updateByPrimaryKeySelective"
-		parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcDelegateBean">
+		parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcDelegateBean">
 		update SCP_WF_PROC_DELEGATE
 		<set>
 			<if test="procInstId != null">
@@ -134,7 +134,7 @@
 	</update>
 	
 	<update id="updateByPrimaryKey"
-		parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcDelegateBean">
+		parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcDelegateBean">
 		update SCP_WF_PROC_DELEGATE
 		set PROC_INST_ID = #{procInstId,jdbcType=VARCHAR},
 		PROC_LICENSOR = #{procLicensor,jdbcType=VARCHAR},
@@ -147,7 +147,7 @@
 	</update>
 
 	<update id="cancelProcDelegate"
-		parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcDelegateBean">
+		parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcDelegateBean">
 		update SCP_WF_PROC_DELEGATE
 			set PROC_CANCEL_TIME = #{procCancelTime,jdbcType=INTEGER},
 			PROC_LICENSE_ISVALID = #{procLicenseIsvalid,jdbcType=CHAR}
@@ -156,7 +156,7 @@
 	</update>
 	
 	<select id="getProcInstDelegateList"
-		resultType="com.bjzhianjia.scp.security.wf.entity.WfProcDelegateBean">
+		resultType="com.bjzhianjia.scp.security.wf.task.entity.WfProcDelegateBean">
 		SELECT
 		delegate.PROC_INST_ID procInstId,
 		delegate.PROC_LICENSOR procLicensor,

@@ -5,10 +5,10 @@
  * All rights reserved.
  *
  * This software is the confidential and proprietary information of
- * IQB("Confidential Information").  You shall not disclose such 
+ * BJZAJ("Confidential Information").  You shall not disclose such 
  * Confidential Information and shall use it only in accordance with
  * the terms of the license agreement
- * you entered into with IQB.
+ * you entered into with BJZAJ.
  */
 package com.bjzhianjia.scp.security.wf.rest;
 
@@ -29,8 +29,8 @@ import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.wf.base.ResultUtils;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcessDataAttr;
-import com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean;
-import com.bjzhianjia.scp.security.wf.service.IWfProcTaskService;
+import com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean;
+import com.bjzhianjia.scp.security.wf.task.service.IWfProcTaskService;
 
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;

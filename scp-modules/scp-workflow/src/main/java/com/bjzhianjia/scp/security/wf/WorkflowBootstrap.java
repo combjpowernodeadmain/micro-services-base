@@ -45,7 +45,10 @@ import com.spring4all.swagger.EnableSwagger2Doc;
 @EnableAceAuthClient
 @EnableEurekaClient
 @ComponentScan({"org.activiti.rest.diagram", "com.bjzhianjia.scp.security.wf"})
-@MapperScan("com.bjzhianjia.scp.security.wf.mapper")
+@MapperScan({"com.bjzhianjia.scp.security.wf.auth.mapper",
+	"com.bjzhianjia.scp.security.wf.design.mapper",
+	"com.bjzhianjia.scp.security.wf.monitor.mapper",
+	"com.bjzhianjia.scp.security.wf.task.mapper"})
 // 开启熔断监控
 @EnableCircuitBreaker
 // 开启服务鉴权

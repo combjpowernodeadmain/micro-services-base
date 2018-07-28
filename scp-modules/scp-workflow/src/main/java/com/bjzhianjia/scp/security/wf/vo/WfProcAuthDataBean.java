@@ -5,10 +5,10 @@
  * All rights reserved.
  *
  * This software is the confidential and proprietary information of
- * IQB("Confidential Information").  You shall not disclose such 
+ * BJZAJ("Confidential Information").  You shall not disclose such 
  * Confidential Information and shall use it only in accordance with
  * the terms of the license agreement
- * you entered into with IQB.
+ * you entered into with BJZAJ.
  */
 package com.bjzhianjia.scp.security.wf.vo;
 
@@ -92,7 +92,24 @@ public class WfProcAuthDataBean implements java.io.Serializable{
     public void setProcOrgCode(String procOrgCode) {
         put(WfProcessAuthData.PROC_ORGCODE, procOrgCode);
     }
+    
+    public String getProcTenantId() {
+        return (String) authData.get(WfProcessAuthData.PROC_TENANTID);
+    }
 
+    public void setProcTenantId(String procTenantId) {
+        put(WfProcessAuthData.PROC_TENANTID, procTenantId);
+    }
+    
+    @SuppressWarnings("unchecked")
+	public List<String> getProcAuthOrgCodes() {
+    	return (List<String>) authData.get(WfProcessAuthData.PROC_AUTHORGCODES);
+    }
+
+    public void setProcAuthOrgCodes(List<String>  procAuthOrgCodes) {
+        put(WfProcessAuthData.PROC_AUTHORGCODES, procAuthOrgCodes);
+    }
+    
     public Object getAuthData(String key) {
         return authData.get(key);
     }
