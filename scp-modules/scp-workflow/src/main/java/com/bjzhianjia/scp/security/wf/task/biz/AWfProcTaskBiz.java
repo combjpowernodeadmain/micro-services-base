@@ -14,7 +14,10 @@ import com.bjzhianjia.scp.security.wf.constant.Attr.DictKeyConst;
 import com.bjzhianjia.scp.security.wf.constant.Constants.FlowStatus;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfDataValid;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcDataPermissionType;
+import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcDeptDataPermissionType;
+import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcOrgDataPermissionType;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcParallStatus;
+import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcSelfDataPermissionType;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcTaskProperty;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcVotePower;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcVoteRole;
@@ -40,7 +43,15 @@ public abstract class AWfProcTaskBiz extends WfBaseBiz {
 		WFPROCTASKRESERVEDPROPERTIES.add(WfProcTaskProperty.PROC_DETAILURL);
 		WFPROCTASKRESERVEDPROPERTIES.add(WfProcTaskProperty.PROC_REFUSETASK);
 		WFPROCTASKRESERVEDPROPERTIES.add(WfProcTaskProperty.PROC_CALLBACK);
+		WFPROCTASKRESERVEDPROPERTIES.add(WfProcTaskProperty.PROC_TENANTID);
 		WFPROCTASKRESERVEDPROPERTIES.add(WfProcTaskProperty.PROC_DATAPERMISSION);
+		WFPROCTASKRESERVEDPROPERTIES.add(WfProcTaskProperty.PROC_ORGPERMISSION);
+		WFPROCTASKRESERVEDPROPERTIES.add(WfProcTaskProperty.PROC_DEPTPERMISSION);
+		WFPROCTASKRESERVEDPROPERTIES.add(WfProcTaskProperty.PROC_SELFPERMISSION1);
+		WFPROCTASKRESERVEDPROPERTIES.add(WfProcTaskProperty.PROC_SELFPERMISSION2);
+		WFPROCTASKRESERVEDPROPERTIES.add(WfProcTaskProperty.PROC_SELFPERMISSION3);
+		WFPROCTASKRESERVEDPROPERTIES.add(WfProcTaskProperty.PROC_SELFPERMISSION4);
+		WFPROCTASKRESERVEDPROPERTIES.add(WfProcTaskProperty.PROC_SELFPERMISSION5);
 		WFPROCTASKRESERVEDPROPERTIES.add(WfProcTaskProperty.PROC_RETRIEVE);
 		WFPROCTASKRESERVEDPROPERTIES.add(WfProcTaskProperty.PROC_VOTETASK);
 		WFPROCTASKRESERVEDPROPERTIES.add(WfProcTaskProperty.PROC_VOTEPOWER);
@@ -151,6 +162,21 @@ public abstract class AWfProcTaskBiz extends WfBaseBiz {
     }
 
     /**
+     * 获取流程任务节点定义的租户ID，如果没有定义则默认不进行租户权限控制
+     * 
+     * @param properties
+     *            流程任务属性
+     * @return
+     */
+    protected String getProcTenantId(WfProcTaskPropertiesBean properties) {
+        if (properties != null && properties.containsKey(WfProcTaskProperty.PROC_TENANTID)) {
+            return properties.getValue(WfProcTaskProperty.PROC_TENANTID);
+        }
+        
+        return null;
+    }
+    
+    /**
      * 获取流程任务节点定义的数据权限类型，如果没有定义则默认返回不进行数据权限控制
      * 
      * @param properties
@@ -165,6 +191,111 @@ public abstract class AWfProcTaskBiz extends WfBaseBiz {
         }
     }
 
+    /**
+     * 获取流程任务节点定义的机构数据权限类型，如果没有定义则默认返回不进行机构数据权限控制
+     * 
+     * @param properties
+     *            流程任务属性
+     * @return
+     */
+    protected String getProcTaskOrgPermission(WfProcTaskPropertiesBean properties) {
+        if (properties != null && properties.containsKey(WfProcTaskProperty.PROC_ORGPERMISSION)) {
+            return properties.getValue(WfProcTaskProperty.PROC_ORGPERMISSION);
+        } else {
+        	return WfProcOrgDataPermissionType.NONE.getRetCode();
+        }
+    }
+    
+    /**
+     * 获取流程任务节点定义的部门数据权限类型，如果没有定义则默认返回不进行部门数据权限控制
+     * 
+     * @param properties
+     *            流程任务属性
+     * @return
+     */
+    protected String getProcTaskDeptPermission(WfProcTaskPropertiesBean properties) {
+        if (properties != null && properties.containsKey(WfProcTaskProperty.PROC_DEPTPERMISSION)) {
+            return properties.getValue(WfProcTaskProperty.PROC_DEPTPERMISSION);
+        } else {
+        	return WfProcDeptDataPermissionType.NONE.getRetCode();
+        }
+    }
+    
+    /**
+     * 获取流程任务节点定义的自定义数据权限类型，如果没有定义则默认返回不进行自定义数据权限控制
+     * 
+     * @param properties
+     *            流程任务属性
+     * @return
+     */
+    protected String getProcTaskSelfPermission1(WfProcTaskPropertiesBean properties) {
+        if (properties != null && properties.containsKey(WfProcTaskProperty.PROC_SELFPERMISSION1)) {
+            return properties.getValue(WfProcTaskProperty.PROC_SELFPERMISSION1);
+        } else {
+        	return WfProcSelfDataPermissionType.NONE.getRetCode();
+        }
+    }
+    
+    /**
+     * 获取流程任务节点定义的自定义数据权限类型，如果没有定义则默认返回不进行自定义数据权限控制
+     * 
+     * @param properties
+     *            流程任务属性
+     * @return
+     */
+    protected String getProcTaskSelfPermission2(WfProcTaskPropertiesBean properties) {
+        if (properties != null && properties.containsKey(WfProcTaskProperty.PROC_SELFPERMISSION2)) {
+            return properties.getValue(WfProcTaskProperty.PROC_SELFPERMISSION2);
+        } else {
+        	return WfProcSelfDataPermissionType.NONE.getRetCode();
+        }
+    }
+    
+    /**
+     * 获取流程任务节点定义的自定义数据权限类型，如果没有定义则默认返回不进行自定义数据权限控制
+     * 
+     * @param properties
+     *            流程任务属性
+     * @return
+     */
+    protected String getProcTaskSelfPermission3(WfProcTaskPropertiesBean properties) {
+        if (properties != null && properties.containsKey(WfProcTaskProperty.PROC_SELFPERMISSION3)) {
+            return properties.getValue(WfProcTaskProperty.PROC_SELFPERMISSION3);
+        } else {
+        	return WfProcSelfDataPermissionType.NONE.getRetCode();
+        }
+    }
+    
+    /**
+     * 获取流程任务节点定义的自定义数据权限类型，如果没有定义则默认返回不进行自定义数据权限控制
+     * 
+     * @param properties
+     *            流程任务属性
+     * @return
+     */
+    protected String getProcTaskSelfPermission4(WfProcTaskPropertiesBean properties) {
+        if (properties != null && properties.containsKey(WfProcTaskProperty.PROC_SELFPERMISSION4)) {
+            return properties.getValue(WfProcTaskProperty.PROC_SELFPERMISSION4);
+        } else {
+        	return WfProcSelfDataPermissionType.NONE.getRetCode();
+        }
+    }
+    
+    /**
+     * 获取流程任务节点定义的自定义数据权限类型，如果没有定义则默认返回不进行自定义数据权限控制
+     * 
+     * @param properties
+     *            流程任务属性
+     * @return
+     */
+    protected String getProcTaskSelfPermission5(WfProcTaskPropertiesBean properties) {
+        if (properties != null && properties.containsKey(WfProcTaskProperty.PROC_SELFPERMISSION5)) {
+            return properties.getValue(WfProcTaskProperty.PROC_SELFPERMISSION5);
+        } else {
+        	return WfProcSelfDataPermissionType.NONE.getRetCode();
+        }
+    }
+    
     /**
      * 获取流程任务节点定义的任务审批页面URL
      * 
@@ -225,6 +356,12 @@ public abstract class AWfProcTaskBiz extends WfBaseBiz {
         return null;
     }
 
+    
+    
+    
+    
+    
+    
     /**
      * 获取流程任务节点定义的可撤回标识，如果没有配置默认为允许撤回
      * 
