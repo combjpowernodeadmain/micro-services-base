@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.bjzhianjia.scp.security.wf.mapper.WfProcPropsMapper">
 	<resultMap id="BaseResultMap"
-		type="com.bjzhianjia.scp.security.wf.entity.WfProcPropsBean">
+		type="com.bjzhianjia.scp.security.wf.design.entity.WfProcPropsBean">
 		<id column="ID" property="id" jdbcType="INTEGER" />
 		<result column="PROC_ID" property="procId" jdbcType="VARCHAR" />
 		<result column="PROC_TASK_CODE" property="procTaskCode"
@@ -37,7 +37,7 @@
 		where ID = #{id,jdbcType=INTEGER}
 	</select>
 
-	 <select id="selectPropertyList" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcPropsBean"
+	 <select id="selectPropertyList" parameterType="com.bjzhianjia.scp.security.wf.design.entity.WfProcPropsBean"
 		resultMap="BaseResultMap">
 		select
 		<include refid="Base_Column_List" />
@@ -69,7 +69,7 @@
 		SCP_WF_PROC_PROPS
 		where ID = #{id,jdbcType=INTEGER}
 	</delete>
-	<insert id="insert" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcPropsBean">
+	<insert id="insert" parameterType="com.bjzhianjia.scp.security.wf.design.entity.WfProcPropsBean">
 		insert into SCP_WF_PROC_PROPS
 		(ID, PROC_ID, PROC_TASK_CODE,
 		PROC_PROPS_TYPE, PROC_PROPS_KEY,
@@ -87,7 +87,7 @@
 		#{procPropsUpdatetime,jdbcType=INTEGER})
 	</insert>
 	
-	<update id="updateByPrimaryKeySelective" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcPropsBean" >
+	<update id="updateByPrimaryKeySelective" parameterType="com.bjzhianjia.scp.security.wf.design.entity.WfProcPropsBean" >
 	    update SCP_WF_PROC_PROPS
 	    <set >
 	      <if test="procId != null" >

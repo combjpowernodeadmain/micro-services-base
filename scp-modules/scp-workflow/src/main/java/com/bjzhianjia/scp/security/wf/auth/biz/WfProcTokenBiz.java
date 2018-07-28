@@ -3,8 +3,11 @@ package com.bjzhianjia.scp.security.wf.auth.biz;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.stereotype.Service;
+
 import com.bjzhianjia.scp.security.wf.auth.entity.WfProcTokenBean;
 
+@Service
 public class WfProcTokenBiz {
 	private static Map<String, WfProcTokenBean> hmWfProcTokenBean = new HashMap<String, WfProcTokenBean>();
 	

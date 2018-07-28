@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.wf.auth.service.IWfProcTokenService;
@@ -16,6 +17,7 @@ import com.bjzhianjia.scp.security.wf.utils.SpringBeanUtil;
 import com.bjzhianjia.scp.security.wf.utils.StringUtil;
 import com.bjzhianjia.scp.security.wf.vo.WfProcAuthDataBean;
 
+@Service
 public class WfProcUserAuthBiz extends WfBaseBiz {
 	@Autowired
     IWfProcTokenService wfProcTokenService;

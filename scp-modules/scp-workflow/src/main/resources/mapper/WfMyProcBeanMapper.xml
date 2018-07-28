@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.bjzhianjia.scp.security.wf.mapper.WfMyProcBeanMapper">
 	<resultMap id="BaseResultMap"
-		type="com.bjzhianjia.scp.security.wf.entity.WfMyProcBean">
+		type="com.bjzhianjia.scp.security.wf.task.entity.WfMyProcBean">
 		<id column="ID" property="id" jdbcType="INTEGER" />
 		<result column="PROC_INST_ID" property="procInstId" jdbcType="VARCHAR" />
 		<result column="PROC_USER" property="procUser" jdbcType="VARCHAR" />
@@ -44,7 +44,7 @@
 		#{instId,jdbcType=VARCHAR} AND PROC_USER
 		=#{userId,jdbcType=VARCHAR}
 	</delete>
-	<insert id="insert" parameterType="com.bjzhianjia.scp.security.wf.entity.WfMyProcBean">
+	<insert id="insert" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfMyProcBean">
 		insert into SCP_WF_MY_PROC
 		(ID, PROC_INST_ID, PROC_USER,
 		PROC_USER_TYPE, PROC_TASKID,PROC_TASKCODE,PROC_TASKNAME, PROC_DISPLAYURL)
@@ -82,7 +82,7 @@
 		</foreach>
 	</select>
 
-	<insert id="insertSelective" parameterType="com.bjzhianjia.scp.security.wf.entity.WfMyProcBean">
+	<insert id="insertSelective" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfMyProcBean">
 		insert into SCP_WF_MY_PROC
 		<trim prefix="(" suffix=")" suffixOverrides=",">
 			<if test="id != null">
@@ -137,7 +137,7 @@
 			</if>
 		</trim>
 	</insert>
-	<update id="updateByPrimaryKeySelective" parameterType="com.bjzhianjia.scp.security.wf.entity.WfMyProcBean">
+	<update id="updateByPrimaryKeySelective" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfMyProcBean">
 		update SCP_WF_MY_PROC
 		<set>
 			<if test="procInstId != null">
@@ -164,7 +164,7 @@
 		</set>
 		where ID = #{id,jdbcType=INTEGER}
 	</update>
-	<update id="updateByPrimaryKey" parameterType="com.bjzhianjia.scp.security.wf.entity.WfMyProcBean">
+	<update id="updateByPrimaryKey" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfMyProcBean">
 		update
 		SCP_WF_MY_PROC
 		set PROC_INST_ID = #{procInstId,jdbcType=VARCHAR},

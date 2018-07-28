@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.bjzhianjia.scp.security.wf.mapper.WfProcTaskBeanMapper">
 	<resultMap id="BaseResultMap"
-		type="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+		type="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		<id column="ID" property="id" jdbcType="INTEGER" />
 		<result column="PROC_INST_ID" property="procInstId" jdbcType="VARCHAR" />
 		<result column="PROC_ID" property="procId" jdbcType="VARCHAR" />
@@ -118,7 +118,7 @@
 		where PROC_PTASKCODE = #{taskId,jdbcType=INTEGER}
 	</delete>
 
-	<insert id="insert" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+	<insert id="insert" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		insert into SCP_WF_PROC_TASK
 		(ID, PROC_INST_ID, PROC_ID, PROC_KEY, PROC_PTASKID, PROC_PTASKCODE,
 		PROC_PTASKNAME,
@@ -189,7 +189,7 @@
 		#{procVotequickly,jdbcType=VARCHAR}
 		)
 	</insert>
-	<insert id="insertSelective" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+	<insert id="insertSelective" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		insert into SCP_WF_PROC_TASK
 		<trim prefix="(" suffix=")" suffixOverrides=",">
 			<if test="id != null">
@@ -406,7 +406,7 @@
 			</if>
 		</trim>
 	</insert>
-	<update id="updateByPrimaryKeySelective" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+	<update id="updateByPrimaryKeySelective" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		update SCP_WF_PROC_TASK
 		<set>
 			<if test="procInstId != null">
@@ -523,7 +523,7 @@
 		</set>
 		where ID = #{id,jdbcType=INTEGER}
 	</update>
-	<update id="updateByPrimaryKey" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+	<update id="updateByPrimaryKey" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		update
 		SCP_WF_PROC_TASK
 		set PROC_INST_ID = #{procInstId,jdbcType=VARCHAR},
@@ -586,7 +586,7 @@
 		where ID = #{id,jdbcType=INTEGER}
 	</update>
 
-	<select id="selectApprovedHistory" resultType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskHistoryBean">
+	<select id="selectApprovedHistory" resultType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskHistoryBean">
 		SELECT
 		task.PROC_INST_ID procInstId,
 		task.PROC_CTASKID procCtaskid,
@@ -629,7 +629,7 @@
 		ORDER BY task.ID
 	</select>
 
-	<update id="updateByInstIdSelective" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+	<update id="updateByInstIdSelective" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		update SCP_WF_PROC_TASK
 		<set>
 			<if test="procPtaskid != null">
@@ -739,7 +739,7 @@
 		where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
 	</update>
 
-	<update id="updateTaskByTaskid" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+	<update id="updateTaskByTaskid" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		update SCP_WF_PROC_TASK
 		<set>
 			<if test="procTaskProperties != null">
@@ -818,7 +818,7 @@
 		where PROC_CTASKID = #{procCtaskid,jdbcType=VARCHAR}
 	</update>
 
-	<update id="deleteProcessTask" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+	<update id="deleteProcessTask" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		update SCP_WF_PROC_TASK
 		<set>
 			<if test="procAppointUsers != null">
@@ -856,7 +856,7 @@
 		and PROC_TASK_STATUS in ('1', '2')
 	</update>
 	
-	<update id="cancelProcessTasks" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+	<update id="cancelProcessTasks" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		update SCP_WF_PROC_TASK
 		<set>
 			<if test="procTaskEndtime != null">
@@ -882,7 +882,7 @@
 		and PROC_TASK_STATUS = '1'
 	</update>
 	
-	<update id="endProcessTasks" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+	<update id="endProcessTasks" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		update SCP_WF_PROC_TASK
 		<set>
 			<if test="procTaskAssignee != null">
@@ -916,7 +916,7 @@
 		AND PROC_TASK_STATUS IN ('1','2')
 	</update>
 	
-	<update id="updateForUnclaim" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+	<update id="updateForUnclaim" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		update
 		SCP_WF_PROC_TASK
 		set PROC_LICENSOR =

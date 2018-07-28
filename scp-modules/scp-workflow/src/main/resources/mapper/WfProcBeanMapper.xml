@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.bjzhianjia.scp.security.wf.mapper.WfProcBeanMapper" >
-  <resultMap id="BaseResultMap" type="com.bjzhianjia.scp.security.wf.entity.WfProcBean" >
+  <resultMap id="BaseResultMap" type="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean" >
     <id column="PROC_INST_ID" property="procInstId" jdbcType="VARCHAR" />
     <result column="PROC_ID" property="procId" jdbcType="VARCHAR" />
     <result column="PROC_KEY" property="procKey" jdbcType="VARCHAR" />
@@ -34,7 +34,7 @@
     where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
   </delete>
  
-  <insert id="insert" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcBean">
+  <insert id="insert" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean">
 	insert into SCP_WF_PROC (PROC_INST_ID, PROC_ID, PROC_KEY, PROC_NAME,
 	PROC_CREATOR, PROC_CREATETIME, PROC_ENDTIME,
 	PROC_BIZID, PROC_BIZTYPE, PROC_ORGCODE, PROC_MEMO,
@@ -48,7 +48,7 @@
 	#{procStatus,jdbcType=CHAR},#{procVersion,jdbcType=INTEGER},#{procDisplayurl,jdbcType=VARCHAR})
 </insert>
 
-  <insert id="insertSelective" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcBean" >
+  <insert id="insertSelective" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean" >
     insert into SCP_WF_PROC
     <trim prefix="(" suffix=")" suffixOverrides="," >
       <if test="procInstId != null" >
@@ -136,7 +136,7 @@
       </if>
     </trim>
   </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcBean" >
+  <update id="updateByPrimaryKeySelective" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean" >
     update SCP_WF_PROC
     <set >
       <if test="procId != null" >
@@ -178,7 +178,7 @@
     </set>
     where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
   </update>
-  <update id="updateByPrimaryKey" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcBean" >
+  <update id="updateByPrimaryKey" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean" >
     update SCP_WF_PROC
     set PROC_ID = #{procId,jdbcType=VARCHAR},
       PROC_KEY = #{procKey,jdbcType=VARCHAR},
@@ -195,7 +195,7 @@
     where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
   </update>
   
-   <update id="updateWfProcBeanByProcId" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcBean" >
+   <update id="updateWfProcBeanByProcId" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean" >
     update SCP_WF_PROC
     <set >
       <if test="procName != null" >
@@ -232,7 +232,7 @@
     where PROC_ID = #{procId,jdbcType=VARCHAR}
   </update>
   
-   <update id="updateWfProcBeanByInstId" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcBean" >
+   <update id="updateWfProcBeanByInstId" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean" >
     update SCP_WF_PROC
     <set >
       <if test="procName != null" >
