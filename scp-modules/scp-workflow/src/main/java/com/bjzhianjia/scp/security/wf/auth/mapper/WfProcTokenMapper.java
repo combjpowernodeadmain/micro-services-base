@@ -1,5 +1,9 @@
 package com.bjzhianjia.scp.security.wf.auth.mapper;
 
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
 import com.bjzhianjia.scp.security.wf.auth.entity.WfProcTokenBean;
 
 /**
@@ -10,14 +14,27 @@ import com.bjzhianjia.scp.security.wf.auth.entity.WfProcTokenBean;
  * @version 2018-07-28 21:33:54
  */
 public interface WfProcTokenMapper {
-    /**
-     * 根据主键删除token
-     * 
-     * @param procTokenId
-     * @return
-     */
-    int deleteByPrimaryKey(String procTokenId);
     
+	/**
+	 * Token已被删除
+	 */
+	public static final String TOKEN_DELETED = "1";
+	
+	/**
+	 * Token正常，没有被删除
+	 */
+	public static final String TOKEN_UNDELETED = "0";
+	
+	/**
+	 * TOKEN已经禁用
+	 */
+	public static final String TOKEN_DISABLED = "0";
+	
+	/**
+	 * TOKEN启用中
+	 */
+	public static final String TOKEN_ENABLE = "1";
+	
     /**
      * 插入token实体
      * 
@@ -39,5 +56,43 @@ public interface WfProcTokenMapper {
      * @param procTokenId
      * @return
      */
-    WfProcTokenBean selectByPrimaryKey(String procTokenId);
+    WfProcTokenBean selectByPrimaryKey(String id);
+    
+
+    /**
+     * 根据用户查询token信息
+     * 
+     * @param procTokenId
+     * @return
+     */
+    WfProcTokenBean selectByUser(@Param("userName")String userName);
+    
+
+    /**
+     * 根据用户查询token信息
+     * 
+     * @param procTokenId
+     * @return
+     */
+    List<WfProcTokenBean> selectAll(@Param("index")int index, @Param("pageSize")int pageSize);
+    
+    
+    /**
+     * 根据主键删除token
+     * 
+     * @param id
+     * @param flag
+     * @return
+     */
+    int deleteOrRecoverByPrimaryKey(String id, String flag);
+    
+
+    /**
+     * 根据主键禁用/启用token
+     * 
+     * @param id
+     * @param flag
+     */
+    int enableOrDisableByPrimaryKey(String id, String flag);
+    
 }
