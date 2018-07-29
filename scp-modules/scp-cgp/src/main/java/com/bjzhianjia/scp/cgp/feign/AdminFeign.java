@@ -18,6 +18,13 @@ import com.bjzhianjia.scp.security.auth.client.config.FeignApplyConfiguration;
 @FeignClient(value = "scp-admin",configuration = FeignApplyConfiguration.class)
 public interface AdminFeign {
 
+	/**
+	 * 按多个ID查询部门<br/>
+	 * 
+	 * @author 尚
+	 * @param id id1,id2,id3
+	 * @return ${id}:${部门对象JSON字符串}
+	 */
 	@RequestMapping(value = "/depart/getByPK/{id}",method = RequestMethod.GET)
     public Map<String,String> getDepart(@PathVariable(value="id") String id);
 	

@@ -129,7 +129,7 @@ public class DeptBiztypeController extends BaseController<DeptBiztypeBiz,DeptBiz
 	@ApiOperation("删除单个对象")
 	public ObjectRestResponse<DeptBiztype> remove(@RequestBody DeptBiztype deptBiztype){
 		ObjectRestResponse<DeptBiztype> restResult=new ObjectRestResponse<>();
-		System.out.println(deptBiztype);
+//		System.out.println(deptBiztype);
 		deptBiztype.setIsDeleted("1");
 		this.deptBiztypeBiz.updateSelectiveById(deptBiztype);
 		

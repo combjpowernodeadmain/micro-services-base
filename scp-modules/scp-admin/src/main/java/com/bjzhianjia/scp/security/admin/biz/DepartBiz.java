@@ -92,6 +92,13 @@ public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
     			map.put("name", name);
     			map.put("id", idString);
     			mapResult.put(id,JSON.toJSONString(map));
+    			
+//    			if(result.size() > 0) {
+//        			Collections.reverse(result);
+//        			List<String> names = new ArrayList<>();
+//        			result.forEach(d->names.add(d.getName()));
+//        			mapResult.put(id, String.join("-", names.toArray(new String[names.size()])));
+//        		}
     		}
     	}
     	

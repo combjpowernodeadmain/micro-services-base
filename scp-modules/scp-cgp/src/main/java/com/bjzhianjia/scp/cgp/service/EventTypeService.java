@@ -1,17 +1,24 @@
 package com.bjzhianjia.scp.cgp.service;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.EventType;
 import com.bjzhianjia.scp.cgp.entity.Result;
+import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.util.StringUtil;
+import com.netflix.infix.lang.infix.antlr.EventFilterParser.null_predicate_return;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,13 +51,52 @@ public class EventTypeService {
 		
 		TableResultResponse<EventType> tableResult = eventTypeBiz.getList(page, limit, eventType);
 		
-		//进行是否可用(isEnable)字段数据聚积
+		List<EventType> list = tableResult.getData().getRows();
 		
-		try {
-			mergeCore.mergeResult(EventType.class, tableResult.getData().getRows());
-		} catch(Exception ex) {
-			log.error("merge data exception", ex);
+		//进行是否可用(isEnable)字段数据聚积
+		Map<String,String> eventTypeMap = new HashMap<>();
+		List<String> uniqueEvenTypes = list.stream().map((o)->o.getIsEnable()).distinct().collect(Collectors.toList());
+		if(uniqueEvenTypes != null && !uniqueEvenTypes.isEmpty()) {
+			eventTypeMap = dictFeign.getDictValueByID(String.join(",", uniqueEvenTypes));
 		}
+		
+		if(eventTypeMap!=null&&eventTypeMap.size()>0) {
+			for(EventType eventType2:list) {
+				String string = eventTypeMap.get(eventType2.getIsEnable());
+				//向前台传送ID+文本
+				JSONObject parseObject = JSONObject.parseObject(string);
+				JSONObject jsonObject=new JSONObject();
+				jsonObject.put("id", parseObject.getString("id"));
+				jsonObject.put("labelDefault", parseObject.getString("labelDefault"));
+				eventType2.setIsEnable(jsonObject.toJSONString());
+			}
+		}
+		
+		
+		eventTypeMap.clear();
+		uniqueEvenTypes.clear();
+		uniqueEvenTypes = list.stream().map((o)->o.getBizType()).distinct().collect(Collectors.toList());
+		if(uniqueEvenTypes != null && !uniqueEvenTypes.isEmpty()) {
+			eventTypeMap = dictFeign.getDictValueByID(String.join(",", uniqueEvenTypes));
+		}
+		
+		if(eventTypeMap!=null&&eventTypeMap.size()>0) {
+			for(EventType eventType2:list) {
+				String string = eventTypeMap.get(eventType2.getBizType());
+				//向前台传送ID+文本
+				JSONObject parseObject = JSONObject.parseObject(string);
+				JSONObject jsonObject=new JSONObject();
+				jsonObject.put("id", parseObject.getString("id"));
+				jsonObject.put("labelDefault", parseObject.getString("labelDefault"));
+				eventType2.setBizType(jsonObject.toJSONString());
+			}
+		}
+		
+//		try {
+//			mergeCore.mergeResult(EventType.class, list);
+//		} catch(Exception ex) {
+//			log.error("merge data exception", ex);
+//		}
 		
 		return tableResult;
 	}

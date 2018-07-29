@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.cgp.util;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 
 public class BeanUtil {
 	/**
@@ -17,5 +18,18 @@ public class BeanUtil {
 		
 		target=(T) JSON.parseObject(sourceJSON, target.getClass());
 		return target;
+	}
+	
+	/**
+	 * 将j1,j2中属性合并并返回合并后的JSONObject对象
+	 * @author 尚
+	 * @param j1
+	 * @param j2
+	 * @return
+	 */
+	public static JSONObject jsonObjectMergeOther(JSONObject j1,JSONObject j2) {
+		String j=j1.toJSONString()+j2.toJSONString();
+		j=j.replace("}{", ",");
+		return JSONObject.parseObject(j);
 	}
 }

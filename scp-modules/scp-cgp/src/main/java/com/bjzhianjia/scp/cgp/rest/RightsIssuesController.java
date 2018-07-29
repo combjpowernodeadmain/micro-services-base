@@ -23,6 +23,7 @@ import com.bjzhianjia.scp.security.common.rest.BaseController;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 @RestController
 @RequestMapping("rightsIssues")
@@ -40,10 +41,11 @@ public class RightsIssuesController extends BaseController<RightsIssuesBiz,Right
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
     @ResponseBody
     @ApiOperation("终端查询分页列表")
-    public TableResultResponse<RightsIssues> page(@RequestParam(defaultValue = "10") int limit
-    				,@RequestParam(defaultValue = "1") int page
-    				,@RequestParam(defaultValue = "") String code
-    				,@RequestParam(defaultValue = "") String bizType
+	
+    public TableResultResponse<RightsIssues> page(@RequestParam(defaultValue = "10") @ApiParam(name="页容量") int limit
+    				,@RequestParam(defaultValue = "1") @ApiParam(name="当前页") int page
+    				,@RequestParam(defaultValue = "") @ApiParam(name="当前页") String code
+    				,@RequestParam(defaultValue = "") @ApiParam(name="当前页") String bizType
     				,@RequestParam(defaultValue = "") String unlawfulAct 
     				,@RequestParam(defaultValue = "") String isEnable) {
 	    
@@ -60,9 +62,14 @@ public class RightsIssuesController extends BaseController<RightsIssuesBiz,Right
     @ResponseBody
     @ApiOperation("查询单个对象")
     public ObjectRestResponse<RightsIssues> get(@PathVariable Integer id){
+		/*
+		 * 返回内容需要进行业务条线数据聚和，聚和内容包括：业务条线ID+业务条线名称
+		 */
         ObjectRestResponse<RightsIssues> entityObjectRestResponse = new ObjectRestResponse<>();
-        Object o = rightsIssuesBiz.selectById(id);
-        RightsIssues rightsIssues = (RightsIssues)o;
+        
+        RightsIssues rightsIssues = rightsIssuesService.getByID(id);
+//        Object o = rightsIssuesBiz.selectById(id);
+//        RightsIssues rightsIssues = (RightsIssues)o;
        
         entityObjectRestResponse.data(rightsIssues);
         

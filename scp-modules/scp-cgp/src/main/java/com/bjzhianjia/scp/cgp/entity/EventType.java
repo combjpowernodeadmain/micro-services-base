@@ -41,13 +41,12 @@ public class EventType implements Serializable {
 	
 	    //所属业务条线
     @Column(name = "biz_type")
-    @MergeField(key = "root_biz_type", feign = DictFeign.class, method = "getDictValueByID")
+    @MergeField(key = "root_biz_type", feign = DictFeign.class, method = "getDictIds")
     private String bizType;
 	
 	    //使用字典里的是否可用标识
     @Column(name = "is_enable")
     @NotEmpty(message="是否可用不能为空")
-    @MergeField(key = "root_biz_enabled", feign = DictFeign.class, method = "getDictValueByID")
     private String isEnable;
 	
 	    //排序 该字段原为‘order’，该字段与MySQL保留字冲突，后改为'order_no'

@@ -13,6 +13,9 @@ import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.service.EventTypeService;
 
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -129,4 +132,11 @@ public class EventTypeController extends BaseController<EventTypeBiz,EventType,I
 		eventTypeBiz.deleteByIds(ids);
         return result;
     }
+
+	@RequestMapping(value="list/bizType/{bizTypeId}",method=RequestMethod.GET)
+	@ApiOperation("按业务条线加载事件类别")
+	public List<EventType> getByBizType(@PathVariable(value="bizTypeId")String bizType){
+		List<EventType> eventTypes = eventTypeBiz.getByBizType(bizType);
+		return eventTypes;
+	}
 }

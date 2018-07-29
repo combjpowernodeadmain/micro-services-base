@@ -61,13 +61,16 @@ public class InspectItemsService {
 			return tableResult;
 		}
 		
-		List<String> bizTypes = list.stream().map((o)->o.getBizType()).distinct().collect(Collectors.toList());
+		List<String> bizTypes = list.stream().map((o)->o.getType()).distinct().collect(Collectors.toList());
+//		List<String> bizTypes = list.stream().map((o)->o.getBizType()).distinct().collect(Collectors.toList());
 		
 		if(bizTypes != null && bizTypes.size() > 0) {
-			Map<String, String> typeMap = eventTypeBiz.getByIds(String.join(",", bizTypes));
+			Map<Integer, String> typeMap = eventTypeBiz.getByIds(String.join(",", bizTypes));
 			
 			for(InspectItems item:list) {
-				item.setType(typeMap.get(item.getType()));
+//				item.setType(typeMap.get(item.getType()));
+				String string = typeMap.get(Integer.valueOf(item.getType()));
+				item.setType(string);
 			}
 		}
 		

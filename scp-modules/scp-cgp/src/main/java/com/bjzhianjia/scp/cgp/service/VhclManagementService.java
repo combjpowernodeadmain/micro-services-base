@@ -19,11 +19,9 @@ import com.bjzhianjia.scp.cgp.entity.EnforceTerminal;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.VhclManagement;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
-import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.util.StringUtil;
-import com.netflix.infix.lang.infix.antlr.EventFilterParser.null_predicate_return;
 
 import lombok.extern.slf4j.Slf4j;
 

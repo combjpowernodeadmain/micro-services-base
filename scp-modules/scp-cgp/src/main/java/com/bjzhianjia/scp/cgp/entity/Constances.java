@@ -14,6 +14,12 @@ public class Constances {
 	public static final String ROOT_BIZ_VHCL_T = "ROOT_BIZ_VHCL_T";
 	
 	/**
+	 * @author By尚
+	 * 企业类型
+	 */
+	public static final String ROOT_BIZ_ENTTYPE = "root_biz_entType";
+	
+	/**
 	 * 业务线条
 	 */
 	public static final String ROOT_BIZ_TYPE = "root_biz_type";
