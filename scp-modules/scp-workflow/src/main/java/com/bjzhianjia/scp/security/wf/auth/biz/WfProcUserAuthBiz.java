@@ -54,6 +54,7 @@ public class WfProcUserAuthBiz extends WfBaseBiz {
                 // 创建操作角色列表，并放到流程变量数据中
                 roleCodes.add(authData.getProcTaskRole());
                 authData.setProcOrgCode(getOrgCode(authData.getProcTaskUser()));
+                authData.setProcDeptId(getDeptId(authData.getProcTaskUser()));// todo:Token方式是否可以
                 authData.setProcAuthOrgCodes(getAuthOrgCodes(authData.getProcTaskUser()));
                 authData.setProcTaskRoles(roleCodes);
                 
@@ -76,6 +77,7 @@ public class WfProcUserAuthBiz extends WfBaseBiz {
                 }
                 
                 authData.setProcTaskUser(userCode);
+                authData.setProcDeptId(getDeptId());
                 authData.setProcTenantId(tenantID);
                 authData.setProcTaskRoles(roleCodes);
                 authData.setProcOrgCode(getOrgCode());
@@ -93,6 +95,15 @@ public class WfProcUserAuthBiz extends WfBaseBiz {
 	public String getUserCode() {
 		return BaseContextHandler.getUserID();
 	}
+	
+	public String getDeptId() {
+		return BaseContextHandler.getDepartID(); 
+	}
+	
+	public String getDeptId(String userCode) {
+		return BaseContextHandler.getDepartID(); 
+	}
+	
 	public String getTenantId() {
 		return BaseContextHandler.getTenantID();
 	}
