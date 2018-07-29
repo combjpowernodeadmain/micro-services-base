@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.bjzhianjia.scp.security.wf.mapper.WfProcPropsMapper">
+<mapper namespace="com.bjzhianjia.scp.security.wf.design.mapper.WfProcPropsMapper">
 	<resultMap id="BaseResultMap"
 		type="com.bjzhianjia.scp.security.wf.design.entity.WfProcPropsBean">
 		<id column="ID" property="id" jdbcType="INTEGER" />
@@ -21,12 +21,13 @@
 			jdbcType="VARCHAR" />
 		<result column="PROC_PROPS_UPDATETIME" property="procPropsUpdatetime"
 			jdbcType="INTEGER" />
+		<result column="PROC_TENANT_ID" property="procTenantId" jdbcType="VARCHAR" />
+		<result column="PROC_DEPART_ID" property="procDepartId" jdbcType="VARCHAR" />
 	</resultMap>
 	<sql id="Base_Column_List">
-		ID, PROC_ID, PROC_TASK_CODE, PROC_PROPS_TYPE,
-		PROC_PROPS_KEY,
-		PROC_PROPS_VALUE, PROC_PROPS_CREATOR,
-		PROC_PROPS_CREATETIME, PROC_PROPS_UPDATOR, PROC_PROPS_UPDATETIME
+		ID, PROC_ID, PROC_TASK_CODE, PROC_PROPS_TYPE, PROC_PROPS_KEY,
+		PROC_PROPS_VALUE, PROC_PROPS_CREATOR,PROC_PROPS_CREATETIME, 
+		PROC_PROPS_UPDATOR, PROC_PROPS_UPDATETIME,PROC_TENANT_ID,PROC_DEPART_ID
 	</sql>
 
 	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
@@ -62,6 +63,12 @@
 		<if test=" procPropsValue !=null">
 			and PROC_PROPS_VALUE=#{procPropsValue}
 		</if>
+		<if test=" procTenantId !=null">
+			and PROC_TENANT_ID=#{procTenantId}
+		</if>
+		<if test=" procDepartId !=null">
+			and PROC_DEPART_ID=#{procDepartId}
+		</if>
 	</select> 
 
 	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
@@ -72,10 +79,10 @@
 	<insert id="insert" parameterType="com.bjzhianjia.scp.security.wf.design.entity.WfProcPropsBean">
 		insert into SCP_WF_PROC_PROPS
 		(ID, PROC_ID, PROC_TASK_CODE,
-		PROC_PROPS_TYPE, PROC_PROPS_KEY,
-		PROC_PROPS_VALUE,
+		PROC_PROPS_TYPE, PROC_PROPS_KEY, PROC_PROPS_VALUE,
 		PROC_PROPS_CREATOR, PROC_PROPS_CREATETIME,
-		PROC_PROPS_UPDATOR, PROC_PROPS_UPDATETIME)
+		PROC_PROPS_UPDATOR, PROC_PROPS_UPDATETIME,
+		PROC_TENANT_ID,PROC_DEPART_ID)
 		values
 		(#{id,jdbcType=INTEGER}, #{procId,jdbcType=VARCHAR},
 		#{procTaskCode,jdbcType=VARCHAR},
@@ -84,7 +91,9 @@
 		#{procPropsCreator,jdbcType=VARCHAR},
 		#{procPropsCreatetime,jdbcType=INTEGER},
 		#{procPropsUpdator,jdbcType=VARCHAR},
-		#{procPropsUpdatetime,jdbcType=INTEGER})
+		#{procPropsUpdatetime,jdbcType=INTEGER},
+		#{procTenantId,jdbcType=VARCHAR},
+		#{procDepartId,jdbcType=VARCHAR})
 	</insert>
 	
 	<update id="updateByPrimaryKeySelective" parameterType="com.bjzhianjia.scp.security.wf.design.entity.WfProcPropsBean" >
@@ -120,9 +129,13 @@
 	      <if test="procPropsVersion != null" >
 	        PROC_PROPS_VERSION = #{procPropsVersion,jdbcType=INTEGER},
 	      </if>
+	      <if test="procTenantId != null" >
+	        PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR},
+	      </if>
+	      <if test="procDepartId != null" >
+	        PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR},
+	      </if>
 	    </set>
 	    where ID = #{id,jdbcType=INTEGER}
 	  </update>
-
-
 </mapper>

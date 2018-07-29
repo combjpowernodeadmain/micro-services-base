@@ -6,15 +6,13 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import com.alibaba.fastjson.JSONObject;
-import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 import com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean;
 import com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskHistoryBean;
 
+@Repository
 public interface WfProcTaskBeanMapper {
 
     int deleteByPrimaryKey(Integer id);
-
-    int deleteByPTaskCode(@Param("taskId") Integer taskId);
 
     int insert(WfProcTaskBean record);
 
@@ -41,8 +39,10 @@ public interface WfProcTaskBeanMapper {
     List<WfProcTaskBean> getParallelProcTask(@Param("procInstId") String procInstId,
         @Param("taskCode") List<String> taskCode);
 
-    WfProcTaskBean findTaskByTaskId(@Param("taskId") String taskId,
-        @Param("taskStatus") List<String> taskStatus);
+	WfProcTaskBean findTaskByTaskId(@Param("taskId") String taskId,
+			@Param("taskStatus") List<String> taskStatus);
+//			@Param("procTenantId") String procTenantId,
+//			@Param("procDepartId") String procDepartId);
 
     List<WfProcTaskBean> getProcTasksByParent(@Param("taskId") String taskId);
     

@@ -2,87 +2,96 @@ package com.bjzhianjia.scp.security.wf.task.entity;
 
 import java.io.Serializable;
 
-public class WfProcDelegateBean implements Serializable{
+public class WfProcDelegateBean implements Serializable {
+	private static final long serialVersionUID = 1L;
+	private Integer id;
+	private String procInstId;
+	private String procLicensor;
+	private String procLicensorRole;
+	private String procMandatary;
+	private Integer procLicenseTime;
+	private Integer procCancelTime;
+	private String procLicenseIsvalid;
+	private String procTenantId;
+	private String procDepartId;
 
-    private Integer id;
+	public Integer getId() {
+		return id;
+	}
 
-    private String procInstId;
+	public void setId(Integer id) {
+		this.id = id;
+	}
 
-    private String procLicensor;
+	public String getProcInstId() {
+		return procInstId;
+	}
 
-    private String procLicensorRole;
+	public void setProcInstId(String procInstId) {
+		this.procInstId = procInstId;
+	}
 
-    private String procMandatary;
+	public String getProcLicensor() {
+		return procLicensor;
+	}
 
-    public String getProcLicensorRole() {
-        return procLicensorRole;
-    }
+	public void setProcLicensor(String procLicensor) {
+		this.procLicensor = procLicensor;
+	}
 
-    public void setProcLicensorRole(String procLicensorRole) {
-        this.procLicensorRole = procLicensorRole;
-    }
+	public String getProcMandatary() {
+		return procMandatary;
+	}
 
-    private Integer procLicenseTime;
+	public void setProcMandatary(String procMandatary) {
+		this.procMandatary = procMandatary;
+	}
 
-    private Integer procCancelTime;
+	public String getProcLicensorRole() {
+		return procLicensorRole;
+	}
 
-    private String procLicenseIsvalid;
+	public void setProcLicensorRole(String procLicensorRole) {
+		this.procLicensorRole = procLicensorRole;
+	}
 
-    private static final long serialVersionUID = 1L;
+	public Integer getProcLicenseTime() {
+		return procLicenseTime;
+	}
 
-    public Integer getId() {
-        return id;
-    }
+	public void setProcLicenseTime(Integer procLicenseTime) {
+		this.procLicenseTime = procLicenseTime;
+	}
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
+	public Integer getProcCancelTime() {
+		return procCancelTime;
+	}
 
-    public String getProcInstId() {
-        return procInstId;
-    }
+	public void setProcCancelTime(Integer procCancelTime) {
+		this.procCancelTime = procCancelTime;
+	}
 
-    public void setProcInstId(String procInstId) {
-        this.procInstId = procInstId;
-    }
+	public String getProcLicenseIsvalid() {
+		return procLicenseIsvalid;
+	}
 
-    public String getProcLicensor() {
-        return procLicensor;
-    }
+	public void setProcLicenseIsvalid(String procLicenseIsvalid) {
+		this.procLicenseIsvalid = procLicenseIsvalid;
+	}
 
-    public void setProcLicensor(String procLicensor) {
-        this.procLicensor = procLicensor;
-    }
+	public String getProcTenantId() {
+		return procTenantId;
+	}
 
-    public String getProcMandatary() {
-        return procMandatary;
-    }
+	public void setProcTenantId(String procTenantId) {
+		this.procTenantId = procTenantId;
+	}
 
-    public void setProcMandatary(String procMandatary) {
-        this.procMandatary = procMandatary;
-    }
+	public String getProcDepartId() {
+		return procDepartId;
+	}
 
-    public Integer getProcLicenseTime() {
-        return procLicenseTime;
-    }
-
-    public void setProcLicenseTime(Integer procLicenseTime) {
-        this.procLicenseTime = procLicenseTime;
-    }
-
-    public Integer getProcCancelTime() {
-        return procCancelTime;
-    }
-
-    public void setProcCancelTime(Integer procCancelTime) {
-        this.procCancelTime = procCancelTime;
-    }
-
-    public String getProcLicenseIsvalid() {
-        return procLicenseIsvalid;
-    }
-
-    public void setProcLicenseIsvalid(String procLicenseIsvalid) {
-        this.procLicenseIsvalid = procLicenseIsvalid;
-    }
+	public void setProcDepartId(String procDepartId) {
+		this.procDepartId = procDepartId;
+	}
 }

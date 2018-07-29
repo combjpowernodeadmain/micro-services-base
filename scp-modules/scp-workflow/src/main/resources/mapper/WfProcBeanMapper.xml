@@ -1,271 +1,317 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.bjzhianjia.scp.security.wf.mapper.WfProcBeanMapper" >
-  <resultMap id="BaseResultMap" type="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean" >
-    <id column="PROC_INST_ID" property="procInstId" jdbcType="VARCHAR" />
-    <result column="PROC_ID" property="procId" jdbcType="VARCHAR" />
-    <result column="PROC_KEY" property="procKey" jdbcType="VARCHAR" />
-    <result column="PROC_NAME" property="procName" jdbcType="VARCHAR" />
-    <result column="PROC_CREATOR" property="procCreator" jdbcType="VARCHAR" />
-    <result column="PROC_VERSION" property="procVersion" jdbcType="INTEGER" />
-    <result column="PROC_CREATETIME" property="procCreatetime" jdbcType="INTEGER" />
-    <result column="PROC_ENDTIME" property="procEndtime" jdbcType="INTEGER" />
-    <result column="PROC_BIZID" property="procBizid" jdbcType="VARCHAR" />
-    <result column="PROC_BIZTYPE" property="procBiztype" jdbcType="VARCHAR" />
-    <result column="PROC_ORGCODE" property="procOrgcode" jdbcType="VARCHAR" />
-    <result column="PROC_MEMO" property="procMemo" jdbcType="VARCHAR" />
-    <result column="PROC_STATUS" property="procStatus" jdbcType="CHAR" />
-    <result column="PROC_DISPLAYURL" property="procDisplayurl" jdbcType="VARCHAR" />
-  </resultMap>
-  <sql id="Base_Column_List" >
-    PROC_INST_ID, PROC_ID, PROC_KEY, PROC_NAME, PROC_CREATOR, PROC_CREATETIME, PROC_ENDTIME, PROC_BIZID, 
-    PROC_BIZTYPE, PROC_ORGCODE, PROC_MEMO, PROC_STATUS,PROC_VERSION,PROC_DISPLAYURL
-  </sql>
-  
-  <select id="selectByPrimaryKey1" resultMap="BaseResultMap" parameterType="java.lang.String" >
-    select 
-    <include refid="Base_Column_List" />
-    from SCP_WF_PROC
-    where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
-  </select>
-  
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
-    delete from SCP_WF_PROC
-    where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
-  </delete>
- 
-  <insert id="insert" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean">
-	insert into SCP_WF_PROC (PROC_INST_ID, PROC_ID, PROC_KEY, PROC_NAME,
-	PROC_CREATOR, PROC_CREATETIME, PROC_ENDTIME,
-	PROC_BIZID, PROC_BIZTYPE, PROC_ORGCODE, PROC_MEMO,
-	PROC_STATUS,PROC_VERSION,PROC_DISPLAYURL)
-	values (#{procInstId,jdbcType=VARCHAR}, #{procId,jdbcType=VARCHAR},
-	#{procKey,jdbcType=VARCHAR}, #{procName,jdbcType=VARCHAR},
-	#{procCreator,jdbcType=VARCHAR}, #{procCreatetime,jdbcType=INTEGER},
-	#{procEndtime,jdbcType=INTEGER},
-	#{procBizid,jdbcType=VARCHAR}, #{procBiztype,jdbcType=VARCHAR}, #{procOrgcode,jdbcType=VARCHAR},
-	#{procMemo,jdbcType=VARCHAR},
-	#{procStatus,jdbcType=CHAR},#{procVersion,jdbcType=INTEGER},#{procDisplayurl,jdbcType=VARCHAR})
-</insert>
+<mapper namespace="com.bjzhianjia.scp.security.wf.mapper.WfProcBeanMapper">
+	<resultMap id="BaseResultMap"
+		type="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean">
+		<id column="PROC_INST_ID" property="procInstId" jdbcType="VARCHAR" />
+		<result column="PROC_ID" property="procId" jdbcType="VARCHAR" />
+		<result column="PROC_KEY" property="procKey" jdbcType="VARCHAR" />
+		<result column="PROC_NAME" property="procName" jdbcType="VARCHAR" />
+		<result column="PROC_CREATOR" property="procCreator" jdbcType="VARCHAR" />
+		<result column="PROC_VERSION" property="procVersion" jdbcType="INTEGER" />
+		<result column="PROC_CREATETIME" property="procCreatetime" jdbcType="INTEGER" />
+		<result column="PROC_ENDTIME" property="procEndtime" jdbcType="INTEGER" />
+		<result column="PROC_BIZID" property="procBizid" jdbcType="VARCHAR" />
+		<result column="PROC_BIZTYPE" property="procBiztype" jdbcType="VARCHAR" />
+		<result column="PROC_ORGCODE" property="procOrgcode" jdbcType="VARCHAR" />
+		<result column="PROC_MEMO" property="procMemo" jdbcType="VARCHAR" />
+		<result column="PROC_STATUS" property="procStatus" jdbcType="CHAR" />
+		<result column="PROC_DISPLAYURL" property="procDisplayurl" jdbcType="VARCHAR" />
+		<result column="PROC_TENANT_ID" property="procTenantId" jdbcType="VARCHAR" />
+		<result column="PROC_DEPART_ID" property="procDepartId" jdbcType="VARCHAR" />
 
-  <insert id="insertSelective" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean" >
-    insert into SCP_WF_PROC
-    <trim prefix="(" suffix=")" suffixOverrides="," >
-      <if test="procInstId != null" >
-        PROC_INST_ID,
-      </if>
-      <if test="procId != null" >
-        PROC_ID,
-      </if>
-      <if test="procKey != null" >
-        PROC_KEY,
-      </if>
-      <if test="procName != null" >
-        PROC_NAME,
-      </if>
-      <if test="procCreator != null" >
-        PROC_CREATOR,
-      </if>
-       <if test="procVersion != null" >
-        PROC_VERSION,
-      </if>
-      <if test="procCreatetime != null" >
-        PROC_CREATETIME,
-      </if>
-      <if test="procEndtime != null" >
-        PROC_ENDTIME,
-      </if>
-      <if test="procBizid != null" >
-        PROC_BIZID,
-      </if>
-      <if test="procBiztype != null" >
-        PROC_BIZTYPE,
-      </if>
-      <if test="procOrgcode != null" >
-        PROC_ORGCODE,
-      </if>
-      <if test="procMemo != null" >
-        PROC_MEMO,
-      </if>
-      <if test="procStatus != null" >
-        PROC_STATUS,
-      </if>
-      <if test="procDisplayurl != null" >
-        PROC_DISPLAYURL,
-      </if>
-    </trim>
-    <trim prefix="values (" suffix=")" suffixOverrides="," >
-      <if test="procInstId != null" >
-        #{procInstId,jdbcType=VARCHAR},
-      </if>
-      <if test="procId != null" >
-        #{procId,jdbcType=VARCHAR},
-      </if>
-      <if test="procKey != null" >
-        #{procKey,jdbcType=VARCHAR},
-      </if>
-      <if test="procName != null" >
-        #{procName,jdbcType=VARCHAR},
-      </if>
-      <if test="procCreator != null" >
-        #{procCreator,jdbcType=VARCHAR},
-      </if>
-      <if test="procCreatetime != null" >
-        #{procCreatetime,jdbcType=INTEGER},
-      </if>
-      <if test="procEndtime != null" >
-        #{procEndtime,jdbcType=INTEGER},
-      </if>
-      <if test="procBizid != null" >
-        #{procBizid,jdbcType=VARCHAR},
-      </if>
-      <if test="procBiztype != null" >
-        #{procBiztype,jdbcType=VARCHAR},
-      </if>
-      <if test="procOrgcode != null" >
-        #{procOrgcode,jdbcType=VARCHAR},
-      </if>
-      <if test="procMemo != null" >
-        #{procMemo,jdbcType=VARCHAR},
-      </if>
-      <if test="procStatus != null" >
-        #{procStatus,jdbcType=CHAR},
-      </if>
-      <if test="procDisplayurl != null" >
-        #{procDisplayurl,jdbcType=VARCHAR},
-      </if>
-    </trim>
-  </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean" >
-    update SCP_WF_PROC
-    <set >
-      <if test="procId != null" >
-        PROC_ID = #{procId,jdbcType=VARCHAR},
-      </if>
-      <if test="procKey != null" >
-        PROC_KEY = #{procKey,jdbcType=VARCHAR},
-      </if>
-      <if test="procName != null" >
-        PROC_NAME = #{procName,jdbcType=VARCHAR},
-      </if>
-      <if test="procCreator != null" >
-        PROC_CREATOR = #{procCreator,jdbcType=VARCHAR},
-      </if>
-      <if test="procCreatetime != null" >
-        PROC_CREATETIME = #{procCreatetime,jdbcType=INTEGER},
-      </if>
-      <if test="procEndtime != null" >
-        PROC_ENDTIME = #{procEndtime,jdbcType=INTEGER},
-      </if>
-      <if test="procBizid != null" >
-        PROC_BIZID = #{procBizid,jdbcType=VARCHAR},
-      </if>
-      <if test="procBiztype != null" >
-        PROC_BIZTYPE = #{procBiztype,jdbcType=VARCHAR},
-      </if>
-      <if test="procOrgcode != null" >
-        PROC_ORGCODE = #{procOrgcode,jdbcType=VARCHAR},
-      </if>
-      <if test="procMemo != null" >
-        PROC_MEMO = #{procMemo,jdbcType=VARCHAR},
-      </if>
-      <if test="procStatus != null" >
-        PROC_STATUS = #{procStatus,jdbcType=CHAR},
-      </if>
-      <if test="procDisplayurl != null" >
-        PROC_DISPLAYURL = #{procDisplayurl,jdbcType=CHAR},
-      </if>
-    </set>
-    where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
-  </update>
-  <update id="updateByPrimaryKey" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean" >
-    update SCP_WF_PROC
-    set PROC_ID = #{procId,jdbcType=VARCHAR},
-      PROC_KEY = #{procKey,jdbcType=VARCHAR},
-      PROC_NAME = #{procName,jdbcType=VARCHAR},
-      PROC_CREATOR = #{procCreator,jdbcType=VARCHAR},
-      PROC_CREATETIME = #{procCreatetime,jdbcType=INTEGER},
-      PROC_ENDTIME = #{procEndtime,jdbcType=INTEGER},
-      PROC_BIZID = #{procBizid,jdbcType=VARCHAR},
-      PROC_BIZTYPE = #{procBiztype,jdbcType=VARCHAR},
-      PROC_ORGCODE = #{procOrgcode,jdbcType=VARCHAR},
-      PROC_MEMO = #{procMemo,jdbcType=VARCHAR},
-      PROC_STATUS = #{procStatus,jdbcType=CHAR},
-      PROC_DISPLAYURL = #{procDisplayurl,jdbcType=VARCHAR}
-    where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
-  </update>
-  
-   <update id="updateWfProcBeanByProcId" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean" >
-    update SCP_WF_PROC
-    <set >
-      <if test="procName != null" >
-        PROC_NAME = #{procName,jdbcType=VARCHAR},
-      </if>
-      <if test="procCreator != null" >
-        PROC_CREATOR = #{procCreator,jdbcType=VARCHAR},
-      </if>
-      <if test="procCreatetime != null" >
-        PROC_CREATETIME = #{procCreatetime,jdbcType=INTEGER},
-      </if>
-      <if test="procEndtime != null" >
-        PROC_ENDTIME = #{procEndtime,jdbcType=INTEGER},
-      </if>
-      <if test="procBizid != null" >
-        PROC_BIZID = #{procBizid,jdbcType=VARCHAR},
-      </if>
-      <if test="procBiztype != null" >
-        PROC_BIZTYPE = #{procBiztype,jdbcType=VARCHAR},
-      </if>
-      <if test="procOrgcode != null" >
-        PROC_ORGCODE = #{procOrgcode,jdbcType=VARCHAR},
-      </if>
-      <if test="procMemo != null" >
-        PROC_MEMO = #{procMemo,jdbcType=VARCHAR},
-      </if>
-      <if test="procStatus != null" >
-        PROC_STATUS = #{procStatus,jdbcType=CHAR},
-      </if>
-      <if test="procDisplayurl != null" >
-        PROC_DISPLAYURL = #{procDisplayurl,jdbcType=VARCHAR},
-      </if>
-    </set>
-    where PROC_ID = #{procId,jdbcType=VARCHAR}
-  </update>
-  
-   <update id="updateWfProcBeanByInstId" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean" >
-    update SCP_WF_PROC
-    <set >
-      <if test="procName != null" >
-        PROC_NAME = #{procName,jdbcType=VARCHAR},
-      </if>
-      <if test="procCreator != null" >
-        PROC_CREATOR = #{procCreator,jdbcType=VARCHAR},
-      </if>
-      <if test="procCreatetime != null" >
-        PROC_CREATETIME = #{procCreatetime,jdbcType=INTEGER},
-      </if>
-      <if test="procEndtime != null" >
-        PROC_ENDTIME = #{procEndtime,jdbcType=INTEGER},
-      </if>
-      <if test="procBizid != null" >
-        PROC_BIZID = #{procBizid,jdbcType=VARCHAR},
-      </if>
-      <if test="procBiztype != null" >
-        PROC_BIZTYPE = #{procBiztype,jdbcType=VARCHAR},
-      </if>
-      <if test="procOrgcode != null" >
-        PROC_ORGCODE = #{procOrgcode,jdbcType=VARCHAR},
-      </if>
-      <if test="procMemo != null" >
-        PROC_MEMO = #{procMemo,jdbcType=VARCHAR},
-      </if>
-      <if test="procStatus != null" >
-        PROC_STATUS = #{procStatus,jdbcType=CHAR},
-      </if>
-      <if test="procDisplayurl != null" >
-        PROC_DISPLAYURL = #{procDisplayurl,jdbcType=VARCHAR},
-      </if>
-    </set>
-    where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
-  </update>
+	</resultMap>
+	<sql id="Base_Column_List">
+		PROC_INST_ID, PROC_ID, PROC_KEY, PROC_NAME, PROC_CREATOR, PROC_CREATETIME,
+		PROC_ENDTIME, PROC_BIZID,
+		PROC_BIZTYPE, PROC_ORGCODE, PROC_MEMO,
+		PROC_STATUS,PROC_VERSION,PROC_DISPLAYURL,PROC_TENANT_ID,PROC_DEPART_ID
+	</sql>
+
+	<select id="selectByPrimaryKey1" resultMap="BaseResultMap"
+		parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from SCP_WF_PROC
+		where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
+	</select>
+
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+		delete from SCP_WF_PROC
+		where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
+	</delete>
+
+	<insert id="insert"
+		parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean">
+		insert into SCP_WF_PROC (PROC_INST_ID, PROC_ID, PROC_KEY, PROC_NAME,
+		PROC_CREATOR, PROC_CREATETIME, PROC_ENDTIME,
+		PROC_BIZID, PROC_BIZTYPE, PROC_ORGCODE, PROC_MEMO,
+		PROC_STATUS,PROC_VERSION,PROC_DISPLAYURL, PROC_TENANT_ID, PROC_DEPART_ID)
+		values (#{procInstId,jdbcType=VARCHAR}, #{procId,jdbcType=VARCHAR},
+		#{procKey,jdbcType=VARCHAR}, #{procName,jdbcType=VARCHAR},
+		#{procCreator,jdbcType=VARCHAR}, #{procCreatetime,jdbcType=INTEGER},
+		#{procEndtime,jdbcType=INTEGER},
+		#{procBizid,jdbcType=VARCHAR}, #{procBiztype,jdbcType=VARCHAR}, #{procOrgcode,jdbcType=VARCHAR},
+		#{procMemo,jdbcType=VARCHAR},
+		#{procStatus,jdbcType=CHAR},#{procVersion,jdbcType=INTEGER},#{procDisplayurl,jdbcType=VARCHAR},
+		#{procTenantId,jdbcType=VARCHAR},#{procDepartId,jdbcType=VARCHAR})
+	</insert>
+
+	<insert id="insertSelective"
+		parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean">
+		insert into SCP_WF_PROC
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="procInstId != null">
+				PROC_INST_ID,
+			</if>
+			<if test="procId != null">
+				PROC_ID,
+			</if>
+			<if test="procKey != null">
+				PROC_KEY,
+			</if>
+			<if test="procName != null">
+				PROC_NAME,
+			</if>
+			<if test="procCreator != null">
+				PROC_CREATOR,
+			</if>
+			<if test="procVersion != null">
+				PROC_VERSION,
+			</if>
+			<if test="procCreatetime != null">
+				PROC_CREATETIME,
+			</if>
+			<if test="procEndtime != null">
+				PROC_ENDTIME,
+			</if>
+			<if test="procBizid != null">
+				PROC_BIZID,
+			</if>
+			<if test="procBiztype != null">
+				PROC_BIZTYPE,
+			</if>
+			<if test="procOrgcode != null">
+				PROC_ORGCODE,
+			</if>
+			<if test="procMemo != null">
+				PROC_MEMO,
+			</if>
+			<if test="procStatus != null">
+				PROC_STATUS,
+			</if>
+			<if test="procDisplayurl != null">
+				PROC_DISPLAYURL,
+			</if>
+			<if test="procTenantId != null">
+				PROC_TENANT_ID,
+			</if>
+			<if test="procDepartId != null">
+				PROC_DEPART_ID,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="procInstId != null">
+				#{procInstId,jdbcType=VARCHAR},
+			</if>
+			<if test="procId != null">
+				#{procId,jdbcType=VARCHAR},
+			</if>
+			<if test="procKey != null">
+				#{procKey,jdbcType=VARCHAR},
+			</if>
+			<if test="procName != null">
+				#{procName,jdbcType=VARCHAR},
+			</if>
+			<if test="procCreator != null">
+				#{procCreator,jdbcType=VARCHAR},
+			</if>
+			<if test="procCreatetime != null">
+				#{procCreatetime,jdbcType=INTEGER},
+			</if>
+			<if test="procEndtime != null">
+				#{procEndtime,jdbcType=INTEGER},
+			</if>
+			<if test="procBizid != null">
+				#{procBizid,jdbcType=VARCHAR},
+			</if>
+			<if test="procBiztype != null">
+				#{procBiztype,jdbcType=VARCHAR},
+			</if>
+			<if test="procOrgcode != null">
+				#{procOrgcode,jdbcType=VARCHAR},
+			</if>
+			<if test="procMemo != null">
+				#{procMemo,jdbcType=VARCHAR},
+			</if>
+			<if test="procStatus != null">
+				#{procStatus,jdbcType=CHAR},
+			</if>
+			<if test="procDisplayurl != null">
+				#{procDisplayurl,jdbcType=VARCHAR},
+			</if>
+			<if test="procTenantId != null">
+				#{procTenantId,jdbcType=VARCHAR},
+			</if>
+			<if test="procDepartId != null">
+				#{procDepartId,jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective"
+		parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean">
+		update SCP_WF_PROC
+		<set>
+			<if test="procId != null">
+				PROC_ID = #{procId,jdbcType=VARCHAR},
+			</if>
+			<if test="procKey != null">
+				PROC_KEY = #{procKey,jdbcType=VARCHAR},
+			</if>
+			<if test="procName != null">
+				PROC_NAME = #{procName,jdbcType=VARCHAR},
+			</if>
+			<if test="procCreator != null">
+				PROC_CREATOR = #{procCreator,jdbcType=VARCHAR},
+			</if>
+			<if test="procCreatetime != null">
+				PROC_CREATETIME = #{procCreatetime,jdbcType=INTEGER},
+			</if>
+			<if test="procEndtime != null">
+				PROC_ENDTIME = #{procEndtime,jdbcType=INTEGER},
+			</if>
+			<if test="procBizid != null">
+				PROC_BIZID = #{procBizid,jdbcType=VARCHAR},
+			</if>
+			<if test="procBiztype != null">
+				PROC_BIZTYPE = #{procBiztype,jdbcType=VARCHAR},
+			</if>
+			<if test="procOrgcode != null">
+				PROC_ORGCODE = #{procOrgcode,jdbcType=VARCHAR},
+			</if>
+			<if test="procMemo != null">
+				PROC_MEMO = #{procMemo,jdbcType=VARCHAR},
+			</if>
+			<if test="procStatus != null">
+				PROC_STATUS = #{procStatus,jdbcType=CHAR},
+			</if>
+			<if test="procDisplayurl != null">
+				PROC_DISPLAYURL = #{procDisplayurl,jdbcType=VARCHAR},
+			</if>
+			<if test="procTenantId != null">
+				PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR},
+			</if>
+			<if test="procDepartId != null">
+				PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR},
+			</if>
+		</set>
+		where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
+	</update>
+	<update id="updateByPrimaryKey"
+		parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean">
+		update SCP_WF_PROC
+		set PROC_ID = #{procId,jdbcType=VARCHAR},
+		PROC_KEY = #{procKey,jdbcType=VARCHAR},
+		PROC_NAME = #{procName,jdbcType=VARCHAR},
+		PROC_CREATOR = #{procCreator,jdbcType=VARCHAR},
+		PROC_CREATETIME = #{procCreatetime,jdbcType=INTEGER},
+		PROC_ENDTIME = #{procEndtime,jdbcType=INTEGER},
+		PROC_BIZID = #{procBizid,jdbcType=VARCHAR},
+		PROC_BIZTYPE = #{procBiztype,jdbcType=VARCHAR},
+		PROC_ORGCODE = #{procOrgcode,jdbcType=VARCHAR},
+		PROC_MEMO = #{procMemo,jdbcType=VARCHAR},
+		PROC_STATUS = #{procStatus,jdbcType=CHAR},
+		PROC_DISPLAYURL = #{procDisplayurl,jdbcType=VARCHAR},
+		PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR},
+		PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR},
+		where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
+	</update>
+
+	<update id="updateWfProcBeanByProcId"
+		parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean">
+		update SCP_WF_PROC
+		<set>
+			<if test="procName != null">
+				PROC_NAME = #{procName,jdbcType=VARCHAR},
+			</if>
+			<if test="procCreator != null">
+				PROC_CREATOR = #{procCreator,jdbcType=VARCHAR},
+			</if>
+			<if test="procCreatetime != null">
+				PROC_CREATETIME = #{procCreatetime,jdbcType=INTEGER},
+			</if>
+			<if test="procEndtime != null">
+				PROC_ENDTIME = #{procEndtime,jdbcType=INTEGER},
+			</if>
+			<if test="procBizid != null">
+				PROC_BIZID = #{procBizid,jdbcType=VARCHAR},
+			</if>
+			<if test="procBiztype != null">
+				PROC_BIZTYPE = #{procBiztype,jdbcType=VARCHAR},
+			</if>
+			<if test="procOrgcode != null">
+				PROC_ORGCODE = #{procOrgcode,jdbcType=VARCHAR},
+			</if>
+			<if test="procMemo != null">
+				PROC_MEMO = #{procMemo,jdbcType=VARCHAR},
+			</if>
+			<if test="procStatus != null">
+				PROC_STATUS = #{procStatus,jdbcType=CHAR},
+			</if>
+			<if test="procDisplayurl != null">
+				PROC_DISPLAYURL = #{procDisplayurl,jdbcType=VARCHAR},
+			</if>
+			<if test="procDepartId != null">
+				PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR},
+			</if>
+			<if test="procTenantId != null">
+				PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR},
+			</if>
+		</set>
+		where PROC_ID = #{procId,jdbcType=VARCHAR}
+	</update>
+
+	<update id="updateWfProcBeanByInstId"
+		parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean">
+		update SCP_WF_PROC
+		<set>
+			<if test="procName != null">
+				PROC_NAME = #{procName,jdbcType=VARCHAR},
+			</if>
+			<if test="procCreator != null">
+				PROC_CREATOR = #{procCreator,jdbcType=VARCHAR},
+			</if>
+			<if test="procCreatetime != null">
+				PROC_CREATETIME = #{procCreatetime,jdbcType=INTEGER},
+			</if>
+			<if test="procEndtime != null">
+				PROC_ENDTIME = #{procEndtime,jdbcType=INTEGER},
+			</if>
+			<if test="procBizid != null">
+				PROC_BIZID = #{procBizid,jdbcType=VARCHAR},
+			</if>
+			<if test="procBiztype != null">
+				PROC_BIZTYPE = #{procBiztype,jdbcType=VARCHAR},
+			</if>
+			<if test="procOrgcode != null">
+				PROC_ORGCODE = #{procOrgcode,jdbcType=VARCHAR},
+			</if>
+			<if test="procMemo != null">
+				PROC_MEMO = #{procMemo,jdbcType=VARCHAR},
+			</if>
+			<if test="procStatus != null">
+				PROC_STATUS = #{procStatus,jdbcType=CHAR},
+			</if>
+			<if test="procDisplayurl != null">
+				PROC_DISPLAYURL = #{procDisplayurl,jdbcType=VARCHAR},
+			</if>
+			<if test="procTenantId != null">
+				PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR},
+			</if>
+			<if test="procDepartId != null">
+				PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR},
+			</if>
+		</set>
+		where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
+	</update>
 </mapper>

@@ -138,16 +138,6 @@ public abstract class AWfProcTaskBiz extends WfBaseBiz {
         wfProcTaskBean.setProcDepartId(authData.getProcDeptId());
         wfProcTaskBean.setProcTenantpermission(getProcTenantPermission(properties));
         wfProcTaskBean.setProcTenantId(getProcTenantId(properties));
-        wfProcTaskBean.setProcSelfpermission1(getProcTaskSelfPermission1(properties));
-        wfProcTaskBean.setProcSelfdata1(authData.getProcSelfPermissionData1());
-        wfProcTaskBean.setProcSelfpermission2(getProcTaskSelfPermission2(properties));
-        wfProcTaskBean.setProcSelfdata2(authData.getProcSelfPermissionData2());
-        wfProcTaskBean.setProcSelfpermission3(getProcTaskSelfPermission3(properties));
-        wfProcTaskBean.setProcSelfdata3(authData.getProcSelfPermissionData3());
-        wfProcTaskBean.setProcSelfpermission4(getProcTaskSelfPermission4(properties));
-        wfProcTaskBean.setProcSelfdata4(authData.getProcSelfPermissionData4());
-        wfProcTaskBean.setProcSelfpermission5(getProcTaskSelfPermission5(properties));
-        wfProcTaskBean.setProcSelfdata5(authData.getProcSelfPermissionData5());
         
         wfProcTaskBean.setProcParallel(DictKeyConst.YESORNO_NO);
         wfProcTaskBean.setProcParallelStatus(WfProcParallStatus.APPROVED.getRetCode());
