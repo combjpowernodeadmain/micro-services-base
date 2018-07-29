@@ -105,6 +105,19 @@ public class WfProcMonitorRest {
     }
     
     /**
+     * 查询我的已办流程任务数
+     * @param objs
+     * @return
+     */
+    @ApiOperation("查询我的已办任务数")
+    @ResponseBody
+    @RequestMapping(value = { "/userDoneTaskCount" }, method = { RequestMethod.GET, RequestMethod.POST })
+    public ObjectRestResponse<Integer> getUserDoneTaskCount(@RequestBody JSONObject objs, HttpServletRequest request) {
+            log.debug("SCP信息---开始查询用户已办任务列表...");
+            return ResultUtils.success(wfMonitorService.getUserDoneTaskCount(objs));
+    }
+    
+    /**
      * 查询用户待办流程任务列表
      * @param objs
      * @param request
@@ -118,6 +131,20 @@ public class WfProcMonitorRest {
         return ResultUtils.success( wfMonitorService.getUserToDoTasks(objs));
     }
 
+    /**
+     * 查询用户待办流程任务数量
+     * @param objs
+     * @param request
+     * @return
+     */
+    @ApiOperation("查询我的待办任务数量")
+    @ResponseBody
+    @RequestMapping(value = { "/userToDoTaskCount" }, method = { RequestMethod.GET, RequestMethod.POST })
+    public ObjectRestResponse<Integer> getUserToDoTaskCount(@RequestBody JSONObject objs, HttpServletRequest request) {
+        log.debug("SCP信息---开始查询用户待办任务列表...");
+        return ResultUtils.success(wfMonitorService.getUserToDoTaskCount(objs));
+    }
+    
     /**
      * 流程实例暂停
      * @param objs

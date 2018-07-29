@@ -81,6 +81,23 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
     }
 
     /**
+     * 查询用户已办流程任务数量
+     * @param objs
+     * @return
+     * @throws WorkflowException
+     */
+    public int getUserDoneTaskCount(JSONObject objs) throws WorkflowException {
+    	userAuthenticate(objs, false, false);
+
+        parseAndUpdateDate(objs, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(objs, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        parseAndUpdateDate(objs, "procFinishedTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(objs, "procFinishedTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+
+        return wfMonitorBiz.getUserDoneTaskCount(objs);
+    }
+    
+    /**
      * 查询用户待办流程任务列表
      * @param objs
      * @return
@@ -94,12 +111,24 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
     }
     
     /**
+     * 查询用户待办流程任务数量
+     * @param objs
+     * @return
+     * @throws WorkflowException
+     */
+    public int getUserToDoTaskCount(JSONObject objs) throws WorkflowException {
+        userAuthenticate(objs, true, true);
+
+        return wfMonitorBiz.getUserToDoTaskCount(objs);
+    }
+    
+    /**
      * 查询用户待办流程任务列表
      * @param objs
      * @return
      * @throws WorkflowException
      */
-    public PageInfo<WfMyProcBackBean> getActiveProcessList(JSONObject objs) throws WorkflowException {
+    public PageInfo<WfMyProcBackBean> getActiveProcessList(JSONObject objs) throws WorkflowException { // 需要修改调试
         userAuthenticate(objs, false, false);
 
         parseAndUpdateDate(objs, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
@@ -116,7 +145,7 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
      * @return
      * @throws WorkflowException
      */
-    public PageInfo<WfMyProcBackBean> getOrgProcessList(JSONObject objs) throws WorkflowException {
+    public PageInfo<WfMyProcBackBean> getOrgProcessList(JSONObject objs) throws WorkflowException { // 需要修改调试
         userAuthenticate(objs, true, false);
 
         parseAndUpdateDate(objs, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
@@ -133,7 +162,7 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
      * @return
      * @throws WorkflowException
      */
-    public PageInfo<WfMyProcBackBean> geyProcessSummary(JSONObject objs) throws WorkflowException {
+    public PageInfo<WfMyProcBackBean> geyProcessSummary(JSONObject objs) throws WorkflowException { // 需要修改调试
         userAuthenticate(objs, true, false);
 
         parseAndUpdateDate(objs, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
@@ -150,7 +179,7 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
      * @return
      * @throws WorkflowException
      */
-    public PageInfo<WfMyProcBackBean> getProcessDelegateList(JSONObject objs)
+    public PageInfo<WfMyProcBackBean> getProcessDelegateList(JSONObject objs)  // 需要修改调试
         throws WorkflowException {
         userAuthenticate(objs, true, false);
 
@@ -168,7 +197,7 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
      * @return
      * @throws WorkflowException
      */
-    public PageInfo<WfMyProcBackBean> getMyProcDelegateList(JSONObject objs) throws WorkflowException {
+    public PageInfo<WfMyProcBackBean> getMyProcDelegateList(JSONObject objs) throws WorkflowException { // 需要修改调试
         userAuthenticate(objs, true, false);
 
         return new PageInfo<WfMyProcBackBean>(wfMonitorBiz.getMyProcDelegateList(objs));
@@ -181,7 +210,7 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
      * @param type
      * @throws WorkflowException
      */
-    private void parseAndUpdateDate(JSONObject objs, String key, int type) throws WorkflowException {
+    private void parseAndUpdateDate(JSONObject objs, String key, int type) throws WorkflowException { // 需要修改调试
         if (objs.containsKey(key) && !StringUtil.isNull(objs.getString(key))) {
             String value = objs.getString(key);
             objs.put(key, DateUtil.getTime(value, DatePattern.DATEPARTTEN_YYYYMMDD_TYPE3, type));
@@ -226,7 +255,7 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
      * Create Date: 2017年11月22日
      */
     @Override
-    public String exportProcessSummary(JSONObject objs, HttpServletResponse response) {
+    public String exportProcessSummary(JSONObject objs, HttpServletResponse response) { // 需要修改调试
         try {
             userAuthenticate(objs, true, false);
 
@@ -251,8 +280,9 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
         }
         return "success";
     }
- // 导出
-    private HSSFWorkbook exportShouldDebtDetailList(List<WfMyProcBackBean> list) {
+    
+    // 导出
+    private HSSFWorkbook exportShouldDebtDetailList(List<WfMyProcBackBean> list) { // 需要修改调试
         String[] excelHeader =
         {"序号", "流程名称", "业务ID", "流程创建时间", "流程完成时间", "流程摘要", "任务名称", "提交人", "处理人/角色",
                 "受托人", "任务到达时间", "任务受理时间", "流程状态"};

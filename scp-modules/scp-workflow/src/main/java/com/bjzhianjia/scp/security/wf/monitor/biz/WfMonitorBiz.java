@@ -81,6 +81,22 @@ public class WfMonitorBiz extends WfBaseBiz {
     }
     
     /**
+     * 查询用户已办流程任务数量
+     * @param objs
+     * @return
+     */
+    public int getUserDoneTaskCount(JSONObject objs) throws WorkflowException {
+        logger.info("用户已办任务查询--开始查询用户已办任务数量...");
+
+        try {
+            // setDb(0, super.SLAVE);  
+            return iqbWfMyProcBeanMapper.getMyProcTaskCount(objs);
+        } finally {
+            logger.info("用户已办任务查询--查询用户已办任务数量完成.");
+        }
+    }
+    
+    /**
      * 查询用户待办流程任务列表
      * @param objs
      * @return
@@ -94,6 +110,22 @@ public class WfMonitorBiz extends WfBaseBiz {
             return iqbWfMyProcBeanMapper.getUserToDoTasks(objs);
         } finally {
             logger.info("用户待办任务查询--查询用户待办任务完成.");
+        }
+    }
+    
+    /**
+     * 查询用户待办流程任务数量
+     * @param objs
+     * @return
+     */
+    public int getUserToDoTaskCount(JSONObject objs) throws WorkflowException {
+        logger.info("用户待办任务查询--开始查询用户待办任务数量...");
+
+        try {
+            // setDb(0, super.SLAVE); 
+            return iqbWfMyProcBeanMapper.getUserToDoTaskCount(objs);
+        } finally {
+            logger.info("用户待办任务查询--查询用户待办任务数量完成.");
         }
     }
     
