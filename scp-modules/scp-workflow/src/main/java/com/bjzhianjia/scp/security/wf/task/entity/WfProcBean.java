@@ -20,7 +20,9 @@ public class WfProcBean implements Serializable{
     private String procStatus;
     private Integer procVersion;
     private String procDisplayurl;
-
+    private String procTenantId;
+    private String procDepartId;
+    
     public String getProcInstId() {
         return procInstId;
     }
@@ -132,4 +134,20 @@ public class WfProcBean implements Serializable{
     public void setProcDisplayurl(String procDisplayurl) {
         this.procDisplayurl = procDisplayurl;
     }
+
+	public String getProcTenantId() {
+		return procTenantId;
+	}
+
+	public void setProcTenantId(String procTenantId) {
+		this.procTenantId = procTenantId;
+	}
+
+	public String getProcDepartId() {
+		return procDepartId;
+	}
+
+	public void setProcDepartId(String procDepartId) {
+		this.procDepartId = procDepartId;
+	}
 }
