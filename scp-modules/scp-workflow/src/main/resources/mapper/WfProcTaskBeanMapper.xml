@@ -1,72 +1,65 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.bjzhianjia.scp.security.wf.mapper.WfProcTaskBeanMapper">
+<mapper namespace="com.bjzhianjia.scp.security.wf.task.mapper.WfProcTaskBeanMapper">
 	<resultMap id="BaseResultMap"
-		type="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+		type="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		<id column="ID" property="id" jdbcType="INTEGER" />
 		<result column="PROC_INST_ID" property="procInstId" jdbcType="VARCHAR" />
 		<result column="PROC_ID" property="procId" jdbcType="VARCHAR" />
 		<result column="PROC_KEY" property="procKey" jdbcType="VARCHAR" />
+		
 		<result column="PROC_PTASKID" property="procPtaskid" jdbcType="VARCHAR" />
-		<result column="PROC_PTASKCODE" property="procPtaskcode"
-			jdbcType="VARCHAR" />
-		<result column="PROC_PTASKNAME" property="procPtaskname"
-			jdbcType="VARCHAR" />
-		<result column="PROC_TASK_COMMITTER" property="procTaskCommitter"
-			jdbcType="VARCHAR" />
-		<result column="PROC_TASK_COMMITTIME" property="procTaskCommittime"
-			jdbcType="INTEGER" />
+		<result column="PROC_PTASKCODE" property="procPtaskcode" jdbcType="VARCHAR" />
+		<result column="PROC_PTASKNAME" property="procPtaskname" jdbcType="VARCHAR" />
+		<result column="PROC_TASK_COMMITTER" property="procTaskCommitter" jdbcType="VARCHAR" />
+		<result column="PROC_TASK_COMMITTIME" property="procTaskCommittime" jdbcType="INTEGER" />
 		<result column="PROC_CTASKID" property="procCtaskid" jdbcType="VARCHAR" />
-		<result column="PROC_CTASKCODE" property="procCtaskcode"
-			jdbcType="VARCHAR" />
-		<result column="PROC_CTASKNAME" property="procCtaskname"
-			jdbcType="VARCHAR" />
-		<result column="PROC_EXECUTIONID" property="procExecutionid"
-			jdbcType="VARCHAR" />
-		<result column="PROC_TASK_GROUP" property="procTaskGroup"
-			jdbcType="VARCHAR" />
-		<result column="PROC_TASK_PROPERTIES" property="procTaskProperties"
-			jdbcType="VARCHAR" />
-		<result column="PROC_DATAPERMISSION" property="procDatapermission"
-			jdbcType="CHAR" />
-		<result column="PROC_APPOINT_USERS" property="procAppointUsers"
-			jdbcType="VARCHAR" />
-		<result column="PROC_LICENSOR" property="procLicensor"
-			jdbcType="VARCHAR" />
-		<result column="PROC_MANDATARY" property="procMandatary"
-			jdbcType="VARCHAR" />
-		<result column="PROC_TASK_ASSIGNEE" property="procTaskAssignee"
-			jdbcType="VARCHAR" />
-		<result column="PROC_TASK_ASSIGNTIME" property="procTaskAssigntime"
-			jdbcType="INTEGER" />
-		<result column="PROC_TASK_ENDTIME" property="procTaskEndtime"
-			jdbcType="INTEGER" />
-		<result column="PROC_TASK_APPR_STATUS" property="procTaskApprStatus"
-			jdbcType="CHAR" />
-		<result column="PROC_TASK_APPR_OPINION" property="procTaskApprOpinion"
-			jdbcType="VARCHAR" />
-		<result column="PROC_REFUSETASK" property="procRefusetask"
-			jdbcType="CHAR" />
-		<result column="PROC_TASK_STATUS" property="procTaskStatus"
-			jdbcType="CHAR" />
-		<result column="PROC_APPROVEURL" property="procApproveurl"
-			jdbcType="VARCHAR" />
-		<result column="PROC_PARALLEL" property="procParallel"
-			jdbcType="VARCHAR" />
-		<result column="PROC_PARALLEL_STATUS" property="procParallelStatus"
-			jdbcType="VARCHAR" />
-		<result column="PROC_VOTETASK" property="procVotetask"
-			jdbcType="VARCHAR" />
-		<result column="PROC_VOTEPOWER" property="procVotepower"
-			jdbcType="VARCHAR" />
-		<result column="PROC_VOTERULE" property="procVoterule"
-			jdbcType="VARCHAR" />
-		<result column="PROC_VOTEWEIGHT" property="procVoteweight"
-			jdbcType="FLOAT" />
-		<result column="PROC_VOTETHRESHOLD" property="procVotethreshold"
-			jdbcType="FLOAT" />
-		<result column="PROC_VOTEQUICKLY" property="procVotequickly"
-			jdbcType="VARCHAR" />
+		<result column="PROC_CTASKCODE" property="procCtaskcode" jdbcType="VARCHAR" />
+		<result column="PROC_CTASKNAME" property="procCtaskname" jdbcType="VARCHAR" />
+		<result column="PROC_EXECUTIONID" property="procExecutionid" jdbcType="VARCHAR" />
+		<result column="PROC_TASK_GROUP" property="procTaskGroup" jdbcType="VARCHAR" />
+		<result column="PROC_TASK_PROPERTIES" property="procTaskProperties" jdbcType="VARCHAR" />
+		<result column="PROC_DATAPERMISSION" property="procDatapermission" jdbcType="CHAR" />
+		<result column="PROC_APPOINT_USERS" property="procAppointUsers" jdbcType="VARCHAR" />
+		<result column="PROC_LICENSOR" property="procLicensor" jdbcType="VARCHAR" />
+		<result column="PROC_MANDATARY" property="procMandatary" jdbcType="VARCHAR" />
+		<result column="PROC_TASK_ASSIGNEE" property="procTaskAssignee" jdbcType="VARCHAR" />
+		<result column="PROC_TASK_ASSIGNTIME" property="procTaskAssigntime" jdbcType="INTEGER" />
+		<result column="PROC_TASK_ENDTIME" property="procTaskEndtime" jdbcType="INTEGER" />
+		<result column="PROC_TASK_APPR_STATUS" property="procTaskApprStatus" jdbcType="CHAR" />
+		<result column="PROC_TASK_APPR_OPINION" property="procTaskApprOpinion" jdbcType="VARCHAR" />
+		<result column="PROC_REFUSETASK" property="procRefusetask" jdbcType="CHAR" />
+		<result column="PROC_TASK_STATUS" property="procTaskStatus" jdbcType="CHAR" />
+		<result column="PROC_APPROVEURL" property="procApproveurl" jdbcType="VARCHAR" />
+		<result column="PROC_PARALLEL" property="procParallel" jdbcType="VARCHAR" />
+		<result column="PROC_PARALLEL_STATUS" property="procParallelStatus" jdbcType="VARCHAR" />
+		<result column="PROC_VOTETASK" property="procVotetask" jdbcType="VARCHAR" />
+		<result column="PROC_VOTEPOWER" property="procVotepower" jdbcType="VARCHAR" />
+		<result column="PROC_VOTERULE" property="procVoterule" jdbcType="VARCHAR" />
+		<result column="PROC_VOTEWEIGHT" property="procVoteweight" jdbcType="FLOAT" />
+		<result column="PROC_VOTETHRESHOLD" property="procVotethreshold" jdbcType="FLOAT" />
+		<result column="PROC_VOTEQUICKLY" property="procVotequickly" jdbcType="VARCHAR" />
+		<result column="PROC_NAME" property="procName" jdbcType="VARCHAR" />
+		<result column="PROC_BIZID" property="procBizid" jdbcType="VARCHAR" />
+		<result column="PROC_ORGCODE" property="procOrgcode" jdbcType="VARCHAR" />
+		<result column="PROC_MEMO" property="procMemo" jdbcType="VARCHAR" />
+		<result column="PROC_ORGPERMISSION" property="procOrgpermission" jdbcType="CHAR" />
+		<result column="PROC_DEPTPERMISSION" property="procDeptpermission" jdbcType="CHAR" />
+		<result column="PROC_SELFPERMISSION1" property="procSelfpermission1" jdbcType="CHAR" />
+		<result column="PROC_SELFDATA1" property="procSelfdata1" jdbcType="VARCHAR" />
+		<result column="PROC_SELFPERMISSION2" property="procSelfpermission2" jdbcType="CHAR" />
+		<result column="PROC_SELFDATA2" property="procSelfdata2" jdbcType="VARCHAR" />
+		<result column="PROC_SELFPERMISSION3" property="procSelfpermission3" jdbcType="CHAR" />
+		<result column="PROC_SELFDATA3" property="procSelfdata3" jdbcType="VARCHAR" />
+		<result column="PROC_SELFPERMISSION4" property="procSelfpermission4" jdbcType="CHAR" />
+		<result column="PROC_SELFDATA4" property="procSelfdata4" jdbcType="VARCHAR" />
+		<result column="PROC_SELFPERMISSION5" property="procSelfpermission5" jdbcType="CHAR" />
+		<result column="PROC_SELFDATA5" property="procSelfdata5" jdbcType="VARCHAR" />
+		<result column="PROC_SELF_PROPERTIES" property="procSelfProperties" jdbcType="VARCHAR" />
+		<result column="PROC_TENANTPERMISSION" property="procTenantpermission" jdbcType="CHAR" />
+		<result column="PROC_TENANT_ID" property="procTenantId" jdbcType="VARCHAR" />
+		<result column="PROC_DEPART_ID" property="procDepartId" jdbcType="VARCHAR" />
+		
 	</resultMap>
 	<sql id="Base_Column_List">
 		ID, PROC_INST_ID, PROC_ID, PROC_KEY, PROC_PTASKID,
@@ -96,7 +89,27 @@
 		PROC_VOTERULE,
 		PROC_VOTEWEIGHT,
 		PROC_VOTETHRESHOLD,
-		PROC_VOTEQUICKLY
+		PROC_VOTEQUICKLY,
+		PROC_NAME,
+		PROC_BIZID,
+		PROC_ORGCODE,
+		PROC_MEMO,
+		PROC_ORGPERMISSION,
+		PROC_DEPTPERMISSION,
+		PROC_SELFPERMISSION1,
+		PROC_SELFDATA1,
+		PROC_SELFPERMISSION2,
+		PROC_SELFDATA2,
+		PROC_SELFPERMISSION3,
+		PROC_SELFDATA3,
+		PROC_SELFPERMISSION4,
+		PROC_SELFDATA4,
+		PROC_SELFPERMISSION5,
+		PROC_SELFDATA5,
+		PROC_SELF_PROPERTIES,
+		PROC_TENANTPERMISSION,
+		PROC_TENANT_ID,
+		PROC_DEPART_ID
 	</sql>
 
 	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
@@ -106,19 +119,14 @@
 		from SCP_WF_PROC_TASK
 		where ID = #{id,jdbcType=INTEGER}
 	</select>
+	
 	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
 		delete from
 		SCP_WF_PROC_TASK
 		where ID = #{id,jdbcType=INTEGER}
 	</delete>
 
-	<delete id="deleteByPTaskCode" parameterType="java.lang.Integer">
-		delete from
-		SCP_WF_PROC_TASK
-		where PROC_PTASKCODE = #{taskId,jdbcType=INTEGER}
-	</delete>
-
-	<insert id="insert" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+	<insert id="insert" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		insert into SCP_WF_PROC_TASK
 		(ID, PROC_INST_ID, PROC_ID, PROC_KEY, PROC_PTASKID, PROC_PTASKCODE,
 		PROC_PTASKNAME,
@@ -149,7 +157,27 @@
 		PROC_VOTERULE,
 		PROC_VOTEWEIGHT,
 		PROC_VOTETHRESHOLD,
-		PROC_VOTEQUICKLY
+		PROC_VOTEQUICKLY,
+		PROC_NAME,
+		PROC_BIZID,
+		PROC_ORGCODE,
+		PROC_MEMO,
+		PROC_ORGPERMISSION,
+		PROC_DEPTPERMISSION,
+		PROC_SELFPERMISSION1,
+		PROC_SELFDATA1,
+		PROC_SELFPERMISSION2,
+		PROC_SELFDATA2,
+		PROC_SELFPERMISSION3,
+		PROC_SELFDATA3,
+		PROC_SELFPERMISSION4,
+		PROC_SELFDATA4,
+		PROC_SELFPERMISSION5,
+		PROC_SELFDATA5,
+		PROC_SELF_PROPERTIES,
+		PROC_TENANTPERMISSION,
+		PROC_TENANT_ID,
+		PROC_DEPART_ID
 		)
 		values
 		(#{id,jdbcType=INTEGER},
@@ -186,10 +214,29 @@
 		#{procVoterule,jdbcType=VARCHAR},
 		#{procVoteweight,jdbcType=FLOAT},
 		#{procVotethreshold,jdbcType=FLOAT},
-		#{procVotequickly,jdbcType=VARCHAR}
-		)
+		#{procVotequickly,jdbcType=VARCHAR},
+		#{procName,jdbcType=VARCHAR},
+		#{procBizid,jdbcType=VARCHAR},
+		#{procOrgcode,jdbcType=VARCHAR},
+		#{procMemo,jdbcType=VARCHAR},
+		#{procOrgpermission,jdbcType=CHAR},
+		#{procDeptpermission,jdbcType=CHAR},
+		#{procSelfpermission1,jdbcType=CHAR},
+		#{procSelfdata1,jdbcType=VARCHAR},
+		#{procSelfpermission2,jdbcType=CHAR},
+		#{procSelfdata2,jdbcType=VARCHAR},
+		#{procSelfpermission3,jdbcType=CHAR},
+		#{procSelfdata3,jdbcType=VARCHAR},
+		#{procSelfpermission4,jdbcType=CHAR},
+		#{procSelfdata4,jdbcType=VARCHAR},
+		#{procSelfpermission5,jdbcType=CHAR},
+		#{procSelfdata5,jdbcType=VARCHAR},
+		#{procSelfProperties,jdbcType=VARCHAR},
+		#{procTenantpermission,jdbcType=CHAR},
+		#{procTenantId,jdbcType=VARCHAR},
+		#{procDepartId,jdbcType=VARCHAR})
 	</insert>
-	<insert id="insertSelective" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+	<insert id="insertSelective" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		insert into SCP_WF_PROC_TASK
 		<trim prefix="(" suffix=")" suffixOverrides=",">
 			<if test="id != null">
@@ -296,6 +343,66 @@
 			</if>
 			<if test="procVotequickly != null">
 				PROC_VOTEQUICKLY,
+			</if>
+			<if test="procName != null">
+				PROC_NAME,
+			</if>
+			<if test="procBizid != null">
+				PROC_BIZID,
+			</if>
+			<if test="procOrgcode != null">
+				PROC_ORGCODE,
+			</if>
+			<if test="procMemo != null">
+				PROC_MEMO,
+			</if>
+			<if test="procOrgpermission != null">
+				PROC_ORGPERMISSION,
+			</if>
+			<if test="procDeptpermission != null">
+				PROC_DEPTPERMISSION,
+			</if>
+			<if test="procSelfpermission1 != null">
+				PROC_SELFPERMISSION1,
+			</if>
+			<if test="procSelfdata1 != null">
+				PROC_SELFDATA1,
+			</if>
+			<if test="procSelfpermission2 != null">
+				PROC_SELFPERMISSION2,
+			</if>
+			<if test="procSelfdata2 != null">
+				PROC_SELFDATA2,
+			</if>
+			<if test="procSelfpermission3 != null">
+				PROC_SELFPERMISSION3,
+			</if>
+			<if test="procSelfdata3 != null">
+				PROC_SELFDATA3,
+			</if>
+			<if test="procSelfpermission4 != null">
+				PROC_SELFPERMISSION4,
+			</if>
+			<if test="procSelfdata4 != null">
+				PROC_SELFDATA4,
+			</if>
+			<if test="procSelfpermission5 != null">
+				PROC_SELFPERMISSION5,
+			</if>
+			<if test="procSelfdata5 != null">
+				PROC_SELFDATA5,
+			</if>
+			<if test="procSelfProperties != null">
+				PROC_SELF_PROPERTIES,
+			</if>
+			<if test="procTenantpermission != null">
+				PROC_TENANTPERMISSION,
+			</if>
+			<if test="procTenantId != null">
+				PROC_TENANT_ID,
+			</if>
+			<if test="procDepartId != null">
+				PROC_DEPART_ID,
 			</if>
 		</trim>
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -404,9 +511,69 @@
 			<if test="procVotequickly != null">
 				#{procVotequickly,jdbcType=VARCHAR},
 			</if>
+			<if test="procName != null">
+				#{procName,jdbcType=VARCHAR},
+			</if>
+			<if test="procBizid != null">
+				#{procBizid,jdbcType=VARCHAR},
+			</if>
+			<if test="procOrgcode != null">
+				#{procOrgcode,jdbcType=VARCHAR},
+			</if>
+			<if test="procMemo != null">
+				#{procMemo,jdbcType=VARCHAR},
+			</if>
+			<if test="procOrgpermission != null">
+				#{procOrgpermission,jdbcType=CHAR},
+			</if>
+			<if test="procDeptpermission != null">
+				#{procDeptpermission,jdbcType=CHAR},
+			</if>
+			<if test="procSelfpermission1 != null">
+				#{procSelfpermission1,jdbcType=CHAR},
+			</if>
+			<if test="procSelfdata1 != null">
+				#{procSelfdata1,jdbcType=VARCHAR},
+			</if>
+			<if test="procSelfpermission2 != null">
+				#{procSelfpermission2,jdbcType=CHAR},
+			</if>
+			<if test="procSelfdata2 != null">
+				#{procSelfdata2,jdbcType=VARCHAR},
+			</if>
+			<if test="procSelfpermission3 != null">
+				#{procSelfpermission3,jdbcType=CHAR},
+			</if>
+			<if test="procSelfdata3 != null">
+				#{procSelfdata3,jdbcType=VARCHAR},
+			</if>
+			<if test="procSelfpermission4 != null">
+				#{procSelfpermission4,jdbcType=CHAR},
+			</if>
+			<if test="procSelfdata4 != null">
+				#{procSelfdata4,jdbcType=VARCHAR},
+			</if>
+			<if test="procSelfpermission5 != null">
+				#{procSelfpermission5,jdbcType=CHAR},
+			</if>
+			<if test="procSelfdata5 != null">
+				#{procSelfdata5,jdbcType=VARCHAR},
+			</if>
+			<if test="procSelfProperties != null">
+				#{procSelfProperties,jdbcType=VARCHAR},
+			</if>
+			<if test="procTenantpermission != null">
+				#{procTenantpermission,jdbcType=CHAR},
+			</if>
+			<if test="procTenantId != null">
+				#{procTenantId,jdbcType=VARCHAR},
+			</if>
+			<if test="procDepartId != null">
+				#{procDepartId,jdbcType=VARCHAR},
+			</if>
 		</trim>
 	</insert>
-	<update id="updateByPrimaryKeySelective" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+	<update id="updateByPrimaryKeySelective" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		update SCP_WF_PROC_TASK
 		<set>
 			<if test="procInstId != null">
@@ -520,60 +687,97 @@
 			<if test="procVotequickly != null">
 				PROC_VOTEQUICKLY = #{procVotequickly,jdbcType=VARCHAR},
 			</if>
+			<if test="procName != null">
+				PROC_NAME = #{procName,jdbcType=VARCHAR},
+			</if>
+			<if test="procBizid != null">
+				PROC_BIZID = #{procBizid,jdbcType=VARCHAR},
+			</if>
+			<if test="procOrgcode != null">
+				PROC_ORGCODE = #{procOrgcode,jdbcType=VARCHAR},
+			</if>
+			<if test="procMemo != null">
+				PROC_MEMO = #{procMemo,jdbcType=VARCHAR},
+			</if>
+			<if test="procOrgpermission != null">
+				PROC_ORGPERMISSION = #{procOrgpermission,jdbcType=CHAR},
+			</if>
+			<if test="procDeptpermission != null">
+				PROC_DEPTPERMISSION = #{procDeptpermission,jdbcType=CHAR},
+			</if>
+			<if test="procSelfpermission1 != null">
+				PROC_SELFPERMISSION1 = #{procSelfpermission1,jdbcType=CHAR},
+			</if>
+			<if test="procSelfdata1 != null">
+				PROC_SELFDATA1 = #{procSelfdata1,jdbcType=VARCHAR},
+			</if>
+			<if test="procSelfpermission2 != null">
+				PROC_SELFPERMISSION2 = #{procSelfpermission2,jdbcType=CHAR},
+			</if>
+			<if test="procSelfdata2 != null">
+				PROC_SELFDATA2 = #{procSelfdata2,jdbcType=VARCHAR},
+			</if>
+			<if test="procSelfpermission3 != null">
+				PROC_SELFPERMISSION3 = #{procSelfpermission3,jdbcType=CHAR},
+			</if>
+			<if test="procSelfdata3 != null">
+				PROC_SELFDATA3 = #{procSelfdata3,jdbcType=VARCHAR},
+			</if>
+			<if test="procSelfpermission4 != null">
+				PROC_SELFPERMISSION4 = #{procSelfpermission4,jdbcType=CHAR},
+			</if>
+			<if test="procSelfdata4 != null">
+				PROC_SELFDATA4 = #{procSelfdata4,jdbcType=VARCHAR},
+			</if>
+			<if test="procSelfpermission5 != null">
+				PROC_SELFPERMISSION5 = #{procSelfpermission5,jdbcType=CHAR},
+			</if>
+			<if test="procSelfdata5 != null">
+				PROC_SELFDATA5 = #{procSelfdata5,jdbcType=VARCHAR},
+			</if>
+			<if test="procSelfProperties != null">
+				PROC_SELF_PROPERTIES = #{procSelfProperties,jdbcType=VARCHAR},
+			</if>
+			<if test="procTenantpermission != null">
+				PROC_TENANTPERMISSION = #{procTenantpermission,jdbcType=CHAR},
+			</if>
+			<if test="procTenantId != null">
+				PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR},
+			</if>
+			<if test="procDepartId != null">
+				PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR},
+			</if>
 		</set>
 		where ID = #{id,jdbcType=INTEGER}
 	</update>
-	<update id="updateByPrimaryKey" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+	<update id="updateByPrimaryKey" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		update
 		SCP_WF_PROC_TASK
 		set PROC_INST_ID = #{procInstId,jdbcType=VARCHAR},
 		PROC_ID = #{procId,jdbcType=VARCHAR},
-		PROC_KEY =
-		#{procKey,jdbcType=VARCHAR},
-		PROC_PTASKID =
-		#{procPtaskid,jdbcType=VARCHAR},
-		PROC_PTASKCODE =
-		#{procPtaskcode,jdbcType=VARCHAR},
-		PROC_PTASKNAME =
-		#{procPtaskname,jdbcType=VARCHAR},
-		PROC_TASK_COMMITTER =
-		#{procTaskCommitter,jdbcType=VARCHAR},
-		PROC_TASK_COMMITTIME =
-		#{procTaskCommittime,jdbcType=INTEGER},
-		PROC_CTASKID =
-		#{procCtaskid,jdbcType=VARCHAR},
-		PROC_CTASKCODE =
-		#{procCtaskcode,jdbcType=VARCHAR},
-		PROC_CTASKNAME =
-		#{procCtaskname,jdbcType=VARCHAR},
-		PROC_EXECUTIONID =
-		#{procExecutionid,jdbcType=VARCHAR},
-		PROC_TASK_GROUP =
-		#{procTaskGroup,jdbcType=VARCHAR},
-		PROC_TASK_PROPERTIES =
-		#{procTaskProperties,jdbcType=VARCHAR},
-		PROC_DATAPERMISSION =
-		#{procDatapermission,jdbcType=CHAR},
-		PROC_APPOINT_USERS =
-		#{procAppointUsers,jdbcType=VARCHAR},
-		PROC_LICENSOR =
-		#{procLicensor,jdbcType=VARCHAR},
-		PROC_MANDATARY =
-		#{procMandatary,jdbcType=VARCHAR},
-		PROC_TASK_ASSIGNEE =
-		#{procTaskAssignee,jdbcType=VARCHAR},
-		PROC_TASK_ASSIGNTIME =
-		#{procTaskAssigntime,jdbcType=INTEGER},
-		PROC_TASK_ENDTIME =
-		#{procTaskEndtime,jdbcType=INTEGER},
-		PROC_TASK_APPR_STATUS =
-		#{procTaskApprStatus,jdbcType=CHAR},
-		PROC_TASK_APPR_OPINION =
-		#{procTaskApprOpinion,jdbcType=VARCHAR},
-		PROC_REFUSETASK =
-		#{procRefusetask,jdbcType=CHAR},
-		PROC_TASK_STATUS =
-		#{procTaskStatus,jdbcType=CHAR},
+		PROC_KEY = #{procKey,jdbcType=VARCHAR},
+		PROC_PTASKID = #{procPtaskid,jdbcType=VARCHAR},
+		PROC_PTASKCODE = #{procPtaskcode,jdbcType=VARCHAR},
+		PROC_PTASKNAME = #{procPtaskname,jdbcType=VARCHAR},
+		PROC_TASK_COMMITTER = #{procTaskCommitter,jdbcType=VARCHAR},
+		PROC_TASK_COMMITTIME = #{procTaskCommittime,jdbcType=INTEGER},
+		PROC_CTASKID = #{procCtaskid,jdbcType=VARCHAR},
+		PROC_CTASKCODE = #{procCtaskcode,jdbcType=VARCHAR},
+		PROC_CTASKNAME = #{procCtaskname,jdbcType=VARCHAR},
+		PROC_EXECUTIONID = #{procExecutionid,jdbcType=VARCHAR},
+		PROC_TASK_GROUP = #{procTaskGroup,jdbcType=VARCHAR},
+		PROC_TASK_PROPERTIES = #{procTaskProperties,jdbcType=VARCHAR},
+		PROC_DATAPERMISSION = #{procDatapermission,jdbcType=CHAR},
+		PROC_APPOINT_USERS = #{procAppointUsers,jdbcType=VARCHAR},
+		PROC_LICENSOR = #{procLicensor,jdbcType=VARCHAR},
+		PROC_MANDATARY = #{procMandatary,jdbcType=VARCHAR},
+		PROC_TASK_ASSIGNEE = #{procTaskAssignee,jdbcType=VARCHAR},
+		PROC_TASK_ASSIGNTIME = #{procTaskAssigntime,jdbcType=INTEGER},
+		PROC_TASK_ENDTIME = #{procTaskEndtime,jdbcType=INTEGER},
+		PROC_TASK_APPR_STATUS = #{procTaskApprStatus,jdbcType=CHAR},
+		PROC_TASK_APPR_OPINION = #{procTaskApprOpinion,jdbcType=VARCHAR},
+		PROC_REFUSETASK = #{procRefusetask,jdbcType=CHAR},
+		PROC_TASK_STATUS = #{procTaskStatus,jdbcType=CHAR},
 		PROC_APPROVEURL = #{procApproveurl,jdbcType=VARCHAR},
 		PROC_PARALLEL = #{procParallel,jdbcType=VARCHAR},
 		PROC_PARALLEL_STATUS = #{procParallelStatus,jdbcType=VARCHAR},
@@ -582,11 +786,31 @@
 		PROC_VOTERULE = #{procVoterule,jdbcType=VARCHAR},
 		PROC_VOTEWEIGHT = #{procVoteweight,jdbcType=FLOAT},
 		PROC_VOTETHRESHOLD = #{procVotethreshold,jdbcType=FLOAT},
-		PROC_VOTEQUICKLY = #{procVotequickly,jdbcType=VARCHAR}
+		PROC_VOTEQUICKLY = #{procVotequickly,jdbcType=VARCHAR},
+		PROC_NAME = #{procName,jdbcType=VARCHAR},
+		PROC_BIZID = #{procBizid,jdbcType=VARCHAR},
+		PROC_ORGCODE = #{procOrgcode,jdbcType=VARCHAR},
+		PROC_MEMO = #{procMemo,jdbcType=VARCHAR},
+		PROC_ORGPERMISSION = #{procOrgpermission,jdbcType=CHAR},
+		PROC_DEPTPERMISSION = #{procDeptpermission,jdbcType=CHAR},
+		PROC_SELFPERMISSION1 = #{procSelfpermission1,jdbcType=CHAR},
+		PROC_SELFDATA1 = #{procSelfdata1,jdbcType=VARCHAR},
+		PROC_SELFPERMISSION2 = #{procSelfpermission2,jdbcType=CHAR},
+		PROC_SELFDATA2 = #{procSelfdata2,jdbcType=VARCHAR},
+		PROC_SELFPERMISSION3 = #{procSelfpermission3,jdbcType=CHAR},
+		PROC_SELFDATA3 = #{procSelfdata3,jdbcType=VARCHAR},
+		PROC_SELFPERMISSION4 = #{procSelfpermission4,jdbcType=CHAR},
+		PROC_SELFDATA4 = #{procSelfdata4,jdbcType=VARCHAR},
+		PROC_SELFPERMISSION5 = #{procSelfpermission5,jdbcType=CHAR},
+		PROC_SELFDATA5 = #{procSelfdata5,jdbcType=VARCHAR},
+		PROC_SELF_PROPERTIES = #{procSelfProperties,jdbcType=VARCHAR},
+		PROC_TENANTPERMISSION = #{procTenantpermission,jdbcType=CHAR},
+		PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR},
+		PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR}
 		where ID = #{id,jdbcType=INTEGER}
 	</update>
 
-	<select id="selectApprovedHistory" resultType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskHistoryBean">
+	<select id="selectApprovedHistory" resultType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskHistoryBean">
 		SELECT
 		task.PROC_INST_ID procInstId,
 		task.PROC_CTASKID procCtaskid,
@@ -629,7 +853,7 @@
 		ORDER BY task.ID
 	</select>
 
-	<update id="updateByInstIdSelective" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+	<update id="updateByInstIdSelective" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		update SCP_WF_PROC_TASK
 		<set>
 			<if test="procPtaskid != null">
@@ -735,24 +959,81 @@
 			<if test="procVotequickly != null">
 				PROC_VOTEQUICKLY = #{procVotequickly,jdbcType=VARCHAR},
 			</if>
+			<if test="procName != null">
+				PROC_NAME = #{procName,jdbcType=VARCHAR},
+			</if>
+			<if test="procBizid != null">
+				PROC_BIZID = #{procBizid,jdbcType=VARCHAR},
+			</if>
+			<if test="procOrgcode != null">
+				PROC_ORGCODE = #{procOrgcode,jdbcType=VARCHAR},
+			</if>
+			<if test="procMemo != null">
+				PROC_MEMO = #{procMemo,jdbcType=VARCHAR},
+			</if>
+			<if test="procOrgpermission != null">
+				PROC_ORGPERMISSION = #{procOrgpermission,jdbcType=CHAR},
+			</if>
+			<if test="procDeptpermission != null">
+				PROC_DEPTPERMISSION = #{procDeptpermission,jdbcType=CHAR},
+			</if>
+			<if test="procSelfpermission1 != null">
+				PROC_SELFPERMISSION1 = #{procSelfpermission1,jdbcType=CHAR},
+			</if>
+			<if test="procSelfdata1 != null">
+				PROC_SELFDATA1 = #{procSelfdata1,jdbcType=VARCHAR},
+			</if>
+			<if test="procSelfpermission2 != null">
+				PROC_SELFPERMISSION2 = #{procSelfpermission2,jdbcType=CHAR},
+			</if>
+			<if test="procSelfdata2 != null">
+				PROC_SELFDATA2 = #{procSelfdata2,jdbcType=VARCHAR},
+			</if>
+			<if test="procSelfpermission3 != null">
+				PROC_SELFPERMISSION3 = #{procSelfpermission3,jdbcType=CHAR},
+			</if>
+			<if test="procSelfdata3 != null">
+				PROC_SELFDATA3 = #{procSelfdata3,jdbcType=VARCHAR},
+			</if>
+			<if test="procSelfpermission4 != null">
+				PROC_SELFPERMISSION4 = #{procSelfpermission4,jdbcType=CHAR},
+			</if>
+			<if test="procSelfdata4 != null">
+				PROC_SELFDATA4 = #{procSelfdata4,jdbcType=VARCHAR},
+			</if>
+			<if test="procSelfpermission5 != null">
+				PROC_SELFPERMISSION5 = #{procSelfpermission5,jdbcType=CHAR},
+			</if>
+			<if test="procSelfdata5 != null">
+				PROC_SELFDATA5 = #{procSelfdata5,jdbcType=VARCHAR},
+			</if>
+			<if test="procSelfProperties != null">
+				PROC_SELF_PROPERTIES = #{procSelfProperties,jdbcType=VARCHAR},
+			</if>
+			<if test="procTenantpermission != null">
+				PROC_TENANTPERMISSION = #{procTenantpermission,jdbcType=CHAR},
+			</if>
+			<if test="procTenantId != null">
+				PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR},
+			</if>
+			<if test="procDepartId != null">
+				PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR},
+			</if>
 		</set>
 		where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
 	</update>
 
-	<update id="updateTaskByTaskid" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+	<update id="updateTaskByTaskid" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		update SCP_WF_PROC_TASK
 		<set>
 			<if test="procTaskProperties != null">
-				PROC_TASK_PROPERTIES =
-				#{procTaskProperties,jdbcType=VARCHAR},
+				PROC_TASK_PROPERTIES = #{procTaskProperties,jdbcType=VARCHAR},
 			</if>
 			<if test="procDatapermission != null">
-				PROC_DATAPERMISSION =
-				#{procDatapermission,jdbcType=CHAR},
+				PROC_DATAPERMISSION = #{procDatapermission,jdbcType=CHAR},
 			</if>
 			<if test="procAppointUsers != null">
-				PROC_APPOINT_USERS =
-				#{procAppointUsers,jdbcType=VARCHAR},
+				PROC_APPOINT_USERS = #{procAppointUsers,jdbcType=VARCHAR},
 			</if>
 			<if test="procLicensor != null">
 				PROC_LICENSOR = #{procLicensor,jdbcType=VARCHAR},
@@ -761,28 +1042,22 @@
 				PROC_MANDATARY = #{procMandatary,jdbcType=VARCHAR},
 			</if>
 			<if test="procTaskAssignee != null">
-				PROC_TASK_ASSIGNEE =
-				#{procTaskAssignee,jdbcType=VARCHAR},
+				PROC_TASK_ASSIGNEE = #{procTaskAssignee,jdbcType=VARCHAR},
 			</if>
 			<if test="procTaskAssigntime != null">
-				PROC_TASK_ASSIGNTIME =
-				#{procTaskAssigntime,jdbcType=INTEGER},
+				PROC_TASK_ASSIGNTIME = #{procTaskAssigntime,jdbcType=INTEGER},
 			</if>
 			<if test="procTaskEndtime != null">
-				PROC_TASK_ENDTIME =
-				#{procTaskEndtime,jdbcType=INTEGER},
+				PROC_TASK_ENDTIME = #{procTaskEndtime,jdbcType=INTEGER},
 			</if>
 			<if test="procTaskApprStatus != null">
-				PROC_TASK_APPR_STATUS =
-				#{procTaskApprStatus,jdbcType=CHAR},
+				PROC_TASK_APPR_STATUS = #{procTaskApprStatus,jdbcType=CHAR},
 			</if>
 			<if test="procTaskApprOpinion != null">
-				PROC_TASK_APPR_OPINION =
-				#{procTaskApprOpinion,jdbcType=VARCHAR},
+				PROC_TASK_APPR_OPINION = #{procTaskApprOpinion,jdbcType=VARCHAR},
 			</if>
 			<if test="procRefusetask != null">
-				PROC_REFUSETASK =
-				#{procRefusetask,jdbcType=CHAR},
+				PROC_REFUSETASK = #{procRefusetask,jdbcType=CHAR},
 			</if>
 			<if test="procTaskStatus != null">
 				PROC_TASK_STATUS = #{procTaskStatus,jdbcType=CHAR},
@@ -814,11 +1089,71 @@
 			<if test="procVotequickly != null">
 				PROC_VOTEQUICKLY = #{procVotequickly,jdbcType=VARCHAR},
 			</if>
+			<if test="procName != null">
+				PROC_NAME = #{procName,jdbcType=VARCHAR},
+			</if>
+			<if test="procBizid != null">
+				PROC_BIZID = #{procBizid,jdbcType=VARCHAR},
+			</if>
+			<if test="procOrgcode != null">
+				PROC_ORGCODE = #{procOrgcode,jdbcType=VARCHAR},
+			</if>
+			<if test="procMemo != null">
+				PROC_MEMO = #{procMemo,jdbcType=VARCHAR},
+			</if>
+			<if test="procOrgpermission != null">
+				PROC_ORGPERMISSION = #{procOrgpermission,jdbcType=CHAR},
+			</if>
+			<if test="procDeptpermission != null">
+				PROC_DEPTPERMISSION = #{procDeptpermission,jdbcType=CHAR},
+			</if>
+			<if test="procSelfpermission1 != null">
+				PROC_SELFPERMISSION1 = #{procSelfpermission1,jdbcType=CHAR},
+			</if>
+			<if test="procSelfdata1 != null">
+				PROC_SELFDATA1 = #{procSelfdata1,jdbcType=VARCHAR},
+			</if>
+			<if test="procSelfpermission2 != null">
+				PROC_SELFPERMISSION2 = #{procSelfpermission2,jdbcType=CHAR},
+			</if>
+			<if test="procSelfdata2 != null">
+				PROC_SELFDATA2 = #{procSelfdata2,jdbcType=VARCHAR},
+			</if>
+			<if test="procSelfpermission3 != null">
+				PROC_SELFPERMISSION3 = #{procSelfpermission3,jdbcType=CHAR},
+			</if>
+			<if test="procSelfdata3 != null">
+				PROC_SELFDATA3 = #{procSelfdata3,jdbcType=VARCHAR},
+			</if>
+			<if test="procSelfpermission4 != null">
+				PROC_SELFPERMISSION4 = #{procSelfpermission4,jdbcType=CHAR},
+			</if>
+			<if test="procSelfdata4 != null">
+				PROC_SELFDATA4 = #{procSelfdata4,jdbcType=VARCHAR},
+			</if>
+			<if test="procSelfpermission5 != null">
+				PROC_SELFPERMISSION5 = #{procSelfpermission5,jdbcType=CHAR},
+			</if>
+			<if test="procSelfdata5 != null">
+				PROC_SELFDATA5 = #{procSelfdata5,jdbcType=VARCHAR},
+			</if>
+			<if test="procSelfProperties != null">
+				PROC_SELF_PROPERTIES = #{procSelfProperties,jdbcType=VARCHAR},
+			</if>
+			<if test="procTenantpermission != null">
+				PROC_TENANTPERMISSION = #{procTenantpermission,jdbcType=CHAR},
+			</if>
+			<if test="procTenantId != null">
+				PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR},
+			</if>
+			<if test="procDepartId != null">
+				PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR},
+			</if>
 		</set>
 		where PROC_CTASKID = #{procCtaskid,jdbcType=VARCHAR}
 	</update>
 
-	<update id="deleteProcessTask" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+	<update id="deleteProcessTask" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		update SCP_WF_PROC_TASK
 		<set>
 			<if test="procAppointUsers != null">
@@ -856,7 +1191,7 @@
 		and PROC_TASK_STATUS in ('1', '2')
 	</update>
 	
-	<update id="cancelProcessTasks" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+	<update id="cancelProcessTasks" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		update SCP_WF_PROC_TASK
 		<set>
 			<if test="procTaskEndtime != null">
@@ -882,7 +1217,7 @@
 		and PROC_TASK_STATUS = '1'
 	</update>
 	
-	<update id="endProcessTasks" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+	<update id="endProcessTasks" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		update SCP_WF_PROC_TASK
 		<set>
 			<if test="procTaskAssignee != null">
@@ -916,7 +1251,7 @@
 		AND PROC_TASK_STATUS IN ('1','2')
 	</update>
 	
-	<update id="updateForUnclaim" parameterType="com.bjzhianjia.scp.security.wf.entity.WfProcTaskBean">
+	<update id="updateForUnclaim" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean">
 		update
 		SCP_WF_PROC_TASK
 		set PROC_LICENSOR =

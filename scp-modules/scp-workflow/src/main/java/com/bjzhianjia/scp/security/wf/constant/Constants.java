@@ -110,18 +110,29 @@ public class Constants{
      */
     public class WfProcessAuthData {
         public static final String PROC_AUTHTYPE = "procAuthType";
+        public static final String PROC_SELFPERMISSIONDATA1 = "procSelfPermissionData1";
+        public static final String PROC_SELFPERMISSIONDATA2 = "procSelfPermissionData2";
+        public static final String PROC_SELFPERMISSIONDATA3 = "procSelfPermissionData3";
+        public static final String PROC_SELFPERMISSIONDATA4 = "procSelfPermissionData4";
+        public static final String PROC_SELFPERMISSIONDATA5 = "procSelfPermissionData5";
         /** 流程任务token认证 -- 用户账号 */
         public static final String PROC_TOKENUSER = "procTokenUser";
         /** 流程任务token认证 -- 认证密码 */
         public static final String PROC_TOKENPASS = "procTokenPass";
         /** 流程任务的处理用户 */
         public static final String PROC_TASKUSER = "procTaskUser";
+        /** 流程任务用户所属部门 */
+        public static final String PROC_DEPATID = "procDeptId";
         /** 流程任务处理用户所属角色-Token方式 */
         public static final String PROC_TASKROLE = "procTaskRole";
         /** 流程任务处理用户所属角色列表 - Session方式 */
         public static final String PROC_TASKROLES = "procTaskRoles";
         /** 流程任务处理用户所属机构代码 */
         public static final String PROC_ORGCODE = "procOrgCode"; 
+        /** 流程任务处理用户所属租户ID */
+        public static final String PROC_TENANTID = "procTenantId"; 
+        /** 流程任务处理用户授权查看的机构代码 */
+        public static final String PROC_AUTHORGCODES = "procAuthOrgCodes"; 
     }
     
     /**
@@ -204,8 +215,26 @@ public class Constants{
         public static final String PROC_REFUSETASK = "refuseTask";
         /** 流程任务属性 -- 任务提交前和提交后的回调接口类 */
         public static final String PROC_CALLBACK = "callback";
+        /** 流程任务属性 -- 流程租户数据权限 */
+        public static final String PROC_TENANTPERMISSION = "tenantPermission";
+        /** 流程任务属性 -- 流程所属租户 */
+        public static final String PROC_TENANTID = "tenantId";
         /** 流程任务属性 -- 数据权限类型 0:不控制;1:本机构;2:上级机构;3:本机构及其上级;9:本人 */
         public static final String PROC_DATAPERMISSION = "dataPermission";
+        /** 流程任务属性 -- 机构数据权限类型 0:不启用;1:本机构;2:包括本机构在内的授权机构;3:除本机构外的其他授权机构;9:本人 */
+        public static final String PROC_ORGPERMISSION = "orgPermission";
+        /** 流程任务属性 -- 部门数据权限类型 0:不启用;1:启用 */
+        public static final String PROC_DEPTPERMISSION = "deptPermission";
+        /** 流程任务属性 -- 自定义数据权限类型 0:不启用;1:启用 */
+        public static final String PROC_SELFPERMISSION1 = "selfPermission1";
+        /** 流程任务属性 -- 自定义数据权限类型 0:不启用;1:启用 */
+        public static final String PROC_SELFPERMISSION2 = "selfPermission2";
+        /** 流程任务属性 -- 自定义数据权限类型 0:不启用;1:启用 */
+        public static final String PROC_SELFPERMISSION3 = "selfPermission3";
+        /** 流程任务属性 -- 自定义数据权限类型 0:不启用;1:启用 */
+        public static final String PROC_SELFPERMISSION4 = "selfPermission4";
+        /** 流程任务属性 -- 自定义数据权限类型 0:不启用;1:启用 */
+        public static final String PROC_SELFPERMISSION5 = "selfPermission5";
         /** 流程任务属性 -- 流程任务节点是否可以撤回 */
         public static final String PROC_RETRIEVE = "retrieve";
         /** 流程任务属性 -- 是否参与决策 1:是;0:否 */
@@ -259,6 +288,48 @@ public class Constants{
     }
     
     /**
+     * 工作流任务租户数据权限类型
+     * @author mayongming
+     *
+     */
+    public enum WfProcTenantDataPermissionType {
+        /** 不进行数据权限控制 */
+        NONE("0","不启用"),
+        /** 通过机构进行数据权限控制 */
+        ENABLE("1","启用");
+        
+        /** 响应代码 **/
+        private String retCode = "";
+        /** 提示信息 **/
+        private String retInfo = "";
+
+        private WfProcTenantDataPermissionType() {
+
+        }
+
+        private WfProcTenantDataPermissionType(String retCode, String retInfo) {
+            this.retCode = retCode;
+            this.retInfo = retInfo;
+        }
+
+        public String getRetCode() {
+            return retCode;
+        }
+
+        public void setRetCode(String retCode) {
+            this.retCode = retCode;
+        }
+
+        public String getRetInfo() {
+            return retInfo;
+        }
+
+        public void setRetInfo(String retInfo) {
+            this.retInfo = retInfo;
+        }
+    }
+    
+    /**
      * 工作流任务数据权限类型
      * @author mayongming
      *
@@ -306,6 +377,138 @@ public class Constants{
         }
     }
 
+    /**
+     * 工作流任务机构数据权限类型
+     * @author mayongming
+     *
+     */
+    public enum WfProcOrgDataPermissionType {
+        /** 不进行数据权限控制 */
+        NONE("0","不启用"),
+        /** 通过机构进行数据权限控制 */
+        SELF("1","本机构"),
+        /** 通过上级机构进行数据权限控制 */
+        ALL("2","包括本机构在内的授权机构"),
+        /** 通过自身和上级机构进行数据权限控制 */
+        AUTH("3","除本机构外的其他授权机构"),
+        /** 通过本人进行数据权限控制 */
+        ONESELF("9","本人");
+        
+        /** 响应代码 **/
+        private String retCode = "";
+        /** 提示信息 **/
+        private String retInfo = "";
+
+        private WfProcOrgDataPermissionType() {
+
+        }
+
+        private WfProcOrgDataPermissionType(String retCode, String retInfo) {
+            this.retCode = retCode;
+            this.retInfo = retInfo;
+        }
+
+        public String getRetCode() {
+            return retCode;
+        }
+
+        public void setRetCode(String retCode) {
+            this.retCode = retCode;
+        }
+
+        public String getRetInfo() {
+            return retInfo;
+        }
+
+        public void setRetInfo(String retInfo) {
+            this.retInfo = retInfo;
+        }
+    }
+    
+    /**
+     * 工作流任务部门数据权限类型
+     * @author mayongming
+     *
+     */
+    public enum WfProcDeptDataPermissionType {
+        /** 不进行数据权限控制 */
+        NONE("0","不启用"),
+        /** 通过机构进行数据权限控制 */
+        ENABLE("1","启用");
+        
+        /** 响应代码 **/
+        private String retCode = "";
+        /** 提示信息 **/
+        private String retInfo = "";
+
+        private WfProcDeptDataPermissionType() {
+
+        }
+
+        private WfProcDeptDataPermissionType(String retCode, String retInfo) {
+            this.retCode = retCode;
+            this.retInfo = retInfo;
+        }
+
+        public String getRetCode() {
+            return retCode;
+        }
+
+        public void setRetCode(String retCode) {
+            this.retCode = retCode;
+        }
+
+        public String getRetInfo() {
+            return retInfo;
+        }
+
+        public void setRetInfo(String retInfo) {
+            this.retInfo = retInfo;
+        }
+    }
+    
+    /**
+     * 工作流任务自定义数据权限类型
+     * @author mayongming
+     *
+     */
+    public enum WfProcSelfDataPermissionType {
+        /** 不进行数据权限控制 */
+        NONE("0","不启用"),
+        /** 通过机构进行数据权限控制 */
+        ENABLE("1","启用");
+        
+        /** 响应代码 **/
+        private String retCode = "";
+        /** 提示信息 **/
+        private String retInfo = "";
+
+        private WfProcSelfDataPermissionType() {
+
+        }
+
+        private WfProcSelfDataPermissionType(String retCode, String retInfo) {
+            this.retCode = retCode;
+            this.retInfo = retInfo;
+        }
+
+        public String getRetCode() {
+            return retCode;
+        }
+
+        public void setRetCode(String retCode) {
+            this.retCode = retCode;
+        }
+
+        public String getRetInfo() {
+            return retInfo;
+        }
+
+        public void setRetInfo(String retInfo) {
+            this.retInfo = retInfo;
+        }
+    }
+    
     /**
      * 工作流任务属性-投票特殊决策权
      * @author mayongming
@@ -526,39 +729,39 @@ public class Constants{
         }
     }
     
-    public enum ProcToken {
-        PROC_TOKEN_100("f53674938794c432e1021584ffd963a6", "331493b0b9d8815135f6361bd1f83a7c", "以租代售");
-
-        /** token user **/
-        private String tokenUser = "";
-        
-        /** token pass **/
-        private String tokenPass = "";
-        
-        /** token使用者 **/
-        private String systemName = "";
-
-        private ProcToken(String tokenUser, String tokenPass, String systemName) {
-            this.tokenUser = tokenUser;
-            this.tokenPass = tokenPass;
-            this.systemName = systemName;
-        }
-
-        public String getTokenUser() {
-            return tokenUser;
-        }
-
-        public String getTokenPass() {
-            return tokenPass;
-        }
-        
-        public String getSystemName() {
-            return systemName;
-        }
-        
-        public boolean exist(String tokenCode) {
-            ProcToken.valueOf(tokenCode);
-            return true;
-        }
-    }
+//    public enum ProcToken {
+//        PROC_TOKEN_100("f53674938794c432e1021584ffd963a6", "331493b0b9d8815135f6361bd1f83a7c", "以租代售");
+//
+//        /** token user **/
+//        private String tokenUser = "";
+//        
+//        /** token pass **/
+//        private String tokenPass = "";
+//        
+//        /** token使用者 **/
+//        private String systemName = "";
+//
+//        private ProcToken(String tokenUser, String tokenPass, String systemName) {
+//            this.tokenUser = tokenUser;
+//            this.tokenPass = tokenPass;
+//            this.systemName = systemName;
+//        }
+//
+//        public String getTokenUser() {
+//            return tokenUser;
+//        }
+//
+//        public String getTokenPass() {
+//            return tokenPass;
+//        }
+//        
+//        public String getSystemName() {
+//            return systemName;
+//        }
+//        
+//        public boolean exist(String tokenCode) {
+//            ProcToken.valueOf(tokenCode);
+//            return true;
+//        }
+//    }
 }
