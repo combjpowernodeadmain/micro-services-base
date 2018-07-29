@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.bjzhianjia.scp.security.wf.auth.service.IWfProcUserAuthService;
+import com.bjzhianjia.scp.security.wf.auth.biz.WfProcUserAuthBiz;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcessDataAttr;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfRequestDataTypeAttr;
 import com.bjzhianjia.scp.security.wf.constant.WorkflowEnumResults;
@@ -54,7 +54,7 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
     @Autowired
     WfProcTaskBiz wfProcTaskBiz;    
     @Autowired
-    IWfProcUserAuthService wfProcUserAuthService; 
+    WfProcUserAuthBiz wfProcUserAuthBiz; 
     
     /**
      * 根据流程定义编码启动对应的工作流，通过用户登录信息验证启动流程合法性
@@ -70,7 +70,7 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
             WfProcVariableDataBean procVarData = parseVariableData(objs);
             WfProcAuthDataBean authData = parseAuthData(objs);
             WfProcBizDataBean bizData = parseBizData(objs);
-            wfProcUserAuthService.userAuthenticate(authData, false, false);
+            wfProcUserAuthBiz.userAuthenticate(authData, false, false);
             
             return wfProcTaskBiz
                 .startProcessInstanceByKey(procData, procVarData, authData, bizData);
@@ -96,7 +96,7 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
             WfProcVariableDataBean procVarData = parseVariableData(objs);
             WfProcAuthDataBean authData = parseAuthData(objs);
             WfProcBizDataBean bizData = parseBizData(objs);
-            wfProcUserAuthService.userAuthenticate(authData, false, true);
+            wfProcUserAuthBiz.userAuthenticate(authData, false, true);
             
             return wfProcTaskBiz.startAndCompleteProcessInstanceByKey(procData, procVarData,
                 authData, bizData);
@@ -123,7 +123,7 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
             WfProcVariableDataBean procVarData = parseVariableData(objs);
             WfProcAuthDataBean authData = parseAuthData(objs);
             WfProcBizDataBean bizData = parseBizData(objs);
-            wfProcUserAuthService.userAuthenticate(authData, false, true);
+            wfProcUserAuthBiz.userAuthenticate(authData, false, true);
             
             return wfProcTaskBiz.claimProcessInstance(procData, procVarData, authData,
                 bizData);
@@ -149,7 +149,7 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
             WfProcVariableDataBean procVarData = parseVariableData(objs);
             WfProcAuthDataBean authData = parseAuthData(objs);
             WfProcBizDataBean bizData = parseBizData(objs);
-            wfProcUserAuthService.userAuthenticate(authData, false, false);
+            wfProcUserAuthBiz.userAuthenticate(authData, false, false);
             
             return wfProcTaskBiz.unclaimProcessInstance(procData, procVarData, authData,
                 bizData);
@@ -176,7 +176,7 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
             WfProcVariableDataBean procVarData = parseVariableData(objs);
             WfProcAuthDataBean authData = parseAuthData(objs);
             WfProcBizDataBean bizData = parseBizData(objs);
-            wfProcUserAuthService.userAuthenticate(authData, false, true);
+            wfProcUserAuthBiz.userAuthenticate(authData, false, true);
             
             // 调用流程任务审批服务接口
             wfProcTaskBiz.completeProcessInstanceByTaskId(procData, procVarData, authData, bizData);
@@ -203,7 +203,7 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
             WfProcVariableDataBean procVarData = parseVariableData(objs);
             WfProcAuthDataBean authData = parseAuthData(objs);
             WfProcBizDataBean bizData = parseBizData(objs);
-            wfProcUserAuthService.userAuthenticate(authData, false, true);
+            wfProcUserAuthBiz.userAuthenticate(authData, false, true);
             
             // 调用流程任务审批服务接口
             wfProcTaskBiz.completeProcessInstanceByTaskCode(procData, procVarData, authData, bizData);
@@ -230,7 +230,7 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
             WfProcVariableDataBean procVarData = parseVariableData(objs);
             WfProcAuthDataBean authData = parseAuthData(objs);
             WfProcBizDataBean bizData = parseBizData(objs);
-            wfProcUserAuthService.userAuthenticate(authData, false, false);
+            wfProcUserAuthBiz.userAuthenticate(authData, false, false);
             
             wfProcTaskBiz.deleteProcessInstance(procData, procVarData, authData, bizData);
         } catch (WorkflowException wfe) {
@@ -256,7 +256,7 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
             WfProcVariableDataBean procVarData = parseVariableData(objs);
             WfProcAuthDataBean authData = parseAuthData(objs);
             WfProcBizDataBean bizData = parseBizData(objs);
-            wfProcUserAuthService.userAuthenticate(authData, false, false);
+            wfProcUserAuthBiz.userAuthenticate(authData, false, false);
             
             wfProcTaskBiz.cancelProcessInstance(procData, procVarData, authData, bizData);
         } catch (WorkflowException wfe) {
@@ -282,7 +282,7 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
             WfProcVariableDataBean procVarData = parseVariableData(objs);
             WfProcAuthDataBean authData = parseAuthData(objs);
             WfProcBizDataBean bizData = parseBizData(objs);
-            wfProcUserAuthService.userAuthenticate(authData, false, false);
+            wfProcUserAuthBiz.userAuthenticate(authData, false, false);
             
             wfProcTaskBiz.retrieveProcessInstance(procData, procVarData, authData, bizData);
         } catch (WorkflowException wfe) {
@@ -308,7 +308,7 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
             WfProcVariableDataBean procVarData = parseVariableData(objs);
             WfProcAuthDataBean authData = parseAuthData(objs);
             WfProcBizDataBean bizData = parseBizData(objs);
-            wfProcUserAuthService.userAuthenticate(authData, false, false);
+            wfProcUserAuthBiz.userAuthenticate(authData, false, false);
             
             wfProcTaskBiz.endProcessInstance(procData, procVarData, authData, bizData);
         } catch (WorkflowException wfe) {
@@ -330,7 +330,7 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
             WfProcessDataBean procData = parseProcessData(objs);
             WfProcVariableDataBean procVarData = parseVariableData(objs);
             WfProcAuthDataBean authData = parseAuthData(objs);
-            wfProcUserAuthService.userAuthenticate(authData, false, true);
+            wfProcUserAuthBiz.userAuthenticate(authData, false, true);
             
             wfProcTaskBiz.delegateProcessInstance(procData, procVarData, authData);
         } catch (WorkflowException wfe) {
@@ -352,7 +352,7 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
             WfProcessDataBean procData = parseProcessData(objs);
             WfProcVariableDataBean procVarData = parseVariableData(objs);
             WfProcAuthDataBean authData = parseAuthData(objs);
-            wfProcUserAuthService.userAuthenticate(authData, false, true);
+            wfProcUserAuthBiz.userAuthenticate(authData, false, true);
             
             wfProcTaskBiz.cancelProcDelegate(procData, procVarData, authData);
         } catch (WorkflowException wfe) {
@@ -374,7 +374,7 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
             WfProcessDataBean procData = parseProcessData(objs);
             WfProcVariableDataBean procVarData = parseVariableData(objs);
             WfProcAuthDataBean authData = parseAuthData(objs);
-            wfProcUserAuthService.userAuthenticate(authData, false, false);
+            wfProcUserAuthBiz.userAuthenticate(authData, false, false);
             
             wfProcTaskBiz.appointAssignee(procData, procVarData, authData);
         } catch (WorkflowException wfe) {
@@ -396,7 +396,7 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
             WfProcessDataBean procData = parseProcessData(objs);
             WfProcVariableDataBean procVarData = parseVariableData(objs);
             WfProcAuthDataBean authData = parseAuthData(objs);
-            wfProcUserAuthService.userAuthenticate(authData, false, false);
+            wfProcUserAuthBiz.userAuthenticate(authData, false, false);
             
             wfProcTaskBiz.suspendProcess(procData, procVarData, authData);
         } catch (WorkflowException wfe) {
@@ -418,7 +418,7 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
             WfProcessDataBean procData = parseProcessData(objs);
             WfProcVariableDataBean procVarData = parseVariableData(objs);
             WfProcAuthDataBean authData = parseAuthData(objs);
-            wfProcUserAuthService.userAuthenticate(authData, false, false);
+            wfProcUserAuthBiz.userAuthenticate(authData, false, false);
             
             wfProcTaskBiz.activeProcess(procData, procVarData, authData);
         } catch (WorkflowException wfe) {
