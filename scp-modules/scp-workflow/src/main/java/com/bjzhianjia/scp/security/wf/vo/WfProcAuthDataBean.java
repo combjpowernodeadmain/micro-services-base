@@ -31,8 +31,7 @@ import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcessAuthData;
  * 2016.12.16    mayongming       1.0           1.0 Version
  * </pre>
  */
-public class WfProcAuthDataBean implements java.io.Serializable{
-
+public class WfProcAuthDataBean implements java.io.Serializable {
     private static final long serialVersionUID = 1597515654706105817L;
     private Map<String, Object> authData = new HashMap<String, Object>();
 
