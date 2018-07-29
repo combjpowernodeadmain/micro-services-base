@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bjzhianjia.scp.security.wf.auth.mapper.WfProcTokenMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.bjzhianjia.scp.security.wf.auth.entity.WfProcToken" id="wfProcTokenMap">
+        <result property="id" column="ID"/>
+        <result property="procTenantId" column="PROC_TENANT_ID"/>
+        <result property="procDepartId" column="PROC_DEPART_ID"/>
+        <result property="procTokenUser" column="PROC_TOKEN_USER"/>
+        <result property="procTokenPass" column="PROC_TOKEN_PASS"/>
+        <result property="procSystemName" column="PROC_SYSTEM_NAME"/>
+    </resultMap>
+
+</mapper>

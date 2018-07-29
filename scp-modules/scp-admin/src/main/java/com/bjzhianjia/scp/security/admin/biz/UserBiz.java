@@ -16,6 +16,16 @@
 
 package com.bjzhianjia.scp.security.admin.biz;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.merge.core.MergeCore;
@@ -23,18 +33,13 @@ import com.bjzhianjia.scp.security.admin.entity.User;
 import com.bjzhianjia.scp.security.admin.mapper.DepartMapper;
 import com.bjzhianjia.scp.security.admin.mapper.UserMapper;
 import com.bjzhianjia.scp.security.common.biz.BaseBiz;
-import com.bjzhianjia.scp.security.common.util.*;
+import com.bjzhianjia.scp.security.common.util.BooleanUtil;
+import com.bjzhianjia.scp.security.common.util.EntityUtils;
+import com.bjzhianjia.scp.security.common.util.Query;
+import com.bjzhianjia.scp.security.common.util.Sha256PasswordEncoder;
+import com.bjzhianjia.scp.security.common.util.UUIDUtils;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * ${DESCRIPTION}

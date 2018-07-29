@@ -1,8 +1,5 @@
 package com.bjzhianjia.scp.security.wf.task.mapper;
 
-import org.springframework.stereotype.Repository;
-
-import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 import com.bjzhianjia.scp.security.wf.task.entity.WfProcBean;
 
 public interface WfProcBeanMapper {

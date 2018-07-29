@@ -13,6 +13,7 @@
 package com.bjzhianjia.scp.security.wf.auth.entity;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * Description: 工作流Token认证实体类
@@ -36,6 +37,11 @@ public class WfProcTokenBean implements Serializable {
 	private String procTokenUser;
 	private String procTokenPass;
 	private String procSystemName;
+	private String isDeleted;
+	private String isEnable;
+	private Date enableOperateTime;
+	private Date deleteOperateTime;
+	
 
 	public String getId() {
 		return id;
@@ -84,4 +90,81 @@ public class WfProcTokenBean implements Serializable {
 	public void setProcSystemName(String procSystemName) {
 		this.procSystemName = procSystemName;
 	}
+
+    
+    /**
+     * @return the isDeleted
+     */
+    public String getIsDeleted() {
+        return isDeleted;
+    }
+
+    
+    /**
+     * @param isDeleted the isDeleted to set
+     */
+    public void setIsDeleted(String isDeleted) {
+        this.isDeleted = isDeleted;
+    }
+
+    
+    /**
+     * @return the isEnable
+     */
+    public String getIsEnable() {
+        return isEnable;
+    }
+
+    
+    /**
+     * @param isEnable the isEnable to set
+     */
+    public void setIsEnable(String isEnable) {
+        this.isEnable = isEnable;
+    }
+
+    
+    /**
+     * @return the enableOperateTime
+     */
+    public Date getEnableOperateTime() {
+        return enableOperateTime;
+    }
+
+    
+    /**
+     * @param enableOperateTime the enableOperateTime to set
+     */
+    public void setEnableOperateTime(Date enableOperateTime) {
+        this.enableOperateTime = enableOperateTime;
+    }
+
+    
+    /**
+     * @return the deleteOperateTime
+     */
+    public Date getDeleteOperateTime() {
+        return deleteOperateTime;
+    }
+
+    
+    /**
+     * @param deleteOperateTime the deleteOperateTime to set
+     */
+    public void setDeleteOperateTime(Date deleteOperateTime) {
+        this.deleteOperateTime = deleteOperateTime;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return "WfProcTokenBean [id=" + id + ", procTenantId=" + procTenantId + ", procDepartId="
+            + procDepartId + ", procTokenUser=" + procTokenUser + ", procTokenPass=" + procTokenPass
+            + ", procSystemName=" + procSystemName + ", isDeleted=" + isDeleted + ", isEnable="
+            + isEnable + ", enableOperateTime=" + enableOperateTime + ", deleteOperateTime="
+            + deleteOperateTime + "]";
+    }
+    
 }
