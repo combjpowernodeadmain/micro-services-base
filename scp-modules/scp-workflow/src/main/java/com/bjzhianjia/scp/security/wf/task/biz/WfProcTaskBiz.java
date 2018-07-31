@@ -254,14 +254,19 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			WfProcTaskPropertiesBean properties = wfProcDesinerBiz
 					.getTaskProperties(task.getId());
 
+			// 当前用户所属租户ID没有权限启动该
+			if (!authData.getProcTenantId().equals(getProcTenantId(properties))) {
+				throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020107);
+			}
+					
+			// 获取当前流程任务自定义属性
+			Map<String, String> procTaskSelfProps = getProcTaskSelfProperties(properties);
+						
 			// 对业务数据设置当前流程任务代码，没有下级审批任务和审批结论
 			ProcTaskData procTaskData = new ProcTaskData();
 			procTaskData.setProcInstanceId(processInstance.getId());
 			procTaskData.setProcTaskCode(task.getTaskDefinitionKey());
 			procTaskData.setProcTaskId(task.getId());
-
-			// 获取当前流程任务自定义属性
-			Map<String, String> procTaskSelfProps = getProcTaskSelfProperties(properties);
 
 			log.info("启动流程--开始启动业务流程(" + processInstance.getId() + "),业务ID("
 					+ bizData.getProcBizId() + ")...");
@@ -630,8 +635,13 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			Task task = getProcTaskEntityByInstance(processInstance.getId());
 
 			// 获取流程定义任务节点配置的任务属性数据
-			WfProcTaskPropertiesBean properties = wfProcDesinerBiz
-					.getTaskProperties(task.getId());
+			WfProcTaskPropertiesBean properties = wfProcDesinerBiz.getTaskProperties(task.getId());
+			
+			// 当前用户所属租户ID没有权限启动该
+			if (!authData.getProcTenantId().equals(getProcTenantId(properties))) {
+				throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020107);
+			}
+			
 			// 获取当前流程任务自定义属性
 			Map<String, String> procTaskSelfProps = getProcTaskSelfProperties(properties);
 						
