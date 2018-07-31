@@ -1,5 +1,7 @@
 package com.bjzhianjia.scp.cgp.entity;
 
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.*;
@@ -12,6 +14,7 @@ import javax.persistence.*;
  * @email 576866311@qq.com
  * @version 2018-07-30 22:12:53
  */
+@Data
 @Table(name = "attendance_info")
 public class AttendanceInfo implements Serializable {
 	private static final long serialVersionUID = 1L;
