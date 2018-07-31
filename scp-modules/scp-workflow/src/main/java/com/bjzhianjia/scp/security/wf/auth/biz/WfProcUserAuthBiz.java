@@ -31,47 +31,54 @@ public class WfProcUserAuthBiz extends WfBaseBiz {
     public void userAuthenticate(WfProcAuthDataBean authData, boolean checkOrg, boolean checkRole)
         throws WorkflowException {
         String authType = authData.getProcAuthType();
+        String userCode = null;
+        String orgCode = null;
+    	String tenantID = null;
         List<String> roleCodes = new ArrayList<String>();
-        
+        		
         if (StringUtil.isNull(authType)) {
             throw new WorkflowException(WorkflowEnumResults.WF_COMM_02000003); 
         } 
         
         switch (authType) {
             case WfUserAuthType.PROC_AUTH_TOKEN:
+            	tenantID = getTenantId(authData.getProcTaskUser());
+            	orgCode = getOrgCode(authData.getProcTaskUser());
+            	roleCodes = getRoleCodes(authData.getProcTaskUser());
+            	List<String> authOrgCodes = getAuthOrgCodes(authData.getProcTaskUser());
+            	
                 if (StringUtil.isNull(authData.getProcTaskUser())
-                    || (checkOrg && StringUtil.isNull(authData.getProcOrgCode()))
-					|| (checkRole && StringUtil.isNull(authData.getProcTaskRole()))
-					|| !wfProcTokenService.isMatched(
-							authData.getProcTenantId(),
+                    || (checkOrg && StringUtil.isNull(orgCode))
+					|| (checkRole && (roleCodes == null || roleCodes.isEmpty()))
+					|| (StringUtil.isNull(tenantID) || tenantID == null)
+					|| !wfProcTokenService.isMatched(tenantID,
 							authData.getProcTokenUser(),
 							authData.getProcTokenPass())) {
-				throw new WorkflowException(
-						WorkflowEnumResults.WF_COMM_02000004);
+                	throw new WorkflowException(WorkflowEnumResults.WF_COMM_02000004);
                 }
                 
                 // 创建操作角色列表，并放到流程变量数据中
-                roleCodes.add(authData.getProcTaskRole());
-                authData.setProcOrgCode(getOrgCode(authData.getProcTaskUser()));
-                authData.setProcDeptId(getDeptId(authData.getProcTaskUser()));// todo:Token方式是否可以
-                authData.setProcAuthOrgCodes(getAuthOrgCodes(authData.getProcTaskUser()));
+                authData.setProcOrgCode(orgCode);
+                authData.setProcTaskRoles(roleCodes);
+                authData.setProcDeptId(getDeptId(authData.getProcTaskUser()));
+                authData.setProcAuthOrgCodes(authOrgCodes);
                 authData.setProcTaskRoles(roleCodes);
                 
                 break;
             case WfUserAuthType.PROC_AUTH_SESSION:
-            	String userCode = getUserCode();
-            	String tenantID = getTenantId();
+            	userCode = getUserCode();
+            	tenantID = getTenantId();
                 roleCodes = getRoleCodes();
                 
                 if (StringUtil.isNull(userCode) || userCode == null) {
                 	throw new WorkflowException(WorkflowEnumResults.WF_COMM_02000005);
                 } 
                 
-                if(roleCodes == null || roleCodes.isEmpty()) {
+                if (roleCodes == null || roleCodes.isEmpty()) {
                     throw new WorkflowException(WorkflowEnumResults.WF_COMM_02000005);
                 }
 
-                if(StringUtil.isNull(tenantID) || tenantID == null) {
+                if (StringUtil.isNull(tenantID) || tenantID == null) {
                     throw new WorkflowException(WorkflowEnumResults.WF_COMM_02000005);
                 }
                 
