@@ -61,7 +61,7 @@ public class VhclManagementController extends BaseController<VhclManagementBiz,V
     @ApiOperation("查询单个对象")
     public ObjectRestResponse<VhclManagement> get(@PathVariable Integer id){
         ObjectRestResponse<VhclManagement> entityObjectRestResponse = new ObjectRestResponse<>();
-        Object o = baseBiz.selectById(id);
+        VhclManagement o = vhclService.get(id);
         VhclManagement vhcl = (VhclManagement)o;
         if(vhcl != null && vhcl.getIsDeleted().equals("1")) {
         	entityObjectRestResponse.data(null);
@@ -129,7 +129,7 @@ public class VhclManagementController extends BaseController<VhclManagementBiz,V
 			result.setMessage("请选择要删除的项");
 			return result;
 		}
-		vhclManagementBiz.deleteById(ids);
+		vhclManagementBiz.deleteByIds(ids);
         return result;
     }
 }

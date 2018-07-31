@@ -6,6 +6,7 @@ import javax.persistence.*;
 
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.merge.annonation.MergeField;
@@ -34,7 +35,7 @@ public class EnforceCertificate implements Serializable {
 	    //证件类型
     @Column(name = "cert_type")
     @NotEmpty(message="证件类型不能为空")
-    @MergeField(key = "root_biz_cert_t", feign = DictFeign.class, method = "getDictIds")
+    @MergeField(key = "root_biz_zfzType", feign = DictFeign.class, method = "getDictIds")
     private String certType;
 	
 	    //证件编号
@@ -45,10 +46,12 @@ public class EnforceCertificate implements Serializable {
 	
 	    //证件有效期起始
     @Column(name = "valid_start")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
     private Date validStart;
 	
 	    //证件有效期终止
     @Column(name = "valid_end")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
     private Date validEnd;
 	
 	    //持证人ID

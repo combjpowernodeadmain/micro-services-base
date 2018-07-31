@@ -113,7 +113,9 @@ public class EventTypeBiz extends BusinessBiz<EventTypeMapper,EventType> {
 	    
 	    criteria.andEqualTo("isDeleted", "0");
 	    if(StringUtils.isNotBlank(eventType.getTypeName())){
-	    	criteria.andEqualTo("typeName", eventType.getTypeName());
+	    	//事件类别名称模糊匹配查询
+	    	criteria.andLike("typeName","%"+ eventType.getTypeName()+"%");
+//	    	criteria.andEqualTo("typeName", eventType.getTypeName());
 	    }
 	    if(StringUtils.isNotBlank(eventType.getBizType())){
 	    	criteria.andEqualTo("bizType", eventType.getBizType());
@@ -122,7 +124,8 @@ public class EventTypeBiz extends BusinessBiz<EventTypeMapper,EventType> {
 	    	criteria.andEqualTo("isEnable", eventType.getIsEnable());
 	    }
 	    
-	    example.setOrderByClause("id desc");
+	    //按创建时间倒序
+	    example.setOrderByClause("crt_time desc");
 
 	    Page<Object> result = PageHelper.startPage(page, limit);
 	    List<EventType> list = eventTypeMapper.selectByExample(example);
@@ -157,10 +160,12 @@ public class EventTypeBiz extends BusinessBiz<EventTypeMapper,EventType> {
 	 * 根据多个id获取
 	 * @param ids
 	 */
-	public Map<String, String> getByIds(String ids) {
-		
+	public Map<Integer, String> getByIds(String ids) {
+		ids = "'"+ids.replaceAll(",","','")+"'";
 		List<EventType> list = eventTypeMapper.selectByIds(ids);
 		
-		return list.stream().collect(Collectors.toMap(EventType::getTypeCode, EventType::getTypeName));
+		return list.stream().collect(Collectors.toMap(EventType::getId, EventType::getTypeName));
+		//待聚和对象中enevtType属性封装的是Id，如果 返回typeCode:typeName组合，无法确定怎样去聚和
+//		return list.stream().collect(Collectors.toMap(EventType::getTypeCode, EventType::getTypeName));
 	}
 }

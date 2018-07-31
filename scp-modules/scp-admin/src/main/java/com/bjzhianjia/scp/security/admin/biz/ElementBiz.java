@@ -16,6 +16,12 @@
 
 package com.bjzhianjia.scp.security.admin.biz;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.ace.cache.annotation.Cache;
 import com.ace.cache.annotation.CacheClear;
 import com.bjzhianjia.scp.merge.annonation.MergeResult;
@@ -25,12 +31,6 @@ import com.bjzhianjia.scp.security.admin.mapper.ElementMapper;
 import com.bjzhianjia.scp.security.admin.mapper.UserMapper;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.util.BooleanUtil;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 /**
  * ${DESCRIPTION}

@@ -2,18 +2,15 @@ package com.bjzhianjia.scp.security.wf.auth.service;
 
 import java.util.List;
 
-import com.bjzhianjia.scp.security.wf.exception.WorkflowException;
-import com.bjzhianjia.scp.security.wf.vo.WfProcAuthDataBean;
-
 public interface IWfProcUserAuthService {
 	public String getUserId();
 
 	public String getUserCode();
-	
+
 	public String getDeptId();
-	
+
 	public String getDeptId(String userCode);
-	
+
 	public String getOrgId();
 
 	public String getTenantId();
@@ -34,6 +31,23 @@ public interface IWfProcUserAuthService {
 
 	public List<String> getAuthOrgCodes(String userCode);
 
-	public void userAuthenticate(WfProcAuthDataBean authData, boolean checkOrg,
-			boolean checkRole) throws WorkflowException;
+	public String getSelfPermissionData1();
+
+	public String getSelfPermissionData1(String userCode);
+
+	public String getSelfPermissionData2();
+
+	public String getSelfPermissionData2(String userCode);
+
+	public String getSelfPermissionData3();
+
+	public String getSelfPermissionData3(String userCode);
+
+	public String getSelfPermissionData4();
+
+	public String getSelfPermissionData4(String userCode);
+
+	public String getSelfPermissionData5();
+
+	public String getSelfPermissionData5(String userCode);
 }

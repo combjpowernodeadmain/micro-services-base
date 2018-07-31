@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.common.util.DatePattern;
 import com.bjzhianjia.scp.security.common.util.DateTools;
-import com.bjzhianjia.scp.security.wf.auth.service.IWfProcUserAuthService;
+import com.bjzhianjia.scp.security.wf.auth.biz.WfProcUserAuthBiz;
 import com.bjzhianjia.scp.security.wf.constant.WorkflowEnumResults;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcessAuthData;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcessVariableDataAttr;
@@ -61,7 +61,7 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
     @Autowired
     WfMonitorBiz wfMonitorBiz;
     @Autowired
-    IWfProcUserAuthService wfProcUserAuthService; 
+    WfProcUserAuthBiz wfProcUserAuthBiz; 
 
     /**
      * 查询用户已办流程任务列表
@@ -199,9 +199,10 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
         authData.setProcTaskRole(objs.getString(WfProcessAuthData.PROC_TASKROLE));
         authData.setProcOrgCode(objs.getString(WfProcessVariableDataAttr.PROC_ORGCODE));
         
-        wfProcUserAuthService.userAuthenticate(authData, false, false);        
+        wfProcUserAuthBiz.userAuthenticate(authData, checkOrg, checkRole);
         
         objs.put(WfProcessAuthData.PROC_TENANTID, authData.getProcTenantId());
+        objs.put(WfProcessAuthData.PROC_DEPATID, authData.getProcDeptId());
         objs.put(WfProcessAuthData.PROC_TOKENUSER, authData.getProcTokenUser());
         objs.put(WfProcessAuthData.PROC_TOKENPASS, authData.getProcTokenPass());
         objs.put(WfProcessAuthData.PROC_TASKUSER, authData.getProcTaskUser());
@@ -209,6 +210,11 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
         objs.put(WfProcessAuthData.PROC_ORGCODE, authData.getProcOrgCode());
         objs.put(WfProcessAuthData.PROC_TASKROLES, authData.getProcTaskRoles());
         objs.put(WfProcessAuthData.PROC_AUTHORGCODES, authData.getProcAuthOrgCodes());
+        objs.put(WfProcessAuthData.PROC_SELFPERMISSIONDATA1, wfProcUserAuthBiz.getSelfPermissionData1());
+        objs.put(WfProcessAuthData.PROC_SELFPERMISSIONDATA2, wfProcUserAuthBiz.getSelfPermissionData2());
+        objs.put(WfProcessAuthData.PROC_SELFPERMISSIONDATA3, wfProcUserAuthBiz.getSelfPermissionData3());
+        objs.put(WfProcessAuthData.PROC_SELFPERMISSIONDATA4, wfProcUserAuthBiz.getSelfPermissionData4());
+        objs.put(WfProcessAuthData.PROC_SELFPERMISSIONDATA5, wfProcUserAuthBiz.getSelfPermissionData5());
     }
     
     /**

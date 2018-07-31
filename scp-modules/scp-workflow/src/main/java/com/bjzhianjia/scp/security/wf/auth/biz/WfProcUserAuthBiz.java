@@ -6,21 +6,22 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.wf.auth.service.IWfProcTokenService;
 import com.bjzhianjia.scp.security.wf.auth.service.IWfProcUserAuthService;
 import com.bjzhianjia.scp.security.wf.base.WfBaseBiz;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfUserAuthType;
 import com.bjzhianjia.scp.security.wf.constant.WorkflowEnumResults;
 import com.bjzhianjia.scp.security.wf.exception.WorkflowException;
-import com.bjzhianjia.scp.security.wf.utils.SpringBeanUtil;
 import com.bjzhianjia.scp.security.wf.utils.StringUtil;
 import com.bjzhianjia.scp.security.wf.vo.WfProcAuthDataBean;
 
 @Service
 public class WfProcUserAuthBiz extends WfBaseBiz {
 	@Autowired
-    IWfProcTokenService wfProcTokenService;
+    private static IWfProcTokenService wfProcTokenService;
+	@Autowired
+	private IWfProcUserAuthService wfProcUserAuthService;
+	
 	
 	/**
      * 用户认证，未指定认证方式，或者认证不通过的请求抛出WorkflowException，不能进行后续流程处理
@@ -39,10 +40,8 @@ public class WfProcUserAuthBiz extends WfBaseBiz {
         switch (authType) {
             case WfUserAuthType.PROC_AUTH_TOKEN:
                 if (StringUtil.isNull(authData.getProcTaskUser())
-                	|| StringUtil.isNull(authData.getProcTenantId())
                     || (checkOrg && StringUtil.isNull(authData.getProcOrgCode()))
-					|| (checkRole && StringUtil.isNull(authData
-							.getProcTaskRole()))
+					|| (checkRole && StringUtil.isNull(authData.getProcTaskRole()))
 					|| !wfProcTokenService.isMatched(
 							authData.getProcTenantId(),
 							authData.getProcTokenUser(),
@@ -88,84 +87,99 @@ public class WfProcUserAuthBiz extends WfBaseBiz {
         }
     }
     
-	public String getUserId() {
-		return BaseContextHandler.getUserID();
-	}
-	
-	public String getUserCode() {
-		return BaseContextHandler.getUserID();
-	}
-	
-	public String getDeptId() {
-		return BaseContextHandler.getDepartID(); 
-	}
-	
-	public String getDeptId(String userCode) {
-		return BaseContextHandler.getDepartID(); 
-	}
-	
-	public String getTenantId() {
-		return BaseContextHandler.getTenantID();
-	}
-	
-	public String getTenantId(String userCode) {
-		return BaseContextHandler.getTenantID();
-	}
-	
-	public String getOrgId() {
-		return BaseContextHandler.getDepartID();
-	}
-	
-	public String getOrgId(String userCode) {
-		return BaseContextHandler.getDepartID();
-	}
-	
-	public String getOrgCode() {
-		return BaseContextHandler.getDepartID();
-	}
-	
-	public String getOrgCode(String userCode) {
-		return BaseContextHandler.getDepartID();
-	}
-	
-	public List<String> getRoleCodes() {
-		return null;
-	}
-	
-	public List<String> getRoleCodes(String userCode) {
-		return null;
-	}
-	
-	public List<String> getAuthOrgCodes() {
-		return null;
-	}
-	
-	public List<String> getAuthOrgCodes(String userCode) {
-		return null;
-	}
-	
-	/**
-     * 根据类名称实例化对象
-     * 
-     * @param className
-     *            类名称
-     * @return
-     * @throws WorkFlowException
-     */
-    @SuppressWarnings("unchecked")
-    protected IWfProcUserAuthService createUserAuthService(String className)
-        throws WorkflowException {
-        try {
-            if (!StringUtil.isNull(className)) {
-                Class<IWfProcUserAuthService> clz =
-                    (Class<IWfProcUserAuthService>) Class.forName(className);
-                
-                return (IWfProcUserAuthService) SpringBeanUtil.getBean(clz);
-            } else {
-                return null;
-            }
-        } catch (Exception e) {
-            throw new WorkflowException(WorkflowEnumResults.WF_COMM_02000002, e);
-        }
+    public String getUserId() {
+    	return wfProcUserAuthService.getUserId();
     }
+
+	public String getUserCode() {
+		return wfProcUserAuthService.getUserCode();
+	}
+
+	public String getDeptId() {
+		return wfProcUserAuthService.getDeptId();
+	}
+
+	public String getDeptId(String userCode) {
+		return wfProcUserAuthService.getDeptId(userCode);
+	}
+
+	public String getOrgId() {
+		return wfProcUserAuthService.getOrgId();
+	}
+
+	public String getTenantId() {
+		return wfProcUserAuthService.getTenantId();
+	}
+
+	public String getTenantId(String userCode) {
+		return wfProcUserAuthService.getTenantId(userCode);
+	}
+
+	public String getOrgId(String userCode) {
+		return wfProcUserAuthService.getOrgId(userCode);
+	}
+
+	public String getOrgCode() {
+		return wfProcUserAuthService.getOrgCode();
+	}
+
+	public String getOrgCode(String userCode) {
+		return wfProcUserAuthService.getOrgCode(userCode);
+	}
+
+	public List<String> getRoleCodes() {
+		return wfProcUserAuthService.getRoleCodes();
+	}
+
+	public List<String> getRoleCodes(String userCode) {
+		return wfProcUserAuthService.getRoleCodes(userCode);
+	}
+
+	public List<String> getAuthOrgCodes() {
+		return wfProcUserAuthService.getAuthOrgCodes();
+	}
+
+	public List<String> getAuthOrgCodes(String userCode) {
+		return wfProcUserAuthService.getAuthOrgCodes(userCode);
+	}
+
+	public String getSelfPermissionData1() {
+		return wfProcUserAuthService.getSelfPermissionData1();
+	}
+
+	public String getSelfPermissionData1(String userCode) {
+		return wfProcUserAuthService.getSelfPermissionData1(userCode);
+	}
+
+	public String getSelfPermissionData2() {
+		return wfProcUserAuthService.getSelfPermissionData2();
+	}
+
+	public String getSelfPermissionData2(String userCode) {
+		return wfProcUserAuthService.getSelfPermissionData2(userCode);
+	}
+
+	public String getSelfPermissionData3() {
+		return wfProcUserAuthService.getSelfPermissionData3();
+	}
+
+	public String getSelfPermissionData3(String userCode) {
+		return wfProcUserAuthService.getSelfPermissionData3(userCode);
+	}
+
+	public String getSelfPermissionData4() {
+		return wfProcUserAuthService.getSelfPermissionData4();
+	}
+
+	public String getSelfPermissionData4(String userCode) {
+		return wfProcUserAuthService.getSelfPermissionData4(userCode);
+	}
+
+	public String getSelfPermissionData5() {
+		return wfProcUserAuthService.getSelfPermissionData5();
+	}
+
+	public String getSelfPermissionData5(String userCode) {
+		return wfProcUserAuthService.getSelfPermissionData5(userCode);
+	}
 }

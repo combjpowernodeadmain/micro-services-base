@@ -4,12 +4,14 @@ import com.bjzhianjia.scp.security.admin.entity.Depart;
 import com.bjzhianjia.scp.security.admin.entity.Group;
 import com.bjzhianjia.scp.security.admin.entity.Position;
 import com.bjzhianjia.scp.security.admin.entity.User;
+import com.bjzhianjia.scp.security.admin.vo.PositionVo;
 import com.bjzhianjia.scp.security.common.data.Tenant;
 import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 
@@ -88,4 +90,12 @@ public interface PositionMapper extends CommonMapper<Position> {
      * @return
      */
     List<Position> selectUserFlowPosition(String userId);
+    
+    /**
+     * 按用户ID查询职位
+     * @author 尚
+     * @param userIdList
+     * @return
+     */
+    List<PositionVo> selectPositionByUser(@Param("userIds")String userIds);
 }

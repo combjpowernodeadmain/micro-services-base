@@ -1,16 +1,19 @@
 package com.bjzhianjia.scp.cgp.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
 import com.bjzhianjia.scp.cgp.biz.RightsIssuesBiz;
 import com.bjzhianjia.scp.cgp.entity.EventType;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.RightsIssues;
+import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 
@@ -33,6 +36,8 @@ public class RightsIssuesService {
 	
 	@Autowired
     private MergeCore mergeCore;
+	@Autowired
+	private DictFeign dictFeign;
 	
 	/**
 	 * 分页查询
@@ -80,7 +85,8 @@ public class RightsIssuesService {
 		
 		EventType eventType = eventTypeBiz.getById(rightsIssues.getType());
 		
-		if(eventType != null) {
+//		if(eventType != null) {
+		if(eventType == null) {
 			result.setMessage("事件类型不存在");
 			return result;
 		}
@@ -115,7 +121,8 @@ public class RightsIssuesService {
 		
 		EventType eventType = eventTypeBiz.getById(rightsIssues.getType());
 		
-		if(eventType != null) {
+//		if(eventType != null) {//原代码
+		if(eventType == null) {//后代码
 			result.setMessage("事件类型不存在");
 			return result;
 		}
@@ -125,5 +132,28 @@ public class RightsIssuesService {
 		result.setIsSuccess(true);
 		result.setMessage("成功");
 		return result;
+	}
+	
+	/**
+	 * 获取单条对象
+	 * @author 尚
+	 * @param id
+	 * @return
+	 */
+	public RightsIssues getByID(Integer id) {
+		RightsIssues rightsIssues = rightsIssuesBiz.selectById(id);
+		
+		//进行业务条线数据聚和
+		Map<String, String> bizTypeMap = dictFeign.getDictValueByID(rightsIssues.getBizType());
+		if(bizTypeMap!=null&&bizTypeMap.size()>0) {
+			String string = bizTypeMap.get(rightsIssues.getBizType());
+			JSONObject parseObject = JSONObject.parseObject(string);
+			JSONObject jsonObject=new JSONObject();
+			jsonObject.put("id", parseObject.getString("id"));
+			jsonObject.put("labelDefault", parseObject.getString("labelDefault"));
+			rightsIssues.setBizType(jsonObject.toJSONString());
+		}
+		
+		return rightsIssues;
 	}
 }

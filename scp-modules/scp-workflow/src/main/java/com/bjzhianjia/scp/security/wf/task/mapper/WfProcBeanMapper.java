@@ -2,11 +2,11 @@ package com.bjzhianjia.scp.security.wf.task.mapper;
 
 import org.springframework.stereotype.Repository;
 
-import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 import com.bjzhianjia.scp.security.wf.task.entity.WfProcBean;
 
+@Repository
 public interface WfProcBeanMapper {
-    int deleteByPrimaryKey(String procInstId);
+    int deleteByPrimaryKey(String procInstIdd);
     int insert(WfProcBean record);
     int insertSelective(WfProcBean record);
     WfProcBean selectByPrimaryKey(String procInstId);

@@ -218,52 +218,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		// 启动流程
 		ProcessInstance processInstance = null;
 
-		if (type == WfProcessStartModeAttr.PROC_DEFKEY) {
-			processInstance = startProcessByKey(procData.getProcDefKey(),
-					bizData.getProcBizId(), procVarData.getVariableData());
-		} else {
-			processInstance = startProcessById(procData.getProcDefId(),
-					bizData.getProcBizId(), procVarData.getVariableData());
-		}
-
-		ProcessDefinitionEntity procDef = wfProcDesinerBiz
-				.getDeployedProcessDefinition(processInstance
-						.getProcessDefinitionId());
-
-		// 业务流程数据准备
-		WfProcBean wfProcBean = creatProcessData(procVarData, authData,
-				processInstance.getId(), procDef);
-
-		// 得到启动节点流程任务
-		log.debug("启动流程--获取启动流程任务...");
-		Task task = getProcTaskEntityByInstance(processInstance.getId());
-		log.debug("启动流程--获取启动流程任务结束.");
-
-		// 获取流程定义任务节点配置的任务属性数据
-		WfProcTaskPropertiesBean properties = wfProcDesinerBiz
-				.getTaskProperties(task.getId());
-
-		// 流程任务数据准备
-		WfProcTaskBean wfProcTaskBean = createProcStartTaskData(wfProcBean, task, properties);
-
-		// 对业务数据设置当前流程任务代码，没有下级审批任务和审批结论
-		ProcTaskData procTaskData = new ProcTaskData();
-		procTaskData.setProcInstanceId(processInstance.getId());
-		procTaskData.setProcTaskCode(task.getTaskDefinitionKey());
-		procTaskData.setProcTaskId(wfProcTaskBean.getProcCtaskid());
-
-		// 获取当前流程任务自定义属性
-		Map<String, String> procTaskSelfProps = getProcTaskSelfProperties(properties);
-
-		log.info("启动流程--开始启动业务流程(" + processInstance.getId() + "),业务ID("
-				+ bizData.getProcBizId() + ")...");
-
 		try {
-			// 在流程任务启动前，调用任务回调函数
-			String callbackClass = getProcTaskCallback(properties);
-			beforeCallback(WfProcDealType.PROC_START, procTaskData,
-					procTaskSelfProps, callbackClass, bizData.getBizData());
-
 			// 如果没有指定关联业务ID，不能启动工作流，抛出异常
 			if (StringUtil.isNull(bizData.getProcBizId())) {
 				throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020103);
@@ -273,15 +228,62 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			if (StringUtil.isNull(bizData.getProcOrgCode())) {
 				throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020104);
 			}
+			
+			if (type == WfProcessStartModeAttr.PROC_DEFKEY) {
+				processInstance = startProcessByKey(procData.getProcDefKey(),
+						bizData.getProcBizId(), procVarData.getVariableData());
+			} else {
+				processInstance = startProcessById(procData.getProcDefId(),
+						bizData.getProcBizId(), procVarData.getVariableData());
+			}
+
+			ProcessDefinitionEntity procDef = wfProcDesinerBiz
+					.getDeployedProcessDefinition(processInstance
+							.getProcessDefinitionId());
+
+			// 业务流程数据准备
+			WfProcBean wfProcBean = creatProcessData(procVarData, authData,
+					processInstance.getId(), procDef);
+
+			// 得到启动节点流程任务
+			log.debug("启动流程--获取启动流程任务...");
+			Task task = getProcTaskEntityByInstance(processInstance.getId());
+			log.debug("启动流程--获取启动流程任务结束.");
+
+			// 获取流程定义任务节点配置的任务属性数据
+			WfProcTaskPropertiesBean properties = wfProcDesinerBiz
+					.getTaskProperties(task.getId());
+
+			// 对业务数据设置当前流程任务代码，没有下级审批任务和审批结论
+			ProcTaskData procTaskData = new ProcTaskData();
+			procTaskData.setProcInstanceId(processInstance.getId());
+			procTaskData.setProcTaskCode(task.getTaskDefinitionKey());
+			procTaskData.setProcTaskId(task.getId());
+
+			// 获取当前流程任务自定义属性
+			Map<String, String> procTaskSelfProps = getProcTaskSelfProperties(properties);
+
+			log.info("启动流程--开始启动业务流程(" + processInstance.getId() + "),业务ID("
+					+ bizData.getProcBizId() + ")...");
+			
+			// 在流程任务启动前，调用任务回调函数
+			String callbackClass = getProcTaskCallback(properties);
+			beforeCallback(WfProcDealType.PROC_START, procTaskData,
+					procTaskSelfProps, callbackClass, bizData.getBizData());
 
 			wfProcBean.setProcBizid(bizData.getProcBizId());
 			wfProcBean.setProcBiztype(bizData.getProcBizType());
 			wfProcBean.setProcOrgcode(bizData.getProcOrgCode());
 			wfProcBean.setProcMemo(bizData.getProcBizMemo());
-
+			wfProcBean.setProcTenantId(getProcTenantId(properties));
+			wfProcBean.setProcDepartId(authData.getProcDeptId());
+			
+			// 流程任务数据准备
+			WfProcTaskBean wfProcTaskBean = createProcStartTaskData(wfProcBean,
+					task, authData, properties, procTaskSelfProps);
+						
 			// 对流程开始节点任务进行任务自动签收操作
-			taskService.claim(wfProcTaskBean.getProcCtaskid(),
-					wfProcTaskBean.getProcTaskAssignee());
+			taskService.claim(wfProcTaskBean.getProcCtaskid(), wfProcTaskBean.getProcTaskAssignee());
 
 			// 在流程任务提交后，调用任务回调函数
 			afterCallback(WfProcDealType.PROC_START, procTaskData,
@@ -597,90 +599,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		// 启动流程
 		ProcessInstance processInstance = null;
 
-		if (type == WfProcessStartModeAttr.PROC_DEFKEY) {
-			processInstance = startProcessByKey(procData.getProcDefKey(),
-					bizData.getProcBizId(), procVarData.getVariableData());
-		} else {
-			processInstance = startProcessById(procData.getProcDefId(),
-					bizData.getProcBizId(), procVarData.getVariableData());
-		}
-
-		ProcessDefinitionEntity procDef = wfProcDesinerBiz
-				.getDeployedProcessDefinition(processInstance
-						.getProcessDefinitionId());
-
-		// 业务流程数据准备
-		WfProcBean wfProcBean = creatProcessData(procVarData, authData,
-				processInstance.getId(), procDef);
-
-		// 得到启动节点流程任务
-		Task task = getProcTaskEntityByInstance(processInstance.getId());
-
-		// 获取流程定义任务节点配置的任务属性数据
-		WfProcTaskPropertiesBean properties = wfProcDesinerBiz
-				.getTaskProperties(task.getId());
-
-		// 获取流程实例下一任务列表
-		List<WfProcTaskBean> wfNextTasksBean = new ArrayList<WfProcTaskBean>();
-		List<WfProcTaskBean> wfProcTaskBeans = new ArrayList<WfProcTaskBean>();
-
-		// 流程任务数据准备
-		WfProcTaskBean wfProcTaskBean = createProcStartTaskData(wfProcBean,
-				task, properties);
-		wfProcTaskBean.setProcTaskEndtime(wfProcBean.getProcCreatetime()); // 启动流程并提交的完成时间
-		wfProcTaskBean.setProcTaskApprStatus(FlowStatus.CHECK01.getRetCode()); // 启动流程并提交，状态为通过
-		wfProcTaskBean.setProcTaskApprOpinion(StringUtil.isNull(procVarData
-				.getProcApprOpinion()) ? "申请并提交" : procVarData
-				.getProcApprOpinion()); // 启动流程并提交，流程审批意见
-		wfProcTaskBean.setProcTaskStatus(FlowStatus.TASK03.getRetCode()); // 启动流程并提交，流程任务状态为已处理
-		wfProcTaskBeans.add(wfProcTaskBean);
-
-		// 我的流程任务列表信息。包括流程创建者、流程处理人、流程委托人、流程订阅者等
-		// 启动节点不允许使用委托授权方式，所以不生成委托人的我的流程数据
-		List<WfMyProcBean> wfMyProcBeans = new ArrayList<WfMyProcBean>();
-
-		String displayUrl = getProcDisplayUrl(properties);
-		String detailUrl = getProcDetailUrl(properties);
-		detailUrl = StringUtil.isNull(detailUrl) ? displayUrl : detailUrl;
-
-		// 设置流程详情页面URL
-		wfProcBean.setProcDisplayurl(detailUrl);
-
-		java.util.Set<String> myTaskUsers = new java.util.HashSet<String>();
-
-		// 生成流程创建者的我的流程数据
-		log.debug("启动流程--开始生成流程创建者的流程(" + processInstance.getId() + ")数据...");
-		wfMyProcBeans.add(createMyProcess(wfProcTaskBean,
-				authData.getProcTaskUser(),
-				ProcUserType.USERTYPE01.getRetCode(), displayUrl));
-		myTaskUsers.add(authData.getProcTaskUser());
-		log.debug("启动流程--生成流程创建者的流程(" + processInstance.getId() + ")数据结束.");
-
-		// 生成流程订阅者的我的流程数据
-		log.debug("启动流程--开始生成流程订阅者的流程(" + processInstance.getId() + ")数据...");
-		wfMyProcBeans.addAll(createSubscriberProcess(wfProcTaskBean,
-				myTaskUsers, bizData.getProcOrgCode(), displayUrl));
-		log.debug("启动流程--生成流程订阅者的流程(" + processInstance.getId() + ")数据结束.");
-
-		// 对业务数据设置当前流程任务代码和审批结论，未提交没有下级审批任务
-		ProcTaskData procTaskData = new ProcTaskData();
-		procTaskData.setProcInstanceId(processInstance.getId());
-		procTaskData.setProcTaskCode(task.getTaskDefinitionKey());
-		procTaskData.setProcApprStatus(FlowStatus.CHECK01.getRetCode());
-		procTaskData.setProcTaskId(task.getId());
-
-		// 获取当前流程任务自定义属性
-		Map<String, String> procTaskSelfProps = getProcTaskSelfProperties(properties);
-
-		log.info("启动流程--开始启动业务流程(" + processInstance.getId() + "),业务ID("
-				+ bizData.getProcBizId() + ")...");
-
 		try {
-			// 在流程任务审批提交前，调用任务审批提交前的任务回调函数
-			String callbackClass = getProcTaskCallback(properties);
-			beforeCallback(WfProcDealType.PROC_COMMIT, procTaskData,
-					procTaskSelfProps, callbackClass, bizData.getBizData());
-
 			// 如果没有指定关联业务ID，不能启动工作流，抛出异常
 			if (StringUtil.isNull(bizData.getProcBizId())) {
 				throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020103);
@@ -690,6 +609,88 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			if (StringUtil.isNull(bizData.getProcOrgCode())) {
 				throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020104);
 			}
+					
+			if (type == WfProcessStartModeAttr.PROC_DEFKEY) {
+				processInstance = startProcessByKey(procData.getProcDefKey(),
+						bizData.getProcBizId(), procVarData.getVariableData());
+			} else {
+				processInstance = startProcessById(procData.getProcDefId(),
+						bizData.getProcBizId(), procVarData.getVariableData());
+			}
+
+			ProcessDefinitionEntity procDef = wfProcDesinerBiz
+					.getDeployedProcessDefinition(processInstance
+							.getProcessDefinitionId());
+
+			// 业务流程数据准备
+			WfProcBean wfProcBean = creatProcessData(procVarData, authData,
+					processInstance.getId(), procDef);
+
+			// 得到启动节点流程任务
+			Task task = getProcTaskEntityByInstance(processInstance.getId());
+
+			// 获取流程定义任务节点配置的任务属性数据
+			WfProcTaskPropertiesBean properties = wfProcDesinerBiz
+					.getTaskProperties(task.getId());
+			// 获取当前流程任务自定义属性
+			Map<String, String> procTaskSelfProps = getProcTaskSelfProperties(properties);
+						
+			// 获取流程实例下一任务列表
+			List<WfProcTaskBean> wfNextTasksBean = new ArrayList<WfProcTaskBean>();
+			List<WfProcTaskBean> wfProcTaskBeans = new ArrayList<WfProcTaskBean>();
+
+			// 流程任务数据准备
+			WfProcTaskBean wfProcTaskBean = createProcStartTaskData(wfProcBean,
+					task, authData, properties, procTaskSelfProps);
+			wfProcTaskBean.setProcTaskEndtime(wfProcBean.getProcCreatetime()); // 启动流程并提交的完成时间
+			wfProcTaskBean.setProcTaskApprStatus(FlowStatus.CHECK01.getRetCode()); // 启动流程并提交，状态为通过
+			wfProcTaskBean.setProcTaskApprOpinion(StringUtil.isNull(procVarData
+					.getProcApprOpinion()) ? "申请并提交" : procVarData
+					.getProcApprOpinion()); // 启动流程并提交，流程审批意见
+			wfProcTaskBean.setProcTaskStatus(FlowStatus.TASK03.getRetCode()); // 启动流程并提交，流程任务状态为已处理
+			wfProcTaskBeans.add(wfProcTaskBean);
+
+			// 我的流程任务列表信息。包括流程创建者、流程处理人、流程委托人、流程订阅者等
+			// 启动节点不允许使用委托授权方式，所以不生成委托人的我的流程数据
+			List<WfMyProcBean> wfMyProcBeans = new ArrayList<WfMyProcBean>();
+
+			String displayUrl = getProcDisplayUrl(properties);
+			String detailUrl = getProcDetailUrl(properties);
+			detailUrl = StringUtil.isNull(detailUrl) ? displayUrl : detailUrl;
+
+			// 设置流程详情页面URL
+			wfProcBean.setProcDisplayurl(detailUrl);
+
+			java.util.Set<String> myTaskUsers = new java.util.HashSet<String>();
+
+			// 生成流程创建者的我的流程数据
+			log.debug("启动流程--开始生成流程创建者的流程(" + processInstance.getId() + ")数据...");
+			wfMyProcBeans.add(createMyProcess(wfProcTaskBean,
+					authData.getProcTaskUser(),
+					ProcUserType.USERTYPE01.getRetCode(), displayUrl));
+			myTaskUsers.add(authData.getProcTaskUser());
+			log.debug("启动流程--生成流程创建者的流程(" + processInstance.getId() + ")数据结束.");
+
+			// 生成流程订阅者的我的流程数据
+			log.debug("启动流程--开始生成流程订阅者的流程(" + processInstance.getId() + ")数据...");
+			wfMyProcBeans.addAll(createSubscriberProcess(wfProcTaskBean,
+					myTaskUsers, bizData.getProcOrgCode(), displayUrl));
+			log.debug("启动流程--生成流程订阅者的流程(" + processInstance.getId() + ")数据结束.");
+
+			// 对业务数据设置当前流程任务代码和审批结论，未提交没有下级审批任务
+			ProcTaskData procTaskData = new ProcTaskData();
+			procTaskData.setProcInstanceId(processInstance.getId());
+			procTaskData.setProcTaskCode(task.getTaskDefinitionKey());
+			procTaskData.setProcApprStatus(FlowStatus.CHECK01.getRetCode());
+			procTaskData.setProcTaskId(task.getId());
+
+			log.info("启动流程--开始启动业务流程(" + processInstance.getId() + "),业务ID("
+					+ bizData.getProcBizId() + ")...");
+			
+			// 在流程任务审批提交前，调用任务审批提交前的任务回调函数
+			String callbackClass = getProcTaskCallback(properties);
+			beforeCallback(WfProcDealType.PROC_COMMIT, procTaskData,
+					procTaskSelfProps, callbackClass, bizData.getBizData());
 
 			wfProcBean.setProcBizid(bizData.getProcBizId());
 			wfProcBean.setProcBiztype(bizData.getProcBizType());
@@ -719,8 +720,9 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 				procTaskData.setProcEnded(DictKeyConst.YESORNO_YES);
 			} else {
 				// 获取流程实例下一任务列表
-				wfNextTasksBean = getNextProcTasks(wfProcTaskBean, true,
-						DictKeyConst.YESORNO_NO, procVarData.getProcAssignee(),
+				wfNextTasksBean = getNextProcTasks(wfProcTaskBean, authData,
+						true, DictKeyConst.YESORNO_NO,
+						procVarData.getProcAssignee(),
 						wfProcBean.getProcCreatetime());
 
 				// 将下一任务列表添加到List列表中，并更新到流程任务列表中
@@ -788,7 +790,9 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		wfMyProcBean.setProcTaskcode(wfProcTask.getProcCtaskcode());
 		wfMyProcBean.setProcTaskname(wfProcTask.getProcCtaskname());
 		wfMyProcBean.setProcDisplayurl(displayUrl);
-
+		wfMyProcBean.setProcTenantId(wfProcTask.getProcTenantId());
+		wfMyProcBean.setProcDepartId(wfProcTask.getProcDepartId());
+		
 		return wfMyProcBean;
 	}
 
@@ -817,18 +821,16 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			for (String subscribeUser : subscribeUsers) {
 				if (!myTaskUsers.contains(subscribeUser)) {
 					WfMyProcBean wfSubscribeProcBean = new WfMyProcBean();
-					wfSubscribeProcBean.setProcInstId(wfProcTask
-							.getProcInstId());
+					wfSubscribeProcBean.setProcInstId(wfProcTask.getProcInstId());
 					wfSubscribeProcBean.setProcUser(subscribeUser);
-					wfSubscribeProcBean.setProcUserType(ProcUserType.USERTYPE03
-							.getRetCode());
-					wfSubscribeProcBean.setProcTaskid(wfProcTask
-							.getProcCtaskid());
-					wfSubscribeProcBean.setProcTaskcode(wfProcTask
-							.getProcCtaskcode());
-					wfSubscribeProcBean.setProcTaskname(wfProcTask
-							.getProcCtaskname());
+					wfSubscribeProcBean.setProcUserType(ProcUserType.USERTYPE03.getRetCode());
+					wfSubscribeProcBean.setProcTaskid(wfProcTask.getProcCtaskid());
+					wfSubscribeProcBean.setProcTaskcode(wfProcTask.getProcCtaskcode());
+					wfSubscribeProcBean.setProcTaskname(wfProcTask.getProcCtaskname());
 					wfSubscribeProcBean.setProcDisplayurl(displayUrl);
+					wfSubscribeProcBean.setProcTenantId(wfProcTask.getProcTenantId());
+					wfSubscribeProcBean.setProcDepartId(wfProcTask.getProcDepartId());
+					
 					wfMyProcBeans.add(wfSubscribeProcBean);
 				}
 			}
@@ -935,7 +937,8 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 				+ procTask.getProcCtaskname() + ")的委托关系...");
 		// 从委托授权表中获取当前流程任务的委托授权人列表
 		List<WfProcDelegateBean> delegates = getProcInstDelegateList(
-				procTask.getProcInstId(), authData.getProcTaskUser());
+				procTask.getProcInstId(), authData.getProcTaskUser(),
+				procTask.getProcTenantId(), procTask.getProcDepartId());
 
 		// 循环处理委托关系，委托授权人所属角色与流程任务候选用户组一致时委托关系才能成立
 		for (WfProcDelegateBean delegate : delegates) {
@@ -1278,7 +1281,8 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			WfProcVariableDataBean procVarData, WfProcAuthDataBean authData,
 			WfProcTaskBean procTask) throws WorkflowException {
 		WfProcDelegateBean wfDelegateMandatary = getDelegateMandatary(
-				procTask.getProcInstId(), procVarData.getProcAssignee());
+				procTask.getProcInstId(), procVarData.getProcAssignee(),
+				procTask.getProcTenantId(), procTask.getProcDepartId());
 
 		// 流程实例已经被委托，则不能被重复委托
 		if (wfDelegateMandatary != null) {
@@ -1286,7 +1290,8 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		}
 
 		WfProcDelegateBean wfProcDelegate = getDelegateLicensor(
-				procTask.getProcInstId(), authData.getProcTaskUser());
+				procTask.getProcInstId(), authData.getProcTaskUser(),
+				procTask.getProcTenantId(), procTask.getProcDepartId());
 
 		if (wfProcDelegate != null) {
 			wfProcDelegate.setProcMandatary(procVarData.getProcAssignee());
@@ -1301,6 +1306,9 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			wfProcDelegate.setProcMandatary(procVarData.getProcAssignee());
 			wfProcDelegate.setProcLicenseTime(DateTools.getCurrTime());
 			wfProcDelegate.setProcLicenseIsvalid(WfDataValid.PROC_DATA_VALID);
+			wfProcDelegate.setProcTenantId(procTask.getProcTenantId());
+			wfProcDelegate.setProcDepartId(procTask.getProcDepartId());
+			
 			insertProcInstDelegate(wfProcDelegate);
 		}
 	}
@@ -1489,7 +1497,8 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 					+ "),流程任务(" + procTask.getProcCtaskname() + ")的委托关系...");
 			// 从委托授权表中获取当前流程任务的委托授权人列表
 			List<WfProcDelegateBean> delegates = getProcInstDelegateList(
-					procTask.getProcInstId(), authData.getProcTaskUser());
+					procTask.getProcInstId(), authData.getProcTaskUser(),
+					procTask.getProcTenantId(), procTask.getProcDepartId());
 
 			// 循环处理委托关系，委托授权人所属角色与流程任务候选用户组一致时委托关系才能成立
 			for (WfProcDelegateBean delegate : delegates) {
@@ -1896,10 +1905,12 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 				procTaskData.setProcEnded(DictKeyConst.YESORNO_YES);
 
 				// 流程结束，获取处理该流程所有用户
-				allNotifyProcess = getMyProcessByProcInstId(procTask.getProcInstId());
+				allNotifyProcess = getMyProcessByProcInstId(
+						procTask.getProcInstId(), procTask.getProcTenantId(),
+						procTask.getProcDepartId());
 			} else {
 				// 获取流程实例下一任务列表
-				wfNextTasksBean = getNextProcTasks(procTask, isPassed,
+				wfNextTasksBean = getNextProcTasks(procTask, authData, isPassed,
 						parallel, procVarData.getProcAssignee(), datetime);
 				if (wfNextTasksBean != null && wfNextTasksBean.size() > 0) {
 					for (WfProcTaskBean temp : wfNextTasksBean) {
@@ -1955,8 +1966,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	private List<WfProcTaskBean> getParallelProcTask(String instId,
 			List<String> parallelTasks) {
 		// setDb(0, super.MASTER);
-		return wfProcTaskBeanMapper.getParallelProcTask(instId,
-				parallelTasks);
+		return wfProcTaskBeanMapper.getParallelProcTask(instId, parallelTasks);
 	}
 
 	/**
@@ -2241,11 +2251,9 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		}
 
 		// 查询可删除流程任务，流程任务状态为待签收和待处理
-		WfProcTaskBean procTask = getProcessTask(procData.getProcTaskId(),
-				getProcTaskStatus(3));
+		WfProcTaskBean procTask = getProcessTask(procData.getProcTaskId(), getProcTaskStatus(3));
 
-		deleteProcessInstance(procData, procVarData, authData, bizData,
-				procTask);
+		deleteProcessInstance(procData, procVarData, authData, bizData, procTask);
 	}
 
 	/**
@@ -2697,7 +2705,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 
 			// 获取撤回流程产生的下一任务列表
 			List<WfProcTaskBean> wfNextTasksBean = getNextProcTasks(
-					procTask, false, procTask.getProcParallel(), null, datetime);
+					procTask, authData, false, procTask.getProcParallel(), null, datetime);
 			List<String> nextTasks = new ArrayList<String>();
 			if (wfNextTasksBean != null && wfNextTasksBean.size() > 0) {
 				for (WfProcTaskBean temp : wfNextTasksBean) {
@@ -3100,8 +3108,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	 *            流程任务状态
 	 * @return
 	 */
-	private WfProcTaskBean getProcessTask(String procTaskId,
-			List<String> taskStatus) {
+	private WfProcTaskBean getProcessTask(String procTaskId, List<String> taskStatus) {
 		// setDb(0, super.SLAVE); 
 		return wfProcTaskBeanMapper.findTaskByTaskId(procTaskId, taskStatus);
 	}
@@ -3121,8 +3128,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	private WfProcTaskBean getProcessTask(String procInstId,
 			String taskCode, List<String> taskStatus) throws WorkflowException {
 		// setDb(0, super.SLAVE); 
-		return wfProcTaskBeanMapper.getActiveTask(procInstId, taskCode,
-				taskStatus);
+		return wfProcTaskBeanMapper.getActiveTask(procInstId, taskCode, taskStatus);
 	}
 
 	/**
@@ -3146,8 +3152,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	 *            流程任务状态
 	 * @return
 	 */
-	private List<WfProcTaskBean> getProcessTasks(String procInstId,
-			List<String> taskStatus) {
+	private List<WfProcTaskBean> getProcessTasks(String procInstId, List<String> taskStatus) {
 		// setDb(0, super.SLAVE); 
 		return wfProcTaskBeanMapper.getProcessTasks(procInstId, taskStatus);
 	}
@@ -3173,7 +3178,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	 *            流程实例ID
 	 * @return
 	 */
-	public int getActiveTaskCount(String procInstId) {
+	protected int getActiveTaskCount(String procInstId) {
 		// setDb(0, super.SLAVE); 
 		return wfProcTaskBeanMapper.getActiveTaskCount(procInstId);
 	}
@@ -3203,8 +3208,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	 */
 	protected int getDelegatedTaskCount(String procInstId, String mandatary) {
 		// setDb(0, super.MASTER);
-		return wfProcTaskBeanMapper.getDelegatedTaskCount(procInstId,
-				mandatary);
+		return wfProcTaskBeanMapper.getDelegatedTaskCount(procInstId, mandatary);
 	}
 
 	/**
@@ -3217,8 +3221,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	 * @return
 	 * @throws WorkflowException
 	 */
-	protected WfProcTaskBean getFinishedTask(String procInstId,
-			String taskCode) throws WorkflowException {
+	protected WfProcTaskBean getFinishedTask(String procInstId, String taskCode) throws WorkflowException {
 		// setDb(0, super.SLAVE); 
 		return wfProcTaskBeanMapper.getFinishedTask(procInstId, taskCode);
 	}
@@ -3264,6 +3267,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	 * 
 	 * @param wfPreProcTaskBean
 	 *            流程实例提交前的流程任务信息
+	 * @param authData 用户认证数据
 	 * @param isPassed
 	 *            是否审批通过
 	 * @param procParallel
@@ -3275,8 +3279,9 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	 * @throws Exception
 	 */
 	private List<WfProcTaskBean> getNextProcTasks(
-			WfProcTaskBean wfPreProcTaskBean, boolean isPassed,
-			String procParallel, String procAssignee, int datetime)
+			WfProcTaskBean wfPreProcTaskBean, WfProcAuthDataBean authData,
+			boolean isPassed, String procParallel, String procAssignee,
+			int datetime)
 			throws WorkflowException, Exception {
 		List<WfProcTaskBean> wfProcTaskBeans = new ArrayList<>();
 		Map<String, ActivityImpl> activities = wfProcDesinerBiz
@@ -3298,21 +3303,21 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			wfProcTaskBean.setProcInstId(wfPreProcTaskBean.getProcInstId()); // 流程实例ID
 			wfProcTaskBean.setProcId(wfPreProcTaskBean.getProcId());
 			wfProcTaskBean.setProcKey(wfPreProcTaskBean.getProcKey());
+			wfProcTaskBean.setProcName(wfPreProcTaskBean.getProcName());
+	        wfProcTaskBean.setProcOrgcode(wfPreProcTaskBean.getProcOrgcode());
+	        wfProcTaskBean.setProcBizid(wfPreProcTaskBean.getProcBizid());
+	        wfProcTaskBean.setProcMemo(wfPreProcTaskBean.getProcMemo());
 			wfProcTaskBean.setProcPtaskid(wfPreProcTaskBean.getProcCtaskid());// 前置任务ID
-			wfProcTaskBean.setProcPtaskcode(wfPreProcTaskBean
-					.getProcCtaskcode()); // 前置任务代码
-			wfProcTaskBean.setProcPtaskname(wfPreProcTaskBean
-					.getProcCtaskname()); // 前置任务名称
+			wfProcTaskBean.setProcPtaskcode(wfPreProcTaskBean.getProcCtaskcode()); // 前置任务代码
+			wfProcTaskBean.setProcPtaskname(wfPreProcTaskBean.getProcCtaskname()); // 前置任务名称
 			wfProcTaskBean.setProcExecutionid(newTask.getExecutionId());
-			wfProcTaskBean.setProcTaskCommitter(wfPreProcTaskBean
-					.getProcTaskAssignee()); // 流程任务提交人
+			wfProcTaskBean.setProcTaskCommitter(wfPreProcTaskBean.getProcTaskAssignee()); // 流程任务提交人
 			wfProcTaskBean.setProcTaskCommittime(datetime); // 流程任务提交时间
 			wfProcTaskBean.setProcCtaskid(newTask.getId()); // 当前流程任务ID
 			wfProcTaskBean.setProcCtaskcode(newTask.getTaskDefinitionKey()); // 当前流程任务代码
 			wfProcTaskBean.setProcCtaskname(newTask.getName());// 当前流程任务名称
 			wfProcTaskBean.setProcParallel(procParallel);
-			wfProcTaskBean.setProcParallelStatus(WfProcParallStatus.NOTAPPROVED
-					.getRetCode());
+			wfProcTaskBean.setProcParallelStatus(WfProcParallStatus.NOTAPPROVED.getRetCode());
 
 			// 如果是任务拒绝处理，则设置该任务为拒绝任务
 			if (isPassed) {
@@ -3322,14 +3327,28 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			}
 
 			// 获取流程定义任务节点中配置的表单数据
-			WfProcTaskPropertiesBean properties = wfProcDesinerBiz
-					.getTaskProperties(newTask.getId());
-			String procTastProperties = JSONUtil.objToJson(properties);
-			wfProcTaskBean.setProcTaskProperties(procTastProperties);
-
+			WfProcTaskPropertiesBean properties = wfProcDesinerBiz.getTaskProperties(newTask.getId());
+			wfProcTaskBean.setProcTaskProperties(JSONUtil.objToJson(properties));
+			wfProcTaskBean.setProcSelfProperties(JSONUtil.objToJson(getProcTaskSelfProperties(properties)));
+			
 			// 设置流程任务数据权限类型
-			wfProcTaskBean
-					.setProcDatapermission(getProcTaskDataPermission(properties));
+			wfProcTaskBean.setProcDatapermission(getProcTaskDataPermission(properties));
+			wfProcTaskBean.setProcOrgpermission(getProcTaskOrgPermission(properties));
+	        wfProcTaskBean.setProcDeptpermission(getProcTaskDeptPermission(properties));
+	        wfProcTaskBean.setProcDepartId(wfPreProcTaskBean.getProcDepartId());
+	        wfProcTaskBean.setProcTenantpermission(getProcTenantPermission(properties));
+	        wfProcTaskBean.setProcTenantId(wfPreProcTaskBean.getProcTenantId());
+	        wfProcTaskBean.setProcSelfpermission1(getProcTaskSelfPermission1(properties));
+	        wfProcTaskBean.setProcSelfdata1(authData.getProcSelfPermissionData1());
+	        wfProcTaskBean.setProcSelfpermission2(getProcTaskSelfPermission2(properties));
+	        wfProcTaskBean.setProcSelfdata2(authData.getProcSelfPermissionData2());
+	        wfProcTaskBean.setProcSelfpermission3(getProcTaskSelfPermission3(properties));
+	        wfProcTaskBean.setProcSelfdata3(authData.getProcSelfPermissionData3());
+	        wfProcTaskBean.setProcSelfpermission4(getProcTaskSelfPermission4(properties));
+	        wfProcTaskBean.setProcSelfdata4(authData.getProcSelfPermissionData4());
+	        wfProcTaskBean.setProcSelfpermission5(getProcTaskSelfPermission5(properties));
+	        wfProcTaskBean.setProcSelfdata5(authData.getProcSelfPermissionData5());
+	        
 			// 设置流程任务参与决策标识
 			wfProcTaskBean.setProcVotetask(getProcVoteTask(properties));
 			// 设置流程任务特殊决策权
@@ -3339,8 +3358,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			// 设置流程任务投票权重
 			wfProcTaskBean.setProcVoteweight(getProcVoteWeight(properties));
 			// 设置流程任务投票阈值
-			wfProcTaskBean
-					.setProcVotethreshold(getProcVoteThreshold(properties));
+			wfProcTaskBean.setProcVotethreshold(getProcVoteThreshold(properties));
 			// 设置流程任务速决标识
 			wfProcTaskBean.setProcVotequickly(getProcVoteQuickly(properties));
 			// 设置流程任务审批页面URL
@@ -3373,16 +3391,14 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 				wfProcTaskBean.setProcAppointUsers(assignee); // 指定受理人
 				wfProcTaskBean.setProcTaskAssignee(assignee); // 流程受理人为指定受理人
 				wfProcTaskBean.setProcTaskAssigntime(datetime); // 流程任务签收时间
-				wfProcTaskBean
-						.setProcTaskStatus(FlowStatus.TASK02.getRetCode()); // 流程任务指定受理人，任务状态待处理
+				wfProcTaskBean.setProcTaskStatus(FlowStatus.TASK02.getRetCode()); // 流程任务指定受理人，任务状态待处理
 			} else {
 				// 没有指定受理人，则从流程定义中获取候选用户组
 				String candidateGroups = wfProcDesinerBiz
 						.getTaskCandidateGroups(activities,
 								newTask.getTaskDefinitionKey());
 				wfProcTaskBean.setProcTaskGroup(candidateGroups);
-				wfProcTaskBean
-						.setProcTaskStatus(FlowStatus.TASK01.getRetCode()); // 流程任务没有指定受理人，任务状态未签收
+				wfProcTaskBean.setProcTaskStatus(FlowStatus.TASK01.getRetCode()); // 流程任务没有指定受理人，任务状态未签收
 			}
 
 			wfProcTaskBeans.add(wfProcTaskBean);
@@ -3483,8 +3499,9 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			}
 
 			// 查询指定用户已经写入的我的流程数据
-			List<WfMyProcBean> temp = getMyProcessByUsers(
-					wfMyProcBeans.get(0).getProcInstId(), users);
+			List<WfMyProcBean> temp = getMyProcessByUsers(wfMyProcBeans.get(0)
+					.getProcInstId(), users, wfMyProcBeans.get(0)
+					.getProcTenantId(), wfMyProcBeans.get(0).getProcDepartId());
 
 			Map<String, WfMyProcBean> hmMyProcess = new HashMap<String, WfMyProcBean>();
 			for (WfMyProcBean wfMyProcBean : temp) {
@@ -3498,19 +3515,13 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 				} else {
 					myProcessUsers.add(wfMyProcBean.getProcUser());
 					if (hmMyProcess.containsKey(wfMyProcBean.getProcUser())) {
-						WfMyProcBean myProcess = hmMyProcess
-								.get(wfMyProcBean.getProcUser());
-						myProcess.setProcUserType(wfMyProcBean
-								.getProcUserType());
+						WfMyProcBean myProcess = hmMyProcess.get(wfMyProcBean.getProcUser());
+						myProcess.setProcUserType(wfMyProcBean.getProcUserType());
 						myProcess.setProcTaskid(wfMyProcBean.getProcTaskid());
-						myProcess.setProcTaskcode(wfMyProcBean
-								.getProcTaskcode());
-						myProcess.setProcTaskname(wfMyProcBean
-								.getProcTaskname());
-						myProcess.setProcDisplayurl(wfMyProcBean
-								.getProcDisplayurl());
-						wfMyProcBeanMapper
-								.updateByPrimaryKeySelective(myProcess);
+						myProcess.setProcTaskcode(wfMyProcBean.getProcTaskcode());
+						myProcess.setProcTaskname(wfMyProcBean.getProcTaskname());
+						myProcess.setProcDisplayurl(wfMyProcBean.getProcDisplayurl());
+						wfMyProcBeanMapper.updateByPrimaryKeySelective(myProcess);
 					} else {
 						wfMyProcBeanMapper.insert(wfMyProcBean);
 					}
@@ -3526,10 +3537,11 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	 * @return
 	 * @throws WorkflowException
 	 */
-	protected List<WfMyProcBean> getMyProcessByProcInstId(String procInstId)
-			throws WorkflowException {
-		// setDb(0, super.SLAVE); 
-		return wfMyProcBeanMapper.selectByProcInstId(procInstId);
+	protected List<WfMyProcBean> getMyProcessByProcInstId(String procInstId,
+			String procTenantId, String procDepartId) throws WorkflowException {
+		// setDb(0, super.SLAVE);
+		return wfMyProcBeanMapper.selectByProcInstId(procInstId, procTenantId,
+				procDepartId);
 	}
 
 	/**
@@ -3542,9 +3554,10 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	 * @return
 	 */
 	protected WfMyProcBean getMyProcessByUser(String procInstId,
-			String procUser) {
+			String procUser, String procTenantId, String procDepartId) {
 		// setDb(0, super.MASTER);
-		return wfMyProcBeanMapper.getMyProcessByUser(procInstId, procUser);
+		return wfMyProcBeanMapper.getMyProcessByUser(procInstId, procUser,
+				procTenantId, procDepartId);
 	}
 
 	/**
@@ -3557,9 +3570,10 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	 * @return
 	 */
 	protected List<WfMyProcBean> getMyProcessByUsers(String procInstId,
-			List<String> procUsers) {
+			List<String> procUsers, String procTenantId, String procDepartId) {
 		// setDb(0, super.MASTER);
-		return wfMyProcBeanMapper.getMyProcessByUsers(procInstId, procUsers);
+		return wfMyProcBeanMapper.getMyProcessByUsers(procInstId, procUsers,
+				procTenantId, procDepartId);
 	}
 
 	/**
@@ -3610,10 +3624,11 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	 * @throws WorkflowException
 	 */
 	protected List<WfProcDelegateBean> getProcInstDelegateList(
-			String procInstId, String mandatary) throws WorkflowException {
-		// setDb(0, super.SLAVE); 
+			String procInstId, String mandatary, String procTenantId,
+			String procDepartId) throws WorkflowException {
+		// setDb(0, super.SLAVE);
 		return wfProcDelegateBeanMapper.getProcInstDelegateList(procInstId,
-				mandatary);
+				mandatary, procTenantId, procDepartId);
 	}
 
 	/**
@@ -3626,10 +3641,10 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	 * @return
 	 */
 	protected WfProcDelegateBean getDelegateMandatary(String procInstId,
-			String procMandatary) {
+			String procMandatary, String procTenantId, String procDepartId) {
 		// setDb(0, super.SLAVE); 
 		return wfProcDelegateBeanMapper.selectByInstAndMand(procInstId,
-				procMandatary);
+				procMandatary, procTenantId, procDepartId);
 	}
 
 	/**
@@ -3642,10 +3657,10 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	 * @return
 	 */
 	protected WfProcDelegateBean getDelegateLicensor(String procInstId,
-			String procLicensor) {
+			String procLicensor, String procTenantId, String procDepartId) {
 		// setDb(0, super.SLAVE); 
 		return wfProcDelegateBeanMapper.selectByInstAndLicens(procInstId,
-				procLicensor);
+				procLicensor, procTenantId, procDepartId);
 	}
 
 	/**

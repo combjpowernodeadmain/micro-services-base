@@ -19,6 +19,10 @@ public class EnterpriseInfo implements Serializable {
 	    //主键
     @Id
     private Integer id;
+    
+    //监管对象ID,后加字段，By尚
+    @Column(name="regula_obj_id")
+    private Integer regulaObjId;
 	
 	    //工商注册号
     @Column(name = "trade_regist_code")
@@ -168,6 +172,22 @@ public class EnterpriseInfo implements Serializable {
 	 */
 	public Integer getId() {
 		return id;
+	}
+	 /**
+	  * 获取：监管对象ID，后加字段
+	  * @author 尚
+	  * @return
+	  */
+	public Integer getRegulaObjId() {
+		return regulaObjId;
+	}
+	/**
+	 * 设置：监管对象ID，后加字段
+	 * @author 尚
+	 * @param regulaObjId
+	 */
+	public void setRegulaObjId(Integer regulaObjId) {
+		this.regulaObjId = regulaObjId;
 	}
 	/**
 	 * 设置：工商注册号
