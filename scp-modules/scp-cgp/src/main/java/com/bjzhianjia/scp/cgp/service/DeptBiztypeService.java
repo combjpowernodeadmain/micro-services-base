@@ -142,6 +142,10 @@ public class DeptBiztypeService {
 
 	public TableResultResponse<DeptBizTypeVo> get(String id) {
 		DeptBiztype deptBiztype = deptBiztypeBiz.selectById(Integer.valueOf(id));
+		
+		if(deptBiztype==null||deptBiztype.getIsDeleted().equals("1")) {
+			return null;
+		}
 
 		DeptBizTypeVo deptBiztypeVo = BeanUtil.copyBean_New(deptBiztype, new DeptBizTypeVo());
 

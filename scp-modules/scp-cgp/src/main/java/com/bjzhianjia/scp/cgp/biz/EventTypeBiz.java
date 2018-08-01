@@ -129,7 +129,7 @@ public class EventTypeBiz extends BusinessBiz<EventTypeMapper, EventType> {
 		}
 
 		// 按创建时间倒序
-		example.setOrderByClause("crt_time desc");
+		example.setOrderByClause("id desc");
 
 		Page<Object> result = PageHelper.startPage(page, limit);
 		List<EventType> list = eventTypeMapper.selectByExample(example);

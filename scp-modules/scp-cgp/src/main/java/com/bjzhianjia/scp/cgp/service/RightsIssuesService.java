@@ -143,6 +143,10 @@ public class RightsIssuesService {
 	public RightsIssues getByID(Integer id) {
 		RightsIssues rightsIssues = rightsIssuesBiz.selectById(id);
 		
+		if(rightsIssues==null||rightsIssues.getIsDeleted().equals("1")) {
+			return null;
+		}
+		
 		//进行业务条线数据聚和
 		Map<String, String> bizTypeMap = dictFeign.getDictValueByID(rightsIssues.getBizType());
 		if(bizTypeMap!=null&&bizTypeMap.size()>0) {

@@ -29,7 +29,6 @@ import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.vo.Regula_EnterPriseVo;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
-import com.bjzhianjia.scp.security.common.util.Query;
 
 import tk.mybatis.mapper.entity.Example;
 
@@ -381,6 +380,13 @@ public class RegulaObjectService {
 	public Regula_EnterPriseVo getById(Integer id){
 		//查询监管对象
 		RegulaObject regulaObject = regulaObjectBiz.selectById(id);
+		
+		if(regulaObject==null) {
+			return null;
+		}else if(regulaObject.getIsDeleted().equals("1")) {
+			return null;
+		}
+		
 		//查询企业信息
 		Example example=new Example(EnterpriseInfo.class);
 		Example.Criteria criteria=example.createCriteria();
@@ -390,14 +396,11 @@ public class RegulaObjectService {
 //		List<RegulaObject> list=new ArrayList<>();
 //		list.add(regulaObject);
 		
-		//聚和企业类型
+		//聚和监管对象类别
 		String objTypeId = regulaObject.getObjType();
 		Map<String, String> objTypeMap = dictFeign.getDictValueByID(objTypeId);
 		regulaObject.setObjType(objTypeMap.get(objTypeId));
 //		queryAssist(list);
-		
-		//聚和监管对象类别
-		
 		
 		/*
 		 * 聚和企业类型与证件类型

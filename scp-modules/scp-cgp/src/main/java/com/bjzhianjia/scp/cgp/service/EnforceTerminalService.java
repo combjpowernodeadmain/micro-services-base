@@ -218,6 +218,11 @@ public class EnforceTerminalService {
 		 * 获取单个对象前端需要返回【是否可用】的ID
 		 */
 		EnforceTerminal enforceTerminal = enforceTerminalBiz.selectById(id);
+		
+		if(enforceTerminal==null||enforceTerminal.getIsDeleted().equals("1")) {
+			return null;
+		}
+		
 		String isEnable = enforceTerminal.getIsEnable();
 		List<EnforceTerminal> list = new ArrayList<>();
 		list.add(enforceTerminal);
