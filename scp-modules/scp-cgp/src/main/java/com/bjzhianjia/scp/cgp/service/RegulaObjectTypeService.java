@@ -26,7 +26,6 @@ public class RegulaObjectTypeService {
      */
     public int updateRegulaObject(RegulaObjectType regulaObjectType) {
         int result = regulaObjectTypeMapper.updateByPrimaryKeySelective(regulaObjectType);
-
         return result;
     }
 
