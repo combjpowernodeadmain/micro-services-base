@@ -124,7 +124,7 @@ public class DeptBiztypeService {
 			for (String string : split) {
 				Map<String, String> deptBizTypeMap = dictFeign.getDictValueByID(string);
 				JSONObject jsonObject = JSONObject.parseObject(deptBizTypeMap.get(string));
-				String labelDefault = jsonObject.getString("labelDefault");
+				String labelDefault = jsonObject.getString("labelDefault"); 
 				if (StringUtils.isNotBlank(tmpDeptBiztype.getBizTypeName())) {
 					tmpDeptBiztype.setBizTypeName(tmpDeptBiztype.getBizTypeName() + "," + labelDefault);
 				} else {

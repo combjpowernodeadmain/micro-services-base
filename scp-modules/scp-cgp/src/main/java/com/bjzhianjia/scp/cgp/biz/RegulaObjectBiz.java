@@ -1,19 +1,29 @@
 package com.bjzhianjia.scp.cgp.biz;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.RegulaObject;
+import com.bjzhianjia.scp.cgp.mapper.EnterpriseInfoMapper;
 import com.bjzhianjia.scp.cgp.mapper.RegulaObjectMapper;
+import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
 import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.entity.Example.Criteria;
 
 /**
  * 监管对象
@@ -23,7 +33,13 @@ import tk.mybatis.mapper.entity.Example;
  * @version 2018-07-07 16:48:26
  */
 @Service
+@Transactional
 public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObject> {
+	@Autowired
+	private RegulaObjectMapper regulaObjectMapper;
+	@Autowired
+	private EnterpriseInfoMapper enterpriseInfoMapper;
+
 	/**
 	 * 查询id最大的那条记录
 	 * 
@@ -43,6 +59,7 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 
 	/**
 	 * 按条件分页查询
+	 * 
 	 * @author 尚
 	 * @param regulaObject
 	 * @param page
@@ -50,27 +67,58 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 	 * @return
 	 */
 	public TableResultResponse<RegulaObject> getList(RegulaObject regulaObject, int page, int limit) {
-		Example example=new Example(RegulaObject.class);
-		Example.Criteria criteria=example.createCriteria();
+		Example example = new Example(RegulaObject.class);
+		Example.Criteria criteria = example.createCriteria();
 		
 		criteria.andEqualTo("isDeleted", "0");
-		
-		if(StringUtils.isNotBlank(regulaObject.getObjName())) {
-			criteria.andLike("objName", "%"+regulaObject.getObjName());
+
+		//是否输入了按监管对象名称查询
+		if (StringUtils.isNotBlank(regulaObject.getObjName())) {
+			criteria.andLike("objName", "%" + regulaObject.getObjName());
 		}
-		
-		if(StringUtils.isNotBlank(regulaObject.getObjType())) {
-			criteria.andLike("objType", regulaObject.getObjType());
+
+		//是否输入了按监管对象类型查询
+		if (StringUtils.isNotBlank(regulaObject.getObjType())) {
+			criteria.andEqualTo("objType", regulaObject.getObjType());
 		}
-		
-		if(StringUtils.isNotBlank(regulaObject.getBizList())) {
-			criteria.andLike("bizList", regulaObject.getBizList());
+
+		//是否输入了按监管对象所属业务条线查询
+		if (StringUtils.isNotBlank(regulaObject.getBizList())) {
+			criteria.andLike("bizList", "%"+regulaObject.getBizList()+"%");
 		}
-		
+
 		example.setOrderByClause("crt_time desc");
-		
+
 		Page<Object> result = PageHelper.startPage(page, limit);
 		List<RegulaObject> list = this.mapper.selectByExample(example);
 		return new TableResultResponse<RegulaObject>(result.getTotal(), list);
+	}
+
+	public void remove(Integer[] ids) {
+		Date date = new Date();
+		
+		regulaObjectMapper.deleteByIds(ids, BaseContextHandler.getUserID(), BaseContextHandler.getUsername(), date);
+
+		enterpriseInfoMapper.deleteByRegulaObjIds(ids, BaseContextHandler.getUserID(), BaseContextHandler.getUsername(),
+				date);
+	}
+	
+	/**
+	 * 按条件查询
+	 * @author 尚
+	 * @param condition 封装条件的MAP集合，key:条件名，value:条件值
+	 * @return
+	 */
+	public TableResultResponse<RegulaObject> getByMap(Map<String, Object> condition){
+		Example example=new Example(RegulaObject.class);
+		Example.Criteria criteria=example.createCriteria();
+		
+		Set<String> keySet = condition.keySet();
+		for (String string : keySet) {
+			criteria.andEqualTo(string,condition.get(string));
+		}
+		
+		List<RegulaObject> rows = regulaObjectMapper.selectByExample(example);
+		return new TableResultResponse<>(-1, rows);
 	}
 }

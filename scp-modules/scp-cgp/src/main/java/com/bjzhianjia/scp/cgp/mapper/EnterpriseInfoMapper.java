@@ -1,5 +1,9 @@
 package com.bjzhianjia.scp.cgp.mapper;
 
+import java.util.Date;
+
+import org.apache.ibatis.annotations.Param;
+
 import com.bjzhianjia.scp.cgp.entity.EnterpriseInfo;
 import com.bjzhianjia.scp.security.common.data.Tenant;
 import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
@@ -13,5 +17,11 @@ import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
  */
 @Tenant
 public interface EnterpriseInfoMapper extends CommonMapper<EnterpriseInfo> {
-	
+	/**
+	 * 批量删除
+	 * 
+	 * @param ids id列表
+	 */
+	public void deleteByRegulaObjIds(@Param("regulaObjIds") Integer[] regulaObjIds, @Param("updUserId") String updUserId,
+			@Param("updUserName") String updUserName, @Param("updTime") Date updTime);
 }

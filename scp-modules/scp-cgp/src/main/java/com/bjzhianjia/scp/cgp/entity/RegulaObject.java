@@ -6,6 +6,9 @@ import javax.persistence.*;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.bjzhianjia.scp.cgp.feign.DictFeign;
+import com.bjzhianjia.scp.merge.annonation.MergeField;
+
 /**
  * 监管对象
  * 
@@ -31,6 +34,7 @@ public class RegulaObject implements Serializable {
 	
 	    //监管对象类型
     @Column(name = "obj_type")
+    @MergeField(key="root_biz_objType",feign=DictFeign.class,method="getDictIds")
     private String objType;
 	
 	    //监管对象ID

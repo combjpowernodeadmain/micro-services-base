@@ -169,7 +169,7 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
     }
     
     /**
-     * 根据ID批量获取人员
+      *  根据ID批量获取人员
      * @param departIDs
      * @return
      */
