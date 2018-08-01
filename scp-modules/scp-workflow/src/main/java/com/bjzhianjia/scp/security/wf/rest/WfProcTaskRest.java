@@ -93,23 +93,6 @@ public class WfProcTaskRest {
     }
     
     /**
-     * 根据流程定义编码启动工作流并提交第一个流程任务，通过用户Token验证流程操作合法性
-     * @param objs
-     * @param request
-     * @return
-     */
-    @ResponseBody
-    @RequestMapping(value = { "/startAndCommitProcessByToken"}, method = {RequestMethod.GET, RequestMethod.POST })
-    public ObjectRestResponse<Map> startAndCommitProcessByToken(@RequestBody JSONObject objs,HttpServletRequest request) {
-            log.debug("SCP信息---开始启动并提交工作流...");
-            String procInstId = wfProcTaskService.startAndCompleteProcessInstance(objs);
-            LinkedHashMap<String, Object> resultData = new LinkedHashMap<String, Object>();
-            resultData.put(WfProcessDataAttr.PROC_INSTANCEID, procInstId);
-            
-            return ResultUtils.success(resultData);
-    }
-    
-    /**
      * 通过流程任务ID签收当前流程任务
      * @param objs
      * @param request
@@ -167,24 +150,8 @@ public class WfProcTaskRest {
     @RequestMapping(value = { "/completeProcess"}, method = {RequestMethod.GET, RequestMethod.POST })
     public ObjectRestResponse<Map> completeProcessInstance(@RequestBody JSONObject objs,HttpServletRequest request) {
         log.debug("SCP信息---开始流程任务审批操作...");
-        wfProcTaskService.completeProcessInstanceByTaskId(objs);
+        wfProcTaskService.completeProcessInstance(objs);
         return ResultUtils.success();
-    }
-    
-    /**
-
-     * 通过流程任务代码审批当前流程任务
-     * 
-     * @param objs
-     * @param request
-     * @return
-     */
-    @ResponseBody
-    @RequestMapping(value = { "/completeProcessByTaskCode"}, method = {RequestMethod.GET, RequestMethod.POST })
-    public ObjectRestResponse<Map> completeProcessInstanceByTaskCode(@RequestBody JSONObject objs,HttpServletRequest request) {
-            log.debug("SCP信息---开始流程任务审批操作...");
-            wfProcTaskService.completeProcessInstanceByTaskCode(objs);
-            return ResultUtils.success();
     }
     
     /**

@@ -13,7 +13,6 @@ public class WfProcDelegateBean implements Serializable {
 	private Integer procCancelTime;
 	private String procLicenseIsvalid;
 	private String procTenantId;
-	private String procDepartId;
 
 	public Integer getId() {
 		return id;
@@ -85,13 +84,5 @@ public class WfProcDelegateBean implements Serializable {
 
 	public void setProcTenantId(String procTenantId) {
 		this.procTenantId = procTenantId;
-	}
-
-	public String getProcDepartId() {
-		return procDepartId;
-	}
-
-	public void setProcDepartId(String procDepartId) {
-		this.procDepartId = procDepartId;
 	}
 }

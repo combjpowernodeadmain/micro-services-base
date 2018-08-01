@@ -15,14 +15,12 @@ public interface WfProcDelegateBeanMapper {
 	WfProcDelegateBean selectByInstAndLicens(
 			@Param("procInstId") String procInstId,
 			@Param("procLicensor") String procLicensor,
-			@Param("procTenantId") String procTenantId,
-			@Param("procDepartId") String procDepartId);
+			@Param("procTenantId") String procTenantId);
 
 	WfProcDelegateBean selectByInstAndMand(
 			@Param("procInstId") String procInstId,
 			@Param("mandatary") String mandatary,
-			@Param("procTenantId") String procTenantId,
-			@Param("procDepartId") String procDepartId);
+			@Param("procTenantId") String procTenantId);
 
 	int deleteByPrimaryKey(Integer id);
 
@@ -39,6 +37,5 @@ public interface WfProcDelegateBeanMapper {
 	List<WfProcDelegateBean> getProcInstDelegateList(
 			@Param("procInstId") String procInstId,
 			@Param("mandatary") String mandatary,
-			@Param("procTenantId") String procTenantId,
-			@Param("procDepartId") String procDepartId);
+			@Param("procTenantId") String procTenantId);
 }

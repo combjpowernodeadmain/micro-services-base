@@ -170,7 +170,7 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
      * @throws WorkflowException
      * @throws Exception
      */
-    public void completeProcessInstanceByTaskId(JSONObject objs) throws WorkflowException {
+    public void completeProcessInstance(JSONObject objs) throws WorkflowException {
         try {
             WfProcessDataBean procData = parseProcessData(objs);
             WfProcVariableDataBean procVarData = parseVariableData(objs);
@@ -179,34 +179,7 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
             wfProcUserAuthBiz.userAuthenticate(authData, false, true);
             
             // 调用流程任务审批服务接口
-            wfProcTaskBiz.completeProcessInstanceByTaskId(procData, procVarData, authData, bizData);
-        } catch (WorkflowException wfe) {
-            throw wfe;
-        }
-        catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020599, e);
-        }
-    }
-    
-    /**
-     * 通过流程任务代码审批当前流程任务
-     * 
-     * @param objs  接口参数Json对象，包括：
-     * 
-     * @throws WorkflowException
-     * @throws Exception
-     */
-    public void completeProcessInstanceByTaskCode(JSONObject objs) throws WorkflowException {
-        try {
-            WfProcessDataBean procData = parseProcessData(objs);
-            WfProcVariableDataBean procVarData = parseVariableData(objs);
-            WfProcAuthDataBean authData = parseAuthData(objs);
-            WfProcBizDataBean bizData = parseBizData(objs);
-            wfProcUserAuthBiz.userAuthenticate(authData, false, true);
-            
-            // 调用流程任务审批服务接口
-            wfProcTaskBiz.completeProcessInstanceByTaskCode(procData, procVarData, authData, bizData);
+            wfProcTaskBiz.completeProcessInstance(procData, procVarData, authData, bizData);
         } catch (WorkflowException wfe) {
             throw wfe;
         }
