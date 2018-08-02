@@ -222,7 +222,7 @@ public class WfProcUserAuthBiz extends WfBaseBiz {
 
 	/**
 	 * 获取指定用户所属租户自定义数据权限配置的数据
-	 * @param 	procTenantId  	租户ID
+	 * @param 	userCode  	用户代码
 	 * @return 	List   			自定义权限数据
 	 */
 	public String getSelfPermissionData1(String userCode) {
@@ -239,7 +239,7 @@ public class WfProcUserAuthBiz extends WfBaseBiz {
 	
 	/**
 	 * 获取指定用户所属租户自定义数据权限配置的数据
-	 * @param 	procTenantId  	租户ID
+	 * @param 	userCode  	用户代码
 	 * @return 	List   			自定义权限数据
 	 */
 	public String getSelfPermissionData2(String userCode) {
@@ -256,7 +256,7 @@ public class WfProcUserAuthBiz extends WfBaseBiz {
 	
 	/**
 	 * 获取指定用户所属租户自定义数据权限配置的数据
-	 * @param 	procTenantId  	租户ID
+	 * @param 	userCode  	用户代码
 	 * @return 	List   			自定义权限数据
 	 */
 	public String getSelfPermissionData3(String userCode) {
@@ -273,7 +273,7 @@ public class WfProcUserAuthBiz extends WfBaseBiz {
 	
 	/**
 	 * 获取指定用户所属租户自定义数据权限配置的数据
-	 * @param 	procTenantId  	租户ID
+	 * @param 	userCode  	用户代码
 	 * @return 	List   			自定义权限数据
 	 */
 	public String getSelfPermissionData4(String userCode) {
@@ -290,7 +290,7 @@ public class WfProcUserAuthBiz extends WfBaseBiz {
 	
 	/**
 	 * 获取指定用户所属租户自定义数据权限配置的数据
-	 * @param 	procTenantId  	租户ID
+	 * @param 	userCode  	用户代码
 	 * @return 	List   			自定义权限数据
 	 */
 	public String getSelfPermissionData5(String userCode) {
