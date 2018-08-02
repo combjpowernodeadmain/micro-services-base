@@ -93,99 +93,206 @@ public class WfProcUserAuthBiz extends WfBaseBiz {
                 throw new WorkflowException(WorkflowEnumResults.WF_COMM_02000006);   
         }
     }
-    
-    public String getUserId() {
-    	return wfProcUserAuthService.getUserId();
-    }
 
+    /**
+	 * 获取当前登录用户ID
+	 * @return String   当前登录用户ID
+	 */
+	public String getUserId() {
+		return wfProcUserAuthService.getUserId();
+	}
+
+	/**
+	 * 获取当前登录用户编码
+	 * @return String   当前登录用户编码
+	 */
 	public String getUserCode() {
 		return wfProcUserAuthService.getUserCode();
 	}
 
+	/**
+	 * 获取当前登录用户所属部门ID
+	 * @return String   当前登录用户所属部门ID
+	 */
 	public String getDeptId() {
 		return wfProcUserAuthService.getDeptId();
 	}
 
+	/**
+	 * 获取指定用户所属部门ID
+	 * @param userCode  用户代码
+	 * @return String   指定用户所属部门ID
+	 */
 	public String getDeptId(String userCode) {
 		return wfProcUserAuthService.getDeptId(userCode);
 	}
 
+	/**
+	 * 获取当前登录用户所属机构ID
+	 * @return String   当前登录用户所属机构ID
+	 */
 	public String getOrgId() {
 		return wfProcUserAuthService.getOrgId();
 	}
 
+	/**
+	 * 获取指定用户所属机构ID
+	 * @param userCode  用户代码
+	 * @return String   指定用户所属机构ID
+	 */
+	public String getOrgId(String userCode) {
+		return wfProcUserAuthService.getOrgId(userCode);
+	}
+	
+	/**
+	 * 获取当前登录用户所属租户ID
+	 * @return String   当前登录用户所属租户ID
+	 */
 	public String getTenantId() {
 		return wfProcUserAuthService.getTenantId();
 	}
 
+	/**
+	 * 获取指定用户所属租户ID
+	 * @param userCode  用户代码
+	 * @return String   指定用户所属租户ID
+	 */
 	public String getTenantId(String userCode) {
 		return wfProcUserAuthService.getTenantId(userCode);
 	}
 
-	public String getOrgId(String userCode) {
-		return wfProcUserAuthService.getOrgId(userCode);
-	}
-
+	/**
+	 * 获取当前登录用户所属机构编码
+	 * @return String   当前登录用户所属机构编码
+	 */
 	public String getOrgCode() {
 		return wfProcUserAuthService.getOrgCode();
 	}
 
+	/**
+	 * 获取指定用户所属机构编码
+	 * @param userCode  用户代码
+	 * @return String   指定用户所属机构编码
+	 */
 	public String getOrgCode(String userCode) {
 		return wfProcUserAuthService.getOrgCode(userCode);
 	}
 
+	/**
+	 * 获取当前登录用户分配的角色列表
+	 * @return List   当前登录用户分配的角色列表
+	 */
 	public List<String> getRoleCodes() {
 		return wfProcUserAuthService.getRoleCodes();
 	}
 
+	/**
+	 * 获取指定用户分配的角色列表
+	 * @param userCode  用户代码
+	 * @return List   指定用户分配的角色列表
+	 */
 	public List<String> getRoleCodes(String userCode) {
 		return wfProcUserAuthService.getRoleCodes(userCode);
 	}
 
+	/**
+	 * 获取当前登录用户分配的机构列表
+	 * @return List   当前登录用户分配的机构列表
+	 */
 	public List<String> getAuthOrgCodes() {
 		return wfProcUserAuthService.getAuthOrgCodes();
 	}
 
+	/**
+	 * 获取指定用户分配的机构列表
+	 * @param userCode  用户代码
+	 * @return List   指定用户分配的机构列表
+	 */
 	public List<String> getAuthOrgCodes(String userCode) {
 		return wfProcUserAuthService.getAuthOrgCodes(userCode);
 	}
 
+	/**
+	 * 获取当前登录用户所属租户自定义数据权限配置的数据
+	 * @return 	List   			自定义权限数据
+	 */
 	public String getSelfPermissionData1() {
 		return wfProcUserAuthService.getSelfPermissionData1();
 	}
 
+	/**
+	 * 获取指定用户所属租户自定义数据权限配置的数据
+	 * @param 	procTenantId  	租户ID
+	 * @return 	List   			自定义权限数据
+	 */
 	public String getSelfPermissionData1(String userCode) {
 		return wfProcUserAuthService.getSelfPermissionData1(userCode);
 	}
-
+	
+	/**
+	 * 获取当前登录用户所属租户自定义数据权限配置的数据
+	 * @return 	List   			自定义权限数据
+	 */
 	public String getSelfPermissionData2() {
 		return wfProcUserAuthService.getSelfPermissionData2();
 	}
-
+	
+	/**
+	 * 获取指定用户所属租户自定义数据权限配置的数据
+	 * @param 	procTenantId  	租户ID
+	 * @return 	List   			自定义权限数据
+	 */
 	public String getSelfPermissionData2(String userCode) {
 		return wfProcUserAuthService.getSelfPermissionData2(userCode);
 	}
 
+	/**
+	 * 获取当前登录用户所属租户自定义数据权限配置的数据
+	 * @return 	List   			自定义权限数据
+	 */
 	public String getSelfPermissionData3() {
 		return wfProcUserAuthService.getSelfPermissionData3();
 	}
-
+	
+	/**
+	 * 获取指定用户所属租户自定义数据权限配置的数据
+	 * @param 	procTenantId  	租户ID
+	 * @return 	List   			自定义权限数据
+	 */
 	public String getSelfPermissionData3(String userCode) {
 		return wfProcUserAuthService.getSelfPermissionData3(userCode);
 	}
 
+	/**
+	 * 获取当前登录用户所属租户自定义数据权限配置的数据
+	 * @return 	List   			自定义权限数据
+	 */
 	public String getSelfPermissionData4() {
 		return wfProcUserAuthService.getSelfPermissionData4();
 	}
-
+	
+	/**
+	 * 获取指定用户所属租户自定义数据权限配置的数据
+	 * @param 	procTenantId  	租户ID
+	 * @return 	List   			自定义权限数据
+	 */
 	public String getSelfPermissionData4(String userCode) {
 		return wfProcUserAuthService.getSelfPermissionData4(userCode);
 	}
 
+	/**
+	 * 获取当前登录用户所属租户自定义数据权限配置的数据
+	 * @return 	List   			自定义权限数据
+	 */
 	public String getSelfPermissionData5() {
 		return wfProcUserAuthService.getSelfPermissionData5();
 	}
-
+	
+	/**
+	 * 获取指定用户所属租户自定义数据权限配置的数据
+	 * @param 	procTenantId  	租户ID
+	 * @return 	List   			自定义权限数据
+	 */
 	public String getSelfPermissionData5(String userCode) {
 		return wfProcUserAuthService.getSelfPermissionData5(userCode);
 	}
