@@ -16,16 +16,6 @@
 
 package com.bjzhianjia.scp.security.admin.biz;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.merge.core.MergeCore;
@@ -33,13 +23,21 @@ import com.bjzhianjia.scp.security.admin.entity.User;
 import com.bjzhianjia.scp.security.admin.mapper.DepartMapper;
 import com.bjzhianjia.scp.security.admin.mapper.UserMapper;
 import com.bjzhianjia.scp.security.common.biz.BaseBiz;
-import com.bjzhianjia.scp.security.common.util.BooleanUtil;
-import com.bjzhianjia.scp.security.common.util.EntityUtils;
-import com.bjzhianjia.scp.security.common.util.Query;
-import com.bjzhianjia.scp.security.common.util.Sha256PasswordEncoder;
-import com.bjzhianjia.scp.security.common.util.UUIDUtils;
+import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.common.util.*;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * ${DESCRIPTION}
@@ -52,7 +50,6 @@ import tk.mybatis.mapper.entity.Example;
 public class UserBiz extends BaseBiz<UserMapper, User> {
     @Autowired
     private MergeCore mergeCore;
-
     @Autowired
     private DepartMapper departMapper;
 
@@ -183,5 +180,37 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
         userIds = "'"+userIds.replaceAll(",","','")+"'";
         List<User> users = mapper.selectByIds(userIds);
         return users.stream().collect(Collectors.toMap(User::getId, user -> JSONObject.toJSONString(user)));
+    }
+    
+    /**
+     * 查询部门deptId下的人员
+     * @author 尚
+     * @param deptId
+     * @return
+     */
+    public TableResultResponse<User> getUserByDept(String deptId,int page,int limit){
+    	Example example=new Example(User.class);
+    	Example.Criteria criteria=example.createCriteria();
+    	criteria.andEqualTo("departId", deptId);
+    	criteria.andEqualTo("isDeleted","0");
+    	example.orderBy("id");
+    	Page<Object> result =PageHelper.startPage(page, limit);
+    	List<User> userList = mapper.selectByExample(example);
+    	return new TableResultResponse<User>(result.getTotal(), userList);
+    }
+    
+    /**
+     * 按人名进行模糊查询
+     * @author 尚
+     * @param name
+     * @return
+     */
+    public TableResultResponse<User> getUsersByFakeName(String name,int page,int limit){
+    	Example example=new Example(User.class);
+    	Example.Criteria criteria=example.createCriteria();
+    	criteria.andLike("name", "%"+name+"%");
+    	Page<Object> result =PageHelper.startPage(page, limit);
+    	List<User> userList = mapper.selectByExample(example);
+    	return new TableResultResponse<User>(result.getTotal(), userList);
     }
 }

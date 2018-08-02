@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.*;
 
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * 监管对象
@@ -78,6 +79,7 @@ public class RegulaObject implements Serializable {
 	
 	    //采集时间
     @Column(name = "gather_time")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
     private Date gatherTime;
 	
 	    //业务条线
