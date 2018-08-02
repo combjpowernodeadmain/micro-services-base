@@ -16,6 +16,22 @@
 
 package com.bjzhianjia.scp.security.admin.rest;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.admin.biz.MenuBiz;
@@ -38,20 +54,6 @@ import com.bjzhianjia.scp.security.common.rest.BaseController;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * ${DESCRIPTION}
@@ -170,4 +172,41 @@ public class UserController extends BaseController<UserBiz, User, String> {
 			@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int limit) {
 		return userService.getUsersByName(name, page, limit);
 	}
+	
+    /**
+     * 根据username查询用户部门ID
+     * 
+     * @param name
+     * @return
+     */
+    @ApiOperation("根据username查询用户部门ID")
+    @RequestMapping(value = "/getDepartIdByUsername", method = RequestMethod.GET)
+    public ResponseEntity<String> getDepartIdByUserame(@RequestParam(value = "username") String username) {
+        String departId = this.baseBiz.getDepartIdByUsername(username);
+        if (StringUtils.isEmpty(departId)) {
+            return ResponseEntity.status(401).body("");
+        } else {
+            return ResponseEntity.ok(departId);
+        }
+    }
+    
+    
+    /**
+     * 根据username查询tenantID
+     * 
+     * @param name
+     * @return
+     */
+    @ApiOperation("根据username查询用户TenantID")
+    @RequestMapping(value = "/getTenantIdByUsername", method = RequestMethod.GET)
+    public ResponseEntity<String> getTenantIdByUserame(@RequestParam(value = "username") String username) {
+        String tenantId = this.baseBiz.getTenantIdByUsername(username);
+        if (StringUtils.isEmpty(tenantId)) {
+            return ResponseEntity.status(401).body("");
+        } else {
+            return ResponseEntity.ok(tenantId);
+        }
+    }
+	
+	
 }

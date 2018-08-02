@@ -58,4 +58,16 @@
     on bpd.position_id = bpu.position_id
     where bpu.user_id = #{userId}
   </select>
+  
+  <!-- 根据用户username获取departId -->
+  <select id="selectDepartIdByUsername" resultType="java.lang.String">
+    select u.depart_id from base_user u 
+    where u.username = #{username}
+  </select>
+  
+  <!-- 根据用户username获取tenantId -->
+  <select id="selectTenantIdByUsername" resultType="java.lang.String">
+    select u.tenant_id from base_user u 
+    where u.username = #{username}
+  </select>
 </mapper>

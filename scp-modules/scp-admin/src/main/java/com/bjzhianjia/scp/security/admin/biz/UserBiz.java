@@ -213,4 +213,27 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
     	List<User> userList = mapper.selectByExample(example);
     	return new TableResultResponse<User>(result.getTotal(), userList);
     }
+    
+    /***********************************************
+     * 仅供工作流使用
+     */
+    
+    /**
+     * 根据用户名查询部门ID
+     * @param username
+     * @return
+     */
+    public String getDepartIdByUsername(String username) {
+        return mapper.selectDepartIdByUsername(username);
+    }
+    
+    /**
+     * 根据用户名查询部门ID
+     * @param username
+     * @return
+     */
+    public String getTenantIdByUsername(String username) {
+        return mapper.selectTenantIdByUsername(username);
+    }
+
 }

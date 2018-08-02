@@ -215,4 +215,22 @@ public class GroupController extends BaseController<GroupBiz, Group,String> {
         }
         return TreeUtil.bulid(trees, root, null);
     }
+    
+    @ApiOperation("获取角色列表")
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @ResponseBody
+    public List<Group> userGroupList(String user_id, String groupType) {
+        if (StringUtils.isBlank(user_id) && StringUtils.isBlank(groupType)) {
+            return new ArrayList<Group>();
+        }
+        Example example = new Example(Group.class);
+        if (StringUtils.isNotBlank(user_id)) {
+            example.createCriteria().andEqualTo("user_id", user_id);
+        }
+        if (StringUtils.isNotBlank(groupType)) {
+            example.createCriteria().andEqualTo("groupType", groupType);
+        }
+
+        return baseBiz.selectByExample(example);
+    }
 }

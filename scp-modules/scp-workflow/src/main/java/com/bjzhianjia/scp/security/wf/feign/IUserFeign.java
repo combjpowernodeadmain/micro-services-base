@@ -18,11 +18,13 @@
 package com.bjzhianjia.scp.security.wf.feign;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.bjzhianjia.scp.security.auth.client.config.FeignApplyConfiguration;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 
 import java.util.List;
 
@@ -38,4 +40,12 @@ public interface IUserFeign {
      */
     @RequestMapping(value="/user/flowPosition",method = RequestMethod.GET)
     List<String> getUserFlowPositions(@RequestParam("userId") String userId);
+    
+
+    @RequestMapping(value = "/info", method = RequestMethod.POST)
+    public ObjectRestResponse getUserInfo(String username);
+    
+    
+    @RequestMapping(value = "/getDepartIdByUsername", method = RequestMethod.GET)
+    public ResponseEntity<String> getDepartIdByUserame(@RequestParam(value = "username") String username);
 }
