@@ -849,7 +849,8 @@
 		task.PROC_TASK_APPR_OPINION procTaskApprOpinion
 		FROM
 		SCP_WF_PROC_TASK task
-		where task.PROC_INST_ID =#{procInstId}
+		where task.PROC_INST_ID = #{procInstId}
+		and PROC_TENANT_ID = #{procTenantId}
 		ORDER BY task.ID
 	</select>
 

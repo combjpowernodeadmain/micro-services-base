@@ -5,7 +5,6 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
-import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean;
 import com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskHistoryBean;
 
@@ -78,5 +77,6 @@ public interface WfProcTaskBeanMapper {
 	 * @param objs
 	 * @return
 	 */
-	List<WfProcTaskHistoryBean> selectApprovedHistory(JSONObject objs);
+	List<WfProcTaskHistoryBean> selectApprovedHistory(@Param("procInstId") String procInstId,
+			@Param("procTenantId") String procTenantId);
 }

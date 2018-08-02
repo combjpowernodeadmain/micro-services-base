@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.wf.auth.biz.WfProcUserAuthBiz;
-import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcessDataAttr;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfRequestDataTypeAttr;
 import com.bjzhianjia.scp.security.wf.constant.WorkflowEnumResults;
 import com.bjzhianjia.scp.security.wf.exception.WorkflowException;
@@ -28,7 +27,6 @@ import com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskBean;
 import com.bjzhianjia.scp.security.wf.task.entity.WfProcTaskHistoryBean;
 import com.bjzhianjia.scp.security.wf.task.service.IWfProcTaskService;
 import com.bjzhianjia.scp.security.wf.utils.JSONUtil;
-import com.bjzhianjia.scp.security.wf.utils.StringUtil;
 import com.bjzhianjia.scp.security.wf.vo.WfProcAuthDataBean;
 import com.bjzhianjia.scp.security.wf.vo.WfProcBizDataBean;
 import com.bjzhianjia.scp.security.wf.vo.WfProcVariableDataBean;
@@ -407,21 +405,22 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
      * @param objs  接口参数Json对象
      * @throws WorkflowException
      */
-    public PageInfo<WfProcTaskHistoryBean> getProcApprovedHistory(JSONObject objs) throws WorkflowException {
-        if (!objs.containsKey(WfProcessDataAttr.PROC_INSTANCEID)
-            || StringUtil.isNull(objs.getString(WfProcessDataAttr.PROC_INSTANCEID))) {
-            throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020701);
-        }
+	public PageInfo<WfProcTaskHistoryBean> getProcApprovedHistory(
+			JSONObject objs) throws WorkflowException {
+		try {
+			WfProcessDataBean procData = parseProcessData(objs);
+			WfProcAuthDataBean authData = parseAuthData(objs);
+			wfProcUserAuthBiz.userAuthenticate(authData, false, false);
 
-        try {
-            return new PageInfo<WfProcTaskHistoryBean>(wfProcTaskBiz.getProcApprovedHistory(objs));
-        } catch (WorkflowException wfe) {
-            throw wfe;
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020799, e);
-        }
-    }
+			return new PageInfo<WfProcTaskHistoryBean>(
+					wfProcTaskBiz.getProcApprovedHistory(procData, authData));
+		} catch (WorkflowException wfe) {
+			throw wfe;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020799, e);
+		}
+	}
     
     /**
      * 解析流程数据

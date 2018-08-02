@@ -2540,8 +2540,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		// 通过流程任务ID查询已经审批完成的流程任务数据
 		WfProcTaskBean procTask = getProcessTask(procData.getProcTaskId(),
 				getProcTaskStatus(4), authData.getProcTenantId());
-		retrieveProcessInstance(procData, procVarData, authData, bizData,
-				procTask);
+		retrieveProcessInstance(procData, procVarData, authData, bizData, procTask);
 	}
 
 	/**
@@ -2574,15 +2573,13 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		}
 
 		// 获取流程任务节点可撤回标识
-		String flag = getProcRetrieve(parseTaskProperties(procTask
-				.getProcTaskProperties()));
+		String flag = getProcRetrieve(parseTaskProperties(procTask.getProcTaskProperties()));
 		if (DictKeyConst.YESORNO_NO.equals(flag)) {
 			throw new WorkflowException(WorkflowEnumResults.WF_TASK_02021106);
 		}
 
 		// 并行任务汇聚，不允许撤回
-		if (!checkRetrieveProcess(procTask.getProcId(),
-				procTask.getProcCtaskcode())) {
+		if (!checkRetrieveProcess(procTask.getProcId(), procTask.getProcCtaskcode())) {
 			throw new WorkflowException(WorkflowEnumResults.WF_TASK_02021104);
 		}
 
@@ -2597,8 +2594,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 
 		// 检查流程任务是否都是未签收状态，如果已签收或审批，则不能进行撤回操作
 		for (WfProcTaskBean task : procTasks) {
-			if (!FlowStatus.TASK01.getRetCode()
-					.equals(task.getProcTaskStatus())) {
+			if (!FlowStatus.TASK01.getRetCode().equals(task.getProcTaskStatus())) {
 				throw new WorkflowException(WorkflowEnumResults.WF_TASK_02021105);
 			}
 		}
@@ -2607,8 +2603,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		checkProcessStatus(procTask.getProcInstId());
 
 		// 获取流程任务属性
-		WfProcTaskPropertiesBean taskProperties = parseTaskProperties(procTask
-				.getProcTaskProperties());
+		WfProcTaskPropertiesBean taskProperties = parseTaskProperties(procTask.getProcTaskProperties());
 
 		// 对业务数据设置当前流程任务代码
 		ProcTaskData procTaskData = new ProcTaskData();
@@ -2628,14 +2623,11 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			int datetime = DateTools.getCurrTime();
 			List<WfProcTaskBean> wfProcTasks = new ArrayList<WfProcTaskBean>();
 			for (int i = 0; i < procTasks.size(); i++) {
-				log.info("撤回流程任务--开始撤回流程任务("
-						+ procTasks.get(i).getProcCtaskname() + ")...");
-				TaskEntity currentTask = getProcTaskEntityByTask(procTasks.get(
-						i).getProcCtaskid());
+				log.info("撤回流程任务--开始撤回流程任务(" + procTasks.get(i).getProcCtaskname() + ")...");
+				TaskEntity currentTask = getProcTaskEntityByTask(procTasks.get(i).getProcCtaskid());
 
 				if (i == (procTasks.size() - 1)) {
-					commitToAppointTask(procTasks.get(i), procTasks.get(i)
-							.getProcPtaskcode(), null);
+					commitToAppointTask(procTasks.get(i), procTasks.get(i).getProcPtaskcode(), null);
 				} else {
 					// 不能删除当前正在执行的任务，所以要先清除掉关联
 					currentTask.setExecutionId(null);
@@ -2645,19 +2637,14 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 				}
 
 				WfProcTaskBean wfProcTaskBean = new WfProcTaskBean();
-				wfProcTaskBean
-						.setProcCtaskid(procTasks.get(i).getProcCtaskid());
+				wfProcTaskBean.setProcCtaskid(procTasks.get(i).getProcCtaskid());
 				wfProcTaskBean.setProcTaskAssignee(authData.getProcTaskUser());
 				wfProcTaskBean.setProcTaskAssigntime(datetime);
-				wfProcTaskBean
-						.setProcTaskStatus(FlowStatus.TASK04.getRetCode());
+				wfProcTaskBean.setProcTaskStatus(FlowStatus.TASK04.getRetCode());
 				wfProcTaskBean.setProcTaskEndtime(datetime);
-				wfProcTaskBean.setProcTaskApprStatus(FlowStatus.CHECK02
-						.getRetCode());
+				wfProcTaskBean.setProcTaskApprStatus(FlowStatus.CHECK02.getRetCode());
 				wfProcTaskBean.setProcTaskApprOpinion("用户主动撤回流程任务");
-				wfProcTaskBean
-						.setProcParallelStatus(WfProcParallStatus.APPROVED
-								.getRetCode());
+				wfProcTaskBean.setProcParallelStatus(WfProcParallStatus.APPROVED.getRetCode());
 				wfProcTasks.add(wfProcTaskBean);
 
 				log.info("撤回流程任务--撤回流程任务("
@@ -2782,14 +2769,11 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		wfProcTaskBean.setProcTaskEndtime(datetime);
 		wfProcTaskBean.setProcTaskApprStatus(FlowStatus.CHECK05.getRetCode());
 		wfProcTaskBean.setProcTaskApprOpinion(StringUtil.isNull(procVarData
-				.getProcSpecialDesc()) ? "用户强行终止流程" : procVarData
-				.getProcSpecialDesc());
-		wfProcTaskBean.setProcParallelStatus(WfProcParallStatus.APPROVED
-				.getRetCode());
+				.getProcSpecialDesc()) ? "用户强行终止流程" : procVarData.getProcSpecialDesc());
+		wfProcTaskBean.setProcParallelStatus(WfProcParallStatus.APPROVED.getRetCode());
 
 		// 获取流程任务属性
-		WfProcTaskPropertiesBean taskProperties = parseTaskProperties(procTasks
-				.get(0).getProcTaskProperties());
+		WfProcTaskPropertiesBean taskProperties = parseTaskProperties(procTasks.get(0).getProcTaskProperties());
 
 		// 对业务数据设置当前流程任务代码
 		ProcTaskData procTaskData = new ProcTaskData();
@@ -2849,12 +2833,12 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		// 校验业务处理的数据完整性
 		checkAssignee(procData, procVarData);
 
-		log.info("指定流程任务处理人--开始指定流程任务(" + procData.getProcTaskId()
-				+ ")处理人...");
+		//为了保证系统高效处理，在此处没有对流程任务所属租户与当前用户所属租户进行一致性验证，未来需要可以添加
+		
+		log.info("指定流程任务处理人--开始指定流程任务(" + procData.getProcTaskId() + ")处理人...");
 		try {
 			// 设置流程引擎中的处理人
-			taskService.setAssignee(procData.getProcTaskId(),
-					procVarData.getProcAssignee());
+			taskService.setAssignee(procData.getProcTaskId(), procVarData.getProcAssignee());
 
 			WfProcTaskBean wfProcTaskBean = new WfProcTaskBean();
 			wfProcTaskBean.setProcCtaskid(procData.getProcTaskId());
@@ -2870,8 +2854,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		} catch (Exception e) {
 			throw new WorkflowException(WorkflowEnumResults.WF_TASK_02021599, e);
 		} finally {
-			log.info("指定流程任务处理人--指定流程任务(" + procData.getProcTaskId()
-					+ ")处理人结束.");
+			log.info("指定流程任务处理人--指定流程任务(" + procData.getProcTaskId() + ")处理人结束.");
 		}
 	}
 
@@ -3618,14 +3601,41 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	/**
 	 * 查询业务流程审批历史
 	 * 
-	 * @param objs
-	 *            接口参数Json对象
+	 * @param procData
+	 *            流程数据
+	 * @param authData
+	 *            流程认证数据
+	 * @return
+	 */
+	public List<WfProcTaskHistoryBean> getProcApprovedHistory(WfProcessDataBean procData,
+			WfProcAuthDataBean authData) throws WorkflowException, Exception {
+		if (StringUtil.isNull(procData.getProcInstId())) {
+			throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020701);
+		}
+		
+		log.info("流程历史查询--开始查询流程(" + procData.getProcTaskId() + ")审批历史...");
+		try {
+			return getProcApprovedHistory(procData.getProcInstId(), authData.getProcTenantId());
+		} catch (WorkflowException wfe) {
+			throw wfe;
+		} catch (Exception e) {
+			throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020799, e);
+		} finally {
+			log.info("流程历史查询--查询流程(" + procData.getProcTaskId() + ")审批历史结束.");
+		}
+	}
+	
+	/**
+	 * 查询业务流程审批历史
+	 * 
+	 * @param procInstId	流程实例ID
+	 * @param procTenantId	租户ID
 	 * @throws WorkflowException
 	 */
-	public List<WfProcTaskHistoryBean> getProcApprovedHistory(JSONObject objs)
-			throws WorkflowException {
-		// setDb(0, super.SLAVE); 
-		return wfProcTaskBeanMapper.selectApprovedHistory(objs);
+	private List<WfProcTaskHistoryBean> getProcApprovedHistory(
+			String procInstId, String procTenantId) throws WorkflowException {
+		// setDb(0, super.SLAVE);
+		return wfProcTaskBeanMapper.selectApprovedHistory(procInstId, procTenantId);
 	}
 
 	class ProcTaskData {
