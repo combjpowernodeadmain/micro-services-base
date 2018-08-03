@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,72 +32,79 @@ public class UserService {
 	@Autowired
 	private PositionBiz positionBiz;
 
-	public JSONObject getUsersByName(String name,int page,int limit) {
-		TableResultResponse<User> result=userBiz.getUsersByFakeName(name,page,limit);
+	public JSONObject getUsersByName(String name, int page, int limit) {
+		TableResultResponse<User> result = userBiz.getUsersByFakeName(name, page, limit);
 		TableResultResponse<User>.TableData<User> data = result.getData();
 		List<User> rows = data.getRows();
-		long total=data.getTotal();
-		
-		JSONArray jsonArray = bindDeptToUser(rows);
-		
-		JSONObject jsonObject=new JSONObject();
+		long total = data.getTotal();
+
+		JSONArray jsonArray = bindPositionToUser(rows);
+
+		JSONObject jsonObject = new JSONObject();
 		jsonObject.put("total", total);
 		jsonObject.put("rows", jsonArray);
 		return jsonObject;
 	}
 
 	/**
-	 * 根据人名进行模糊查询
+	 * 将人员与其所在的职位进行绑定
+	 * 
 	 * @author 尚
 	 * @param userList
 	 * @return
 	 */
-	private JSONArray bindDeptToUser(List<User> userList) {
-		
-		List<String> userIdList = userList.stream().map((o)->o.getId()).distinct().collect(Collectors.toList());
-		
-		
-		
+	private JSONArray bindPositionToUser(List<User> userList) {
+
+		List<String> userIdList = userList.stream().map((o) -> o.getId()).distinct().collect(Collectors.toList());
+
 		String join = String.join(",", userIdList);
-		join="'"+join.replaceAll(",", "','")+"'";
-		
+		join = "'" + join.replaceAll(",", "','") + "'";
+
 		List<PositionVo> positionMapList = positionMapper.selectPositionByUser(join);
-		
+
 //		Map<String, String> departMap = departBiz.getDeparts(String.join(",", userIdList));
 		JSONArray userListJsonArray = JSONArray.parseArray(JSON.toJSONString(userList));
-		
-		if(positionMapList!=null&&positionMapList.size()>0) {
-			for(int i=0;i<userListJsonArray.size();i++) {
-				JSONObject userJsonObject=userListJsonArray.getJSONObject(i);
-				for(int j=0;j<positionMapList.size();j++) {
-					PositionVo positionVo = positionMapList.get(i);
-					if(positionVo.getUserId().equals(userJsonObject.getString("id"))) {
-						userJsonObject.put("position", positionVo.getName());
+
+		if (positionMapList != null && positionMapList.size() > 0) {
+			for (int i = 0; i < userListJsonArray.size(); i++) {
+				JSONObject userJsonObject = userListJsonArray.getJSONObject(i);
+				List<String> positionNameList = new ArrayList<>();
+				for (int j = 0; j < positionMapList.size(); j++) {
+					PositionVo positionVo = positionMapList.get(j);
+					if (positionVo.getUserId().equals(userJsonObject.getString("id"))) {
+						if(StringUtils.isNotBlank(positionVo.getName())) {
+							positionNameList.add(positionVo.getName());
+						}
 					}
 				}
+				boolean flag=positionNameList.isEmpty();
+				userJsonObject.put("position", positionNameList.isEmpty() ? "" : String.join(",", positionNameList));
 			}
 		}
 		return userListJsonArray;
 	}
-	
+
 	/**
 	 * 根据部门获取人员列表
+	 * 
 	 * @author 尚
 	 * @param deptId
 	 * @return
 	 */
-	public JSONObject getUserByDept(String deptId,int page, int limit){
-		TableResultResponse<User> result = userBiz.getUserByDept(deptId,page,limit);
-		TableResultResponse<User>.TableData<User> data = result.getData();
+	public JSONObject getUserByDept(String deptId, int page, int limit) {
 		
+		
+		TableResultResponse<User> result = userBiz.getUserByDept(deptId, page, limit);
+		TableResultResponse<User>.TableData<User> data = result.getData();
+
 		List<User> rows = data.getRows();
 		long total = data.getTotal();
-		
-		JSONObject object=new JSONObject();
+
+		JSONObject object = new JSONObject();
 		object.put("total", total);
-		JSONArray jsonArray=bindDeptToUser(rows);
+		JSONArray jsonArray = bindPositionToUser(rows);
 		object.put("row", jsonArray);
-		
+
 		return object;
 	}
 }

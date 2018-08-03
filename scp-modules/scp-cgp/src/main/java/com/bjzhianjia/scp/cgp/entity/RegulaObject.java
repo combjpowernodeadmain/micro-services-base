@@ -32,10 +32,10 @@ public class RegulaObject implements Serializable {
     @Column(name = "obj_name")
     private String objName;
 	
-	    //监管对象类型
+	    //监管对象类型  修改为Integer类型,原为String
     @Column(name = "obj_type")
-    @MergeField(key="root_biz_objType",feign=DictFeign.class,method="getDictIds")
-    private String objType;
+//    @MergeField(key="root_biz_objType",feign=DictFeign.class,method="getDictIds")
+    private Integer objType;
 	
 	    //监管对象ID
     @Column(name = "obj_id")
@@ -174,13 +174,13 @@ public class RegulaObject implements Serializable {
 	/**
 	 * 设置：监管对象类型
 	 */
-	public void setObjType(String objType) {
+	public void setObjType(Integer objType) {
 		this.objType = objType;
 	}
 	/**
 	 * 获取：监管对象类型
 	 */
-	public String getObjType() {
+	public Integer getObjType() {
 		return objType;
 	}
 	/**
