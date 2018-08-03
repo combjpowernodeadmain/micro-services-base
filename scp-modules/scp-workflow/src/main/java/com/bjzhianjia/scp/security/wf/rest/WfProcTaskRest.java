@@ -67,13 +67,13 @@ public class WfProcTaskRest {
      */
     @ResponseBody
     @RequestMapping(value = { "/startProcess"}, method = {RequestMethod.GET, RequestMethod.POST })
-    public ObjectRestResponse<Map> startProcess(@RequestBody JSONObject objs,HttpServletRequest request) {
-            log.debug("SCP信息---开始启动工作流...");
-            String procInstId = wfProcTaskService.startProcessInstance(objs);
-            Map<String, Object> resultData = new LinkedHashMap<String, Object>();
-            resultData.put(WfProcessDataAttr.PROC_INSTANCEID, procInstId);
-            return ResultUtils.success(resultData);
-    }
+	public ObjectRestResponse<Map> startProcess(@RequestBody JSONObject objs, HttpServletRequest request) {
+		log.debug("SCP信息---开始启动工作流...");
+		String procInstId = wfProcTaskService.startProcessInstance(objs);
+		Map<String, Object> resultData = new LinkedHashMap<String, Object>();
+		resultData.put(WfProcessDataAttr.PROC_INSTANCEID, procInstId);
+		return ResultUtils.success(resultData);
+	}
     
     /**
      * 根据流程定义编码启动工作流并提交第一个流程任务，通过用户登录信息验证流程启动合法性
@@ -84,12 +84,12 @@ public class WfProcTaskRest {
     @ResponseBody
     @RequestMapping(value = { "/startAndCommitProcess"}, method = {RequestMethod.GET, RequestMethod.POST })
     public ObjectRestResponse<Map> startAndCommitProcess(@RequestBody JSONObject objs,HttpServletRequest request) {
-            log.debug("SCP信息---开始启动并提交工作流...");
-            String procInstId = wfProcTaskService.startAndCompleteProcessInstance(objs);
-            Map<String, Object> resultData = new LinkedHashMap<String, Object>();
-            resultData.put(WfProcessDataAttr.PROC_INSTANCEID, procInstId);
-            
-            return ResultUtils.success(resultData);
+        log.debug("SCP信息---开始启动并提交工作流...");
+        String procInstId = wfProcTaskService.startAndCompleteProcessInstance(objs);
+        Map<String, Object> resultData = new LinkedHashMap<String, Object>();
+        resultData.put(WfProcessDataAttr.PROC_INSTANCEID, procInstId);
+        
+        return ResultUtils.success(resultData);
     }
     
     /**
@@ -101,19 +101,19 @@ public class WfProcTaskRest {
     @ResponseBody
     @RequestMapping(value = { "/claimProcess"}, method = {RequestMethod.GET, RequestMethod.POST })
     public ObjectRestResponse<Map> claimProcess(@RequestBody JSONObject objs,HttpServletRequest request) {
-            log.debug("SCP信息---开始流程任务签收操作...");
-            WfProcTaskBean taskBean = wfProcTaskService.claimProcessInstance(objs);
-            LinkedHashMap<String, Object> resultData = new LinkedHashMap<String, Object>();
-            
-            // 在此组装返回给前台的数据
-            resultData.put(WfProcessDataAttr.PROC_DEFINITIONID, taskBean.getProcId());
-            resultData.put(WfProcessDataAttr.PROC_DEFINITIONKEY, taskBean.getProcKey());
-            resultData.put(WfProcessDataAttr.PROC_INSTANCEID, taskBean.getProcInstId());
-            resultData.put(WfProcessDataAttr.PROC_TASKID, taskBean.getProcCtaskid());
-            resultData.put(WfProcessDataAttr.PROC_TASKCODE, taskBean.getProcCtaskcode());
-            resultData.put(WfProcessDataAttr.PROC_TASKNAME, taskBean.getProcCtaskname());
-            
-            return ResultUtils.success(resultData);
+        log.debug("SCP信息---开始流程任务签收操作...");
+        WfProcTaskBean taskBean = wfProcTaskService.claimProcessInstance(objs);
+        LinkedHashMap<String, Object> resultData = new LinkedHashMap<String, Object>();
+        
+        // 在此组装返回给前台的数据
+        resultData.put(WfProcessDataAttr.PROC_DEFINITIONID, taskBean.getProcId());
+        resultData.put(WfProcessDataAttr.PROC_DEFINITIONKEY, taskBean.getProcKey());
+        resultData.put(WfProcessDataAttr.PROC_INSTANCEID, taskBean.getProcInstId());
+        resultData.put(WfProcessDataAttr.PROC_TASKID, taskBean.getProcCtaskid());
+        resultData.put(WfProcessDataAttr.PROC_TASKCODE, taskBean.getProcCtaskcode());
+        resultData.put(WfProcessDataAttr.PROC_TASKNAME, taskBean.getProcCtaskname());
+        
+        return ResultUtils.success(resultData);
     }
     
     /**
@@ -125,19 +125,19 @@ public class WfProcTaskRest {
     @ResponseBody
     @RequestMapping(value = { "/unclaimProcess"}, method = {RequestMethod.GET, RequestMethod.POST })
     public ObjectRestResponse<Map> unclaimProcess(@RequestBody JSONObject objs,HttpServletRequest request) {
-            log.debug("SCP信息---开始流程任务取消签收操作...");
-            WfProcTaskBean taskBean = wfProcTaskService.unclaimProcessInstance(objs);
-            LinkedHashMap<String, Object> resultData = new LinkedHashMap<String, Object>();
+        log.debug("SCP信息---开始流程任务取消签收操作...");
+        WfProcTaskBean taskBean = wfProcTaskService.unclaimProcessInstance(objs);
+        LinkedHashMap<String, Object> resultData = new LinkedHashMap<String, Object>();
 
-            // 在此组装返回给前台的数据
-            resultData.put(WfProcessDataAttr.PROC_DEFINITIONID, taskBean.getProcId());
-            resultData.put(WfProcessDataAttr.PROC_DEFINITIONKEY, taskBean.getProcKey());
-            resultData.put(WfProcessDataAttr.PROC_INSTANCEID, taskBean.getProcInstId());
-            resultData.put(WfProcessDataAttr.PROC_TASKID, taskBean.getProcCtaskid());
-            resultData.put(WfProcessDataAttr.PROC_TASKCODE, taskBean.getProcCtaskcode());
-            resultData.put(WfProcessDataAttr.PROC_TASKNAME, taskBean.getProcCtaskname());
+        // 在此组装返回给前台的数据
+        resultData.put(WfProcessDataAttr.PROC_DEFINITIONID, taskBean.getProcId());
+        resultData.put(WfProcessDataAttr.PROC_DEFINITIONKEY, taskBean.getProcKey());
+        resultData.put(WfProcessDataAttr.PROC_INSTANCEID, taskBean.getProcInstId());
+        resultData.put(WfProcessDataAttr.PROC_TASKID, taskBean.getProcCtaskid());
+        resultData.put(WfProcessDataAttr.PROC_TASKCODE, taskBean.getProcCtaskcode());
+        resultData.put(WfProcessDataAttr.PROC_TASKNAME, taskBean.getProcCtaskname());
 
-            return ResultUtils.success(resultData);
+        return ResultUtils.success(resultData);
     }
     
     /**
@@ -163,9 +163,9 @@ public class WfProcTaskRest {
     @ResponseBody
     @RequestMapping(value = { "/deleteProcess"}, method = {RequestMethod.GET, RequestMethod.POST })
     public ObjectRestResponse<Map> deleteProcessInstance(@RequestBody JSONObject objs,HttpServletRequest request) {
-            log.debug("SCP信息---开始流程任务删除...");
-            wfProcTaskService.deleteProcessInstance(objs);
-            return ResultUtils.success();
+        log.debug("SCP信息---开始流程任务删除...");
+        wfProcTaskService.deleteProcessInstance(objs);
+        return ResultUtils.success();
     }
     
     /**
@@ -177,9 +177,9 @@ public class WfProcTaskRest {
     @ResponseBody
     @RequestMapping(value = { "/cancelProcess"}, method = {RequestMethod.GET, RequestMethod.POST })
     public ObjectRestResponse<Map> cancelProcessInstance(@RequestBody JSONObject objs,HttpServletRequest reques) {
-            log.debug("SCP信息---开始流程任务取消操作...");
-            wfProcTaskService.cancelProcessInstance(objs);
-            return ResultUtils.success();
+        log.debug("SCP信息---开始流程任务取消操作...");
+        wfProcTaskService.cancelProcessInstance(objs);
+        return ResultUtils.success();
     }
     
     /**
@@ -191,9 +191,9 @@ public class WfProcTaskRest {
     @ResponseBody
     @RequestMapping(value = { "/retrieveProcess"}, method = {RequestMethod.GET, RequestMethod.POST })
     public ObjectRestResponse<Map> retrieveProcessInstance(@RequestBody JSONObject objs,HttpServletRequest reques) {
-            log.debug("SCP信息---开始流程任务撤回操作...");
-            wfProcTaskService.retrieveProcessInstance(objs);
-            return ResultUtils.success();
+        log.debug("SCP信息---开始流程任务撤回操作...");
+        wfProcTaskService.retrieveProcessInstance(objs);
+        return ResultUtils.success();
     }
     
     /**
@@ -232,9 +232,9 @@ public class WfProcTaskRest {
     @ResponseBody
     @RequestMapping(value = { "/delegateProcess"}, method = {RequestMethod.GET, RequestMethod.POST })
     public ObjectRestResponse<Map> delegateProcessInstance(@RequestBody JSONObject objs, HttpServletRequest request) {
-            log.debug("SCP信息---开始流程任务委托操作...");
-            wfProcTaskService.delegateProcessInstance(objs);
-            return ResultUtils.success();
+        log.debug("SCP信息---开始流程任务委托操作...");
+        wfProcTaskService.delegateProcessInstance(objs);
+        return ResultUtils.success();
     }
     
     /**
@@ -246,9 +246,9 @@ public class WfProcTaskRest {
     @ResponseBody
     @RequestMapping(value = { "/cancelProcDelegate"}, method = {RequestMethod.GET, RequestMethod.POST })
     public ObjectRestResponse<Map> cancelProcDelegate(@RequestBody JSONObject objs, HttpServletRequest request) {
-            log.debug("SCP信息---开始取消流程委托...");
-            wfProcTaskService.cancelProcDelegate(objs);
-            return ResultUtils.success();
+        log.debug("SCP信息---开始取消流程委托...");
+        wfProcTaskService.cancelProcDelegate(objs);
+        return ResultUtils.success();
     }
     
     /**
@@ -262,9 +262,9 @@ public class WfProcTaskRest {
     @ResponseBody
     @RequestMapping(value = { "/procApproveHistory"}, method = {RequestMethod.GET, RequestMethod.POST })
     public ObjectRestResponse<Map> getProcApprovedHistory(@RequestBody JSONObject objs, HttpServletRequest request) {
-            log.debug("SCP信息---开始查询业务流程审批历史...");
-            LinkedHashMap map = new LinkedHashMap();
-            map.put("result", wfProcTaskService.getProcApprovedHistory(objs));
-            return ResultUtils.success(map);
+        log.debug("SCP信息---开始查询业务流程审批历史...");
+        LinkedHashMap map = new LinkedHashMap();
+        map.put("result", wfProcTaskService.getProcApprovedHistory(objs));
+        return ResultUtils.success(map);
     }
 }
