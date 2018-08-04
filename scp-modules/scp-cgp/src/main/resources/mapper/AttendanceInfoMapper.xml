@@ -20,29 +20,21 @@
         <result property="account" column="crt_username"/>
         <result property="name" column="crt_user_name"/>
         <result property="depart" column="depart_id"/>
-        <result property="signInMapInfo" column="sign_in_map"/>
+        <result property="signInMapInfo" column="sign_in_map_info"/>
+        <result property="signInMap" column="sign_in_map"/>
         <result property="signInTime" column="sign_in_time"/>
         <result property="signOutTime" column="sign_out_time"/>
-        <result property="signOutMapInfo" column="sign_out_map"/>
+        <result property="signOutMapInfo" column="sign_out_map_info"/>
+        <result property="signOutMap" column="sign_out_map"/>
     </resultMap>
 
 	<select id="getTotal" resultType="int">
   		<![CDATA[
 		select count(*)
 		from (
-			select crt_username,date_day,crt_user_name,depart_id
-					,if(A.date_day<>B.date_day,'',sign_in_time) sign_in_time
-					,if(A.date_day<>B.date_day,'',sign_out_time) sign_out_time
-					,if(A.date_day<>B.date_day,'',sign_in_map) sign_in_map
-					,if(A.date_day<>B.date_day,'',sign_out_map) sign_out_map
+			select crt_username
 			from (
-					select crt_username,date_format(crt_time,'%Y-%m-%d') date_day
-					,substring_index(group_concat(crt_user_name order by id separator '|'),'|',1) crt_user_name
-					,substring_index(group_concat(depart_id order by id separator '|'),'|',1) depart_id
-					,substring_index(group_concat(crt_time order by id separator '|'),'|',1) sign_in_time
-					,if(count(*)=1,'',substring_index(group_concat(crt_time order by id separator '|'),'|',-1)) sign_out_time
-					,substring_index(group_concat(map_info order by id separator '|'),'|',1) sign_in_map
-					,if(count(*)=1,'',substring_index(group_concat(map_info order by id separator '|'),'|',-1)) sign_out_map
+					select crt_username
 					from attendance_info
 					<where>
 						<if test="account != null and account != ''">
@@ -90,6 +82,8 @@
 			select crt_username,date_day,crt_user_name,depart_id
 					,if(A.date_day<>B.date_day,'',sign_in_time) sign_in_time
 					,if(A.date_day<>B.date_day,'',sign_out_time) sign_out_time
+					,if(A.date_day<>B.date_day,'',sign_in_map_info) sign_in_map_info
+					,if(A.date_day<>B.date_day,'',sign_out_map_info) sign_out_map_info
 					,if(A.date_day<>B.date_day,'',sign_in_map) sign_in_map
 					,if(A.date_day<>B.date_day,'',sign_out_map) sign_out_map
 			from (
@@ -98,8 +92,10 @@
 					,substring_index(group_concat(depart_id order by id separator '|'),'|',1) depart_id
 					,substring_index(group_concat(crt_time order by id separator '|'),'|',1) sign_in_time
 					,if(count(*)=1,'',substring_index(group_concat(crt_time order by id separator '|'),'|',-1)) sign_out_time
-					,substring_index(group_concat(map_info order by id separator '|'),'|',1) sign_in_map
-					,if(count(*)=1,'',substring_index(group_concat(map_info order by id separator '|'),'|',-1)) sign_out_map
+					,substring_index(group_concat(map_info order by id separator '|'),'|',1) sign_in_map_info
+					,if(count(*)=1,'',substring_index(group_concat(map_info order by id separator '|'),'|',-1)) sign_out_map_info
+					,if(count(*)=1,'',substring_index(group_concat(longitude,',',latitude order by id separator '|'),'|',1)) sign_in_map
+        ,if(count(*)=1,'',substring_index(group_concat(longitude,',',latitude order by id separator '|'),'|',-1)) sign_out_map
 					from attendance_info
 					<where>
 						<if test="account != null and account != ''">

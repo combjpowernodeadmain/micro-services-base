@@ -15,6 +15,10 @@ public class AttendanceVo {
 	private String signOutMapInfo;
 	
 	private String signOutTime;
+	
+	private String signInMap;
+	
+	private String signOutMap;
 
 	public String getAccount() {
 		return account;
@@ -70,5 +74,21 @@ public class AttendanceVo {
 
 	public void setSignOutTime(String signOutTime) {
 		this.signOutTime = signOutTime;
+	}
+
+	public String getSignInMap() {
+		return signInMap;
+	}
+
+	public void setSignInMap(String signInMap) {
+		this.signInMap = signInMap;
+	}
+
+	public String getSignOutMap() {
+		return signOutMap;
+	}
+
+	public void setSignOutMap(String signOutMap) {
+		this.signOutMap = signOutMap;
 	}
 }
