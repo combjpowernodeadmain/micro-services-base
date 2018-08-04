@@ -18,7 +18,6 @@ import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.util.StringUtil;
-import com.netflix.infix.lang.infix.antlr.EventFilterParser.null_predicate_return;
 
 import lombok.extern.slf4j.Slf4j;
 

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +51,7 @@ public class EnforceTerminalService {
 
 		TableResultResponse<EnforceTerminal> tableResult = enforceTerminalBiz.getList(page, limit, terminal);
 		List<EnforceTerminal> list = tableResult.getData().getRows();
-		
+
 		queryAssist(list);
 
 		try {
@@ -207,24 +206,34 @@ public class EnforceTerminalService {
 		result.setMessage("成功");
 		return result;
 	}
-	
+
 	/**
 	 * 获取单个对象
+	 * 
 	 * @param id
 	 * @return
 	 */
 	public EnforceTerminal get(Integer id) {
+		/*
+		 * 获取单个对象前端需要返回【是否可用】的ID
+		 */
 		EnforceTerminal enforceTerminal = enforceTerminalBiz.selectById(id);
-		List<EnforceTerminal> list=new ArrayList<>();
+		
+		if(enforceTerminal==null||enforceTerminal.getIsDeleted().equals("1")) {
+			return null;
+		}
+		
+		String isEnable = enforceTerminal.getIsEnable();
+		List<EnforceTerminal> list = new ArrayList<>();
 		list.add(enforceTerminal);
 		queryAssist(list);
-		
+
 		try {
 			mergeCore.mergeResult(EnforceTerminal.class, list);
 		} catch (Exception ex) {
 			log.error("merge data exception", ex);
 		}
-		
-		return list.get(0);
+		enforceTerminal.setIsEnable(isEnable);
+		return enforceTerminal;
 	}
 }

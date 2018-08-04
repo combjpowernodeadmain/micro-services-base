@@ -124,7 +124,7 @@ public class DeptBiztypeService {
 			for (String string : split) {
 				Map<String, String> deptBizTypeMap = dictFeign.getDictValueByID(string);
 				JSONObject jsonObject = JSONObject.parseObject(deptBizTypeMap.get(string));
-				String labelDefault = jsonObject.getString("labelDefault");
+				String labelDefault = jsonObject.getString("labelDefault"); 
 				if (StringUtils.isNotBlank(tmpDeptBiztype.getBizTypeName())) {
 					tmpDeptBiztype.setBizTypeName(tmpDeptBiztype.getBizTypeName() + "," + labelDefault);
 				} else {
@@ -142,6 +142,10 @@ public class DeptBiztypeService {
 
 	public TableResultResponse<DeptBizTypeVo> get(String id) {
 		DeptBiztype deptBiztype = deptBiztypeBiz.selectById(Integer.valueOf(id));
+		
+		if(deptBiztype==null||deptBiztype.getIsDeleted().equals("1")) {
+			return null;
+		}
 
 		DeptBizTypeVo deptBiztypeVo = BeanUtil.copyBean_New(deptBiztype, new DeptBizTypeVo());
 

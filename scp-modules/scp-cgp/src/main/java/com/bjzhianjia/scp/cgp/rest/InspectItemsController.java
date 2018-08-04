@@ -6,6 +6,7 @@ import com.bjzhianjia.scp.security.common.rest.BaseController;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 import com.bjzhianjia.scp.cgp.biz.InspectItemsBiz;
 import com.bjzhianjia.scp.cgp.entity.InspectItems;
@@ -42,11 +43,11 @@ public class InspectItemsController extends BaseController<InspectItemsBiz,Inspe
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
     @ResponseBody
     @ApiOperation("终端查询分页列表")
-    public TableResultResponse<InspectItems> page(@RequestParam(defaultValue = "10") int limit
-    				,@RequestParam(defaultValue = "1") int page
-    				,@RequestParam(defaultValue = "") String code
-    				,@RequestParam(defaultValue = "") String name
-    				,@RequestParam(defaultValue = "") String bizType) {
+    public TableResultResponse<InspectItems> page(@RequestParam(defaultValue = "10") @ApiParam(name="页容量") int limit
+    				,@RequestParam(defaultValue = "1") @ApiParam(name="当前页") int page
+    				,@RequestParam(defaultValue = "") @ApiParam(name="巡查事项编号") String code
+    				,@RequestParam(defaultValue = "") @ApiParam(name="巡查事项名称") String name
+    				,@RequestParam(defaultValue = "") @ApiParam(name="业务条线") String bizType) {
 	    
 		InspectItems inspectItems = new InspectItems();
 		inspectItems.setCode(code);
@@ -59,7 +60,7 @@ public class InspectItemsController extends BaseController<InspectItemsBiz,Inspe
 	@RequestMapping(value = "/get/{id}",method = RequestMethod.GET)
     @ResponseBody
     @ApiOperation("查询单个对象")
-    public ObjectRestResponse<InspectItems> get(@PathVariable Integer id){
+    public ObjectRestResponse<InspectItems> get(@PathVariable @ApiParam(name="待查询对象ID") Integer id){
         ObjectRestResponse<InspectItems> entityObjectRestResponse = new ObjectRestResponse<>();
         Object o = inspectItemsBiz.selectById(id);
         InspectItems inspectItems = (InspectItems)o;
@@ -72,7 +73,7 @@ public class InspectItemsController extends BaseController<InspectItemsBiz,Inspe
 	@RequestMapping(value = "/add",method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation("新增单个对象")
-    public ObjectRestResponse<InspectItems> add(@RequestBody @Validated InspectItems inspectItems, BindingResult bindingResult){
+    public ObjectRestResponse<InspectItems> add(@RequestBody @Validated @ApiParam(name="待添加对象实例") InspectItems inspectItems, BindingResult bindingResult){
 		ObjectRestResponse<InspectItems> restResult = new ObjectRestResponse<>();
 		if(bindingResult.hasErrors()) {
 			restResult.setStatus(400);
@@ -93,7 +94,7 @@ public class InspectItemsController extends BaseController<InspectItemsBiz,Inspe
     @RequestMapping(value = "/update/{id}",method = RequestMethod.PUT)
     @ResponseBody
     @ApiOperation("更新单个对象")
-    public ObjectRestResponse<InspectItems> update(@RequestBody @Validated InspectItems inspectItems, BindingResult bindingResult){
+    public ObjectRestResponse<InspectItems> update(@RequestBody @Validated @ApiParam(name="待更新对象实例") InspectItems inspectItems, BindingResult bindingResult){
     	
 		ObjectRestResponse<InspectItems> restResult = new ObjectRestResponse<>();
 		
@@ -116,7 +117,7 @@ public class InspectItemsController extends BaseController<InspectItemsBiz,Inspe
 	@RequestMapping(value = "/remove/{ids}",method = RequestMethod.DELETE)
 	@ResponseBody
 	@ApiOperation("批量移除对象")
-    public ObjectRestResponse<InspectItems> remove(@PathVariable Integer[] ids){
+    public ObjectRestResponse<InspectItems> remove(@PathVariable @ApiParam(name="待删除对象ID集合，多个ID用“，”隔开") Integer[] ids){
 		ObjectRestResponse<InspectItems> result = new ObjectRestResponse<>();
 		if(ids == null || ids.length == 0) {
 			result.setStatus(400);;

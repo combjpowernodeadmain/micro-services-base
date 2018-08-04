@@ -1,5 +1,7 @@
 package com.bjzhianjia.scp.cgp.rest;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -10,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.alibaba.fastjson.JSONArray;
 import com.bjzhianjia.scp.cgp.biz.AreaGridBiz;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.Result;
@@ -24,6 +25,7 @@ import com.bjzhianjia.scp.security.common.rest.BaseController;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 @RestController
 @RequestMapping("areaGrid")
@@ -111,10 +113,10 @@ public class AreaGridController extends BaseController<AreaGridBiz, AreaGrid, In
 		return list;
 	}
 	
-	@RequestMapping(value="/list/level/{levels}")
+	@RequestMapping(value="/list/level/{levels}",method=RequestMethod.GET)
 	@ApiOperation("按网格等级获取网格列表")
-	public JSONArray getByGridLevel(@PathVariable String gridLevel){
-		JSONArray areaGridList = areaGridService.getByGridLevel(gridLevel);
+	public List<AreaGrid> getByGridLevel(@PathVariable(value="levels") @ApiParam(name="网络等级ID") String gridLevel){
+		List<AreaGrid> areaGridList = areaGridService.getByGridLevel(gridLevel);
 		return areaGridList;
 	}
 }

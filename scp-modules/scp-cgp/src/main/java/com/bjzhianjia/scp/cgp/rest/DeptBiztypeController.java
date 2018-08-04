@@ -6,6 +6,7 @@ import com.bjzhianjia.scp.security.common.rest.BaseController;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 import com.bjzhianjia.scp.cgp.biz.DeptBiztypeBiz;
 import com.bjzhianjia.scp.cgp.entity.DeptBiztype;
@@ -50,10 +51,10 @@ public class DeptBiztypeController extends BaseController<DeptBiztypeBiz,DeptBiz
 	@RequestMapping(value="/list",method = RequestMethod.GET)
 	@ResponseBody
 	@ApiOperation("分页查询业务条线记录")
-	public TableResultResponse<DeptBizTypeVo> page(@RequestParam(defaultValue="1") int page,
-			@RequestParam(defaultValue="10")int limit,
-			@RequestParam(defaultValue="")String bizType,
-			@RequestParam(defaultValue="")String department){
+	public TableResultResponse<DeptBizTypeVo> page(@RequestParam(defaultValue="1") @ApiParam(name="当前页")int page,
+			@RequestParam(defaultValue="10")  @ApiParam(name="页容量") int limit,
+			@RequestParam(defaultValue="") @ApiParam(name="业务条线") String bizType,
+			@RequestParam(defaultValue="") @ApiParam(name="部门") String department){
 		DeptBiztype deptBiztype=new DeptBiztype();
 		deptBiztype.setBizType(bizType);
 		deptBiztype.setDepartment(department);
@@ -64,7 +65,7 @@ public class DeptBiztypeController extends BaseController<DeptBiztypeBiz,DeptBiz
 	@RequestMapping(value="/get/{id}",method = RequestMethod.GET)
 	@ResponseBody
 	@ApiOperation("查询单个对象")
-	public TableResultResponse<DeptBizTypeVo> get(@PathVariable(value="id")String id){
+	public TableResultResponse<DeptBizTypeVo> get(@PathVariable(value="id") @ApiParam(name="待查询对象ID")String id){
 		DeptBiztype deptBiztype=new DeptBiztype();
 		deptBiztype.setId(Integer.valueOf(id));
 		TableResultResponse<DeptBizTypeVo> result = deptBiztypeService.get(id);
@@ -74,7 +75,7 @@ public class DeptBiztypeController extends BaseController<DeptBiztypeBiz,DeptBiz
 	@RequestMapping(value="/add",method = RequestMethod.POST)
 	@ResponseBody
 	@ApiOperation("新增单个对象")
-	public ObjectRestResponse<DeptBiztype> add(@RequestBody @Validated DeptBiztype deptBiztype,BindingResult bindingResult
+	public ObjectRestResponse<DeptBiztype> add(@RequestBody @Validated @ApiParam(name="待添加对象实例") DeptBiztype deptBiztype,BindingResult bindingResult
 			,HttpServletResponse response) throws IOException{
 		ObjectRestResponse<DeptBiztype> restResult=new ObjectRestResponse<>();
 		
@@ -101,7 +102,7 @@ public class DeptBiztypeController extends BaseController<DeptBiztypeBiz,DeptBiz
 	@RequestMapping(value="/update/{id}",method=RequestMethod.PUT)
 	@ResponseBody
 	@ApiOperation("更新单个对象")
-	public ObjectRestResponse<DeptBiztype> update(@RequestBody @Validated DeptBiztype deptBiztype,BindingResult bindingResult){
+	public ObjectRestResponse<DeptBiztype> update(@RequestBody @Validated @ApiParam(name="待更新对象实例") DeptBiztype deptBiztype,BindingResult bindingResult){
 		LOGGER.info("deptBiztype/update/"+deptBiztype.getId()+"更新部门业务条线操作");
 		LOGGER.info("待更新部门："+deptBiztype.getDepartment()+",更新为业务条线："+deptBiztype.getBizType());
 		
@@ -127,7 +128,7 @@ public class DeptBiztypeController extends BaseController<DeptBiztypeBiz,DeptBiz
 	@RequestMapping(value="/remove/{id}",method = RequestMethod.PUT)
 	@ResponseBody
 	@ApiOperation("删除单个对象")
-	public ObjectRestResponse<DeptBiztype> remove(@RequestBody DeptBiztype deptBiztype){
+	public ObjectRestResponse<DeptBiztype> remove(@RequestBody @ApiParam(name="待删除对象实例") DeptBiztype deptBiztype){
 		ObjectRestResponse<DeptBiztype> restResult=new ObjectRestResponse<>();
 //		System.out.println(deptBiztype);
 		deptBiztype.setIsDeleted("1");
@@ -139,7 +140,7 @@ public class DeptBiztypeController extends BaseController<DeptBiztypeBiz,DeptBiz
 	@RequestMapping(value="/remove/{ids}",method = RequestMethod.DELETE)
 	@ResponseBody
 	@ApiOperation("批量删除对象")
-	public ObjectRestResponse<DeptBiztype> removeMore(@PathVariable Integer[] ids){
+	public ObjectRestResponse<DeptBiztype> removeMore(@PathVariable @ApiParam(name="待删除对象ID集合，多个ID用“，”隔开") Integer[] ids){
 		ObjectRestResponse<DeptBiztype> result = new ObjectRestResponse<DeptBiztype>();
 		
 //		DeptBiztype deptBiztype=new DeptBiztype();
