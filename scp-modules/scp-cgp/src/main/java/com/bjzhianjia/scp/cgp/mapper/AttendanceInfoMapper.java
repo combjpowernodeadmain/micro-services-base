@@ -1,6 +1,10 @@
 package com.bjzhianjia.scp.cgp.mapper;
 
+import java.util.List;
+import java.util.Map;
+
 import com.bjzhianjia.scp.cgp.entity.AttendanceInfo;
+import com.bjzhianjia.scp.cgp.vo.AttendanceVo;
 import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 
 /**
@@ -12,4 +16,7 @@ import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
  */
 public interface AttendanceInfoMapper extends CommonMapper<AttendanceInfo> {
 	
+	public int getTotal(Map<String, Object> map);
+	
+	public List<AttendanceVo> getList(Map<String, Object> map);
 }
