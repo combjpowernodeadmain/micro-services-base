@@ -173,40 +173,4 @@ public class UserController extends BaseController<UserBiz, User, String> {
 		return userService.getUsersByName(name, page, limit);
 	}
 	
-    /**
-     * 根据username查询用户部门ID
-     * 
-     * @param name
-     * @return
-     */
-    @ApiOperation("根据username查询用户部门ID")
-    @RequestMapping(value = "/getDepartIdByUsername", method = RequestMethod.GET)
-    public ResponseEntity<String> getDepartIdByUserame(@RequestParam(value = "username") String username) {
-        String departId = this.baseBiz.getDepartIdByUsername(username);
-        if (StringUtils.isEmpty(departId)) {
-            return ResponseEntity.status(401).body("");
-        } else {
-            return ResponseEntity.ok(departId);
-        }
-    }
-    
-    
-    /**
-     * 根据username查询tenantID
-     * 
-     * @param name
-     * @return
-     */
-    @ApiOperation("根据username查询用户TenantID")
-    @RequestMapping(value = "/getTenantIdByUsername", method = RequestMethod.GET)
-    public ResponseEntity<String> getTenantIdByUserame(@RequestParam(value = "username") String username) {
-        String tenantId = this.baseBiz.getTenantIdByUsername(username);
-        if (StringUtils.isEmpty(tenantId)) {
-            return ResponseEntity.status(401).body("");
-        } else {
-            return ResponseEntity.ok(tenantId);
-        }
-    }
-	
-	
 }

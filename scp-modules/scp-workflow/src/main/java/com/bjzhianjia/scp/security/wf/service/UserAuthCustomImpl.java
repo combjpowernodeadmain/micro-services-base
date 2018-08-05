@@ -68,7 +68,7 @@ public class UserAuthCustomImpl implements IWfProcUserAuthService {
      */
     @Override
     public String getUserCode() {
-        return BaseContextHandler.getUsername();
+        return BaseContextHandler.getUserID();
     }
 
     /* (non-Javadoc)
@@ -79,12 +79,13 @@ public class UserAuthCustomImpl implements IWfProcUserAuthService {
         return BaseContextHandler.getDepartID();
     }
 
-    /* (non-Javadoc)
+    /* userCode = username
+     * 
      * @see com.bjzhianjia.scp.security.wf.auth.service.IWfProcUserAuthService#getDeptId(java.lang.String)
      */
     @Override
     public String getDeptId(String userCode) {
-        return null;
+        return userFeign.getDepartIdByUserId(userCode);
     }
 
     /* (non-Javadoc)
@@ -108,7 +109,7 @@ public class UserAuthCustomImpl implements IWfProcUserAuthService {
      */
     @Override
     public String getTenantId(String userCode) {
-        return null;
+        return userFeign.getTenantIdByUserId(userCode);
     }
 
     /* (non-Javadoc)
@@ -116,7 +117,7 @@ public class UserAuthCustomImpl implements IWfProcUserAuthService {
      */
     @Override
     public String getOrgId(String userCode) {
-        return null;
+        return userFeign.getDepartIdByUserId(userCode);
     }
 
     /* (non-Javadoc)
@@ -124,8 +125,7 @@ public class UserAuthCustomImpl implements IWfProcUserAuthService {
      */
     @Override
     public String getOrgCode() {
-        // TODO Auto-generated method stub
-        return null;
+        return BaseContextHandler.getDepartID();
     }
 
     /* (non-Javadoc)
@@ -133,8 +133,7 @@ public class UserAuthCustomImpl implements IWfProcUserAuthService {
      */
     @Override
     public String getOrgCode(String userCode) {
-        // TODO Auto-generated method stub
-        return null;
+        return userFeign.getDepartIdByUserId(userCode);
     }
 
     /* (non-Javadoc)
@@ -142,7 +141,7 @@ public class UserAuthCustomImpl implements IWfProcUserAuthService {
      */
     @Override
     public List<String> getRoleCodes() {
-        return null;
+        return userFeign.getGroupCodesByUserId(BaseContextHandler.getUserID());
     }
 
     /* (non-Javadoc)
@@ -150,7 +149,7 @@ public class UserAuthCustomImpl implements IWfProcUserAuthService {
      */
     @Override
     public List<String> getRoleCodes(String userCode) {
-        return null;
+        return userFeign.getGroupCodesByUserId(userCode);
     }
 
     /* (non-Javadoc)
@@ -158,8 +157,7 @@ public class UserAuthCustomImpl implements IWfProcUserAuthService {
      */
     @Override
     public List<String> getAuthOrgCodes() {
-        // TODO Auto-generated method stub
-        return null;
+        return userFeign.getGroupCodesByUserId(BaseContextHandler.getUserID());
     }
 
     /* (non-Javadoc)
@@ -167,8 +165,7 @@ public class UserAuthCustomImpl implements IWfProcUserAuthService {
      */
     @Override
     public List<String> getAuthOrgCodes(String userCode) {
-        // TODO Auto-generated method stub
-        return null;
+        return userFeign.getGroupCodesByUserId(BaseContextHandler.getUserID());
     }
 
     /* (non-Javadoc)
