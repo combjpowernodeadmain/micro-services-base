@@ -11,7 +11,7 @@ import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
  * @email 576866311@qq.com
  * @version 2018-07-04 00:41:37
  */
-@Tenant
+//@Tenant
 public interface AreaGridMapper extends CommonMapper<AreaGrid> {
 	
 }

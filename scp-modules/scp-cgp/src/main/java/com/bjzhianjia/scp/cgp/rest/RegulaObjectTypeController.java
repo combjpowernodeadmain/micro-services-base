@@ -129,7 +129,7 @@ public class RegulaObjectTypeController extends BaseController<RegulaObjectTypeB
 	}
 
 	@RequestMapping(value = "/remove/one/{id}", method = RequestMethod.DELETE)
-	@ApiOperation("批量删除对象")
+	@ApiOperation("删除单个对象")
 	public ObjectRestResponse<RegulaObjectType> removeOne(
 			@PathVariable @ApiParam(name = "待删除对象ID集合，多个ID用“，”隔开") Integer id) {
 		ObjectRestResponse<RegulaObjectType> result = new ObjectRestResponse<>();

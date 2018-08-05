@@ -92,7 +92,7 @@ public class AreaGridService {
 		if (StringUtils.isNotBlank(areaGrid.getMgrDept())) {
 			Map<String, String> depart = adminFeign.getDepart(areaGrid.getMgrDept());
 			if (depart == null || depart.isEmpty()) {
-				result.setMessage("所增添部门不存在");
+				result.setMessage("所选部门不存在");
 				return result;
 			}
 		}
@@ -122,8 +122,8 @@ public class AreaGridService {
 				}
 			}
 		}
-		
-		if(areaGrid.getGridParent()==null) {
+
+		if (areaGrid.getGridParent() == null) {
 			areaGrid.setGridParent(-1);
 		}
 
@@ -136,6 +136,11 @@ public class AreaGridService {
 		Result<List<AreaGridMember>> result = new Result<>();
 		result.setIsSuccess(false);
 
+		/*
+		 * areaGridMember:[{'gridMember':'m11,m12','gridRole':'r1'},{'gridMember':'m2',
+		 * 'gridRole':'r2'},{'gridMember':'m3','gridRole':'r3'},{'
+		 * gridMember':'m4','gridRole':'r4'},{'gridMember':'m5',' gridRole':'r5'}]
+		 */
 		String areaGridMemberJArrayStr = areaGridJObject.getString("areaGridMember");
 		JSONArray areaGridMemberJArray = JSONArray.parseArray(areaGridMemberJArrayStr);
 		List<AreaGridMember> areaGridMemberList = new ArrayList<>();
@@ -191,8 +196,8 @@ public class AreaGridService {
 	 * @return
 	 */
 	public Result<Void> updateAreaGrid(JSONObject areaGridJObject) {
-		AreaGrid areaGrid=JSONObject.parseObject(areaGridJObject.toJSONString(), AreaGrid.class);
-		
+		AreaGrid areaGrid = JSONObject.parseObject(areaGridJObject.toJSONString(), AreaGrid.class);
+
 		Result<Void> result = new Result<>();
 		result.setIsSuccess(false);
 
@@ -200,7 +205,7 @@ public class AreaGridService {
 		if (StringUtils.isNotBlank(areaGrid.getMgrDept())) {
 			Map<String, String> depart = adminFeign.getDepart(areaGrid.getMgrDept());
 			if (depart == null || depart.isEmpty()) {
-				result.setMessage("所增添部门不存在");
+				result.setMessage("所选部门不存在");
 				return result;
 			}
 		}
@@ -244,8 +249,8 @@ public class AreaGridService {
 				}
 			}
 		}
-		
-		if(areaGridJObject.getBooleanValue("flag")) {
+
+		if (areaGridJObject.getBooleanValue("flag")) {
 			areaGridMemberBiz.deleteByGridId(areaGrid.getId());
 			Result<List<AreaGridMember>> resultM = insertAreaGridMember(areaGridJObject, areaGrid.getId());
 			if (!resultM.getIsSuccess()) {
@@ -289,10 +294,12 @@ public class AreaGridService {
 		List<Integer> gridParentIdList = rows.stream().map((o) -> o.getGridParent()).distinct()
 				.collect(Collectors.toList());
 		if (gridParentIdList != null && !gridParentIdList.isEmpty()) {
+			//查询上一级网格集合
 			List<AreaGrid> areaGridParentList = areaGridBiz.getByIds(gridParentIdList);
 			for (AreaGridVo tmp1 : rows) {
 				for (AreaGrid areaGridParent : areaGridParentList) {
 					if (tmp1.getGridParent().equals(areaGridParent.getId())) {
+						//当前网格的上一级网格ID与刚查询到的上一级网格集合中某一个相同，由进行聚和
 						tmp1.setGridParentName(areaGridParent.getGridName());
 						break;
 					}
@@ -340,8 +347,8 @@ public class AreaGridService {
 	public ObjectRestResponse<JSONObject> getOne(Integer id) {
 		ObjectRestResponse<JSONObject> result = new ObjectRestResponse<>();
 		AreaGrid areaGrid = areaGridBiz.selectById(id);
-		
-		if(areaGrid==null||areaGrid.getIsDeleted().equals("1")) {
+
+		if (areaGrid == null || areaGrid.getIsDeleted().equals("1")) {
 			result.setStatus(400);
 			result.setMessage("该记录不存在或已删除");
 			return result;
@@ -357,7 +364,7 @@ public class AreaGridService {
 		conditions.put("gridId", areaGrid.getId());
 		List<AreaGridMember> areaGridMemberList = areaGridMemberBiz.getByMap(conditions);
 
-		//处理回传信息中"gridMember"字段除非依然信息
+		// 处理回传信息中"gridMember"字段除非依然信息
 		String gridMember = mergeGridMember(areaGridMemberList);
 
 		JSONObject resultJObj = JSONObject.parseObject(JSON.toJSONString(areaGridVo));
@@ -368,7 +375,7 @@ public class AreaGridService {
 	}
 
 	public String mergeGridMember(List<AreaGridMember> areaGridMemberList) {
-		String gridMember="";
+		String gridMember = "";
 		if (areaGridMemberList != null && !areaGridMemberList.isEmpty()) {
 			// 按岗位收集网格员，形式如--------"岗位":"网格员1，网格员2，网格员3"
 			Map<String, List<String>> positionUserMap = new HashMap<>();
@@ -396,12 +403,12 @@ public class AreaGridService {
 			JSONArray memberJArray = new JSONArray();
 			Set<String> keySet = positionUserMap.keySet();
 			for (String gridRole : keySet) {
-				//以gridRold为基准，拼接需要回传的JSON数组
+				// 以gridRold为基准，拼接需要回传的JSON数组
 				JSONObject memberJObject = new JSONObject();
 				memberJObject.put("gridRole", gridRole);
 				memberJObject.put("gridRoleName", gridMemberMap.get(gridRole));
 
-				//同一岗位下的多个人员
+				// 同一岗位下的多个人员
 				List<String> list = positionUserMap.get(gridRole);
 
 				List<String> memberTmpList = new ArrayList<>();
@@ -425,20 +432,22 @@ public class AreaGridService {
 	 * 删除网格<br/>
 	 * 删除网格的同时，会将网格成员表中与之相对应的记录删除<br/>
 	 * 删除采用逻辑删除
+	 * 
 	 * @author 尚
 	 * @param id
 	 * @return
 	 */
-	public Result<Void> removeOne(Integer id){
-		Result<Void> result=new Result<>();
-		
+	public Result<Void> removeOne(Integer id) {
+		Result<Void> result = new Result<>();
+
 		AreaGrid areaGrid = new AreaGrid();
 		areaGrid.setId(id);
 		areaGrid.setIsDeleted("1");
 		this.areaGridBiz.updateSelectiveById(areaGrid);
-		
-		this.areaGridMemberMapper.deleteByGridId(id, BaseContextHandler.getUserID(), BaseContextHandler.getUsername(),new Date());
-		
+
+		this.areaGridMemberMapper.deleteByGridId(id, BaseContextHandler.getUserID(), BaseContextHandler.getUsername(),
+				new Date());
+
 		result.setIsSuccess(true);
 		result.setMessage("成功");
 		return result;

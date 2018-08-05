@@ -37,7 +37,7 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper,AreaGrid> {
 	private MergeCore mergeCore;
 	
 	/**
-	 * 按网络编号查询网格
+	 * 按条件查询未被删除的网格
 	 * @author 尚
 	 * @param gridCde
 	 * @return
