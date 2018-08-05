@@ -152,7 +152,7 @@ public class WfMonitorBiz extends WfBaseBiz {
      * @return
      */
     public List<WfMyProcBackBean> getOrgProcessList(JSONObject objs) throws WorkflowException {
-        logger.info("流程异常处理--开始按照机构查询未结束的流程任务列表...");
+        logger.info("流程异常处理--开始按照授权机构查询未结束的流程任务列表...");
 
         try {
             // setDb(0, super.SLAVE); 

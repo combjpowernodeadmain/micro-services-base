@@ -73,7 +73,7 @@
 				OR task.PROC_DATAPERMISSION = '2'	AND SUBSTR(proc.PROC_ORGCODE, 1, LENGTH(#{procOrgCode}))=#{procOrgCode} and	LENGTH(proc.PROC_ORGCODE) > LENGTH(#{procOrgCode})
 				OR task.PROC_DATAPERMISSION = '3'	AND SUBSTR(proc.PROC_ORGCODE, 1, LENGTH(#{procOrgCode}))=#{procOrgCode}
 				OR task.PROC_DATAPERMISSION = '9' AND task.PROC_APPOINT_USERS = #{procTaskUser})
-			AND (task.PROC_TENANTPERMISSION = '0' OR task.PROC_TENANTPERMISSION = '1' and task.PROC_TENANT_ID = #{procTenantId})
+			AND (task.PROC_TENANTPERMISSION = '0' OR task.PROC_TENANTPERMISSION = '1' and proc.PROC_TENANT_ID = #{procTenantId})
 			AND (task.PROC_ORGPERMISSION = '0' 
 				OR task.PROC_ORGPERMISSION = '1' and task.PROC_ORGCODE = #{procOrgCode}
 				OR task.PROC_ORGPERMISSION = '2' and (task.PROC_ORGCODE = #{procOrgCode} or
@@ -168,7 +168,7 @@
 				OR task.PROC_DATAPERMISSION = '2'	AND SUBSTR(proc.PROC_ORGCODE, 1, LENGTH(#{procOrgCode}))=#{procOrgCode} and	LENGTH(proc.PROC_ORGCODE) > LENGTH(#{procOrgCode})
 				OR task.PROC_DATAPERMISSION = '3'	AND SUBSTR(proc.PROC_ORGCODE, 1, LENGTH(#{procOrgCode}))=#{procOrgCode}
 				OR task.PROC_DATAPERMISSION = '9' AND task.PROC_APPOINT_USERS = #{procTaskUser})
-			AND (task.PROC_TENANTPERMISSION = '0' OR task.PROC_TENANTPERMISSION = '1' and task.PROC_TENANT_ID = #{procTenantId})
+			AND (task.PROC_TENANTPERMISSION = '0' OR task.PROC_TENANTPERMISSION = '1' and proc.PROC_TENANT_ID = #{procTenantId})
 			AND (task.PROC_ORGPERMISSION = '0' 
 				OR task.PROC_ORGPERMISSION = '1' and task.PROC_ORGCODE = #{procOrgCode}
 				OR task.PROC_ORGPERMISSION = '2' and (task.PROC_ORGCODE = #{procOrgCode} or
@@ -260,7 +260,7 @@
 		AND task.PROC_CTASKID = myproc.PROC_TASKID
 		WHERE
 		myproc.PROC_USER = #{procTaskUser,jdbcType=VARCHAR}
-		and myproc.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
+		and proc.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
 		<if test="procStatus != null and procStatus != ''">
 			AND proc.PROC_STATUS = #{procStatus,jdbcType=VARCHAR}
 		</if>
@@ -302,7 +302,7 @@
 		LEFT JOIN SCP_wf_proc proc ON myproc.proc_inst_id = proc.proc_inst_id
 		WHERE
 		myproc.PROC_USER = #{procTaskUser,jdbcType=VARCHAR}
-		and myproc.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
+		and proc.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
 		<if test="procStatus != null and procStatus != ''">
 			AND proc.PROC_STATUS = #{procStatus,jdbcType=VARCHAR}
 		</if>
@@ -421,7 +421,7 @@
 		ORDER BY proc.PROC_CREATETIME ASC, task.PROC_TASK_COMMITTIME ASC
 	</select>
 	
-	<!-- 按照机构代码查询未结束的流程任务 -->
+	<!-- 按照授权机构代码查询未结束的流程任务 -->
 	<select id="selectOrgProcessList" resultType="com.bjzhianjia.scp.security.wf.monitor.entity.WfMyProcBackBean">
 		SELECT
 			proc.PROC_INST_ID procInstId,
@@ -468,9 +468,16 @@
 			proc.PROC_INST_ID = task.PROC_INST_ID
 			AND task.PROC_TASK_STATUS IN (1, 2)
 		)
-		WHERE
-			proc.PROC_STATUS IN (0, 3)
-			and proc.PROC_ORGCODE LIKE CONCAT(#{procOrgCode},'%')
+		WHERE proc.PROC_STATUS IN (0, 3)
+			and proc.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
+			AND (proc.PROC_ORGCODE = #{procOrgCode} or
+				<if test="procAuthOrgCodes != null and procAuthOrgCodes.size > 0">
+					proc.PROC_ORGCODE in
+					<foreach item="item" index="index" collection="procAuthOrgCodes" open="("
+						separator="," close=")">
+						#{item}
+					</foreach>
+				</if>)
 			<if test="procStatus != null and procStatus != ''">
 				AND proc.PROC_STATUS = #{procStatus,jdbcType=VARCHAR}
 			</if>
@@ -543,7 +550,15 @@
 			SCP_wf_proc_delegate delegate
 		LEFT JOIN SCP_wf_proc proc ON proc.PROC_INST_ID = delegate.PROC_INST_ID
 		WHERE delegate.PROC_LICENSE_ISVALID='1'
-			and proc.PROC_ORGCODE LIKE CONCAT(#{procOrgCode},'%')
+			and proc.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
+			AND (proc.PROC_ORGCODE = #{procOrgCode} or
+				<if test="procAuthOrgCodes != null and procAuthOrgCodes.size > 0">
+					proc.PROC_ORGCODE in
+					<foreach item="item" index="index" collection="procAuthOrgCodes" open="("
+						separator="," close=")">
+						#{item}
+					</foreach>
+				</if>)
 			<if test="procStatus != null and procStatus != ''">
 				AND proc.PROC_STATUS = #{procStatus,jdbcType=VARCHAR}
 			</if>
@@ -614,10 +629,10 @@
 		FROM
 			SCP_wf_proc_delegate delegate
 		LEFT JOIN SCP_wf_proc proc ON proc.PROC_INST_ID = delegate.PROC_INST_ID
-		WHERE
-			delegate.PROC_LICENSE_ISVALID = '1'
-		AND	delegate.PROC_LICENSOR = #{procTaskUser,jdbcType=VARCHAR}
-		AND proc.PROC_STATUS in ('0', '3')
+		WHERE delegate.PROC_LICENSE_ISVALID = '1'
+			and proc.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
+			AND	delegate.PROC_LICENSOR = #{procTaskUser,jdbcType=VARCHAR}
+			AND proc.PROC_STATUS in ('0', '3')
 		ORDER BY
 			proc.PROC_CREATETIME DESC,
 			delegate.PROC_LICENSE_TIME ASC
@@ -659,8 +674,15 @@
 		FROM SCP_wf_proc proc
 		LEFT JOIN SCP_wf_proc_task task ON task.proc_inst_id = proc.proc_inst_id
 		AND task.PROC_TASK_STATUS IN ('1', '2')
-		WHERE
-		proc.PROC_ORGCODE LIKE CONCAT('%', #{procOrgCode},'%')
+		WHERE proc.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
+		AND (proc.PROC_ORGCODE = #{procOrgCode} or
+			<if test="procAuthOrgCodes != null and procAuthOrgCodes.size > 0">
+				proc.PROC_ORGCODE in
+				<foreach item="item" index="index" collection="procAuthOrgCodes" open="("
+					separator="," close=")">
+					#{item}
+				</foreach>
+			</if>)
 		<if test="procStatus != null and procStatus != ''">
 			AND proc.PROC_STATUS = #{procStatus,jdbcType=VARCHAR}
 		</if>

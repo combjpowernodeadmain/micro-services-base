@@ -80,7 +80,7 @@ public class WfProcMonitorRest {
     }
 
     /**
-     * 流程监控列表查询
+     * 流程异常查询
      * @param objs
      * @return
      */
@@ -156,6 +156,7 @@ public class WfProcMonitorRest {
         log.debug("SCP信息---开始流程实例汇总查询...");
         return ResultUtils.success(wfMonitorService.geyProcessSummary(objs));
     }
+    
     /**
      * 导出流程实例汇总
      * 

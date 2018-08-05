@@ -55,7 +55,7 @@ public interface WfProcMonitorBeanMapper {
     List<WfMyProcBackBean> selectActiveProcessList(JSONObject objs);
     
     /**
-     * 通过机构代码查询未完成的流程列表
+     * 通过授权机构代码查询未完成的流程列表
      * @param objs
      * @return
      */
