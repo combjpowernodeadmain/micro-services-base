@@ -32,11 +32,13 @@
   		<![CDATA[
 		select count(*)
 		from (
-			select crt_username,sign_in_time,sign_out_time
+			select crt_username
+					,if(A.date_day<>B.date_day,'',sign_in_time) sign_in_time
+					,if(A.date_day<>B.date_day,'',sign_out_time) sign_out_time
 			from (
-					select crt_username
-						,if(A.date_day<>B.date_day,'',sign_in_time) sign_in_time
-						,if(A.date_day<>B.date_day,'',sign_out_time) sign_out_time
+					select crt_username,date_format(crt_time,'%Y-%m-%d') date_day
+					    ,substring_index(group_concat(crt_time order by id separator '|'),'|',1) sign_in_time
+					    ,if(count(*)=1,'',substring_index(group_concat(crt_time order by id separator '|'),'|',-1)) sign_out_time
 					from attendance_info
 					<where>
 						<if test="account != null and account != ''">
