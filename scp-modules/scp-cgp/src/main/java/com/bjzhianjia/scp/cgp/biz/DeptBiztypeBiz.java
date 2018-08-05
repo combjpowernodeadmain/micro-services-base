@@ -61,7 +61,7 @@ public class DeptBiztypeBiz extends BusinessBiz<DeptBiztypeMapper, DeptBiztype> 
 //			criteria.andEqualTo("department",deptBiztype.getDepartment());
 		}
 
-		example.setOrderByClause("crt_time desc");
+		example.setOrderByClause("id desc");
 
 		Page<Object> result = PageHelper.startPage(page, limit);
 		List<DeptBiztype> list = deptBiztypeMapper.selectByExample(example);

@@ -197,6 +197,11 @@ public class VhclManagementService {
 	 */
 	public VhclManagement get(int id) {
 		VhclManagement vhcl = vhclManagementBiz.selectById(id);
+		
+		if(vhcl==null||vhcl.getIsDeleted().equals("1")) {
+			return null;
+		}
+		
 		List<VhclManagement> vhclList=new ArrayList<>();
 		vhclList.add(vhcl);
 		queryAssist(vhclList);

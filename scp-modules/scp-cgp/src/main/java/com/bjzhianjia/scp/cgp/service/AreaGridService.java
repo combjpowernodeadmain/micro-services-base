@@ -198,23 +198,10 @@ public class AreaGridService {
 	 * @param areaGrid
 	 * @return
 	 */
-	public JSONArray getByGridLevel(String gridLevel){
-		JSONArray result=new JSONArray();
+	public List<AreaGrid> getByGridLevel(String gridLevel){
 		
 		List<AreaGrid> tableResult=areaGridBiz.getByGridLevel(gridLevel);
-		List<String> gridLevelIdList = tableResult.stream().map((o)->o.getGridLevel()).distinct().collect(Collectors.toList());
 		
-		if(gridLevelIdList!=null&&!gridLevelIdList.isEmpty()) {
-			Map<String, String> gridLevelListMap = dictFeign.getDictValueByID(String.join(",", gridLevelIdList));
-			for(AreaGrid areaGrid:tableResult) {
-				JSONObject object=new JSONObject();
-				object.put("areaId", areaGrid.getId());
-				
-				String string = gridLevelListMap.get(areaGrid.getGridLevel());
-				object.put("gridLevel", JSONObject.parseObject(string).getString("labelDefault"));
-				result.add(object);
-			}
-		}
-		return result;
+		return tableResult;
 	}
 }

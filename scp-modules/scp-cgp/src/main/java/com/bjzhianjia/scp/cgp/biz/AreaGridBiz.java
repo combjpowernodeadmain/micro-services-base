@@ -114,7 +114,7 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper,AreaGrid> {
 		List<String> gridLevelList = Arrays.asList(split);
 		criteria.andIn("gridLevel", gridLevelList);
 		
-		example.setOrderByClause("crt_time desc");
+		example.setOrderByClause("id desc");
 		
 		List<AreaGrid> list = this.mapper.selectByExample(example);
 		return list;
