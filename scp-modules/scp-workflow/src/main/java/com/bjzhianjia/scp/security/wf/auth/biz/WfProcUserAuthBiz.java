@@ -22,19 +22,47 @@ public class WfProcUserAuthBiz extends WfBaseBiz {
 	@Autowired
 	private IWfProcUserAuthService wfProcUserAuthService;
 	
+	/**
+     * 用户认证，未指定认证方式，或者认证不通过的请求抛出WorkflowException，不能进行后续流程处理
+     * @param authData      用户认证信息
+     * @param checkOrg		是否检查用户机构
+     * @param checkRole		是否检查用户角色
+     * @throws WorkflowException
+     */
+	public void userAuthenticate(WfProcAuthDataBean authData, boolean checkOrg,
+			boolean checkRole) throws WorkflowException {
+		initAndCheckUserAuth(authData, checkOrg, checkRole, false);
+	}
 	
 	/**
      * 用户认证，未指定认证方式，或者认证不通过的请求抛出WorkflowException，不能进行后续流程处理
      * @param authData      用户认证信息
+     * @param checkOrg		是否检查用户机构
+     * @param checkRole		是否检查用户角色
+     * @param initUserSelfData	是否初始化当前用户自定义权限数据
      * @throws WorkflowException
      */
-    public void userAuthenticate(WfProcAuthDataBean authData, boolean checkOrg, boolean checkRole)
-        throws WorkflowException {
-        String authType = authData.getProcAuthType();
-        String userCode = null;
-        String orgCode = null;
-    	String tenantID = null;
-        List<String> roleCodes = new ArrayList<String>();
+	public void userAuthenticate(WfProcAuthDataBean authData, boolean checkOrg,
+			boolean checkRole, boolean initUserSelfData) throws WorkflowException {
+		initAndCheckUserAuth(authData, checkOrg, checkRole, initUserSelfData);
+	}
+	
+	/**
+     * 用户认证，未指定认证方式，或者认证不通过的请求抛出WorkflowException，不能进行后续流程处理
+     * @param authData      用户认证信息
+     * @param checkOrg		是否检查用户机构
+     * @param checkRole		是否检查用户角色
+     * @param initUserSelfData	是否初始化当前用户自定义权限数据
+     * @throws WorkflowException
+     */
+	private void initAndCheckUserAuth(WfProcAuthDataBean authData,
+			boolean checkOrg, boolean checkRole, boolean initUserSelfData)
+			throws WorkflowException {
+		String authType = authData.getProcAuthType();
+		String userCode = null;
+		String orgCode = null;
+		String tenantID = null;
+		List<String> roleCodes = new ArrayList<String>();
         		
         if (StringUtil.isNull(authType)) {
             throw new WorkflowException(WorkflowEnumResults.WF_COMM_02000003); 
@@ -64,6 +92,13 @@ public class WfProcUserAuthBiz extends WfBaseBiz {
                 authData.setProcAuthOrgCodes(authOrgCodes);
                 authData.setProcTaskRoles(roleCodes);
                 
+                if (initUserSelfData) {
+                	authData.setProcSelfPermissionData1(getSelfPermissionData1(authData.getProcTaskUser()));
+                	authData.setProcSelfPermissionData2(getSelfPermissionData2(authData.getProcTaskUser()));
+                	authData.setProcSelfPermissionData3(getSelfPermissionData3(authData.getProcTaskUser()));
+                	authData.setProcSelfPermissionData4(getSelfPermissionData4(authData.getProcTaskUser()));
+                	authData.setProcSelfPermissionData5(getSelfPermissionData5(authData.getProcTaskUser()));
+                }
                 break;
             case WfUserAuthType.PROC_AUTH_SESSION:
             	userCode = getUserCode();
@@ -88,6 +123,15 @@ public class WfProcUserAuthBiz extends WfBaseBiz {
                 authData.setProcTaskRoles(roleCodes);
                 authData.setProcOrgCode(getOrgCode());
                 authData.setProcAuthOrgCodes(getAuthOrgCodes());
+                
+                if (initUserSelfData) {
+                	authData.setProcSelfPermissionData1(getSelfPermissionData1());
+                	authData.setProcSelfPermissionData2(getSelfPermissionData2());
+                	authData.setProcSelfPermissionData3(getSelfPermissionData3());
+                	authData.setProcSelfPermissionData4(getSelfPermissionData4());
+                	authData.setProcSelfPermissionData5(getSelfPermissionData5());
+                }
+                
                 break;
             default:
                 throw new WorkflowException(WorkflowEnumResults.WF_COMM_02000006);   

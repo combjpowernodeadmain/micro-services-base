@@ -114,10 +114,26 @@
 			<if test="procBizid != '' and procBizid != null">
 				and proc.PROC_BIZID LIKE "%"#{procBizid}"%"
 			</if>
+			<!-- 查询条件：流程创建时间-开始 -->
+			<if test="procCreateTimeStart != null and procCreateTimeStart != ''">
+				AND proc.PROC_CREATETIME &gt;= #{procCreateTimeStart}
+			</if>
+			<!-- 查询条件：流程创建时间-结束 -->
+			<if test="procCreateTimeEnd != null and procCreateTimeEnd != ''">
+				AND proc.PROC_CREATETIME &lt;= #{procCreateTimeEnd}
+			</if>
+			<!-- 查询条件：流程任务到达时间-开始 -->
+			<if test="procTaskCommitTimeStart != null and procTaskCommitTimeStart != ''">
+				AND task.PROC_TASK_COMMITTIME &gt;= #{procTaskCommitTimeStart}
+			</if>
+			<!-- 查询条件：流程任务到达时间-结束 -->
+			<if test="procTaskCommitTimeEnd != null and procTaskCommitTimeEnd != ''">
+				AND task.PROC_TASK_COMMITTIME &lt;= #{procTaskCommitTimeEnd}
+			</if>
 		ORDER BY task.PROC_TASK_COMMITTIME ASC
 	</select>
 	
-	<select id="getUserToDoTasks" resultType="int">
+	<select id="getUserToDoTaskCount" resultType="int">
 		SELECT count(task.PROC_CTASKID)
 		FROM SCP_WF_PROC proc
 		JOIN SCP_WF_PROC_TASK task 
@@ -245,7 +261,6 @@
 		WHERE
 		myproc.PROC_USER = #{procTaskUser,jdbcType=VARCHAR}
 		and myproc.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
-		and myproc.PROC_DEPART_ID = #{procDeptId,jdbcType=VARCHAR}
 		<if test="procStatus != null and procStatus != ''">
 			AND proc.PROC_STATUS = #{procStatus,jdbcType=VARCHAR}
 		</if>
@@ -281,14 +296,13 @@
 	</select>
 
 	<!-- 已办任务数量 -->
-	<select id="selectMyProcTasks" parameterType="java.util.Map" resultType="int">
+	<select id="getUserToDoTaskCount" parameterType="java.util.Map" resultType="int">
 		SELECT count(DISTINCT myproc.PROC_TASKID)
 		FROM SCP_wf_my_proc myproc
 		LEFT JOIN SCP_wf_proc proc ON myproc.proc_inst_id = proc.proc_inst_id
 		WHERE
 		myproc.PROC_USER = #{procTaskUser,jdbcType=VARCHAR}
 		and myproc.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
-		and myproc.PROC_DEPART_ID = #{procDeptId,jdbcType=VARCHAR}
 		<if test="procStatus != null and procStatus != ''">
 			AND proc.PROC_STATUS = #{procStatus,jdbcType=VARCHAR}
 		</if>
