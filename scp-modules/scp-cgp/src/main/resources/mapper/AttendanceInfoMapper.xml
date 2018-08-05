@@ -73,7 +73,7 @@
 				<![CDATA[ and sign_in_time <> '' and sign_out_time <> '' ]]>
 			</if>
 			<if test="status == 0">
-				and sign_in_time = '' or sign_out_time = ''
+				and (sign_in_time = '' or sign_out_time = '')
 			</if>
 		</where>
 	</select>
@@ -132,7 +132,7 @@
 				<![CDATA[ and sign_in_time <> '' and sign_out_time <> '' ]]>
 			</if>
 			<if test="status == 0">
-				and sign_in_time = '' or sign_out_time = ''
+				and (sign_in_time = '' or sign_out_time = '')
 			</if>
 		</where>
 		order by date_day,crt_username
