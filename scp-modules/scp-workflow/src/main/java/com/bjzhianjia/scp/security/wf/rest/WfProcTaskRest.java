@@ -211,6 +211,33 @@ public class WfProcTaskRest {
     }
     
     /**
+     * 流程实例暂停
+     * @param objs
+     * @param request
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = { "/suspend" }, method = { RequestMethod.GET, RequestMethod.POST })
+    public ObjectRestResponse<Map> suspendProcess(@RequestBody JSONObject objs, HttpServletRequest request) {
+        log.debug("SCP信息---开始流程实例暂停处理...");
+        wfProcTaskService.suspendProcess(objs);
+        return ResultUtils.success();
+    }
+
+    /**
+     * 将暂停的流程实例激活
+     * @param objs
+     * @param request
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = { "/active" }, method = { RequestMethod.GET, RequestMethod.POST })
+    public ObjectRestResponse<Map> activeProcess(@RequestBody JSONObject objs) {
+        log.debug("SCP信息---开始流程实例激活处理...");
+        wfProcTaskService.activeProcess(objs);
+        return ResultUtils.success();
+    }
+    /**
      * 指定流程任务的处理人
      * @param objs
      * @return

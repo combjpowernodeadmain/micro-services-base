@@ -28,17 +28,19 @@
 		PROC_STATUS,PROC_VERSION,PROC_DISPLAYURL,PROC_TENANT_ID,PROC_DEPART_ID
 	</sql>
 
-	<select id="selectByPrimaryKey1" resultMap="BaseResultMap"
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
 		parameterType="java.lang.String">
 		select
 		<include refid="Base_Column_List" />
 		from SCP_WF_PROC
 		where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
+		and PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
 	</select>
 
 	<delete id="deleteByPrimaryKey" parameterType="java.lang.String">
 		delete from SCP_WF_PROC
 		where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
+		and PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
 	</delete>
 
 	<insert id="insert"
@@ -198,14 +200,9 @@
 			<if test="procDisplayurl != null">
 				PROC_DISPLAYURL = #{procDisplayurl,jdbcType=VARCHAR},
 			</if>
-			<if test="procTenantId != null">
-				PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR},
-			</if>
-			<if test="procDepartId != null">
-				PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR},
-			</if>
 		</set>
 		where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
+		and PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
 	</update>
 	<update id="updateByPrimaryKey"
 		parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean">
@@ -222,9 +219,8 @@
 		PROC_MEMO = #{procMemo,jdbcType=VARCHAR},
 		PROC_STATUS = #{procStatus,jdbcType=CHAR},
 		PROC_DISPLAYURL = #{procDisplayurl,jdbcType=VARCHAR},
-		PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR},
-		PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR},
 		where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
+		and PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
 	</update>
 
 	<update id="updateWfProcBeanByProcId"
@@ -261,14 +257,9 @@
 			<if test="procDisplayurl != null">
 				PROC_DISPLAYURL = #{procDisplayurl,jdbcType=VARCHAR},
 			</if>
-			<if test="procDepartId != null">
-				PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR},
-			</if>
-			<if test="procTenantId != null">
-				PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR},
-			</if>
 		</set>
 		where PROC_ID = #{procId,jdbcType=VARCHAR}
+		and PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
 	</update>
 
 	<update id="updateWfProcBeanByInstId"
@@ -305,13 +296,8 @@
 			<if test="procDisplayurl != null">
 				PROC_DISPLAYURL = #{procDisplayurl,jdbcType=VARCHAR},
 			</if>
-			<if test="procTenantId != null">
-				PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR},
-			</if>
-			<if test="procDepartId != null">
-				PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR},
-			</if>
 		</set>
 		where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
+		and PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
 	</update>
 </mapper>

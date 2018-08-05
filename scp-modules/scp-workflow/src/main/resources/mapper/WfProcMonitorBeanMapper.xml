@@ -386,8 +386,9 @@
 		)
 		WHERE
 			proc.PROC_STATUS IN (0, 3)
+			and proc.PROC_TENANT_ID = #{procTenantId, jdbcType=VARCHAR}
 			<if test="procStatus != null and procStatus != ''">
-					AND proc.PROC_STATUS = #{procStatus,jdbcType=VARCHAR}
+				AND proc.PROC_STATUS = #{procStatus,jdbcType=VARCHAR}
 			</if>
 			<!-- 查询条件：流程创建时间-开始 -->
 			<if test="procCreateTimeStart != null and procCreateTimeStart != ''">
@@ -401,7 +402,7 @@
 			<if test="procCommitTimeStart != null and procCommitTimeStart != ''">
 				AND task.PROC_TASK_COMMITTIME &gt;= #{procCommitTimeStart}
 			</if>
-			<!-- 查询条件：r任务到达时间-结束 -->
+			<!-- 查询条件：任务到达时间-结束 -->
 			<if test="procCommitTimeEnd != null and procCommitTimeEnd != ''">
 				AND task.PROC_TASK_COMMITTIME &lt;= #{procCommitTimeEnd}
 			</if>

@@ -147,20 +147,23 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
     }
     
     /**
-     * 查询用户待办流程任务列表
+     * 流程监控查询
      * @param objs
      * @return
      * @throws WorkflowException
      */
     public PageInfo<WfMyProcBackBean> getActiveProcessList(JSONObject objs) throws WorkflowException { // 需要修改调试
-//        userAuthenticate(objs, false, false, true); // check
+    	WfProcAuthDataBean authData = parseAuthData(objs);
+    	WfProcBizDataBean bizData = parseBizData(objs);
+    	wfProcUserAuthBiz.userAuthenticate(authData, false, false, false);
+    	JSONObject queryObj = parseQueryData(authData, bizData);
 
-        parseAndUpdateDate(objs, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
-        parseAndUpdateDate(objs, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
-        parseAndUpdateDate(objs, "procCommitTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
-        parseAndUpdateDate(objs, "procCommitTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        parseAndUpdateDate(queryObj, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        parseAndUpdateDate(queryObj, "procCommitTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procCommitTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
 
-        return new PageInfo<WfMyProcBackBean>(wfMonitorBiz.getActiveProcessList(objs));
+        return new PageInfo<WfMyProcBackBean>(wfMonitorBiz.getActiveProcessList(queryObj));
     }
     
     /**
@@ -170,14 +173,18 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
      * @throws WorkflowException
      */
     public PageInfo<WfMyProcBackBean> getOrgProcessList(JSONObject objs) throws WorkflowException { // 需要修改调试
+    	WfProcAuthDataBean authData = parseAuthData(objs);
+    	WfProcBizDataBean bizData = parseBizData(objs);
+    	wfProcUserAuthBiz.userAuthenticate(authData, false, false, false);
+    	JSONObject queryObj = parseQueryData(authData, bizData);
 //        userAuthenticate(objs, true, false, true); // check
 
-        parseAndUpdateDate(objs, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
-        parseAndUpdateDate(objs, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
-        parseAndUpdateDate(objs, "procCommitTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
-        parseAndUpdateDate(objs, "procCommitTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        parseAndUpdateDate(queryObj, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        parseAndUpdateDate(queryObj, "procCommitTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procCommitTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
 
-        return new PageInfo<WfMyProcBackBean>(wfMonitorBiz.getOrgProcessList(objs));
+        return new PageInfo<WfMyProcBackBean>(wfMonitorBiz.getOrgProcessList(queryObj));
     }
     
     /**

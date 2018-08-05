@@ -365,11 +365,10 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
     public void suspendProcess(JSONObject objs) throws WorkflowException {
         try {
             WfProcessDataBean procData = parseProcessData(objs);
-            WfProcVariableDataBean procVarData = parseVariableData(objs);
             WfProcAuthDataBean authData = parseAuthData(objs);
             wfProcUserAuthBiz.userAuthenticate(authData, false, false);
             
-            wfProcTaskBiz.suspendProcess(procData, procVarData, authData);
+            wfProcTaskBiz.suspendProcess(procData, authData);
         } catch (WorkflowException wfe) {
             throw wfe;
         }
@@ -387,11 +386,10 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
     public void activeProcess(JSONObject objs) throws WorkflowException {
         try {
             WfProcessDataBean procData = parseProcessData(objs);
-            WfProcVariableDataBean procVarData = parseVariableData(objs);
             WfProcAuthDataBean authData = parseAuthData(objs);
             wfProcUserAuthBiz.userAuthenticate(authData, false, false);
             
-            wfProcTaskBiz.activeProcess(procData, procVarData, authData);
+            wfProcTaskBiz.activeProcess(procData, authData);
         } catch (WorkflowException wfe) {
             throw wfe;
         } catch (Exception e) {

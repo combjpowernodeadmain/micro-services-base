@@ -933,7 +933,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		}
 
 		// 流程状态校验，只有审批中的流程才能进行流程任务签收操作
-		checkProcessStatus(procTask.getProcInstId());
+		checkProcessStatus(procTask.getProcInstId(), authData.getProcTenantId());
 
 		// 是否委托授权处理
 		boolean isDelegate = false;
@@ -1032,8 +1032,9 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	 * @return
 	 * @throws WorkflowException
 	 */
-	private boolean checkProcessStatus(String procInstId) throws WorkflowException {
-		return checkProcessStatus(getWfProcess(procInstId));
+	private boolean checkProcessStatus(String procInstId, String procTenantId)
+			throws WorkflowException {
+		return checkProcessStatus(getWfProcess(procInstId, procTenantId));
 	}
 
 	/**
@@ -1155,7 +1156,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		}
 
 		// 流程状态校验，只有审批中的流程才能进行流程任务取消签收操作
-		checkProcessStatus(procTask.getProcInstId());
+		checkProcessStatus(procTask.getProcInstId(), authData.getProcTenantId());
 
 		// 流程任务指定处理人不为空，则表示上一任务指定了具体的处理人，不能进行流程任务取消签收操作
 		if (!StringUtil.isNull(procTask.getProcAppointUsers())) {
@@ -1424,7 +1425,8 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		}
 
 		// 获取业务流程数据
-		WfProcBean wfProcBean = getWfProcess(procTask.getProcInstId());
+		WfProcBean wfProcBean = getWfProcess(procTask.getProcInstId(),
+				authData.getProcTenantId());
 
 		// 流程状态校验，只有审批中的流程才能进行流程任务提交操作
 		checkProcessStatus(wfProcBean);
@@ -1564,6 +1566,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 
 		WfProcBean wfProcBean1 = new WfProcBean();
 		wfProcBean1.setProcInstId(wfProcBean.getProcInstId());
+		wfProcBean1.setProcTenantId(authData.getProcTenantId());
 		wfProcBean1.setProcDisplayurl(detailUrl);
 		// 如果传入了流程摘要且与原流程摘要不同，则更新业务流程摘要信息
 		if (!StringUtil.isNull(bizData.getProcBizMemo())
@@ -2270,7 +2273,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		}
 
 		// 流程状态校验，只有审批中的流程才能进行流程任务删除操作
-		checkProcessStatus(procTask.getProcInstId());
+		checkProcessStatus(procTask.getProcInstId(), authData.getProcTenantId());
 
 		// 当前流程实例的当前待审批任务数量大于1个，说明除了当前任务外还有其他待审批任务，不能删除该流程
 		if (getActiveTaskCount(procTask.getProcInstId(), authData.getProcTenantId()) > 1) {
@@ -2281,6 +2284,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		int datetime = DateTools.getCurrTime();
 		WfProcBean wfProcBean = new WfProcBean();
 		wfProcBean.setProcInstId(procTask.getProcInstId());
+		wfProcBean.setProcTenantId(authData.getProcTenantId());
 		wfProcBean.setProcStatus(FlowStatus.PROC15.getRetCode());
 		wfProcBean.setProcEndtime(datetime);
 
@@ -2400,7 +2404,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		}
 
 		// 流程状态校验，只有审批中的流程才能进行流程任务取消操作
-		checkProcessStatus(procData.getProcInstId());
+		checkProcessStatus(procData.getProcInstId(), authData.getProcTenantId());
 
 		// 通过流程实例查询该流程全部任务列表
 		List<WfProcTaskBean> procTasks = getProcessTasks(
@@ -2456,6 +2460,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		// 重置流程业务表中的流程状态为已取消，流程终止时间
 		WfProcBean wfProcBean = new WfProcBean();
 		wfProcBean.setProcInstId(procTask.getProcInstId());
+		wfProcBean.setProcTenantId(authData.getProcTenantId());
 		wfProcBean.setProcStatus(FlowStatus.PROC17.getRetCode());
 		wfProcBean.setProcEndtime(datetime);
 
@@ -2600,7 +2605,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		}
 
 		// 流程状态校验，只有审批中的流程才能进行流程任务撤回操作
-		checkProcessStatus(procTask.getProcInstId());
+		checkProcessStatus(procTask.getProcInstId(), authData.getProcTenantId());
 
 		// 获取流程任务属性
 		WfProcTaskPropertiesBean taskProperties = parseTaskProperties(procTask.getProcTaskProperties());
@@ -2741,7 +2746,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		}
 
 		// 流程状态校验，只有审批中的流程才能进行流程任务终止操作
-		checkProcessStatus(procData.getProcInstId());
+		checkProcessStatus(procData.getProcInstId(), authData.getProcTenantId());
 
 		// 通过流程任务代码查询可终止流程任务，流程任务状态为待签收和已签收
 		List<WfProcTaskBean> procTasks = getProcessTasks(
@@ -2757,6 +2762,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		int datetime = DateTools.getCurrTime();
 		WfProcBean wfProcBean = new WfProcBean();
 		wfProcBean.setProcInstId(procData.getProcInstId());
+		wfProcBean.setProcTenantId(authData.getProcTenantId());
 		wfProcBean.setProcStatus(FlowStatus.PROC14.getRetCode());
 		wfProcBean.setProcEndtime(datetime);
 
@@ -2889,27 +2895,27 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	 */
 	// @Transactional(propagation=Propagation.REQUIRED,isolation=Isolation.REPEATABLE_READ)
 	public void suspendProcess(WfProcessDataBean procData,
-			WfProcVariableDataBean procVarData, WfProcAuthDataBean authData)
-			throws WorkflowException, Exception {
+			WfProcAuthDataBean authData) throws WorkflowException, Exception {
 		// 校验业务处理的数据完整性
 		if (StringUtil.isNull(procData.getProcInstId())) {
 			throw new WorkflowException(WorkflowEnumResults.WF_TASK_02021301);
 		}
 
 		// 流程状态校验，只有审批中的流程才可以被暂停
-		checkProcessStatus(procData.getProcInstId());
-
+		checkProcessStatus(procData.getProcInstId(), authData.getProcTenantId());
+		
 		log.info("流程暂停--开始暂停流程实例(" + procData.getProcInstId() + ")...");
 		try {
 			// 通过流程引擎将流程实例暂停，暂时不通过流程引擎中更新流程挂起状态，只在流程业务层面进行状态控制
 			// runtimeService.suspendProcessInstanceById(procData.getProcInstId());
 
-			WfProcBean wfProcBean = new WfProcBean();
-			wfProcBean.setProcInstId(procData.getProcInstId());
-			wfProcBean.setProcStatus(FlowStatus.PROC13.getRetCode());
+			WfProcBean wfProcBean1 = new WfProcBean();
+			wfProcBean1.setProcInstId(procData.getProcInstId());
+			wfProcBean1.setProcTenantId(authData.getProcTenantId());
+			wfProcBean1.setProcStatus(FlowStatus.PROC13.getRetCode());
 
 			// 更新流程状态为已暂停
-			updateWfProcess(wfProcBean);
+			updateWfProcess(wfProcBean1);
 		} catch (WorkflowException wfe) {
 			throw wfe;
 		} catch (Exception e) {
@@ -2932,15 +2938,15 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	 */
 	// @Transactional(propagation=Propagation.REQUIRED,isolation=Isolation.REPEATABLE_READ)
 	public void activeProcess(WfProcessDataBean procData,
-			WfProcVariableDataBean procVarData, WfProcAuthDataBean authData)
-			throws WorkflowException, Exception {
+			WfProcAuthDataBean authData) throws WorkflowException, Exception {
 		// 校验业务处理的数据完整性
 		if (StringUtil.isNull(procData.getProcInstId())) {
 			throw new WorkflowException(WorkflowEnumResults.WF_TASK_02021401);
 		}
 
 		// 获取业务流程数据
-		WfProcBean wfProcBean = getWfProcess(procData.getProcInstId());
+		WfProcBean wfProcBean = getWfProcess(procData.getProcInstId(),
+				authData.getProcTenantId());
 
 		// 流程实例不存在，不能进行流程实例激活处理
 		if (wfProcBean == null) {
@@ -2959,6 +2965,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 
 			WfProcBean wfProcBean1 = new WfProcBean();
 			wfProcBean1.setProcInstId(procData.getProcInstId());
+			wfProcBean1.setProcTenantId(authData.getProcTenantId());
 			wfProcBean1.setProcStatus(FlowStatus.PROC10.getRetCode());
 
 			// 更新流程状态为审批中
@@ -3008,9 +3015,9 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	 * @param wfProcBean
 	 * @throws WorkflowException
 	 */
-	private WfProcBean getWfProcess(String procInstId) throws WorkflowException {
+	private WfProcBean getWfProcess(String procInstId, String procTenantId) throws WorkflowException {
 		// setDb(0, super.MASTER);
-		return wfProcBeanMapper.selectByPrimaryKey(procInstId);
+		return wfProcBeanMapper.selectByPrimaryKey(procInstId, procTenantId);
 	}
 
 	/**
