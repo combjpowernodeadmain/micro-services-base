@@ -60,12 +60,12 @@ public interface WfProcTokenMapper {
     
 
     /**
-     * 根据用户查询token信息
+     * 根据用户tenantId查询token信息
      * 
      * @param procTokenId
      * @return
      */
-    WfProcTokenBean selectByUser(@Param("userName")String userName);
+    WfProcTokenBean selectByTenantId(@Param("tenantId")String tenantId);
     
 
     /**

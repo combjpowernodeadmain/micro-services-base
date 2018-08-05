@@ -17,14 +17,15 @@
 
 package com.bjzhianjia.scp.security.wf.feign;
 
+import java.util.List;
+
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.bjzhianjia.scp.security.auth.client.config.FeignApplyConfiguration;
-
-import java.util.List;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 
 /**
  * @author scp
@@ -38,4 +39,44 @@ public interface IUserFeign {
      */
     @RequestMapping(value="/user/flowPosition",method = RequestMethod.GET)
     List<String> getUserFlowPositions(@RequestParam("userId") String userId);
+    
+
+    @RequestMapping(value = "/info", method = RequestMethod.POST)
+    public ObjectRestResponse getUserInfo(String username);
+    
+    /**
+     * 根据用户名获取其部门ID
+     * 
+     * @param username
+     * @return
+     */
+    @RequestMapping(value = "/api/getDepartIdByUserId", method = RequestMethod.GET)
+    public String getDepartIdByUserId(@RequestParam(value = "userid") String userid);
+    
+    /**
+     * 根据用户名获取其租户tenantId
+     * 
+     * @param username
+     * @return
+     */
+    @RequestMapping(value = "/api/getTenantIdByUserId", method = RequestMethod.GET)
+    public String getTenantIdByUserId(@RequestParam(value = "userid") String userid);
+    
+    /**
+     * 根据用户id 获取角色/分组codes
+     * 
+     * @param userid
+     * @return
+     */
+    @RequestMapping(value = "/api/getGroupCodesdByUserId", method = RequestMethod.GET)
+    public List<String> getGroupCodesByUserId(@RequestParam(value = "userid") String userid);
+    
+    /**
+     * 获取用户可管辖部门id列表
+     * 
+     * @param userId
+     * @return
+     */
+    @RequestMapping(value = "/dataDepart", method = RequestMethod.GET)
+    public List<String> getUserDataDepartIds(String userId);
 }

@@ -58,4 +58,27 @@
     on bpd.position_id = bpu.position_id
     where bpu.user_id = #{userId}
   </select>
+  
+  <!-- 根据用户username获取departId -->
+  <select id="selectDepartIdByUserId" resultType="java.lang.String">
+    select u.depart_id from base_user u 
+    where u.id = #{userid}
+  </select>
+  
+  <!-- 根据用户username获取tenantId -->
+  <select id="selectTenantIdByUserId" resultType="java.lang.String">
+    select u.tenant_id from base_user u 
+    where u.id = #{userid}
+  </select>
+  
+  <!-- 根据用户username获取leader 角色Id -->
+  <select id="selectLearderGroupCodesByUserId" resultType="java.util.List">
+    SELECT gl.group_id FROM base_group_leader gl
+    WHERE gl.user_id = #{userid}
+  </select>
+  <!-- 根据用户username获取member 角色Id -->
+  <select id="selectMemberGroupCodesByUserId" resultType="java.util.List">
+    SELECT gm.group_id FROM base_group_member gm
+    WHERE gm.user_id = #{userid}
+  </select>
 </mapper>

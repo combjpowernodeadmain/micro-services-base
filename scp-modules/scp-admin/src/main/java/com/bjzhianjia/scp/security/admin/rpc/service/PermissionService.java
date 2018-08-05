@@ -57,10 +57,16 @@ public class PermissionService {
     private ElementBiz elementBiz;
     @Autowired
     private UserAuthUtil userAuthUtil;
+    
     private Sha256PasswordEncoder encoder = new Sha256PasswordEncoder();
 
 
-
+    /**
+     * 根据用户名获取用户信息
+     * 
+     * @param username 用户名
+     * @return 用户UserInfo实体
+     */
     public UserInfo getUserByUsername(String username) {
         UserInfo info = new UserInfo();
         User user = userBiz.getUserByUsername(username);
@@ -69,6 +75,13 @@ public class PermissionService {
         return info;
     }
 
+    /**
+     * 验证用名 密码是否正确
+     * 
+     * @param username
+     * @param password
+     * @return
+     */
     public UserInfo validate(String username, String password) {
         UserInfo info = new UserInfo();
         User user = userBiz.getUserByUsername(username);
@@ -79,6 +92,11 @@ public class PermissionService {
         return info;
     }
 
+    /**
+     * 获取用户的所有权限
+     * 
+     * @return
+     */
     public List<PermissionInfo> getAllPermission() {
         List<Menu> menus = menuBiz.selectListAll();
         List<PermissionInfo> result = new ArrayList<PermissionInfo>();
@@ -111,6 +129,11 @@ public class PermissionService {
         }
     }
 
+    /**
+     * 获取usrname对应用户的所有权限
+     * @param username
+     * @return
+     */
     @Cache(key="permission:u{1}")
     public List<PermissionInfo> getPermissionByUsername(String username) {
         List<Menu> menus = menuBiz.getUserAuthorityMenuByUserId(BaseContextHandler.getUserID());

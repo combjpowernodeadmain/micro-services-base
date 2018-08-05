@@ -1,8 +1,6 @@
 package com.bjzhianjia.scp.security.admin.service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -15,7 +13,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.admin.biz.DepartBiz;
 import com.bjzhianjia.scp.security.admin.biz.PositionBiz;
 import com.bjzhianjia.scp.security.admin.biz.UserBiz;
-import com.bjzhianjia.scp.security.admin.entity.Position;
 import com.bjzhianjia.scp.security.admin.entity.User;
 import com.bjzhianjia.scp.security.admin.mapper.PositionMapper;
 import com.bjzhianjia.scp.security.admin.vo.PositionVo;

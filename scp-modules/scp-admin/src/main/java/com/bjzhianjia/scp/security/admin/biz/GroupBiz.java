@@ -59,6 +59,11 @@ public class GroupBiz extends BusinessBiz<GroupMapper, Group> {
     @Autowired
     private ElementMapper elementMapper;
 
+    /**
+     * 选择插入分组/角色信息
+     * 
+     * @see com.bjzhianjia.scp.security.common.biz.BusinessBiz#insertSelective(java.lang.Object)
+     */
     @Override
     public void insertSelective(Group entity) {
         if (AdminCommonConstant.ROOT.equals(entity.getParentId())) {
@@ -70,6 +75,11 @@ public class GroupBiz extends BusinessBiz<GroupMapper, Group> {
         super.insertSelective(entity);
     }
 
+    /** 
+     * 根据分组/角色ID更新其信息
+     * 
+     * @see com.bjzhianjia.scp.security.common.biz.BusinessBiz#updateById(java.lang.Object)
+     */
     @Override
     public void updateById(Group entity) {
         if (AdminCommonConstant.ROOT == entity.getParentId()) {
