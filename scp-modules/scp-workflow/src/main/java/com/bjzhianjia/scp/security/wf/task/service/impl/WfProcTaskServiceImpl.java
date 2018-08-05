@@ -94,7 +94,7 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
             WfProcVariableDataBean procVarData = parseVariableData(objs);
             WfProcAuthDataBean authData = parseAuthData(objs);
             WfProcBizDataBean bizData = parseBizData(objs);
-            wfProcUserAuthBiz.userAuthenticate(authData, false, true);
+            wfProcUserAuthBiz.userAuthenticate(authData, false, false);
             
 			return wfProcTaskBiz.startAndCompleteProcessInstanceByKey(procData,
 					procVarData, authData, bizData);
