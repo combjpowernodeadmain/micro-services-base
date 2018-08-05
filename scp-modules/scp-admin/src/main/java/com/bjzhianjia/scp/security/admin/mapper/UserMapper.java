@@ -54,5 +54,6 @@ public interface UserMapper extends CommonMapper<User> {
      * @param userid
      * @return
      */
-    public List<String> selectGroupCodesByUserId(@Param("userid") String userid);
+    public List<String> selectLearderGroupCodesByUserId(@Param("userid") String userid);
+    public List<String> selectMemberGroupCodesByUserId(@Param("userid") String userid);
 }

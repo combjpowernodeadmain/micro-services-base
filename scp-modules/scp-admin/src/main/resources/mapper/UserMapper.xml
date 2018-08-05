@@ -71,12 +71,14 @@
     where u.id = #{userid}
   </select>
   
-  <!-- 根据用户username获取角色Id -->
-  <select id="selectGroupCodesByUserId" resultType="java.util.List">
-    select gm.groud_id from base_group_member gm
-    where gm.user_id = #{userid}
-    union
-    select gl.groud_id from base_group_leader gl
-    where gl.user_id = #{userid}
+  <!-- 根据用户username获取leader 角色Id -->
+  <select id="selectLearderGroupCodesByUserId" resultType="java.util.List">
+    SELECT gl.group_id FROM base_group_leader gl
+    WHERE gl.user_id = #{userid}
+  </select>
+  <!-- 根据用户username获取member 角色Id -->
+  <select id="selectMemberGroupCodesByUserId" resultType="java.util.List">
+    SELECT gm.group_id FROM base_group_member gm
+    WHERE gm.user_id = #{userid}
   </select>
 </mapper>

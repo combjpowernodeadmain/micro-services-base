@@ -250,7 +250,9 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
      * @return
      */
     public List<String> getGroupCodesByUserId(String userid) {
-        return mapper.selectGroupCodesByUserId(userid);
+        List<String> leaderGroupCodes = mapper.selectLearderGroupCodesByUserId(userid);
+        leaderGroupCodes.addAll(mapper.selectMemberGroupCodesByUserId(userid));
+        return leaderGroupCodes;
     }
 
 }
