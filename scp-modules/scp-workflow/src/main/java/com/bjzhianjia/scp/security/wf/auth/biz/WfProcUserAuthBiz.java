@@ -37,6 +37,7 @@ public class WfProcUserAuthBiz extends WfBaseBiz {
         List<String> roleCodes = new ArrayList<String>();
         
         if (StringUtil.isNull(authType)) {
+            log.warn("尚未制定授权信息：authType值。");
             throw new WorkflowException(WorkflowEnumResults.WF_COMM_02000003); 
         } 
         
