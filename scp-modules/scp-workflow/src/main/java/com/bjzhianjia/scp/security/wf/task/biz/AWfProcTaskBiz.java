@@ -91,6 +91,9 @@ public abstract class AWfProcTaskBiz extends WfBaseBiz {
 		wfProcBean.setProcCreator(authData.getProcTaskUser());
 		wfProcBean.setProcCreatetime(DateTools.getCurrTime());
 		wfProcBean.setProcStatus(FlowStatus.PROC10.getRetCode());
+		wfProcBean.setProcTenantId(authData.getProcTenantId());
+		wfProcBean.setProcDepartId(authData.getProcDeptId());
+		
 		
 		return wfProcBean;
     }
@@ -155,6 +158,10 @@ public abstract class AWfProcTaskBiz extends WfBaseBiz {
         wfProcTaskBean.setProcVotequickly(getProcVoteQuickly(properties));
         // 设置流程任务审批页面URL
         wfProcTaskBean.setProcApproveurl(getProcTaskUrl(properties));
+        
+        // 设置多租户信息
+        wfProcTaskBean.setProcTenantId(authData.getProcTenantId());
+        wfProcTaskBean.setProcDepartId(authData.getProcDeptId());
 
         return wfProcTaskBean;
     }

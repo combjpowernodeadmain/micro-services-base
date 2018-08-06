@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.bjzhianjia.scp.security.wf.mapper.WfProcBeanMapper">
+<mapper namespace="com.bjzhianjia.scp.security.wf.task.mapper.WfProcBeanMapper">
 	<resultMap id="BaseResultMap"
 		type="com.bjzhianjia.scp.security.wf.task.entity.WfProcBean">
 		<id column="PROC_INST_ID" property="procInstId" jdbcType="VARCHAR" />
