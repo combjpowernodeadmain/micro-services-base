@@ -1366,7 +1366,7 @@
 		SELECT
 			count(id)
 		FROM
-			SCP_wf_proc_task
+			SCP_WF_PROC_TASK
 		WHERE
 			PROC_INST_ID = #{procInstId}
 		AND PROC_MANDATARY = #{mandatary}

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.bjzhianjia.scp.security.wf.mapper.WfProcMonitorBeanMapper">
+<mapper namespace="com.bjzhianjia.scp.security.wf.monitor.mapper.WfProcMonitorBeanMapper">
 	<select id="getUserToDoTasks" resultType="com.bjzhianjia.scp.security.wf.monitor.entity.WfProcBackBean">
 		SELECT
 			proc.PROC_ID procId, 
@@ -134,9 +134,9 @@
 		FROM_UNIXTIME(task.PROC_TASK_ASSIGNTIME, '%Y/%m/%d %H:%i:%s') procTaskAssigntime,
 		FROM_UNIXTIME(task.PROC_TASK_ENDTIME, '%Y/%m/%d %H:%i:%s') procTaskEndime,
 		task.PROC_TASK_STATUS procTaskstatus
-		FROM SCP_wf_my_proc myproc
-		LEFT JOIN SCP_wf_proc proc ON myproc.proc_inst_id = proc.proc_inst_id
-		LEFT JOIN SCP_wf_proc_task task ON task.proc_inst_id = myproc.proc_inst_id
+		FROM SCP_WF_MY_PROC myproc
+		LEFT JOIN SCP_WF_PROC proc ON myproc.proc_inst_id = proc.proc_inst_id
+		LEFT JOIN SCP_WF_PROC_TASK task ON task.proc_inst_id = myproc.proc_inst_id
 		AND task.PROC_CTASKID = myproc.PROC_TASKID
 		WHERE
 		myproc.PROC_USER = #{procTaskUser,jdbcType=VARCHAR}
@@ -171,7 +171,7 @@
 		<if test="procMemo != null and procMemo != ''">
 			AND proc.PROC_MEMO LIKE CONCAT('%', #{procMemo},'%')
 		</if>
-		ORDER BY proc.PROC_CREATETIME DESC
+		ORDER BY procCreatetime DESC
 	</select>
 
 	<!-- 流程监控 -->
@@ -376,8 +376,8 @@
 			    ELSE '未知'
 		    END AS procStatusName
 		FROM
-			SCP_wf_proc_delegate delegate
-		LEFT JOIN SCP_wf_proc proc ON proc.PROC_INST_ID = delegate.PROC_INST_ID
+			SCP_WF_PROC_DELEGATE delegate
+		LEFT JOIN SCP_WF_PROC proc ON proc.PROC_INST_ID = delegate.PROC_INST_ID
 		WHERE delegate.PROC_LICENSE_ISVALID='1'
 			and proc.PROC_ORGCODE LIKE CONCAT(#{procOrgCode},'%')
 			<if test="procStatus != null and procStatus != ''">
@@ -448,8 +448,8 @@
 			'未知'
 		END AS procStatusName
 		FROM
-			SCP_wf_proc_delegate delegate
-		LEFT JOIN SCP_wf_proc proc ON proc.PROC_INST_ID = delegate.PROC_INST_ID
+			SCP_WF_PROC_DELEGATE delegate
+		LEFT JOIN SCP_WF_PROC proc ON proc.PROC_INST_ID = delegate.PROC_INST_ID
 		WHERE
 			delegate.PROC_LICENSE_ISVALID = '1'
 		AND	delegate.PROC_LICENSOR = #{procTaskUser,jdbcType=VARCHAR}
@@ -492,8 +492,8 @@
 		FROM_UNIXTIME(task.PROC_TASK_COMMITTIME, '%Y/%m/%d %H:%i:%s') procTaskCommittime,
 		FROM_UNIXTIME(task.PROC_TASK_ASSIGNTIME, '%Y/%m/%d %H:%i:%s') procTaskAssigntime,
 		task.PROC_TASK_STATUS procTaskstatus
-		FROM SCP_wf_proc proc
-		LEFT JOIN SCP_wf_proc_task task ON task.proc_inst_id = proc.proc_inst_id
+		FROM SCP_WF_PROC proc
+		LEFT JOIN SCP_WF_PROC_TASK task ON task.proc_inst_id = proc.proc_inst_id
 		AND task.PROC_TASK_STATUS IN ('1', '2')
 		WHERE
 		proc.PROC_ORGCODE LIKE CONCAT('%', #{procOrgCode},'%')
