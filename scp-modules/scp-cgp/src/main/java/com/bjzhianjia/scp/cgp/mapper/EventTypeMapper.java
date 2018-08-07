@@ -15,7 +15,7 @@ import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
  * @email 576866311@qq.com
  * @version 2018-07-07 16:48:27
  */
-@Tenant
+//@Tenant
 public interface EventTypeMapper extends CommonMapper<EventType> {
 	
 	/**

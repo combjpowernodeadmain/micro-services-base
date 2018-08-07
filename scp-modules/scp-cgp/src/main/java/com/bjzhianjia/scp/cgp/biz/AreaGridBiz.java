@@ -37,12 +37,12 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper,AreaGrid> {
 	private MergeCore mergeCore;
 	
 	/**
-	 * 按网络编号查询网格
+	 * 按条件查询未被删除的网格
 	 * @author 尚
 	 * @param gridCde
 	 * @return
 	 */
-	public List<AreaGrid> getByConditions(Map<String, String> conditions) {
+	public List<AreaGrid> getByMap(Map<String, String> conditions) {
 		Example example=new Example(AreaGrid.class);
 		Example.Criteria criteria=example.createCriteria();
 		
@@ -136,5 +136,21 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper,AreaGrid> {
 		
 		
 		return result;
+	}
+	
+	/**
+	 * 获取ID最大的记录
+	 * @author 尚
+	 * @return
+	 */
+	public AreaGrid getMaxGrid() {
+		Example example=new Example(AreaGrid.class);
+		example.setOrderByClause("id desc");
+		PageHelper.startPage(1, 1);
+		List<AreaGrid> areaGrid = this.mapper.selectByExample(example);
+		if(areaGrid!=null&&!areaGrid.isEmpty()) {
+			return areaGrid.get(0);
+		}
+		return null;
 	}
 }

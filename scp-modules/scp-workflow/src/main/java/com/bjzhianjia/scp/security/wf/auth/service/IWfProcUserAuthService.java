@@ -2,10 +2,29 @@ package com.bjzhianjia.scp.security.wf.auth.service;
 
 import java.util.List;
 
+/**
+ * 获取用户信息接口。  在不同的平台使用工作流的时候，需要实现此接口。
+ * 
+ *
+ * <pre>
+ * Modification History: 
+ * Date             Author      Version         Description 
+ * ------------------------------------------------------------------
+ * Jul 29, 2018          ric_w      1.0            ADD
+ * </pre>
+ * 
+ *
+ * @version 1.0 
+ * @date Jul 29, 2018
+ * @author ric_w
+ *
+ */
 public interface IWfProcUserAuthService {
+    
 	/**
-	 * 获取当前登录用户ID
-	 * @return String   当前登录用户ID
+	 * 获取用户主键ID
+	 * 
+	 * @return
 	 */
 	public String getUserId();
 
@@ -55,8 +74,9 @@ public interface IWfProcUserAuthService {
 	public String getTenantId(String userCode);
 
 	/**
-	 * 获取当前登录用户所属机构编码
-	 * @return String   当前登录用户所属机构编码
+	 * 获取当前用户的机构编码
+	 * 
+	 * @return
 	 */
 	public String getOrgCode();
 

@@ -1,7 +1,5 @@
 package com.bjzhianjia.scp.cgp.biz;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.RegulaObject;
 import com.bjzhianjia.scp.cgp.mapper.EnterpriseInfoMapper;
 import com.bjzhianjia.scp.cgp.mapper.RegulaObjectMapper;
@@ -23,7 +20,6 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
 import tk.mybatis.mapper.entity.Example;
-import tk.mybatis.mapper.entity.Example.Criteria;
 
 /**
  * 监管对象
@@ -78,7 +74,7 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 		}
 
 		//是否输入了按监管对象类型查询
-		if (StringUtils.isNotBlank(regulaObject.getObjType())) {
+		if (regulaObject.getObjType()!=null) {
 			criteria.andEqualTo("objType", regulaObject.getObjType());
 		}
 

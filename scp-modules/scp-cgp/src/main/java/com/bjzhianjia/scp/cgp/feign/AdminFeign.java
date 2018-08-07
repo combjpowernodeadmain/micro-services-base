@@ -28,6 +28,12 @@ public interface AdminFeign {
 	@RequestMapping(value = "/depart/getByPK/{id}",method = RequestMethod.GET)
     public Map<String,String> getDepart(@PathVariable(value="id") String id);
 	
+	/**
+	 * 根据ID组合获取用户集合，查询 的集合中包含已删除的人员
+	 * @author 尚
+	 * @param id id集合，多个Id用‘,’隔开，如1,2,3,4
+	 * @return ${userId}:${记录对象的JSON字符串}
+	 */
 	@RequestMapping(value = "/user/getByPK/{id}",method = RequestMethod.GET)
 	public Map<String,String> getUser(@PathVariable(value="id") String id);
 	

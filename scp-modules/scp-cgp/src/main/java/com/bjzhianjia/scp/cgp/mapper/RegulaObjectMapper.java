@@ -15,7 +15,7 @@ import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
  * @email 576866311@qq.com
  * @version 2018-07-07 16:48:26
  */
-@Tenant
+//@Tenant
 public interface RegulaObjectMapper extends CommonMapper<RegulaObject> {
 	/**
 	 * 批量删除

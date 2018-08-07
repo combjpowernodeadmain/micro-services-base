@@ -16,22 +16,19 @@
 
 package com.bjzhianjia.scp.security.auth.client.jwt;
 
-import com.bjzhianjia.scp.core.constants.CommonConstants;
-import com.bjzhianjia.scp.core.util.jwt.IJWTInfo;
-import com.bjzhianjia.scp.core.util.jwt.JWTHelper;
-import com.bjzhianjia.scp.security.auth.client.config.UserAuthConfig;
-import com.bjzhianjia.scp.security.common.constant.RedisKeyConstants;
-import com.bjzhianjia.scp.security.common.exception.auth.NonLoginException;
-import com.bjzhianjia.scp.security.common.util.RedisKeyUtil;
-
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.SignatureException;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 
-import java.util.concurrent.TimeUnit;
+import com.bjzhianjia.scp.core.util.jwt.IJWTInfo;
+import com.bjzhianjia.scp.core.util.jwt.JWTHelper;
+import com.bjzhianjia.scp.security.auth.client.config.UserAuthConfig;
+import com.bjzhianjia.scp.security.common.exception.auth.NonLoginException;
+import com.bjzhianjia.scp.security.common.util.RedisKeyUtil;
+
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.SignatureException;
 
 /**
  * Created by scp on 2017/9/15.

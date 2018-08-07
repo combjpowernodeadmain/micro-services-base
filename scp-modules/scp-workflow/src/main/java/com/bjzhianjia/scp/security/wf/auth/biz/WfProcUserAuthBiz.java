@@ -15,7 +15,10 @@ import com.bjzhianjia.scp.security.wf.exception.WorkflowException;
 import com.bjzhianjia.scp.security.wf.utils.StringUtil;
 import com.bjzhianjia.scp.security.wf.vo.WfProcAuthDataBean;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class WfProcUserAuthBiz extends WfBaseBiz {
 	@Autowired
     private static IWfProcTokenService wfProcTokenService;
@@ -65,6 +68,7 @@ public class WfProcUserAuthBiz extends WfBaseBiz {
 		List<String> roleCodes = new ArrayList<String>();
         		
         if (StringUtil.isNull(authType)) {
+            log.warn("尚未制定授权信息：authType值。");
             throw new WorkflowException(WorkflowEnumResults.WF_COMM_02000003); 
         } 
         
@@ -106,14 +110,17 @@ public class WfProcUserAuthBiz extends WfBaseBiz {
                 roleCodes = getRoleCodes();
                 
                 if (StringUtil.isNull(userCode) || userCode == null) {
+                    log.error("用户授权信息不完整，没有用户ID，不能进行流程操作。", WorkflowEnumResults.WF_COMM_02000005);
                 	throw new WorkflowException(WorkflowEnumResults.WF_COMM_02000005);
                 } 
                 
-                if (roleCodes == null || roleCodes.isEmpty()) {
+                if(checkRole && (roleCodes == null || roleCodes.isEmpty())) {
+                    log.error("用户授权信息不完整，没有角色Id，不能进行流程操作。", WorkflowEnumResults.WF_COMM_02000005);
                     throw new WorkflowException(WorkflowEnumResults.WF_COMM_02000005);
                 }
 
-                if (StringUtil.isNull(tenantID) || tenantID == null) {
+                if(StringUtil.isNull(tenantID) || tenantID == null) {
+                    log.error("用户授权信息不完整，没有租户Id，不能进行流程操作。", WorkflowEnumResults.WF_COMM_02000005);
                     throw new WorkflowException(WorkflowEnumResults.WF_COMM_02000005);
                 }
                 

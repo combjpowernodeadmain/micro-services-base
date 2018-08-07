@@ -16,6 +16,16 @@
 
 package com.bjzhianjia.scp.security.admin.biz;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.merge.core.MergeCore;
@@ -24,20 +34,15 @@ import com.bjzhianjia.scp.security.admin.mapper.DepartMapper;
 import com.bjzhianjia.scp.security.admin.mapper.UserMapper;
 import com.bjzhianjia.scp.security.common.biz.BaseBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
-import com.bjzhianjia.scp.security.common.util.*;
+import com.bjzhianjia.scp.security.common.util.BooleanUtil;
+import com.bjzhianjia.scp.security.common.util.EntityUtils;
+import com.bjzhianjia.scp.security.common.util.Query;
+import com.bjzhianjia.scp.security.common.util.Sha256PasswordEncoder;
+import com.bjzhianjia.scp.security.common.util.UUIDUtils;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * ${DESCRIPTION}
@@ -189,13 +194,17 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
      * @return
      */
     public TableResultResponse<User> getUserByDept(String deptId,int page,int limit){
-    	Example example=new Example(User.class);
-    	Example.Criteria criteria=example.createCriteria();
-    	criteria.andEqualTo("departId", deptId);
-    	criteria.andEqualTo("isDeleted","0");
-    	example.orderBy("id");
+    	
     	Page<Object> result =PageHelper.startPage(page, limit);
-    	List<User> userList = mapper.selectByExample(example);
+    	List<User> userList = departMapper.selectDepartUsers(deptId, null);
+    	
+//    	Example example=new Example(User.class);
+//    	Example.Criteria criteria=example.createCriteria();
+//    	criteria.andEqualTo("departId", deptId);
+//    	criteria.andEqualTo("isDeleted","0");
+//    	example.orderBy("id");
+//    	Page<Object> result =PageHelper.startPage(page, limit);
+//    	List<User> userList = mapper.selectByExample(example);
     	return new TableResultResponse<User>(result.getTotal(), userList);
     }
     
@@ -213,4 +222,41 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
     	List<User> userList = mapper.selectByExample(example);
     	return new TableResultResponse<User>(result.getTotal(), userList);
     }
+    
+    /***********************************************
+     * 仅供工作流使用
+     */
+    
+    /**
+     * 根据userid查询部门ID
+     * 
+     * @param userid
+     * @return
+     */
+    public String getDepartIdByUserId(String userid) {
+        return mapper.selectDepartIdByUserId(userid);
+    }
+    
+    /**
+     * 根据userid查询部门ID
+     * 
+     * @param userid
+     * @return
+     */
+    public String getTenantIdByUserId(String userid) {
+        return mapper.selectTenantIdByUserId(userid);
+    }
+    
+    
+    /**
+     * 根据UserId获取角色codes
+     * 
+     * @return
+     */
+    public List<String> getGroupCodesByUserId(String userid) {
+        List<String> leaderGroupCodes = mapper.selectLearderGroupCodesByUserId(userid);
+        leaderGroupCodes.addAll(mapper.selectMemberGroupCodesByUserId(userid));
+        return leaderGroupCodes;
+    }
+
 }

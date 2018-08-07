@@ -16,8 +16,6 @@ import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
  * @email 576866311@qq.com
  * @version 2018-07-19 09:20:01
  */
-@Depart
-@Tenant
 public interface DeptBiztypeMapper extends CommonMapper<DeptBiztype> {
 	/**
 	 * 批量删除

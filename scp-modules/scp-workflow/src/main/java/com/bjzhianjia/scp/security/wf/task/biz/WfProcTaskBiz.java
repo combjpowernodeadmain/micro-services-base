@@ -288,7 +288,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 					task, authData, properties, procTaskSelfProps);
 						
 			// 对流程开始节点任务进行任务自动签收操作
-			taskService.claim(wfProcTaskBean.getProcCtaskid(), wfProcTaskBean.getProcTaskAssignee());
+			//taskService.claim(wfProcTaskBean.getProcCtaskid(), wfProcTaskBean.getProcTaskAssignee());
 
 			// 在流程任务提交后，调用任务回调函数
 			afterCallback(WfProcDealType.PROC_START, procTaskData,
@@ -299,9 +299,10 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		} catch (WorkflowException wfe) {
 			throw wfe;
 		} catch (Exception e) {
+		    log.error("Start Process Error: {}", e);
 			throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020199, e);
 		} finally {
-			log.info("启动流程--启动业务流程(" + processInstance.getId() + "),业务ID("
+			log.info("启动流程--启动业务流程(" + processInstance == null ? "未知实例": processInstance.getId() + "),业务ID("
 					+ bizData.getProcBizId() + ")结束.");
 		}
 

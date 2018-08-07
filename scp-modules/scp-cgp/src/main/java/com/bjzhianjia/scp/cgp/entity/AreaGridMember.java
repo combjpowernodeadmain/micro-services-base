@@ -24,9 +24,9 @@ public class AreaGridMember implements Serializable {
     @Column(name = "grid_id")
     private Integer gridId;
 	
-	    //网格成员
+	    //网格成员 修改为String类型，原为Integer
     @Column(name = "grid_member")
-    private Integer gridMember;
+    private String gridMember;
 	
 	    //成员所属岗位
     @Column(name = "grid_role")
@@ -96,13 +96,13 @@ public class AreaGridMember implements Serializable {
 	/**
 	 * 设置：网格成员
 	 */
-	public void setGridMember(Integer gridMember) {
+	public void setGridMember(String gridMember) {
 		this.gridMember = gridMember;
 	}
 	/**
 	 * 获取：网格成员
 	 */
-	public Integer getGridMember() {
+	public String getGridMember() {
 		return gridMember;
 	}
 	/**
