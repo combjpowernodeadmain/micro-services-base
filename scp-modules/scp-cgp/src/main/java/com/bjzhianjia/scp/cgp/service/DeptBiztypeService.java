@@ -78,6 +78,11 @@ public class DeptBiztypeService {
 		Map<String, String> departs = new HashMap<>();
 		List<String> uniqueDeparts = list.stream().map((o) -> o.getDepartment()).distinct()
 				.collect(Collectors.toList());
+		
+		if(uniqueDeparts!=null&&!uniqueDeparts.isEmpty()) {
+			Map<String, String> layerDepart = adminFeign.getLayerDepart(String.join(",", uniqueDeparts));
+		}
+		
 		if (uniqueDeparts != null && !uniqueDeparts.isEmpty()) {
 			departs = adminFeign.getDepart(String.join(",", uniqueDeparts));
 		}

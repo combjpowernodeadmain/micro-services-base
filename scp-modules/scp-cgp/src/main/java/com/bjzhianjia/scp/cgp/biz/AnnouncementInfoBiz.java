@@ -43,19 +43,25 @@ public class AnnouncementInfoBiz extends BusinessBiz<AnnouncementInfoMapper,Anno
 	    Example.Criteria criteria = example.createCriteria();
 	    
 	    criteria.andEqualTo("isDeleted", "0");
-	    if(!StringUtils.isNotBlank(announcementInfo.get("title"))){
+	    /*
+	     * ------------!StringUtils.isNotBlank(announcementInfo.get("title"))将“！”号去掉
+	     * ------------by尚------------------
+	     */
+	    if(StringUtils.isNotBlank(announcementInfo.get("title"))){
 	    	criteria.andLike("title", announcementInfo.get("title"));
 	    }
-	    if(!StringUtils.isNotBlank(announcementInfo.get("status"))){
+	    if(StringUtils.isNotBlank(announcementInfo.get("status"))){
 	    	criteria.andEqualTo("status", announcementInfo.get("status"));
 	    }
-	    if(!StringUtils.isNotBlank(announcementInfo.get("isStick"))){
-	    	criteria.andEqualTo("is_stick", announcementInfo.get("isStick"));
+	    if(StringUtils.isNotBlank(announcementInfo.get("isStick"))){
+//	    	criteria.andEqualTo("is_stick", announcementInfo.get("isStick"));
+	    	criteria.andEqualTo("isStick", announcementInfo.get("isStick"));
 	    }
-	    if(!StringUtils.isNotBlank(announcementInfo.get("startDate"))) {
-	    	criteria.andGreaterThanOrEqualTo("crt_time", announcementInfo.get("startDate"));
+	    if(StringUtils.isNotBlank(announcementInfo.get("startDate"))) {
+//	    	criteria.andGreaterThanOrEqualTo("crt_tme", announcementInfo.get("startDate"));
+	    	criteria.andGreaterThanOrEqualTo("crtTime", announcementInfo.get("startDate"));
 	    }
-	    if(!StringUtils.isNotBlank(announcementInfo.get("endDate"))) {
+	    if(StringUtils.isNotBlank(announcementInfo.get("endDate"))) {
 	    	
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 			String endDate = announcementInfo.get("endDate");
@@ -66,7 +72,8 @@ public class AnnouncementInfoBiz extends BusinessBiz<AnnouncementInfoMapper,Anno
 				calendar.setTime(newDate);
 				calendar.add(Calendar.DATE, 1);
 				endDate = sdf.format(calendar.getTime());
-				criteria.andLessThan("crt_time", endDate);
+//				criteria.andLessThan("crt_time", endDate);
+				criteria.andLessThan("crtTime", endDate);
 			} catch (ParseException e) {
 				
 			}

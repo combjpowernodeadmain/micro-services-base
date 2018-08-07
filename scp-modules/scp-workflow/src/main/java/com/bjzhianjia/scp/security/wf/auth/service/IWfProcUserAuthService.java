@@ -29,56 +29,49 @@ public interface IWfProcUserAuthService {
 	public String getUserId();
 
 	/**
-	 * 获取用户编码
-	 * 
-	 * @return
+	 * 获取当前登录用户编码
+	 * @return String   当前登录用户编码
 	 */
 	public String getUserCode();
 
 	/**
-	 * 获取部门主键ID
-	 * 
-	 * @return
+	 * 获取当前登录用户所属部门ID
+	 * @return String   当前登录用户所属部门ID
 	 */
 	public String getDeptId();
 
 	/**
-	 * 获取用户的部门主键
-	 * 
-	 * @param userCode
-	 * @return
+	 * 获取指定用户所属部门ID
+	 * @param userCode  用户代码
+	 * @return String   指定用户所属部门ID
 	 */
 	public String getDeptId(String userCode);
 
 	/**
-	 * 获取组织主键ID
-	 * 
-	 * @return
+	 * 获取当前登录用户所属机构ID
+	 * @return String   当前登录用户所属机构ID
 	 */
 	public String getOrgId();
 
 	/**
-	 * 获取租户ID
-	 * 
-	 * @return
+	 * 获取指定用户所属机构ID
+	 * @param userCode  用户代码
+	 * @return String   指定用户所属机构ID
+	 */
+	public String getOrgId(String userCode);
+	
+	/**
+	 * 获取当前登录用户所属租户ID
+	 * @return String   当前登录用户所属租户ID
 	 */
 	public String getTenantId();
 
 	/**
-	 * 根据用户主键获取租户ID
-	 * 
-	 * @param userCode
-	 * @return
+	 * 获取指定用户所属租户ID
+	 * @param userCode  用户代码
+	 * @return String   指定用户所属租户ID
 	 */
 	public String getTenantId(String userCode);
-
-	/**
-	 * 根据用户主键获取其组织id
-	 * 
-	 * @param userCode
-	 * @return
-	 */
-	public String getOrgId(String userCode);
 
 	/**
 	 * 获取当前用户的机构编码
@@ -88,107 +81,100 @@ public interface IWfProcUserAuthService {
 	public String getOrgCode();
 
 	/**
-	 * 根据用户编码获取机构编码
-	 * 
-	 * @param userCode
-	 * @return
+	 * 获取指定用户所属机构编码
+	 * @param userCode  用户代码
+	 * @return String   指定用户所属机构编码
 	 */
 	public String getOrgCode(String userCode);
 
 	/**
-	 * 获取当前用户的角色
-	 * 
-	 * @return
+	 * 获取当前登录用户分配的角色列表
+	 * @return List   当前登录用户分配的角色列表
 	 */
 	public List<String> getRoleCodes();
 
 	/**
-	 * 根据用户编码获取角色编码
-	 * 
-	 * @param userCode
-	 * @return
+	 * 获取指定用户分配的角色列表
+	 * @param userCode  用户代码
+	 * @return List   指定用户分配的角色列表
 	 */
 	public List<String> getRoleCodes(String userCode);
 
 	/**
-	 * 获取当前用户的授权组织编码列表
-	 * 
-	 * @return
+	 * 获取当前登录用户分配的机构列表
+	 * @return List   当前登录用户分配的机构列表
 	 */
 	public List<String> getAuthOrgCodes();
 
 	/**
-	 * 根据用户的编码获取授权组织编码列表
-	 * 
-	 * @param userCode
-	 * @return
+	 * 获取指定用户分配的机构列表
+	 * @param userCode  用户代码
+	 * @return List   指定用户分配的机构列表
 	 */
 	public List<String> getAuthOrgCodes(String userCode);
 
 	/**
-	 * 获取当前用户权限数据1
-	 * 
-	 * @return
+	 * 获取当前登录用户所属租户自定义数据权限配置的数据
+	 * @return 	List   			自定义权限数据
 	 */
 	public String getSelfPermissionData1();
 
 	/**
-	 * 根据用户code获取权限1
-	 * 
-	 * @param userCode
-	 * @return
+	 * 获取指定用户所属租户自定义数据权限配置的数据
+	 * @param 	userCode  	用户代码
+	 * @return 	List   			自定义权限数据
 	 */
 	public String getSelfPermissionData1(String userCode);
-
+	
 	/**
-	 * 获取当前用户权限数据2
-	 * @return
+	 * 获取当前登录用户所属租户自定义数据权限配置的数据
+	 * @return 	List   			自定义权限数据
 	 */
 	public String getSelfPermissionData2();
-
+	
 	/**
-	 * 根据用户code获取权限2
-	 * @param userCode
-	 * @return
+	 * 获取指定用户所属租户自定义数据权限配置的数据
+	 * @param 	userCode  	用户代码
+	 * @return 	List   			自定义权限数据
 	 */
 	public String getSelfPermissionData2(String userCode);
 
 	/**
-	 * 获取当前用户权限数据3
-	 * @return
+	 * 获取当前登录用户所属租户自定义数据权限配置的数据
+	 * @return 	List   			自定义权限数据
 	 */
 	public String getSelfPermissionData3();
-
+	
 	/**
-	 * 根据用户code获取权限3
-	 * @param userCode
-	 * @return
+	 * 获取指定用户所属租户自定义数据权限配置的数据
+	 * @param 	userCode  	用户代码
+	 * @return 	List   			自定义权限数据
 	 */
 	public String getSelfPermissionData3(String userCode);
 
 	/**
-	 * 获取当前用户权限数据4
-	 * @return
+	 * 获取当前登录用户所属租户自定义数据权限配置的数据
+	 * @return 	List   			自定义权限数据
 	 */
 	public String getSelfPermissionData4();
-
+	
 	/**
-	 * 根据用户code获取权限5
-	 * @param userCode
-	 * @return
+	 * 获取指定用户所属租户自定义数据权限配置的数据
+	 * @param 	userCode  	用户代码
+	 * @return 	List   			自定义权限数据
 	 */
 	public String getSelfPermissionData4(String userCode);
 
 	/**
-	 * 获取当前用户权限数据5
-	 * @return
+	 * 获取当前登录用户所属租户自定义数据权限配置的数据
+	 * @return 	List   			自定义权限数据
 	 */
 	public String getSelfPermissionData5();
-
+	
 	/**
-	 * 根据用户code获取权限5
-	 * @param userCode
-	 * @return
+	 * 获取指定用户所属租户自定义数据权限配置的数据
+	 * @param 	userCode  	用户代码
+	 * @return 	List   			自定义权限数据
 	 */
 	public String getSelfPermissionData5(String userCode);
 }

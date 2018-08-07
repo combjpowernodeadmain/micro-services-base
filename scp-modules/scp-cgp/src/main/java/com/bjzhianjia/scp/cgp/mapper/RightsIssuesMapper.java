@@ -14,7 +14,7 @@ import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
  * @author zzh
  *
  */
-@Tenant
+//@Tenant
 public interface RightsIssuesMapper extends CommonMapper<RightsIssues> {
 
 	/**

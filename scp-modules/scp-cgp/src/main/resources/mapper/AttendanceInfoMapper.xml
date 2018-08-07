@@ -29,12 +29,12 @@
     </resultMap>
 
 	<select id="getTotal" resultType="int">
-  		<![CDATA[
+  		
 		select count(*)
 		from (
 			select crt_username
-					,if(A.date_day<>B.date_day,'',sign_in_time) sign_in_time
-					,if(A.date_day<>B.date_day,'',sign_out_time) sign_out_time
+					,<![CDATA[ if(A.date_day<>B.date_day,'',sign_in_time) sign_in_time ]]>
+					,<![CDATA[ if(A.date_day<>B.date_day,'',sign_out_time) sign_out_time ]]>
 			from (
 					select crt_username,date_format(crt_time,'%Y-%m-%d') date_day
 					    ,substring_index(group_concat(crt_time order by id separator '|'),'|',1) sign_in_time
@@ -51,10 +51,10 @@
 					    	and depart_id in(#{depart_id})
 						</if>
 						<if test="startDate != null and startDate != ''">
-							and crt_time >= #{startDate}
+							<![CDATA[ and crt_time >= #{startDate} ]]>
 						</if>
 						<if test="endDate != null and endDate != ''">
-							and crt_time < #{endDate}
+							<![CDATA[ and crt_time < #{endDate} ]]>
 						</if>
 					</where>
 					group by crt_username,date_format(crt_time,'%Y-%m-%d')
@@ -62,34 +62,32 @@
 			) A , date_info B
 			<where>
 				<if test="startDate != null and startDate != ''">
-					and B.date_day >= #{startDate}
+					<![CDATA[ and B.date_day >= #{startDate} ]]>
 				</if>
 				<if test="endDate != null and endDate != ''">
-					and B.date_day < #{endDate}
+					<![CDATA[ and B.date_day < #{endDate} ]]>
 				</if>
 			</where> ) C
 		<where>
 			<if test="status == 1">
-				and sign_in_time <> '' and sign_out_time <> ''
+				<![CDATA[ and sign_in_time <> '' and sign_out_time <> '' ]]>
 			</if>
 			<if test="status == 0">
-				and sign_in_time = '' or sign_out_time = ''
+				and (sign_in_time = '' or sign_out_time = '')
 			</if>
 		</where>
-		  ]]>
 	</select>
 	
 	<select id="getList" resultMap="attendanceVoMap">
-	    <![CDATA[
 		select *
 		from (
-			select crt_username,date_day,crt_user_name,depart_id
-					,if(A.date_day<>B.date_day,'',sign_in_time) sign_in_time
-					,if(A.date_day<>B.date_day,'',sign_out_time) sign_out_time
-					,if(A.date_day<>B.date_day,'',sign_in_map_info) sign_in_map_info
-					,if(A.date_day<>B.date_day,'',sign_out_map_info) sign_out_map_info
-					,if(A.date_day<>B.date_day,'',sign_in_map) sign_in_map
-					,if(A.date_day<>B.date_day,'',sign_out_map) sign_out_map
+			select crt_username,B.date_day,crt_user_name,depart_id
+					,<![CDATA[ if(A.date_day<>B.date_day,'',sign_in_time) sign_in_time ]]>
+					,<![CDATA[ if(A.date_day<>B.date_day,'',sign_out_time) sign_out_time ]]>
+					,<![CDATA[ if(A.date_day<>B.date_day,'',sign_in_map_info) sign_in_map_info ]]>
+					,<![CDATA[ if(A.date_day<>B.date_day,'',sign_out_map_info) sign_out_map_info ]]>
+					,<![CDATA[ if(A.date_day<>B.date_day,'',sign_in_map) sign_in_map ]]>
+					,<![CDATA[ if(A.date_day<>B.date_day,'',sign_out_map) sign_out_map ]]>
 			from (
 					select crt_username,date_format(crt_time,'%Y-%m-%d') date_day
 					,substring_index(group_concat(crt_user_name order by id separator '|'),'|',1) crt_user_name
@@ -99,7 +97,7 @@
 					,substring_index(group_concat(map_info order by id separator '|'),'|',1) sign_in_map_info
 					,if(count(*)=1,'',substring_index(group_concat(map_info order by id separator '|'),'|',-1)) sign_out_map_info
 					,if(count(*)=1,'',substring_index(group_concat(longitude,',',latitude order by id separator '|'),'|',1)) sign_in_map
-        ,if(count(*)=1,'',substring_index(group_concat(longitude,',',latitude order by id separator '|'),'|',-1)) sign_out_map
+        			,if(count(*)=1,'',substring_index(group_concat(longitude,',',latitude order by id separator '|'),'|',-1)) sign_out_map
 					from attendance_info
 					<where>
 						<if test="account != null and account != ''">
@@ -112,10 +110,10 @@
 					    	and depart_id in(#{depart_id})
 						</if>
 						<if test="startDate != null and startDate != ''">
-							and crt_time >= #{startDate}
+							<![CDATA[ and crt_time >= #{startDate} ]]>
 						</if>
 						<if test="endDate != null and endDate != ''">
-							and crt_time < #{endDate}
+							<![CDATA[ and crt_time < #{endDate} ]]>
 						</if>
 					</where>
 					group by crt_username,date_format(crt_time,'%Y-%m-%d')
@@ -123,22 +121,21 @@
 			) A , date_info B
 			<where>
 				<if test="startDate != null and startDate != ''">
-					and B.date_day >= #{startDate}
+					<![CDATA[ and B.date_day >= #{startDate} ]]>
 				</if>
 				<if test="endDate != null and endDate != ''">
-					and B.date_day < #{endDate}
+					<![CDATA[ and B.date_day < #{endDate} ]]>
 				</if>
 			</where> ) C
 		<where>
 			<if test="status == 1">
-				and sign_in_time <> '' and sign_out_time <> ''
+				<![CDATA[ and sign_in_time <> '' and sign_out_time <> '' ]]>
 			</if>
 			<if test="status == 0">
-				and sign_in_time = '' or sign_out_time = ''
+				and (sign_in_time = '' or sign_out_time = '')
 			</if>
 		</where>
 		order by date_day,crt_username
 		limit ${startIndex},${limit}
-		]]>
 	</select>
 </mapper>

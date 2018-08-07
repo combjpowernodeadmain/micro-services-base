@@ -18,11 +18,13 @@ import com.bjzhianjia.scp.cgp.biz.AreaGridBiz;
 import com.bjzhianjia.scp.cgp.biz.EnterpriseInfoBiz;
 import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
 import com.bjzhianjia.scp.cgp.biz.RegulaObjectBiz;
+import com.bjzhianjia.scp.cgp.biz.RegulaObjectTypeBiz;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.EnterpriseInfo;
 import com.bjzhianjia.scp.cgp.entity.EventType;
 import com.bjzhianjia.scp.cgp.entity.RegulaObject;
+import com.bjzhianjia.scp.cgp.entity.RegulaObjectType;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
@@ -51,6 +53,8 @@ public class RegulaObjectService {
 	private EnterpriseInfoBiz enterpriseInfoBiz;
 	@Autowired
 	private MergeCore mergeCore;
+	@Autowired
+	private RegulaObjectTypeBiz regulaObjectTypeBiz;
 
 	/**
 	 * 添加监管对象-经营单位
@@ -397,9 +401,11 @@ public class RegulaObjectService {
 //		list.add(regulaObject);
 		
 		//聚和监管对象类别
-		String objTypeId = regulaObject.getObjType();
-		Map<String, String> objTypeMap = dictFeign.getDictValueByID(objTypeId);
-		regulaObject.setObjType(objTypeMap.get(objTypeId));
+		//监管对象类别放弃使用字典值，类型使用监管对象类别表，数据类型为Integer
+		Integer objTypeId = regulaObject.getObjType();
+		RegulaObjectType regulaObjectType = regulaObjectTypeBiz.selectById(objTypeId);
+//		Map<String, String> objTypeMap = dictFeign.getDictValueByID(objTypeId);
+//		regulaObject.setObjType(objTypeMap.get(objTypeId));
 //		queryAssist(list);
 		
 		/*
@@ -418,6 +424,7 @@ public class RegulaObjectService {
 		JSONObject other = BeanUtil.jsonObjectMergeOther(JSONObject.parseObject(regulaObjectJStr), JSONObject.parseObject(enterpriseInfoJStr));
 		
 		Regula_EnterPriseVo result = JSON.parseObject(other.toJSONString(), Regula_EnterPriseVo.class);
+		result.setObjType(JSON.toJSONString(regulaObjectType));
 		return result;
 	}
 

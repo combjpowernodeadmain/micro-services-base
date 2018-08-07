@@ -194,13 +194,17 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
      * @return
      */
     public TableResultResponse<User> getUserByDept(String deptId,int page,int limit){
-    	Example example=new Example(User.class);
-    	Example.Criteria criteria=example.createCriteria();
-    	criteria.andEqualTo("departId", deptId);
-    	criteria.andEqualTo("isDeleted","0");
-    	example.orderBy("id");
+    	
     	Page<Object> result =PageHelper.startPage(page, limit);
-    	List<User> userList = mapper.selectByExample(example);
+    	List<User> userList = departMapper.selectDepartUsers(deptId, null);
+    	
+//    	Example example=new Example(User.class);
+//    	Example.Criteria criteria=example.createCriteria();
+//    	criteria.andEqualTo("departId", deptId);
+//    	criteria.andEqualTo("isDeleted","0");
+//    	example.orderBy("id");
+//    	Page<Object> result =PageHelper.startPage(page, limit);
+//    	List<User> userList = mapper.selectByExample(example);
     	return new TableResultResponse<User>(result.getTotal(), userList);
     }
     
