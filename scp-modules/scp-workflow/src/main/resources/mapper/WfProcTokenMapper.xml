@@ -41,13 +41,13 @@
 		where id_deleted='0' limit #{index, jdbcType=INTEGER} , #{pageSize, jdbcType=INTEGER};
 	</select>
 	
-	<!-- 根据用户查询token数据 -->
-	<select id="selectByUser" resultMap="wfProcTokenMap"
+	<!-- 根据用户tenantId查询token数据 -->
+	<select id="selectByTenantId" resultMap="wfProcTokenMap"
 		parameterType="java.lang.String">
 		select
 		<include refid="Base_Column_List" />
 		from SCP_WF_PROC_TOKEN
-		where PROC_TOKEN_USER = #{userName,jdbcType=INTEGER} and id_deleted='0';
+		where PROC_TENANT_ID = #{tenantId,jdbcType=INTEGER} and id_deleted='0';
 	</select>
 	
 	<!--  插入token实体  -->

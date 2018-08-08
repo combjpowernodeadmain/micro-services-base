@@ -10,7 +10,7 @@ spring:
     datasource:
         type: com.alibaba.druid.pool.DruidDataSource
         driverClassName: com.mysql.jdbc.Driver
-        url: jdbc:mysql://101.201.147.172:9025/lt_case?useUnicode=true&characterEncoding=UTF-8
+        url: jdbc:mysql://101.201.147.172:9025/lt_cgp?useUnicode=true&characterEncoding=UTF-8
         username: dev_user
         password: lt5121
     jackson:

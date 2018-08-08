@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.*;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.bjzhianjia.scp.cgp.feign.DictFeign;
+import com.bjzhianjia.scp.merge.annonation.MergeField;
 
 /**
  * 监管对象
@@ -28,9 +32,10 @@ public class RegulaObject implements Serializable {
     @Column(name = "obj_name")
     private String objName;
 	
-	    //监管对象类型
+	    //监管对象类型  修改为Integer类型,原为String
     @Column(name = "obj_type")
-    private String objType;
+//    @MergeField(key="root_biz_objType",feign=DictFeign.class,method="getDictIds")
+    private Integer objType;
 	
 	    //监管对象ID
     @Column(name = "obj_id")
@@ -78,6 +83,7 @@ public class RegulaObject implements Serializable {
 	
 	    //采集时间
     @Column(name = "gather_time")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
     private Date gatherTime;
 	
 	    //业务条线
@@ -168,13 +174,13 @@ public class RegulaObject implements Serializable {
 	/**
 	 * 设置：监管对象类型
 	 */
-	public void setObjType(String objType) {
+	public void setObjType(Integer objType) {
 		this.objType = objType;
 	}
 	/**
 	 * 获取：监管对象类型
 	 */
-	public String getObjType() {
+	public Integer getObjType() {
 		return objType;
 	}
 	/**

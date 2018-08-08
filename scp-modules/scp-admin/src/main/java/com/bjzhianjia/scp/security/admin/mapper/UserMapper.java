@@ -28,4 +28,32 @@ public interface UserMapper extends CommonMapper<User> {
     public List<User> selectMemberByGroupId(@Param("groupId") String groupId);
     public List<User> selectLeaderByGroupId(@Param("groupId") String groupId);
     List<String> selectUserDataDepartIds(String userId);
+    /**
+     * 根据userid获取用户部门ID
+     * 
+     * added by bozch 2018.7.31
+     * 
+     * @param usernmae
+     * @return
+     */
+    public String selectDepartIdByUserId(@Param("userid") String userid);
+    
+    /**
+     * 根据userid获取用户租户ID
+     * 
+     * added by bozch 2018.7.31
+     * 
+     * @param usernmae
+     * @return
+     */
+    public String selectTenantIdByUserId(@Param("userid") String userid);
+    
+    /**
+     * 根据用户id获取角色codes
+     * 
+     * @param userid
+     * @return
+     */
+    public List<String> selectLearderGroupCodesByUserId(@Param("userid") String userid);
+    public List<String> selectMemberGroupCodesByUserId(@Param("userid") String userid);
 }

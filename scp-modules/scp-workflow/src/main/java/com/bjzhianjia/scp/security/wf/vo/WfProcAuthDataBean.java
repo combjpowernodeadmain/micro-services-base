@@ -31,8 +31,7 @@ import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcessAuthData;
  * 2016.12.16    mayongming       1.0           1.0 Version
  * </pre>
  */
-public class WfProcAuthDataBean implements java.io.Serializable{
-
+public class WfProcAuthDataBean implements java.io.Serializable {
     private static final long serialVersionUID = 1597515654706105817L;
     private Map<String, Object> authData = new HashMap<String, Object>();
 
@@ -44,6 +43,46 @@ public class WfProcAuthDataBean implements java.io.Serializable{
         put(WfProcessAuthData.PROC_AUTHTYPE, procAuthType);
     }
 
+    public String getProcSelfPermissionData1() {
+        return (String) authData.get(WfProcessAuthData.PROC_SELFPERMISSIONDATA1);
+    }
+
+    public void setProcSelfPermissionData1(String procSelfPermissionData) {
+        put(WfProcessAuthData.PROC_SELFPERMISSIONDATA1, procSelfPermissionData);
+    }
+    
+    public String getProcSelfPermissionData2() {
+        return (String) authData.get(WfProcessAuthData.PROC_SELFPERMISSIONDATA2);
+    }
+
+    public void setProcSelfPermissionData2(String procSelfPermissionData) {
+        put(WfProcessAuthData.PROC_SELFPERMISSIONDATA2, procSelfPermissionData);
+    }
+    
+    public String getProcSelfPermissionData3() {
+        return (String) authData.get(WfProcessAuthData.PROC_SELFPERMISSIONDATA3);
+    }
+
+    public void setProcSelfPermissionData3(String procSelfPermissionData) {
+        put(WfProcessAuthData.PROC_SELFPERMISSIONDATA3, procSelfPermissionData);
+    }
+    
+    public String getProcSelfPermissionData4() {
+        return (String) authData.get(WfProcessAuthData.PROC_SELFPERMISSIONDATA4);
+    }
+
+    public void setProcSelfPermissionData4(String procSelfPermissionData) {
+        put(WfProcessAuthData.PROC_SELFPERMISSIONDATA4, procSelfPermissionData);
+    }
+    
+    public String getProcSelfPermissionData5() {
+        return (String) authData.get(WfProcessAuthData.PROC_SELFPERMISSIONDATA5);
+    }
+
+    public void setProcSelfPermissionData5(String procSelfPermissionData) {
+        put(WfProcessAuthData.PROC_SELFPERMISSIONDATA5, procSelfPermissionData);
+    }
+    
     public String getProcTokenUser() {
         return (String) authData.get(WfProcessAuthData.PROC_TOKENUSER);
     }
@@ -76,14 +115,6 @@ public class WfProcAuthDataBean implements java.io.Serializable{
         put(WfProcessAuthData.PROC_DEPATID, procTaskUser);
     }
     
-    public String getProcTaskRole() {
-        return (String) authData.get(WfProcessAuthData.PROC_TASKROLE);
-    }
-
-    public void setProcTaskRole(String procTaskRole) {
-        put(WfProcessAuthData.PROC_TASKROLE, procTaskRole);
-    }
-
     @SuppressWarnings("unchecked")
     public List<String> getProcTaskRoles() {
         return (List<String>) authData.get(WfProcessAuthData.PROC_TASKROLES);

@@ -110,6 +110,11 @@ public class Constants{
      */
     public class WfProcessAuthData {
         public static final String PROC_AUTHTYPE = "procAuthType";
+        public static final String PROC_SELFPERMISSIONDATA1 = "procSelfPermissionData1";
+        public static final String PROC_SELFPERMISSIONDATA2 = "procSelfPermissionData2";
+        public static final String PROC_SELFPERMISSIONDATA3 = "procSelfPermissionData3";
+        public static final String PROC_SELFPERMISSIONDATA4 = "procSelfPermissionData4";
+        public static final String PROC_SELFPERMISSIONDATA5 = "procSelfPermissionData5";
         /** 流程任务token认证 -- 用户账号 */
         public static final String PROC_TOKENUSER = "procTokenUser";
         /** 流程任务token认证 -- 认证密码 */
@@ -118,8 +123,6 @@ public class Constants{
         public static final String PROC_TASKUSER = "procTaskUser";
         /** 流程任务用户所属部门 */
         public static final String PROC_DEPATID = "procDeptId";
-        /** 流程任务处理用户所属角色-Token方式 */
-        public static final String PROC_TASKROLE = "procTaskRole";
         /** 流程任务处理用户所属角色列表 - Session方式 */
         public static final String PROC_TASKROLES = "procTaskRoles";
         /** 流程任务处理用户所属机构代码 */
@@ -210,6 +213,8 @@ public class Constants{
         public static final String PROC_REFUSETASK = "refuseTask";
         /** 流程任务属性 -- 任务提交前和提交后的回调接口类 */
         public static final String PROC_CALLBACK = "callback";
+        /** 流程任务属性 -- 流程租户数据权限 */
+        public static final String PROC_TENANTPERMISSION = "tenantPermission";
         /** 流程任务属性 -- 流程所属租户 */
         public static final String PROC_TENANTID = "tenantId";
         /** 流程任务属性 -- 数据权限类型 0:不控制;1:本机构;2:上级机构;3:本机构及其上级;9:本人 */
@@ -278,6 +283,48 @@ public class Constants{
         public static final String PROC_DATA_VALID = "1";
         /** 无效数据 */
         public static final String PROC_DATA_INVALID = "0";
+    }
+    
+    /**
+     * 工作流任务租户数据权限类型
+     * @author mayongming
+     *
+     */
+    public enum WfProcTenantDataPermissionType {
+        /** 不进行数据权限控制 */
+        NONE("0","不启用"),
+        /** 通过机构进行数据权限控制 */
+        ENABLE("1","启用");
+        
+        /** 响应代码 **/
+        private String retCode = "";
+        /** 提示信息 **/
+        private String retInfo = "";
+
+        private WfProcTenantDataPermissionType() {
+
+        }
+
+        private WfProcTenantDataPermissionType(String retCode, String retInfo) {
+            this.retCode = retCode;
+            this.retInfo = retInfo;
+        }
+
+        public String getRetCode() {
+            return retCode;
+        }
+
+        public void setRetCode(String retCode) {
+            this.retCode = retCode;
+        }
+
+        public String getRetInfo() {
+            return retInfo;
+        }
+
+        public void setRetInfo(String retInfo) {
+            this.retInfo = retInfo;
+        }
     }
     
     /**

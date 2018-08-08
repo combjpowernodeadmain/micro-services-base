@@ -55,4 +55,16 @@
             <version>20.0</version>
         </dependency>
     </dependencies>
+    
+    <distributionManagement>
+        <snapshotRepository>
+            <id>nexus</id>
+            <url>http://blcneuxs.zxbit.cn/repository/blc-snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>nexus</id>
+            <name>Maven Central Staging Repository</name>
+            <url>http://blcneuxs.zxbit.cn/repository/blc-release/</url>
+        </repository>
+    </distributionManagement>
 </project>

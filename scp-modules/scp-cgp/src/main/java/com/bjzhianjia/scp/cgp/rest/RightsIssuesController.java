@@ -23,6 +23,7 @@ import com.bjzhianjia.scp.security.common.rest.BaseController;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 @RestController
 @RequestMapping("rightsIssues")
@@ -40,12 +41,13 @@ public class RightsIssuesController extends BaseController<RightsIssuesBiz,Right
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
     @ResponseBody
     @ApiOperation("终端查询分页列表")
-    public TableResultResponse<RightsIssues> page(@RequestParam(defaultValue = "10") int limit
-    				,@RequestParam(defaultValue = "1") int page
-    				,@RequestParam(defaultValue = "") String code
-    				,@RequestParam(defaultValue = "") String bizType
-    				,@RequestParam(defaultValue = "") String unlawfulAct 
-    				,@RequestParam(defaultValue = "") String isEnable) {
+	
+    public TableResultResponse<RightsIssues> page(@RequestParam(defaultValue = "10") @ApiParam(name="页容量") int limit
+    				,@RequestParam(defaultValue = "1") @ApiParam(name="当前页") int page
+    				,@RequestParam(defaultValue = "") @ApiParam(name="权利事项编号") String code
+    				,@RequestParam(defaultValue = "") @ApiParam(name="业务条线") String bizType
+    				,@RequestParam(defaultValue = "") @ApiParam(name="违法行为") String unlawfulAct 
+    				,@RequestParam(defaultValue = "") @ApiParam(name="是否可用") String isEnable) {
 	    
 		RightsIssues rightsIssues = new RightsIssues();
 		rightsIssues.setCode(code);
@@ -59,10 +61,15 @@ public class RightsIssuesController extends BaseController<RightsIssuesBiz,Right
 	@RequestMapping(value = "/get/{id}",method = RequestMethod.GET)
     @ResponseBody
     @ApiOperation("查询单个对象")
-    public ObjectRestResponse<RightsIssues> get(@PathVariable Integer id){
+    public ObjectRestResponse<RightsIssues> get(@PathVariable @ApiParam(name="待查询对象ID") Integer id){
+		/*
+		 * 返回内容需要进行业务条线数据聚和，聚和内容包括：业务条线ID+业务条线名称
+		 */
         ObjectRestResponse<RightsIssues> entityObjectRestResponse = new ObjectRestResponse<>();
-        Object o = rightsIssuesBiz.selectById(id);
-        RightsIssues rightsIssues = (RightsIssues)o;
+        
+        RightsIssues rightsIssues = rightsIssuesService.getByID(id);
+//        Object o = rightsIssuesBiz.selectById(id);
+//        RightsIssues rightsIssues = (RightsIssues)o;
        
         entityObjectRestResponse.data(rightsIssues);
         
@@ -72,7 +79,7 @@ public class RightsIssuesController extends BaseController<RightsIssuesBiz,Right
 	@RequestMapping(value = "/add",method = RequestMethod.POST)
     @ResponseBody
     @ApiOperation("新增单个对象")
-    public ObjectRestResponse<RightsIssues> add(@RequestBody @Validated RightsIssues rightsIssues, BindingResult bindingResult){
+    public ObjectRestResponse<RightsIssues> add(@RequestBody @Validated @ApiParam(name="待添加对象实例") RightsIssues rightsIssues, BindingResult bindingResult){
 		ObjectRestResponse<RightsIssues> restResult = new ObjectRestResponse<>();
 		if(bindingResult.hasErrors()) {
 			restResult.setStatus(400);
@@ -93,7 +100,7 @@ public class RightsIssuesController extends BaseController<RightsIssuesBiz,Right
     @RequestMapping(value = "/update/{id}",method = RequestMethod.PUT)
     @ResponseBody
     @ApiOperation("更新单个对象")
-    public ObjectRestResponse<RightsIssues> update(@RequestBody @Validated RightsIssues rightsIssues, BindingResult bindingResult){
+    public ObjectRestResponse<RightsIssues> update(@RequestBody @Validated @ApiParam(name="待更新对象实例") RightsIssues rightsIssues, BindingResult bindingResult){
     	
 		ObjectRestResponse<RightsIssues> restResult = new ObjectRestResponse<>();
 		
@@ -116,7 +123,7 @@ public class RightsIssuesController extends BaseController<RightsIssuesBiz,Right
 	@RequestMapping(value = "/remove/{ids}",method = RequestMethod.DELETE)
 	@ResponseBody
 	@ApiOperation("批量移除对象")
-    public ObjectRestResponse<RightsIssues> remove(@PathVariable Integer[] ids){
+    public ObjectRestResponse<RightsIssues> remove(@PathVariable @ApiParam(name="待删除对象ID集合，多个ID用“，”隔开") Integer[] ids){
 		ObjectRestResponse<RightsIssues> result = new ObjectRestResponse<>();
 		if(ids == null || ids.length == 0) {
 			result.setStatus(400);;

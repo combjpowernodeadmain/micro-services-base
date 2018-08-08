@@ -6,6 +6,7 @@ import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -34,8 +35,8 @@ public class RightsIssues implements Serializable {
 	private String code;
 	
 	//事件类别
-	@Column(name = "type")
-	@NotEmpty(message="事件类别不能为空")
+	@Column(name = "event_type")
+	@NotNull(message="事件类别不能为空")
 	private Integer type;
 	
 	//违法行为
@@ -103,7 +104,7 @@ public class RightsIssues implements Serializable {
 	    //租户ID
     @Column(name = "tenant_id")
     private String tenantId;
-    
+    @MergeField(key = "root_biz_type", feign = DictFeign.class, method = "getDictIds")
     private String bizType;
 	
 	/**
