@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bjzhianjia.scp.cgp.mapper.CaseInfoMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.bjzhianjia.scp.cgp.entity.CaseInfo" id="caseInfoMap">
+        <result property="id" column="id"/>
+        <result property="sourceType" column="source_type"/>
+        <result property="sourceCode" column="source_code"/>
+        <result property="caseCode" column="case_code"/>
+        <result property="caseTitle" column="case_title"/>
+        <result property="caseDesc" column="case_desc"/>
+        <result property="regulaObjList" column="regula_obj_list"/>
+        <result property="concernedPerson" column="concerned_person"/>
+        <result property="bizList" column="biz_list"/>
+        <result property="eventTypeList" column="event_type_list"/>
+        <result property="grid" column="grid"/>
+        <result property="occurAddr" column="occur_addr"/>
+        <result property="mapInfo" column="map_info"/>
+        <result property="checkIsExist" column="check_is_exist"/>
+        <result property="checkTime" column="check_time"/>
+        <result property="checkPerson" column="check_person"/>
+        <result property="checkOpinion" column="check_opinion"/>
+        <result property="checkPic" column="check_pic"/>
+        <result property="checkVideo" column="check_video"/>
+        <result property="deadLine" column="dead_line"/>
+        <result property="executeDept" column="execute_dept"/>
+        <result property="requirements" column="requirements"/>
+        <result property="approveInfo" column="approve_info"/>
+        <result property="finishCheckIsExist" column="finish_check_is_exist"/>
+        <result property="finishCheckTime" column="finish_check_time"/>
+        <result property="finishCheckPerson" column="finish_check_person"/>
+        <result property="finishCheckOpinion" column="finish_check_opinion"/>
+        <result property="finishCheckPic" column="finish_check_pic"/>
+        <result property="finishCheckVideo" column="finish_check_video"/>
+        <result property="finishPerson" column="finish_person"/>
+        <result property="finishTime" column="finish_time"/>
+        <result property="finishDesc" column="finish_desc"/>
+        <result property="replyPerson" column="reply_person"/>
+        <result property="replyTime" column="reply_time"/>
+        <result property="replyDesc" column="reply_desc"/>
+        <result property="isDeleted" column="is_deleted"/>
+        <result property="crtTime" column="crt_time"/>
+        <result property="crtUserId" column="crt_user_id"/>
+        <result property="crtUserName" column="crt_user_name"/>
+        <result property="updTime" column="upd_time"/>
+        <result property="updUserId" column="upd_user_id"/>
+        <result property="updUserName" column="upd_user_name"/>
+        <result property="tenantId" column="tenant_id"/>
+        <result property="deptId" column="dept_id"/>
+        <result property="isDuplicate" column="is_duplicate"/>
+        <result property="duplicateWith" column="duplicate_with"/>
+        <result property="isFinished" column="is_finished"/>
+    </resultMap>
+
+</mapper>
