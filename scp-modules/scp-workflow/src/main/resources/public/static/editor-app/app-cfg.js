@@ -21,5 +21,7 @@
 var ACTIVITI = ACTIVITI || {};
 
 ACTIVITI.CONFIG = {
-	'contextRoot' : '/service'
+	'contextRoot' : '/service',
+//	'contextRootFront' : '/etep.front',
+	'contextRootFront' : '/service',
 };
