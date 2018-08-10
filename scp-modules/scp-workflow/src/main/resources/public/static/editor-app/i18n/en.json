@@ -69,6 +69,9 @@
     "PROPERTY.EMPTY" : "No value",
     "PROPERTY.PROPERTY.EDIT.TITLE" : "Change value for \"{{title}}\"",
     
+    "PROPERTY.PROPERTY.PREDEFINED.PROPERTIES" : "PreDefined Properties",
+    "PROPERTY.ADD.REQUIRED.PREDEFINED.PROPERTIES" : "ADD Required PreDefined Properties",
+    
     "PROPERTY.FEEDBACK.TITLE" : "Please fill-in your feedback",
     
     "PROPERTY.ASSIGNMENT.TITLE" : "Assignment",
