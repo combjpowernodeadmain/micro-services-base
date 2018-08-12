@@ -3737,4 +3737,5 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			this.procNextTasks = procNextTasks;
 		}
 	}
+	
 }
