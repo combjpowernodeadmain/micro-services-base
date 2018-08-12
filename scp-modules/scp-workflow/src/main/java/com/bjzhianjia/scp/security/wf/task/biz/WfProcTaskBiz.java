@@ -634,6 +634,10 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			// 业务流程数据准备
 			WfProcBean wfProcBean = creatProcessData(procVarData, authData,
 					processInstance.getId(), procDef);
+			wfProcBean.setProcBizid(bizData.getProcBizId());
+			wfProcBean.setProcBiztype(bizData.getProcBizType());
+			wfProcBean.setProcOrgcode(bizData.getProcOrgCode());
+			wfProcBean.setProcMemo(bizData.getProcBizMemo());
 
 			// 得到启动节点流程任务
 			Task task = getProcTaskEntityByInstance(processInstance.getId());
@@ -700,11 +704,6 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			String callbackClass = getProcTaskCallback(properties);
 			beforeCallback(WfProcDealType.PROC_COMMIT, procTaskData,
 					procTaskSelfProps, callbackClass, bizData.getBizData());
-
-			wfProcBean.setProcBizid(bizData.getProcBizId());
-			wfProcBean.setProcBiztype(bizData.getProcBizType());
-			wfProcBean.setProcOrgcode(bizData.getProcOrgCode());
-			wfProcBean.setProcMemo(bizData.getProcBizMemo());
 
 			procVarData.setProcBiztype(bizData.getProcBizId());
 			procVarData.setProcOrgcode(bizData.getProcOrgCode());
