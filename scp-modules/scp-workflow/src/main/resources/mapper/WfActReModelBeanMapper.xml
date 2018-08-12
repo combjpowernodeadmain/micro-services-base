@@ -32,7 +32,7 @@
     select 
     <include refid="Base_Column_List" />
     from ACT_RE_MODEL
-    WHERE 1=1
+    WHERE TENANT_ID_ = #{tenantId,jdbcType=VARCHAR}
 		<if test="key!=null and key!=''">
 			and KEY_ like "%"#{key}"%"
 		</if>
@@ -45,6 +45,7 @@
   <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
     delete from ACT_RE_MODEL
     where ID_ = #{id,jdbcType=VARCHAR}
+    and TENANT_ID_ = #{tenantId,jdbcType=VARCHAR}
   </delete>
   
 </mapper>

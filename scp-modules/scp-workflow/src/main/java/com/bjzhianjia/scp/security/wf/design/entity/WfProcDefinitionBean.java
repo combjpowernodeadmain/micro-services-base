@@ -37,7 +37,8 @@ public class WfProcDefinitionBean implements java.io.Serializable {
     private String description;// 流程定义描述
     private boolean isSuspended;// 流程定义是否挂起
     private int version;// 流程定义的版本
-
+    private String tenantId;
+    
     public String getDefinitionId() {
         return definitionId;
     }
@@ -109,4 +110,12 @@ public class WfProcDefinitionBean implements java.io.Serializable {
     public void setVersion(int version) {
         this.version = version;
     }
+
+	public String getTenantId() {
+		return tenantId;
+	}
+
+	public void setTenantId(String tenantId) {
+		this.tenantId = tenantId;
+	}
 }

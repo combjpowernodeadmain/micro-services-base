@@ -238,9 +238,10 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			}
 
 			ProcessDefinitionEntity procDef = wfProcDesinerBiz
-					.getDeployedProcessDefinition(processInstance
-							.getProcessDefinitionId());
-
+					.getDeployedProcessDefinition(
+							processInstance.getProcessDefinitionId(),
+							authData.getProcTenantId());
+			
 			// 业务流程数据准备
 			WfProcBean wfProcBean = creatProcessData(procVarData, authData,
 					processInstance.getId(), procDef);
@@ -254,7 +255,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			WfProcTaskPropertiesBean properties = wfProcDesinerBiz
 					.getTaskProperties(task.getId());
 
-			// 当前用户所属租户ID没有权限启动该
+			// 当前用户所属租户ID没有权限启动该工作流
 			if (!authData.getProcTenantId().equals(getProcTenantId(properties))) {
 				throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020107);
 			}
@@ -302,8 +303,9 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		    log.error("Start Process Error: {}", e);
 			throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020199, e);
 		} finally {
-			log.info("启动流程--启动业务流程(" + processInstance == null ? "未知实例": processInstance.getId() + "),业务ID("
-					+ bizData.getProcBizId() + ")结束.");
+			log.info("启动流程--启动业务流程(" + processInstance == null ? "未知实例"
+					: processInstance.getId() + "),业务ID("
+							+ bizData.getProcBizId() + ")结束.");
 		}
 
 		return processInstance.getId();
@@ -625,8 +627,9 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			}
 
 			ProcessDefinitionEntity procDef = wfProcDesinerBiz
-					.getDeployedProcessDefinition(processInstance
-							.getProcessDefinitionId());
+					.getDeployedProcessDefinition(
+							processInstance.getProcessDefinitionId(),
+							authData.getProcTenantId());
 
 			// 业务流程数据准备
 			WfProcBean wfProcBean = creatProcessData(procVarData, authData,
@@ -637,11 +640,6 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 
 			// 获取流程定义任务节点配置的任务属性数据
 			WfProcTaskPropertiesBean properties = wfProcDesinerBiz.getTaskProperties(task.getId());
-			
-			// 当前用户所属租户ID没有权限启动该
-			if (!authData.getProcTenantId().equals(getProcTenantId(properties))) {
-				throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020107);
-			}
 			
 			// 获取当前流程任务自定义属性
 			Map<String, String> procTaskSelfProps = getProcTaskSelfProperties(properties);
@@ -1617,7 +1615,8 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			if (DictKeyConst.YESORNO_YES.equals(procTask.getProcParallel())) {
 				// 取得流程定义
 				ProcessDefinitionEntity definition = wfProcDesinerBiz
-						.getDeployedProcessDefinition(procTask.getProcId());
+						.getDeployedProcessDefinition(procTask.getProcId(),
+								authData.getProcTenantId());
 
 				// 取得当前活动节点
 				ActivityImpl currActivity = wfProcDesinerBiz.getActivity(
@@ -2146,7 +2145,8 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			throws WorkflowException {
 		// 取得流程定义
 		ProcessDefinitionEntity definition = wfProcDesinerBiz
-				.getDeployedProcessDefinition(procTask.getProcId());
+				.getDeployedProcessDefinition(procTask.getProcId(),
+						procTask.getProcTenantId());
 
 		// 取得当前活动节点
 		ActivityImpl currActivity = wfProcDesinerBiz.getActivity(definition,
@@ -2585,7 +2585,8 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		}
 
 		// 并行任务汇聚，不允许撤回
-		if (!checkRetrieveProcess(procTask.getProcId(), procTask.getProcCtaskcode())) {
+		if (!checkRetrieveProcess(procTask.getProcId(),
+				procTask.getProcCtaskcode(), authData.getProcTenantId())) {
 			throw new WorkflowException(WorkflowEnumResults.WF_TASK_02021104);
 		}
 
@@ -2699,11 +2700,11 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	 *            流程任务代码
 	 * @return
 	 */
-	private boolean checkRetrieveProcess(String procId, String procTaskcode)
-			throws WorkflowException {
+	private boolean checkRetrieveProcess(String procId, String procTaskcode,
+			String tenantId) throws WorkflowException {
 		boolean flag = true;
 		ProcessDefinitionEntity definition = wfProcDesinerBiz
-				.getDeployedProcessDefinition(procId);
+				.getDeployedProcessDefinition(procId, tenantId);
 		ActivityImpl currActivity = wfProcDesinerBiz.getActivity(definition,
 				procTaskcode);
 		List<PvmTransition> pvmTransitionList = currActivity
@@ -3227,7 +3228,8 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			throws WorkflowException, Exception {
 		List<WfProcTaskBean> wfProcTaskBeans = new ArrayList<>();
 		Map<String, ActivityImpl> activities = wfProcDesinerBiz
-				.getProcessDefinitionActivities(wfPreProcTaskBean.getProcId());
+				.getProcessDefinitionActivities(wfPreProcTaskBean.getProcId(),
+						wfPreProcTaskBean.getProcTenantId());
 
 		// 获取下一任务节点列表
 		List<Task> tasks = getProcTasks(wfPreProcTaskBean.getProcInstId());

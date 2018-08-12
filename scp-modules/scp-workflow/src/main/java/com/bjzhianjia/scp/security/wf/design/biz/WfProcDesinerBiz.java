@@ -15,6 +15,7 @@ package com.bjzhianjia.scp.security.wf.design.biz;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -28,19 +29,26 @@ import org.activiti.engine.ActivitiException;
 import org.activiti.engine.ActivitiObjectNotFoundException;
 import org.activiti.engine.FormService;
 import org.activiti.engine.ProcessEngine;
+import org.activiti.engine.ProcessEngineConfiguration;
 import org.activiti.engine.ProcessEngines;
 import org.activiti.engine.RepositoryService;
+import org.activiti.engine.RuntimeService;
 import org.activiti.engine.delegate.Expression;
 import org.activiti.engine.form.FormProperty;
 import org.activiti.engine.form.TaskFormData;
 import org.activiti.engine.impl.RepositoryServiceImpl;
 import org.activiti.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
+import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.impl.pvm.process.ProcessDefinitionImpl;
 import org.activiti.engine.impl.task.TaskDefinition;
 import org.activiti.engine.repository.Model;
 import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.image.ProcessDiagramGenerator;
+import org.activiti.spring.ProcessEngineFactoryBean;
 import org.activiti.validation.ProcessValidator;
 import org.activiti.validation.ProcessValidatorFactory;
 import org.activiti.validation.ValidationError;
@@ -50,7 +58,6 @@ import org.springframework.stereotype.Component;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.wf.base.WfBaseBiz;
 import com.bjzhianjia.scp.security.wf.constant.WorkflowEnumResults;
-import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcessDataAttr;
 import com.bjzhianjia.scp.security.wf.design.entity.WfProcActReModelBean;
 import com.bjzhianjia.scp.security.wf.design.entity.WfProcActReProcdefBean;
 import com.bjzhianjia.scp.security.wf.design.entity.WfProcDefinitionBean;
@@ -87,29 +94,37 @@ public class WfProcDesinerBiz extends WfBaseBiz{
     @Autowired
     RepositoryService repositoryService;
     @Autowired
+    RuntimeService runtimeService;
+    @Autowired
     FormService formService;
     @Autowired
     WfActReModelBeanMapper wfActReModelBeanMapper;
     @Autowired
     WfActReProcdefBeanMapper wfActReProcdefBeanMapper;
-
+    @Autowired
+	ProcessEngineConfiguration processEngineConfiguration;
+	@Autowired
+	ProcessEngineFactoryBean processEngine;
+    
     /**
      * 查询当前最新的流程定义列表
      * 
      * @return
      * @throws WorkflowException
      */
-    public List<WfProcDefinitionBean> findAllLatestProcessDifinition() throws WorkflowException {
-        List<WfProcDefinitionBean> list = new ArrayList<WfProcDefinitionBean>();
+	public List<WfProcDefinitionBean> findAllLatestProcessDifinition(
+			String tenantId) throws WorkflowException {
+		List<WfProcDefinitionBean> list = new ArrayList<WfProcDefinitionBean>();
 
         try {
             // 创建默认流程引擎
             ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
 
-            // 查询当前最新的流程定义信息
-            List<ProcessDefinition> processDefinitions =
-                processEngine.getRepositoryService().createProcessDefinitionQuery().latestVersion()
-                    .orderByProcessDefinitionKey().list();
+			// 查询当前最新的流程定义信息
+			List<ProcessDefinition> processDefinitions = processEngine
+					.getRepositoryService().createProcessDefinitionQuery()
+					.processDefinitionTenantId(tenantId).latestVersion()
+					.orderByProcessDefinitionKey().list();
 
             if (processDefinitions != null && processDefinitions.size() > 0) {
                 for (ProcessDefinition processDefinition : processDefinitions) {
@@ -124,6 +139,7 @@ public class WfProcDesinerBiz extends WfBaseBiz{
                     wfDefinitionBean.setDescription(processDefinition.getDescription());
                     wfDefinitionBean.setSuspended(processDefinition.isSuspended());
                     wfDefinitionBean.setVersion(processDefinition.getVersion());
+                    wfDefinitionBean.setTenantId(processDefinition.getTenantId());
                     list.add(wfDefinitionBean);
                 }
             }
@@ -141,28 +157,34 @@ public class WfProcDesinerBiz extends WfBaseBiz{
      * @return
      * @throws WorkflowException
      */
-    public WfProcDefinitionBean findLatestProcessDifinitionByKey(String processDefinitionKey)
-        throws WorkflowException {
-        try {
+	public WfProcDefinitionBean findLatestProcessDifinitionByKey(
+			String processDefinitionKey, String tenantId)
+			throws WorkflowException {
+		try {
             // 创建默认流程引擎
             ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
-
-            // 流程定义key查询流程定义信息
-            ProcessDefinition processDefinition =
-                processEngine.getRepositoryService().createProcessDefinitionQuery()
-                    .processDefinitionKey(processDefinitionKey).latestVersion().singleResult();// 返回唯一结果集
-
             WfProcDefinitionBean wfDefinitionBean = new WfProcDefinitionBean();
-            wfDefinitionBean.setDefinitionId(processDefinition.getId());
-            wfDefinitionBean.setDefinitionKey(processDefinition.getKey());
-            wfDefinitionBean.setDefinitionName(processDefinition.getName());
-            wfDefinitionBean.setDeploymentId(processDefinition.getDeploymentId());
-            wfDefinitionBean.setResourceName(processDefinition.getResourceName());
-            wfDefinitionBean.setDiagramResourceName(processDefinition.getDiagramResourceName());
-            wfDefinitionBean.setDescription(processDefinition.getDescription());
-            wfDefinitionBean.setSuspended(processDefinition.isSuspended());
-            wfDefinitionBean.setVersion(processDefinition.getVersion());
+            
+			// 流程定义key查询流程定义信息
+			ProcessDefinition processDefinition = processEngine
+					.getRepositoryService().createProcessDefinitionQuery()
+					.processDefinitionKey(processDefinitionKey)
+					.processDefinitionTenantId(tenantId).latestVersion()
+					.singleResult();// 返回唯一结果集
 
+            if (processDefinition != null) {
+            	wfDefinitionBean.setDefinitionId(processDefinition.getId());
+                wfDefinitionBean.setDefinitionKey(processDefinition.getKey());
+                wfDefinitionBean.setDefinitionName(processDefinition.getName());
+                wfDefinitionBean.setDeploymentId(processDefinition.getDeploymentId());
+                wfDefinitionBean.setResourceName(processDefinition.getResourceName());
+                wfDefinitionBean.setDiagramResourceName(processDefinition.getDiagramResourceName());
+                wfDefinitionBean.setDescription(processDefinition.getDescription());
+                wfDefinitionBean.setSuspended(processDefinition.isSuspended());
+                wfDefinitionBean.setVersion(processDefinition.getVersion());
+                wfDefinitionBean.setTenantId(tenantId);
+            }
+            
             return wfDefinitionBean;
         } catch (ActivitiObjectNotFoundException aonfe) { // 未找到指定的流程定义
             throw new WorkflowException(WorkflowEnumResults.WF_DESIGN_02010301, aonfe);
@@ -180,28 +202,34 @@ public class WfProcDesinerBiz extends WfBaseBiz{
      * @return
      * @throws WorkflowException
      */
-    public WfProcDefinitionBean findLatestProcessDifinitionById(String processDefinitionId)
-        throws WorkflowException {
-        try {
+	public WfProcDefinitionBean findLatestProcessDifinitionById(
+			String processDefinitionId, String tenantId)
+			throws WorkflowException {
+		try {
             // 创建默认流程引擎
             ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
-
-            // 流程定义key查询流程定义信息
-            ProcessDefinition processDefinition =
-                processEngine.getRepositoryService().createProcessDefinitionQuery()
-                    .processDefinitionId(processDefinitionId).latestVersion().singleResult();// 返回唯一结果集
-
             WfProcDefinitionBean wfDefinitionBean = new WfProcDefinitionBean();
-            wfDefinitionBean.setDefinitionId(processDefinition.getId());
-            wfDefinitionBean.setDefinitionKey(processDefinition.getKey());
-            wfDefinitionBean.setDefinitionName(processDefinition.getName());
-            wfDefinitionBean.setDeploymentId(processDefinition.getDeploymentId());
-            wfDefinitionBean.setResourceName(processDefinition.getResourceName());
-            wfDefinitionBean.setDiagramResourceName(processDefinition.getDiagramResourceName());
-            wfDefinitionBean.setDescription(processDefinition.getDescription());
-            wfDefinitionBean.setSuspended(processDefinition.isSuspended());
-            wfDefinitionBean.setVersion(processDefinition.getVersion());
+            
+            // 流程定义key查询流程定义信息
+			ProcessDefinition processDefinition = processEngine
+					.getRepositoryService().createProcessDefinitionQuery()
+					.processDefinitionId(processDefinitionId)
+					.processDefinitionTenantId(tenantId).latestVersion()
+					.singleResult();// 返回唯一结果集
 
+            if (processDefinition != null) {
+            	wfDefinitionBean.setDefinitionId(processDefinition.getId());
+                wfDefinitionBean.setDefinitionKey(processDefinition.getKey());
+                wfDefinitionBean.setDefinitionName(processDefinition.getName());
+                wfDefinitionBean.setDeploymentId(processDefinition.getDeploymentId());
+                wfDefinitionBean.setResourceName(processDefinition.getResourceName());
+                wfDefinitionBean.setDiagramResourceName(processDefinition.getDiagramResourceName());
+                wfDefinitionBean.setDescription(processDefinition.getDescription());
+                wfDefinitionBean.setSuspended(processDefinition.isSuspended());
+                wfDefinitionBean.setVersion(processDefinition.getVersion());
+                wfDefinitionBean.setTenantId(tenantId);
+            }
+            
             return wfDefinitionBean;
         } catch (ActivitiObjectNotFoundException aonfe) { // 未找到指定的流程定义
             throw new WorkflowException(WorkflowEnumResults.WF_DESIGN_02010301, aonfe);
@@ -219,19 +247,21 @@ public class WfProcDesinerBiz extends WfBaseBiz{
      * @return
      * @throws WorkflowException
      */
-    public List<WfProcDefinitionBean> findProcessDifinitionHistoryByKey(String processDefinitionKey)
-        throws WorkflowException {
-        List<WfProcDefinitionBean> list = new ArrayList<WfProcDefinitionBean>();
+	public List<WfProcDefinitionBean> findProcessDifinitionHistoryByKey(
+			String processDefinitionKey, String tenantId)
+			throws WorkflowException {
+		List<WfProcDefinitionBean> list = new ArrayList<WfProcDefinitionBean>();
 
         try {
             // 创建默认流程引擎
             ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
 
             // 流程定义key查询流程定义信息
-            List<ProcessDefinition> processDefinitions =
-                processEngine.getRepositoryService().createProcessDefinitionQuery()
-                    .processDefinitionKey(processDefinitionKey).orderByProcessDefinitionVersion()
-                    .desc().list();
+			List<ProcessDefinition> processDefinitions = processEngine
+					.getRepositoryService().createProcessDefinitionQuery()
+					.processDefinitionKey(processDefinitionKey)
+					.processDefinitionTenantId(tenantId)
+					.orderByProcessDefinitionVersion().desc().list();
 
             if (processDefinitions != null && processDefinitions.size() > 0) {
                 for (ProcessDefinition processDefinition : processDefinitions) {
@@ -246,6 +276,7 @@ public class WfProcDesinerBiz extends WfBaseBiz{
                     wfDefinitionBean.setDescription(processDefinition.getDescription());
                     wfDefinitionBean.setSuspended(processDefinition.isSuspended());
                     wfDefinitionBean.setVersion(processDefinition.getVersion());
+                    wfDefinitionBean.setTenantId(tenantId);
                     list.add(wfDefinitionBean);
                 }
             }
@@ -265,19 +296,21 @@ public class WfProcDesinerBiz extends WfBaseBiz{
      * @return
      * @throws WorkflowException
      */
-    public List<WfProcDefinitionBean> findProcessDifinitionHistoryById(String processDefinitionId)
-        throws WorkflowException {
+	public List<WfProcDefinitionBean> findProcessDifinitionHistoryById(
+			String processDefinitionId, String tenantId)
+			throws WorkflowException {
         List<WfProcDefinitionBean> list = new ArrayList<WfProcDefinitionBean>();
 
         try {
             // 创建默认流程引擎
             ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
 
-            // 流程定义key查询流程定义信息
-            List<ProcessDefinition> processDefinitions =
-                processEngine.getRepositoryService().createProcessDefinitionQuery()
-                    .processDefinitionId(processDefinitionId).orderByProcessDefinitionVersion()
-                    .desc().list();
+			// 流程定义key查询流程定义信息
+			List<ProcessDefinition> processDefinitions = processEngine
+					.getRepositoryService().createProcessDefinitionQuery()
+					.processDefinitionId(processDefinitionId)
+					.processDefinitionTenantId(tenantId)
+					.orderByProcessDefinitionVersion().desc().list();
 
             if (processDefinitions != null && processDefinitions.size() > 0) {
                 for (ProcessDefinition processDefinition : processDefinitions) {
@@ -292,6 +325,7 @@ public class WfProcDesinerBiz extends WfBaseBiz{
                     wfDefinitionBean.setDescription(processDefinition.getDescription());
                     wfDefinitionBean.setSuspended(processDefinition.isSuspended());
                     wfDefinitionBean.setVersion(processDefinition.getVersion());
+                    wfDefinitionBean.setTenantId(tenantId);
                     list.add(wfDefinitionBean);
                 }
             }
@@ -310,17 +344,26 @@ public class WfProcDesinerBiz extends WfBaseBiz{
      * @param deploymentId
      * @throws WorkflowException
      */
-    public void deleteProcessDifinition(String deploymentId) throws WorkflowException {
-        try {
+	public void deleteProcessDifinition(String deploymentId, String tenantId)
+			throws WorkflowException {
+		try {
             if (StringUtil.isNull(deploymentId)) {
-                throw new WorkflowException(WorkflowEnumResults.WF_DESIGN_02011001);
+                
             }
 
             // 创建默认流程引擎
-            ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
-            processEngine.getRepositoryService().deleteDeployment(deploymentId, true);
-        } catch (Exception e) {
-            throw new WorkflowException(WorkflowEnumResults.WF_DESIGN_02011099, e);
+			ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
+			long count = processEngine.getRepositoryService()
+					.createDeploymentQuery().deploymentId(deploymentId)
+					.deploymentTenantId(tenantId).count();
+			if (count > 0) {
+				processEngine.getRepositoryService().deleteDeployment(deploymentId, true);
+			} else {
+				throw new WorkflowException(WorkflowEnumResults.WF_DESIGN_02011002);
+			}
+			
+		} catch (Exception e) {
+			throw new WorkflowException(WorkflowEnumResults.WF_DESIGN_02011099, e);
         }
     }
 
@@ -344,6 +387,8 @@ public class WfProcDesinerBiz extends WfBaseBiz{
                 errorMsgs.add("Error Line: " + error.getXmlLineNumber() + "Error Activity Name:"
                     + error.getActivityName() + "Error Message:" + error.getProblem());
             }
+            
+            return errorMsgs;
         }
 
         return null;
@@ -357,14 +402,14 @@ public class WfProcDesinerBiz extends WfBaseBiz{
      * @return
      * @throws WorkflowException
      */
-    public synchronized ProcessDefinitionEntity getDeployedProcessDefinition(String procId)
-        throws WorkflowException {
+	public synchronized ProcessDefinitionEntity getDeployedProcessDefinition(
+			String procId, String tenantId) throws WorkflowException {
         if (!processDefEntity.containsKey(procId)) {
             ProcessDefinitionEntity definition =
                 (ProcessDefinitionEntity) ((RepositoryServiceImpl) repositoryService)
                     .getDeployedProcessDefinition(procId);
 
-            if (definition != null) {
+            if (definition != null && tenantId.equals(definition.getTenantId())) {
                 processDefEntity.put(procId, definition);
             } else {
                 throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020011);
@@ -391,11 +436,15 @@ public class WfProcDesinerBiz extends WfBaseBiz{
      *            流程定义ID
      * @return
      */
-    public Map<String, ActivityImpl> getProcessDefinitionActivities(String procDefinitionId)
-        throws WorkflowException {
+	public Map<String, ActivityImpl> getProcessDefinitionActivities(
+			String procDefinitionId, String tenantId) throws WorkflowException {
         // 获取流程部署实体
-        ProcessDefinitionEntity procDef = getDeployedProcessDefinition(procDefinitionId);
+        ProcessDefinitionEntity procDef = getDeployedProcessDefinition(procDefinitionId, tenantId);
 
+        if (procDef == null) {
+        	throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020011);
+        }
+        
         List<ActivityImpl> activityList = procDef.getActivities();
         Map<String, ActivityImpl> activityMap = new HashMap<String, ActivityImpl>();
 
@@ -525,137 +574,134 @@ public class WfProcDesinerBiz extends WfBaseBiz{
     /**
      * 功能：流程部署
      * 
-     * @author zhaomingli
-     * @date 2016-09-01
      * @param procDefId
      *            //流程定义id
      * @param procDefName
      *            //流程定义name
      */
-    public void deploymentProcess(JSONObject objs) {
-        // 流程定义id
-        String procDefId = objs.getString(WfProcessDataAttr.PROC_DEFINITIONID);                              
-        // 流程定义name
-        String procDefName = objs.getString(WfProcessDataAttr.PROC_DEFINITIONNAME);
-        // 流程定义id不能为空
-        if (StringUtil.isNull(procDefId)) {
-            throw new WorkflowException(WorkflowEnumResults.WF_DESIGN_02010001);
-        }
-        if (StringUtil.isNull(procDefName)) {
-            procDefName = procDefId;// 给流程部署name默认值
-        }
-        //
-        String procUrl = bpmnurl + procDefId + ".bpmn";
-        repositoryService.createDeployment().name(procDefName).addClasspathResource(procUrl)
-            .addClasspathResource(procUrl).deploy();
-    }
+	public void deploymentProcess(String procDefId, String procDefName,
+			String tenantId) throws WorkflowException {
+		String procUrl = bpmnurl + procDefId + ".bpmn";
+		
+		if (StringUtil.isNull(procDefName)) {
+			procDefName = procDefId;// 给流程部署name默认值
+		}
+
+		// 当前用户所属租户与流程定义所属租户不一致，当前用户没有权限部署该流程
+		ProcessDefinition procDef = repositoryService.getProcessDefinition(procDefId);
+		if (procDef == null || !tenantId.equals(procDef.getTenantId())) {
+			throw new WorkflowException(WorkflowEnumResults.WF_DESIGN_02010002);
+		}
+
+		repositoryService.createDeployment().name(procDefName)
+				.tenantId(tenantId).addClasspathResource(procUrl)
+				.addClasspathResource(procUrl).deploy();
+	}
+	
     /**
      * 功能：流程部署
      * 
-     * @author zhaomingli
-     * @date 2016-09-01
      * @param procDefId
      *            //流程定义id
      * @param procDefName
      *            //流程定义name
      */
-    public void deploymentModel(JSONObject objs) {
-        // 流程模型id
-        String modelId = objs.getString(WfProcessDataAttr.PROC_MODELID);
-        // 流程模型id不能为空
-        if (StringUtil.isNull(modelId)) {
-            throw new WorkflowException(WorkflowEnumResults.WF_DESIGN_02010101);
-        }
-        
+	public void deploymentModel(String modelId, String tenantId)
+			throws WorkflowException {
         Model modelData = repositoryService.getModel(modelId);
         ObjectNode modelNode;
+        
+        // 当前用户所属租户与流程定义所属租户不一致，当前用户没有权限部署该流程
+        if (!tenantId.equals(modelData.getTenantId())) {
+        	throw new WorkflowException(WorkflowEnumResults.WF_DESIGN_02010002);
+        }
+        
 		try {
-			modelNode = (ObjectNode) new ObjectMapper().readTree(repositoryService.getModelEditorSource(modelData.getId()));
+			modelNode = (ObjectNode) new ObjectMapper()
+					.readTree(repositoryService.getModelEditorSource(modelData.getId()));
 		} catch (IOException e) {
-			e.printStackTrace();
 			throw new WorkflowException(WorkflowEnumResults.WF_DESIGN_02010003, e);
 		}
-        byte[] bpmnBytes = null;
-
-        BpmnModel model = new BpmnJsonConverter().convertToBpmnModel(modelNode);
-        bpmnBytes = new BpmnXMLConverter().convertToXML(model);
-
-        String processName = modelData.getName() + ".bpmn20.xml";
-        repositoryService.createDeployment().name(modelData.getName()).addString(processName, new String(bpmnBytes)).deploy();
         
-    }
+        BpmnModel model = new BpmnJsonConverter().convertToBpmnModel(modelNode);
+        byte[] bpmnBytes = new BpmnXMLConverter().convertToXML(model);
+        String processName = modelData.getName() + ".bpmn20.xml";
+        
+		repositoryService.createDeployment().name(modelData.getName())
+				.tenantId(modelData.getTenantId())
+				.addString(processName, new String(bpmnBytes)).deploy();
+	}
 
     /**
      * 功能：流程模型删除
      * 
-     * @author zhaomingli
-     * @date 2016-09-14
      * @param modelId
      *            模型ID
      */
-    public void modeldelete(JSONObject objs) {
-        String modelId = objs.getString(WfProcessDataAttr.PROC_MODELID);
-        if (StringUtil.isNull(modelId)) {
-            throw new WorkflowException(WorkflowEnumResults.WF_DESIGN_02010101);
+	public void deleteModel(String modelId, String tenantId)
+			throws WorkflowException {
+		Model modelData = repositoryService.getModel(modelId);
+	
+    	// 当前用户所属租户与流程定义所属租户不一致，当前用户没有权限删除该流程
+        if (modelData == null || !tenantId.equals(modelData.getTenantId())) {
+        	throw new WorkflowException(WorkflowEnumResults.WF_DESIGN_02010106);
         }
+        
         repositoryService.deleteModel(modelId);
     }
     
     /**
      * 功能：流程删除
      * 
-     * @author zhaomingli
-     * @date 2016-09-20
      * @param modelId
      *            模型ID
      */
-    public void wfdel(JSONObject objs) {
-        String deploymentId = objs.getString(WfProcessDataAttr.PROC_DEPLOYMENTID);
-        if (StringUtil.isNull(deploymentId)) {
-            throw new WorkflowException(WorkflowEnumResults.WF_DESIGN_02010102);
-        }
-        repositoryService.deleteDeployment(deploymentId);
+	public void wfdel(String deploymentId, String tenantId)
+			throws WorkflowException {
+		long count = repositoryService.createDeploymentQuery()
+				.deploymentId(deploymentId).deploymentTenantId(tenantId).count();
+		
+		if (count > 0) {
+			repositoryService.deleteDeployment(deploymentId, true);
+		} else {
+			throw new WorkflowException(WorkflowEnumResults.WF_DESIGN_02010107);
+		}
     }
     /**
      * 功能：流程导出
      * 
-     * @author zhaomingli
-     * @date 2016-10-10
      * @param modelId
      *            模型ID
      * @throws IOException 
      * @throws JsonProcessingException 
      */
-    public void export(JSONObject objs) throws JsonProcessingException, IOException {
-        String modelId = objs.getString(WfProcessDataAttr.PROC_MODELID);
-        if (StringUtil.isNull(modelId)) {
-            throw new WorkflowException(WorkflowEnumResults.WF_DESIGN_02010105);
+	public void export(String type, String modelId, String tenantId)
+			throws JsonProcessingException, IOException {
+		Model modelData = repositoryService.getModel(modelId);
+        
+        if (modelData == null || tenantId.equals(modelData.getTenantId())) {
+        	throw new WorkflowException(WorkflowEnumResults.WF_DESIGN_02010108);
         }
-        String type = "bpmn";
-        Model modelData = repositoryService.getModel(modelId);
+        
         BpmnJsonConverter jsonConverter = new BpmnJsonConverter();
         byte[] modelEditorSource = repositoryService.getModelEditorSource(modelData.getId());
 
         JsonNode editorNode = new ObjectMapper().readTree(modelEditorSource);
         BpmnModel bpmnModel = jsonConverter.convertToBpmnModel(editorNode);
-        String filename = "";
+        String filename = bpmnModel.getMainProcess().getId();
         byte[] exportBytes = null;
-
-        String mainProcessId = bpmnModel.getMainProcess().getId();
 
         if (type.equals("bpmn")) {
             BpmnXMLConverter xmlConverter = new BpmnXMLConverter();
             exportBytes = xmlConverter.convertToXML(bpmnModel);
-
-            filename = mainProcessId + ".bpmn";
+            filename = filename + ".bpmn";
         } else if (type.equals("json")) {
-
             exportBytes = modelEditorSource;
-            filename = mainProcessId + ".json";
-
+            filename = filename + ".json";
         }
+        
         File file = new File("C:\\export\\"+filename);
-        System.out.println(file.getParentFile().exists());
+        
         if(!file.getParentFile().exists())
             file.getParentFile().mkdirs();
         
@@ -663,7 +709,7 @@ public class WfProcDesinerBiz extends WfBaseBiz{
         FileOutputStream fos = new FileOutputStream(file);
         // 用FileOutputStream 的write方法写入字节数组
         fos.write(exportBytes);
-        System.out.println("写入成功");
+        fos.flush();
         // 为了节省IO流的开销，需要关闭
         fos.close();
     }
@@ -671,42 +717,44 @@ public class WfProcDesinerBiz extends WfBaseBiz{
     /**
      * 功能：流程挂起
      * 
-     * @author zhaomingli
-     * @date 2016-09-20
      * @param modelId
      *            模型ID
      */
-    public void wfsuspend(JSONObject objs) {
-        String procDefId = objs.getString(WfProcessDataAttr.PROC_DEFINITIONID);
-        if (StringUtil.isNull(procDefId)) {
-            throw new WorkflowException(WorkflowEnumResults.WF_TASK_02010201);
-        }
-        repositoryService.suspendProcessDefinitionById(procDefId, true, null);
-        System.out.println("******************挂起成功******");
-    }
+	public void wfsuspend(String procDefId, String tenantId)
+			throws WorkflowException {
+		long count = repositoryService.createProcessDefinitionQuery()
+				.processDefinitionId(procDefId)
+				.processDefinitionTenantId(tenantId).count();
+		
+		if (count > 0) {
+			repositoryService.suspendProcessDefinitionById(procDefId, true, null);
+		} else {
+			throw new WorkflowException(WorkflowEnumResults.WF_TASK_02010202);
+		}
+	}
     
     /**
      * 功能：流程恢复
      * 
-     * @author zhaomingli
-     * @date 2016-09-20
      * @param modelId
      *            模型ID
      */
-    public void wfactive(JSONObject objs) {
-        String procDefId = objs.getString(WfProcessDataAttr.PROC_DEFINITIONID);
-        if (StringUtil.isNull(procDefId)) {
-            throw new WorkflowException(WorkflowEnumResults.WF_TASK_02010210);
-        }
-        repositoryService.activateProcessDefinitionById(procDefId, true, null);
-        System.out.println("******************恢复成功******");
+    public void wfactive(String procDefId, String tenantId)
+			throws WorkflowException {
+    	long count = repositoryService.createProcessDefinitionQuery()
+				.processDefinitionId(procDefId)
+				.processDefinitionTenantId(tenantId).count();
+		
+		if (count > 0) {
+			repositoryService.activateProcessDefinitionById(procDefId, true, null);
+		} else {
+			throw new WorkflowException(WorkflowEnumResults.WF_TASK_02010211);
+		}
     }
 
     /**
      * 功能：流程模型列表
      * 
-     * @author 
-     * @date 2016-09-14
      */
     public List<WfProcActReModelBean> selectModelList(JSONObject objs) {
         // setDb(0, super.SLAVE); 
@@ -728,4 +776,38 @@ public class WfProcDesinerBiz extends WfBaseBiz{
         return wfActReProcdefBeanMapper.processList(objs);
     }
     
+	public InputStream openImageByProcessDefinition(String procDefId,
+			String tenantId) throws WorkflowException {
+		ProcessDefinitionEntity procDef = getDeployedProcessDefinition(
+				procDefId, tenantId);
+		String diagramResourceName = procDef.getDiagramResourceName();
+		return repositoryService.getResourceAsStream(procDef.getDeploymentId(),
+				diagramResourceName);
+	}
+
+	public InputStream openImageByProcessInstance(String executionId,
+			String tenantId) throws WorkflowException {
+		ProcessInstance processInstance = runtimeService
+				.createProcessInstanceQuery().processInstanceId(executionId)
+				.processInstanceTenantId(tenantId).singleResult();
+		BpmnModel bpmnModel = repositoryService.getBpmnModel(processInstance
+				.getProcessDefinitionId());
+		List<String> activeActivityIds = runtimeService
+				.getActiveActivityIds(executionId);
+
+		// 不使用spring请使用下面的两行代码
+//		ProcessEngineImpl defaultProcessEngine = (ProcessEngineImpl) ProcessEngines
+//				.getDefaultProcessEngine();
+//		Context.setProcessEngineConfiguration(defaultProcessEngine
+//				.getProcessEngineConfiguration());
+
+		// 使用spring注入引擎请使用下面的这行代码
+		processEngineConfiguration = processEngine
+				.getProcessEngineConfiguration();
+		Context.setProcessEngineConfiguration((ProcessEngineConfigurationImpl) processEngineConfiguration);
+
+		ProcessDiagramGenerator diagramGenerator = processEngineConfiguration
+				.getProcessDiagramGenerator();
+		return diagramGenerator.generateDiagram(bpmnModel, "png", activeActivityIds);
+	}
 }

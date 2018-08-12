@@ -94,7 +94,6 @@ public abstract class AWfProcTaskBiz extends WfBaseBiz {
 		wfProcBean.setProcTenantId(authData.getProcTenantId());
 		wfProcBean.setProcDepartId(authData.getProcDeptId());
 		
-		
 		return wfProcBean;
     }
 

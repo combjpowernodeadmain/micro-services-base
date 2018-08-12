@@ -68,6 +68,8 @@ public class Constants{
         public static final String PROC_TASKNAME = "procTaskName"; 
         /** 流程任务处理候选用户组 */
         public static final String PROC_TASKGROUP = "procTaskGroup"; 
+        /** 流程租户ID */
+        public static final String PROC_TENANTID = "tenantId";
     }
     
     /**
