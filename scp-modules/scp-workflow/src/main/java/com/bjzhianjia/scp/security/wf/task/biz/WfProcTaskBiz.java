@@ -3095,7 +3095,11 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			// setDb(0, super.MASTER);
 
 			for (WfProcTaskBean wfProcTaskBean : wfProcTaskBeans) {
-				wfProcTaskBeanMapper.insert(wfProcTaskBean);
+				try {
+					wfProcTaskBeanMapper.insertSelective(wfProcTaskBean);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
