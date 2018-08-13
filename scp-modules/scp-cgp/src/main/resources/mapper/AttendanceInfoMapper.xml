@@ -1,137 +1,155 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.bjzhianjia.scp.cgp.mapper.AttendanceInfoMapper">
+<mapper
+	namespace="com.bjzhianjia.scp.cgp.mapper.AttendanceInfoMapper">
 
 	<!-- 可根据自己的需求，是否要使用 -->
-    <resultMap type="com.bjzhianjia.scp.cgp.entity.AttendanceInfo" id="attendanceInfoMap">
-        <result property="id" column="id"/>
-        <result property="longitude" column="longitude"/>
-        <result property="latitude" column="latitude"/>
-        <result property="mapInfo" column="map_info"/>
-        <result property="crtUserName" column="crt_user_name"/>
-        <result property="crtUserId" column="crt_user_id"/>
-        <result property="crtTime" column="crt_time"/>
-        <result property="tenantId" column="tenant_id"/>
-        <result property="departId" column="depart_id"/>
-    </resultMap>
-    
-    <resultMap type="com.bjzhianjia.scp.cgp.vo.AttendanceVo" id="attendanceVoMap">
-        <result property="account" column="crt_username"/>
-        <result property="name" column="crt_user_name"/>
-        <result property="depart" column="depart_id"/>
-        <result property="signInMapInfo" column="sign_in_map_info"/>
-        <result property="signInMap" column="sign_in_map"/>
-        <result property="signInTime" column="sign_in_time"/>
-        <result property="signOutTime" column="sign_out_time"/>
-        <result property="signOutMapInfo" column="sign_out_map_info"/>
-        <result property="signOutMap" column="sign_out_map"/>
-    </resultMap>
+	<resultMap
+		type="com.bjzhianjia.scp.cgp.entity.AttendanceInfo"
+		id="attendanceInfoMap">
+		<result property="id" column="id" />
+		<result property="longitude" column="longitude" />
+		<result property="latitude" column="latitude" />
+		<result property="mapInfo" column="map_info" />
+		<result property="crtUserName" column="crt_user_name" />
+		<result property="crtUserId" column="crt_user_id" />
+		<result property="crtTime" column="crt_time" />
+		<result property="tenantId" column="tenant_id" />
+		<result property="departId" column="depart_id" />
+	</resultMap>
+
+	<resultMap type="com.bjzhianjia.scp.cgp.vo.AttendanceVo"
+		id="attendanceVoMap">
+		<result property="account" column="crt_username" />
+		<result property="name" column="crt_user_name" />
+		<result property="depart" column="depart_id" />
+		<result property="signInMapInfo" column="sign_in_map_info" />
+		<result property="signInMap" column="sign_in_map" />
+		<result property="signInTime" column="sign_in_time" />
+		<result property="signOutTime" column="sign_out_time" />
+		<result property="signOutMapInfo" column="sign_out_map_info" />
+		<result property="signOutMap" column="sign_out_map" />
+	</resultMap>
 
 	<select id="getTotal" resultType="int">
-  		
+
 		select count(*)
 		from (
-			select crt_username
-					,<![CDATA[ if(A.date_day<>B.date_day,'',sign_in_time) sign_in_time ]]>
-					,<![CDATA[ if(A.date_day<>B.date_day,'',sign_out_time) sign_out_time ]]>
-			from (
-					select crt_username,date_format(crt_time,'%Y-%m-%d') date_day
-					    ,substring_index(group_concat(crt_time order by id separator '|'),'|',1) sign_in_time
-					    ,if(count(*)=1,'',substring_index(group_concat(crt_time order by id separator '|'),'|',-1)) sign_out_time
-					from attendance_info
-					<where>
-						<if test="account != null and account != ''">
-							and crt_username like '%#{account}%'
-						</if>
-						<if test="name != null and name != ''">
-							and crt_user_name like '%#{name}%'
-						</if>
-						<if test="departId != null and departId != ''">
-					    	and depart_id in(#{depart_id})
-						</if>
-						<if test="startDate != null and startDate != ''">
-							<![CDATA[ and crt_time >= #{startDate} ]]>
-						</if>
-						<if test="endDate != null and endDate != ''">
-							<![CDATA[ and crt_time < #{endDate} ]]>
-						</if>
-					</where>
-					group by crt_username,date_format(crt_time,'%Y-%m-%d')
-					order by date_day
-			) A , date_info B
-			<where>
-				<if test="startDate != null and startDate != ''">
-					<![CDATA[ and B.date_day >= #{startDate} ]]>
-				</if>
-				<if test="endDate != null and endDate != ''">
-					<![CDATA[ and B.date_day < #{endDate} ]]>
-				</if>
-			</where> ) C
+		select crt_username
+		,<![CDATA[ if(A.date_day<>B.date_day,'',sign_in_time) sign_in_time ]]>
+		,<![CDATA[ if(A.date_day<>B.date_day,'',sign_out_time) sign_out_time ]]>
+		from (
+		select crt_username,date_format(crt_time,'%Y-%m-%d') date_day
+		,substring_index(group_concat(crt_time order by id separator
+		'|'),'|',1) sign_in_time
+		,if(count(*)=1,'',substring_index(group_concat(crt_time order by id
+		separator '|'),'|',-1)) sign_out_time
+		from attendance_info
 		<where>
-			<if test="status == 1">
+			<if test="account != null and account != ''">
+				and crt_username like concat('%',#{account},'%')
+			</if>
+			<if test="name != null and name != ''">
+				and crt_user_name like concat('%',#{name},'%')
+			</if>
+			<if test="departId != null and departId != ''">
+				and depart_id in(#{depart_id})
+			</if>
+			<if test="startDate != null and startDate != ''">
+							<![CDATA[ and crt_time >= #{startDate} ]]>
+			</if>
+			<if test="endDate != null and endDate != ''">
+							<![CDATA[ and crt_time < #{endDate} ]]>
+			</if>
+		</where>
+		group by crt_username,date_format(crt_time,'%Y-%m-%d')
+		order by
+		date_day
+		) A , date_info B
+		<where>
+			<if test="startDate != null and startDate != ''">
+					<![CDATA[ and B.date_day >= #{startDate} ]]>
+			</if>
+			<if test="endDate != null and endDate != ''">
+					<![CDATA[ and B.date_day < #{endDate} ]]>
+			</if>
+		</where>
+		) C
+		<where>
+			<if test='status == "1"'>
 				<![CDATA[ and sign_in_time <> '' and sign_out_time <> '' ]]>
 			</if>
-			<if test="status == 0">
+			<if test='status == "0"'>
 				and (sign_in_time = '' or sign_out_time = '')
 			</if>
 		</where>
 	</select>
-	
+
 	<select id="getList" resultMap="attendanceVoMap">
 		select *
 		from (
-			select crt_username,B.date_day,crt_user_name,depart_id
-					,<![CDATA[ if(A.date_day<>B.date_day,'',sign_in_time) sign_in_time ]]>
-					,<![CDATA[ if(A.date_day<>B.date_day,'',sign_out_time) sign_out_time ]]>
-					,<![CDATA[ if(A.date_day<>B.date_day,'',sign_in_map_info) sign_in_map_info ]]>
-					,<![CDATA[ if(A.date_day<>B.date_day,'',sign_out_map_info) sign_out_map_info ]]>
-					,<![CDATA[ if(A.date_day<>B.date_day,'',sign_in_map) sign_in_map ]]>
-					,<![CDATA[ if(A.date_day<>B.date_day,'',sign_out_map) sign_out_map ]]>
-			from (
-					select crt_username,date_format(crt_time,'%Y-%m-%d') date_day
-					,substring_index(group_concat(crt_user_name order by id separator '|'),'|',1) crt_user_name
-					,substring_index(group_concat(depart_id order by id separator '|'),'|',1) depart_id
-					,substring_index(group_concat(crt_time order by id separator '|'),'|',1) sign_in_time
-					,if(count(*)=1,'',substring_index(group_concat(crt_time order by id separator '|'),'|',-1)) sign_out_time
-					,substring_index(group_concat(map_info order by id separator '|'),'|',1) sign_in_map_info
-					,if(count(*)=1,'',substring_index(group_concat(map_info order by id separator '|'),'|',-1)) sign_out_map_info
-					,if(count(*)=1,'',substring_index(group_concat(longitude,',',latitude order by id separator '|'),'|',1)) sign_in_map
-        			,if(count(*)=1,'',substring_index(group_concat(longitude,',',latitude order by id separator '|'),'|',-1)) sign_out_map
-					from attendance_info
-					<where>
-						<if test="account != null and account != ''">
-							and crt_username like '%#{account}%'
-						</if>
-						<if test="name != null and name != ''">
-							and crt_user_name like '%#{name}%'
-						</if>
-						<if test="departId != null and departId != ''">
-					    	and depart_id in(#{depart_id})
-						</if>
-						<if test="startDate != null and startDate != ''">
-							<![CDATA[ and crt_time >= #{startDate} ]]>
-						</if>
-						<if test="endDate != null and endDate != ''">
-							<![CDATA[ and crt_time < #{endDate} ]]>
-						</if>
-					</where>
-					group by crt_username,date_format(crt_time,'%Y-%m-%d')
-					order by date_day
-			) A , date_info B
-			<where>
-				<if test="startDate != null and startDate != ''">
-					<![CDATA[ and B.date_day >= #{startDate} ]]>
-				</if>
-				<if test="endDate != null and endDate != ''">
-					<![CDATA[ and B.date_day < #{endDate} ]]>
-				</if>
-			</where> ) C
+		select crt_username,B.date_day,crt_user_name,depart_id
+		,<![CDATA[ if(A.date_day<>B.date_day,'',sign_in_time) sign_in_time ]]>
+		,<![CDATA[ if(A.date_day<>B.date_day,'',sign_out_time) sign_out_time ]]>
+		,<![CDATA[ if(A.date_day<>B.date_day,'',sign_in_map_info) sign_in_map_info ]]>
+		,<![CDATA[ if(A.date_day<>B.date_day,'',sign_out_map_info) sign_out_map_info ]]>
+		,<![CDATA[ if(A.date_day<>B.date_day,'',sign_in_map) sign_in_map ]]>
+		,<![CDATA[ if(A.date_day<>B.date_day,'',sign_out_map) sign_out_map ]]>
+		from (
+		select crt_username,date_format(crt_time,'%Y-%m-%d') date_day
+		,substring_index(group_concat(crt_user_name order by id separator
+		'|'),'|',1) crt_user_name
+		,substring_index(group_concat(depart_id order
+		by id separator '|'),'|',1) depart_id
+		,substring_index(group_concat(crt_time order by id separator
+		'|'),'|',1) sign_in_time
+		,if(count(*)=1,'',substring_index(group_concat(crt_time order by id
+		separator '|'),'|',-1)) sign_out_time
+		,substring_index(group_concat(map_info order by id separator
+		'|'),'|',1) sign_in_map_info
+		,if(count(*)=1,'',substring_index(group_concat(map_info order by id
+		separator '|'),'|',-1)) sign_out_map_info
+		,if(count(*)=1,'',substring_index(group_concat(longitude,',',latitude
+		order by id separator '|'),'|',1)) sign_in_map
+		,if(count(*)=1,'',substring_index(group_concat(longitude,',',latitude
+		order by id separator '|'),'|',-1)) sign_out_map
+		from attendance_info
 		<where>
-			<if test="status == 1">
+			<if test="account != null and account != ''">
+				and crt_username like concat('%',#{account},'%')
+			</if>
+			<if test="name != null and name != ''">
+				and crt_user_name like concat('%',#{name},'%')
+			</if>
+			<if test="departId != null and departId != ''">
+				and depart_id in(#{depart_id})
+			</if>
+			<if test="startDate != null and startDate != ''">
+							<![CDATA[ and crt_time >= #{startDate} ]]>
+			</if>
+			<if test="endDate != null and endDate != ''">
+							<![CDATA[ and crt_time < #{endDate} ]]>
+			</if>
+		</where>
+		group by crt_username,date_format(crt_time,'%Y-%m-%d')
+		order by
+		date_day
+		) A , date_info B
+		<where>
+			<if test="startDate != null and startDate != ''">
+					<![CDATA[ and B.date_day >= #{startDate} ]]>
+			</if>
+			<if test="endDate != null and endDate != ''">
+					<![CDATA[ and B.date_day < #{endDate} ]]>
+			</if>
+		</where>
+		) C
+		<where>
+			<if test='status == "1"'>
 				<![CDATA[ and sign_in_time <> '' and sign_out_time <> '' ]]>
 			</if>
-			<if test="status == 0">
+			<if test='status == "0"'>
 				and (sign_in_time = '' or sign_out_time = '')
 			</if>
 		</where>
