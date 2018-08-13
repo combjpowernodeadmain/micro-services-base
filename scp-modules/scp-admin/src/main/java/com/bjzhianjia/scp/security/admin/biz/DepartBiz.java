@@ -123,6 +123,16 @@ public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
     		//By尚
     		result.add(tmpDepart);
     	}
+    	
+    	/*
+    	 * 剔除result中Depart==null的对象，因权限问题，某部门的父部门有可能查询不到
+    	 */
+    	for(int i=0;i<result.size();i++) {
+    		if(result.get(i)==null) {
+    			result.remove(i);
+    			i--;
+    		}
+    	}
     }
 
     public void delDepartUser(String departId, String userId) {
