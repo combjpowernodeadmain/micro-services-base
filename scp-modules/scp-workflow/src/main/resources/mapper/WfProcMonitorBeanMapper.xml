@@ -296,7 +296,7 @@
 	</select>
 
 	<!-- 已办任务数量 -->
-	<select id="getUserToDoTaskCount" parameterType="java.util.Map" resultType="int">
+	<select id="getMyProcTaskCount" parameterType="java.util.Map" resultType="int">
 		SELECT count(DISTINCT myproc.PROC_TASKID)
 		FROM SCP_wf_my_proc myproc
 		LEFT JOIN SCP_wf_proc proc ON myproc.proc_inst_id = proc.proc_inst_id
