@@ -21,7 +21,7 @@
 					'已处理'
 				WHEN task.PROC_TASK_STATUS = '4' THEN
 					'已终止'
-				ELSE
+				ELSE 
 					'未知'
 				END procTaskStatusName, 
 			task.ID id, 
