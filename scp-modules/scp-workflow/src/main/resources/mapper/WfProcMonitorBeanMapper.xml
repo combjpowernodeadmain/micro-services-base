@@ -21,7 +21,7 @@
 					'已处理'
 				WHEN task.PROC_TASK_STATUS = '4' THEN
 					'已终止'
-				ELSE 
+				ELSE
 					'未知'
 				END procTaskStatusName, 
 			task.ID id, 
@@ -92,7 +92,7 @@
 							#{item}
 						</foreach>
 					</if>
-				OR task.PROC_ORGPERMISSION = '9' task.PROC_APPOINT_USERS = #{procTaskUser})
+				OR task.PROC_ORGPERMISSION = '9' AND task.PROC_APPOINT_USERS = #{procTaskUser})
 			AND (task.PROC_DEPTPERMISSION = '0' OR task.PROC_DEPTPERMISSION = '1' and task.PROC_DEPART_ID = #{procDeptId})
 			AND (task.PROC_SELFPERMISSION1 = '0' OR task.PROC_SELFPERMISSION1 = '1' and task.PROC_SELFDATA1 = #{procSelfPermissionData1})
 			AND (task.PROC_SELFPERMISSION2 = '0' OR task.PROC_SELFPERMISSION2 = '1' and task.PROC_SELFDATA2 = #{procSelfPermissionData2})
