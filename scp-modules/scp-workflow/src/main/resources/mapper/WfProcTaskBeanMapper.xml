@@ -849,7 +849,8 @@
 		task.PROC_TASK_APPR_OPINION procTaskApprOpinion
 		FROM
 		SCP_WF_PROC_TASK task
-		where task.PROC_INST_ID =#{procInstId}
+		where task.PROC_INST_ID = #{procInstId}
+		and PROC_TENANT_ID = #{procTenantId}
 		ORDER BY task.ID
 	</select>
 
@@ -1274,6 +1275,7 @@
 		<include refid="Base_Column_List" />
 		from SCP_WF_PROC_TASK
 		where PROC_CTASKID = #{taskId}
+		and PROC_TENANT_ID = #{procTenantId}
 		and
 		PROC_TASK_STATUS in
 		<foreach collection="taskStatus" index="index" item="item"
@@ -1287,6 +1289,7 @@
 		<include refid="Base_Column_List" />
 		from SCP_WF_PROC_TASK
 		where PROC_PTASKID = #{taskId}
+		and PROC_TENANT_ID = #{procTenantId}
 	</select>
 	
 	<select id="getProcessTasks" resultMap="BaseResultMap" parameterType="java.util.List">
@@ -1294,6 +1297,7 @@
 		<include refid="Base_Column_List" />
 		from SCP_WF_PROC_TASK
 		where PROC_INST_ID = #{procInstId}
+		and PROC_TENANT_ID = #{procTenantId}
 		and	PROC_TASK_STATUS in
 		<foreach collection="taskStatus" index="index" item="item"
 			open="(" separator="," close=")">
@@ -1306,6 +1310,7 @@
 		<include refid="Base_Column_List" />
 		from SCP_WF_PROC_TASK
 		where PROC_INST_ID = #{procInstId}
+		and PROC_TENANT_ID = #{procTenantId}
 		and
 		PROC_CTASKCODE in
 		<foreach collection="taskCode" index="index" item="item"
@@ -1322,6 +1327,7 @@
 		<include refid="Base_Column_List" />
 		from SCP_WF_PROC_TASK
 		where PROC_INST_ID = #{procInstId}
+		and PROC_TENANT_ID = #{procTenantId}
 		and PROC_PTASKID is null
 	</select>
 	
@@ -1330,8 +1336,8 @@
 		<include refid="Base_Column_List" />
 		from SCP_WF_PROC_TASK
 		where PROC_INST_ID = #{procInstId}
-		and
-		PROC_CTASKCODE = #{taskCode}
+		and	PROC_CTASKCODE = #{taskCode}
+		and PROC_TENANT_ID = #{procTenantId}
 		and PROC_TASK_STATUS = '3'
 		ORDER BY
 		PROC_TASK_ASSIGNTIME DESC
@@ -1360,6 +1366,7 @@
 		from
 		SCP_WF_PROC_TASK
 		where PROC_CTASKID = #{taskid}
+		and PROC_TENANT_ID = #{procTenantId}
 	</select>
 
 	<select id="getDelegatedTaskCount" resultType="int">
@@ -1371,6 +1378,7 @@
 			PROC_INST_ID = #{procInstId}
 		AND PROC_MANDATARY = #{mandatary}
 		AND PROC_TASK_ASSIGNEE = #{mandatary}
+		and PROC_TENANT_ID = #{procTenantId}
 		and PROC_TASK_STATUS = '2'
 	</select>
 	
@@ -1379,7 +1387,7 @@
 		count(id)
 		from SCP_WF_PROC_TASK
 		where PROC_INST_ID = #{procInstId}
-		AND
-		PROC_TASK_STATUS IN ('1','2')
+		and PROC_TENANT_ID = #{procTenantId}
+		AND	PROC_TASK_STATUS IN ('1','2')
 	</select>
 </mapper>

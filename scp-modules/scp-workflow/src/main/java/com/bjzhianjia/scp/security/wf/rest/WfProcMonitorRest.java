@@ -80,15 +80,15 @@ public class WfProcMonitorRest {
     }
 
     /**
-     * 流程监控列表查询
+     * 流程异常查询
      * @param objs
      * @return
      */
     @ResponseBody
     @RequestMapping(value = { "/orgProcessList" }, method = { RequestMethod.GET, RequestMethod.POST })
     public ObjectRestResponse<PageInfo> getOrgProcessList(@RequestBody JSONObject objs, HttpServletRequest request) {
-            log.debug("SCP信息---开始查询未完成流程列表...");
-            return ResultUtils.success(wfMonitorService.getOrgProcessList(objs));
+        log.debug("SCP信息---开始查询未完成流程列表...");
+        return ResultUtils.success(wfMonitorService.getOrgProcessList(objs));
     }
     
     /**
@@ -100,8 +100,21 @@ public class WfProcMonitorRest {
     @ResponseBody
     @RequestMapping(value = { "/userDoneTasks" }, method = { RequestMethod.GET, RequestMethod.POST })
     public ObjectRestResponse<PageInfo> geyUserDoneTasks(@RequestBody JSONObject objs, HttpServletRequest request) {
-            log.debug("SCP信息---开始查询用户已办任务列表...");
-            return ResultUtils.success(wfMonitorService.getUserDoneTasks(objs));
+        log.debug("SCP信息---开始查询用户已办任务列表...");
+        return ResultUtils.success(wfMonitorService.getUserDoneTasks(objs));
+    }
+    
+    /**
+     * 查询我的已办流程任务数
+     * @param objs
+     * @return
+     */
+    @ApiOperation("查询我的已办任务数")
+    @ResponseBody
+    @RequestMapping(value = { "/userDoneTaskCount" }, method = { RequestMethod.GET, RequestMethod.POST })
+    public ObjectRestResponse<Integer> getUserDoneTaskCount(@RequestBody JSONObject objs, HttpServletRequest request) {
+        log.debug("SCP信息---开始查询用户已办任务列表...");
+        return ResultUtils.success(wfMonitorService.getUserDoneTaskCount(objs));
     }
     
     /**
@@ -119,33 +132,19 @@ public class WfProcMonitorRest {
     }
 
     /**
-     * 流程实例暂停
+     * 查询用户待办流程任务数量
      * @param objs
      * @param request
      * @return
      */
+    @ApiOperation("查询我的待办任务数量")
     @ResponseBody
-    @RequestMapping(value = { "/suspend" }, method = { RequestMethod.GET, RequestMethod.POST })
-    public ObjectRestResponse<Map> suspendProcess(@RequestBody JSONObject objs, HttpServletRequest request) {
-            log.debug("SCP信息---开始流程实例暂停处理...");
-            wfProcTaskService.suspendProcess(objs);
-            return ResultUtils.success();
+    @RequestMapping(value = { "/userToDoTaskCount" }, method = { RequestMethod.GET, RequestMethod.POST })
+    public ObjectRestResponse<Integer> getUserToDoTaskCount(@RequestBody JSONObject objs, HttpServletRequest request) {
+        log.debug("SCP信息---开始查询用户待办任务列表...");
+        return ResultUtils.success(wfMonitorService.getUserToDoTaskCount(objs));
     }
-
-    /**
-     * 将暂停的流程实例激活
-     * @param objs
-     * @param request
-     * @return
-     */
-    @ResponseBody
-    @RequestMapping(value = { "/active" }, method = { RequestMethod.GET, RequestMethod.POST })
-    public ObjectRestResponse<Map> activeProcess(@RequestBody JSONObject objs) {
-        log.debug("SCP信息---开始流程实例激活处理...");
-        wfProcTaskService.activeProcess(objs);
-        return ResultUtils.success();
-    }
-
+        
     /**
      * 流程实例汇总查询
      * @param objs
@@ -157,6 +156,7 @@ public class WfProcMonitorRest {
         log.debug("SCP信息---开始流程实例汇总查询...");
         return ResultUtils.success(wfMonitorService.geyProcessSummary(objs));
     }
+    
     /**
      * 导出流程实例汇总
      * 
