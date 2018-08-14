@@ -147,7 +147,7 @@ public class RegulaObjectTypeController extends BaseController<RegulaObjectTypeB
 		return result;
 	}
 
-	@ApiOperation("获取部门树")
+	@ApiOperation("获取监管对象类型树")
 	@RequestMapping(value = "/tree", method = RequestMethod.GET)
 	public List<RegulaObjTypeTree> getTree() {
 		TableResultResponse<RegulaObjectType> list = regulaObjectTypeBiz.getList(1, 2147483647, new RegulaObjectType());

@@ -72,12 +72,12 @@
   </select>
   
   <!-- 根据用户username获取leader 角色Id -->
-  <select id="selectLearderGroupCodesByUserId" resultType="java.util.List">
+  <select id="selectLearderGroupCodesByUserId" resultType="java.lang.String">
     SELECT gl.group_id FROM base_group_leader gl
     WHERE gl.user_id = #{userid}
   </select>
   <!-- 根据用户username获取member 角色Id -->
-  <select id="selectMemberGroupCodesByUserId" resultType="java.util.List">
+  <select id="selectMemberGroupCodesByUserId" resultType="java.lang.String">
     SELECT gm.group_id FROM base_group_member gm
     WHERE gm.user_id = #{userid}
   </select>

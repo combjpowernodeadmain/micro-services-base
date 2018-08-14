@@ -55,6 +55,10 @@ public interface WfProcTaskBeanMapper {
 	WfProcTaskBean getFinishedTask(@Param("procInstId") String procInstId,
 			@Param("taskCode") String taskCode,
 			@Param("procTenantId") String procTenantId);
+            
+    WfProcTaskBean getActiveTask(@Param("procInstId") String procInstId,
+        @Param("taskCode") String taskCode, @Param("taskStatus") List<String> taskStatus);
+
 
 	WfProcTaskBean getStartTask(@Param("procInstId") String procInstId,
 			@Param("procTenantId") String procTenantId);

@@ -34,16 +34,42 @@ public class DeptUtilBiz {
 		List<String> result = new ArrayList<>();
 		result.add(deptId);
 
-		Map<String, String> departMap = adminFeign.getDepart(deptId);
+//		Map<String, String> departMap = adminFeign.getDepart(deptId);
+//		if (departMap != null && departMap.size() > 0) {
+//			Set<String> keySet = departMap.keySet();
+//			for (String string : keySet) {
+//				JSONArray deptJsonArray = adminFeign.getDepartByParent(string);
+//				for (int i = 0; i < deptJsonArray.size(); i++) {
+//					result.add(deptJsonArray.getJSONObject(i).getString("id"));
+//				}
+//			}
+//		}
+		
+		//部门之间会存在多级关系，所以采用递归方式查询，弃用以上注释掉代码
+		getDeptIdsAssist(deptId, result);
+		
+		return result;
+	}
+	
+	/**
+	 * 查询superDeptID下的所有子部门(包括孙部门)<br/>
+	 * 
+	 * @author 尚
+	 * @param superDeptId
+	 * @param result
+	 */
+	private void getDeptIdsAssist(String superDeptId,List<String> result) {
+		Map<String, String> departMap = adminFeign.getDepart(superDeptId);
 		if (departMap != null && departMap.size() > 0) {
 			Set<String> keySet = departMap.keySet();
 			for (String string : keySet) {
 				JSONArray deptJsonArray = adminFeign.getDepartByParent(string);
 				for (int i = 0; i < deptJsonArray.size(); i++) {
-					result.add(deptJsonArray.getJSONObject(i).getString("id"));
+					String subId = deptJsonArray.getJSONObject(i).getString("id");
+					result.add(subId);
+					getDeptIdsAssist(subId,result);
 				}
 			}
 		}
-		return result;
 	}
 }

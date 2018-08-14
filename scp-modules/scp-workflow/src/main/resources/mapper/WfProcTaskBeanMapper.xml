@@ -1344,6 +1344,22 @@
 		LIMIT 0, 1
 	</select>
 
+	<select id="getActiveTask" resultMap="BaseResultMap"
+		parameterType="java.util.List">
+		select
+		<include refid="Base_Column_List" />
+		from SCP_WF_PROC_TASK
+		where PROC_INST_ID = #{procInstId}
+		and
+		PROC_CTASKCODE = #{taskCode}
+		and
+		PROC_TASK_STATUS in
+		<foreach collection="taskStatus" index="index" item="item"
+			open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+
 	<select id="getTaskCount" resultType="int">
 		select
 		count(id)

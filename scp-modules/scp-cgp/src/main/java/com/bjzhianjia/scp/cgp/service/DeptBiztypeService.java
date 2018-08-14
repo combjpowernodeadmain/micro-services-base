@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -13,10 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.DeptBiztypeBiz;
-import com.bjzhianjia.scp.cgp.entity.Depart;
 import com.bjzhianjia.scp.cgp.entity.DeptBiztype;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
@@ -76,51 +73,63 @@ public class DeptBiztypeService {
 
 	private void queryAssist(List<DeptBizTypeVo> list) {
 		Map<String, String> departs = new HashMap<>();
+		Map<String, String> layerDepart=new HashMap<>();
 		List<String> uniqueDeparts = list.stream().map((o) -> o.getDepartment()).distinct()
 				.collect(Collectors.toList());
 		
+		//部门存在多级情况，采用getLayerDepart方法进行聚和，弃用下面大段注释
 		if(uniqueDeparts!=null&&!uniqueDeparts.isEmpty()) {
-			Map<String, String> layerDepart = adminFeign.getLayerDepart(String.join(",", uniqueDeparts));
+			layerDepart = adminFeign.getLayerDepart(String.join(",", uniqueDeparts));
 		}
 		
-		if (uniqueDeparts != null && !uniqueDeparts.isEmpty()) {
-			departs = adminFeign.getDepart(String.join(",", uniqueDeparts));
-		}
-
-		List<Depart> deptList = new ArrayList<>();
-		List<String> deptParentIds = new ArrayList<>();
-		Map<String, String> deptParentMap = new HashMap<>();
-		Set<String> keySet = departs.keySet();
-		for (String string : keySet) {
-			String deptStr = departs.get(string);
-			Depart dept = JSON.parseObject(deptStr, Depart.class);
-			deptList.add(dept);
-			deptParentIds.add(dept.getParentId());
-		}
-		// 查询父部门对象
-		if (deptParentIds != null && !deptParentIds.isEmpty()) {
-			deptParentMap = adminFeign.getDepart(String.join(",", deptParentIds));
-		}
-
-		if (!departs.isEmpty()) {
-			for (DeptBizTypeVo tmpVo : list) {
-				// 子部门JSON串
-				String departName = departs.get(tmpVo.getDepartment());
-				if (departName != null) {
-					// 子部门对象
-					Depart dept = JSON.parseObject(departName, Depart.class);
-					if (!dept.getParentId().equals("-1")) {
-						// w父部门JSON串
-						String parentDeptStr = deptParentMap.get(dept.getParentId());
-						// 父部门对象
-						Depart deptParent = JSON.parseObject(parentDeptStr, Depart.class);
-						tmpVo.setDepartment(deptParent.getName() + "-" + dept.getName());
-					} else {
-						tmpVo.setDepartment(dept.getName());
-					}
+		if(!layerDepart.isEmpty()) {
+			for(DeptBizTypeVo tmpVo:list) {
+				String layerDeptInfo = layerDepart.get(tmpVo.getDepartment());
+				if(StringUtils.isNotBlank(layerDeptInfo)) {
+					JSONObject layerDeptJObject = JSONObject.parseObject(layerDeptInfo);
+					tmpVo.setDepartment(layerDeptJObject.getString("name"));
 				}
 			}
 		}
+		
+//		if (uniqueDeparts != null && !uniqueDeparts.isEmpty()) {
+//			departs = adminFeign.getDepart(String.join(",", uniqueDeparts));
+//		}
+//
+//		List<Depart> deptList = new ArrayList<>();
+//		List<String> deptParentIds = new ArrayList<>();
+//		Map<String, String> deptParentMap = new HashMap<>();
+//		Set<String> keySet = departs.keySet();
+//		for (String string : keySet) {
+//			String deptStr = departs.get(string);
+//			Depart dept = JSON.parseObject(deptStr, Depart.class);
+//			deptList.add(dept);
+//			deptParentIds.add(dept.getParentId());
+//		}
+//		// 查询父部门对象
+//		if (deptParentIds != null && !deptParentIds.isEmpty()) {
+//			deptParentMap = adminFeign.getDepart(String.join(",", deptParentIds));
+//		}
+//
+//		if (!departs.isEmpty()) {
+//			for (DeptBizTypeVo tmpVo : list) {
+//				// 子部门JSON串
+//				String departName = departs.get(tmpVo.getDepartment());
+//				if (departName != null) {
+//					// 子部门对象
+//					Depart dept = JSON.parseObject(departName, Depart.class);
+//					if (!dept.getParentId().equals("-1")) {
+//						// w父部门JSON串
+//						String parentDeptStr = deptParentMap.get(dept.getParentId());
+//						// 父部门对象
+//						Depart deptParent = JSON.parseObject(parentDeptStr, Depart.class);
+//						tmpVo.setDepartment(deptParent.getName() + "-" + dept.getName());
+//					} else {
+//						tmpVo.setDepartment(dept.getName());
+//					}
+//				}
+//			}
+//		}
 
 		// 业务条线数据聚和
 		for (DeptBizTypeVo tmpDeptBiztype : list) {

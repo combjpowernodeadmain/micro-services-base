@@ -17,8 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import lombok.extern.slf4j.Slf4j;
-
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.ActivitiObjectNotFoundException;
 import org.activiti.engine.HistoryService;
@@ -75,6 +73,8 @@ import com.bjzhianjia.scp.security.wf.vo.WfProcAuthDataBean;
 import com.bjzhianjia.scp.security.wf.vo.WfProcBizDataBean;
 import com.bjzhianjia.scp.security.wf.vo.WfProcVariableDataBean;
 import com.bjzhianjia.scp.security.wf.vo.WfProcessDataBean;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Description: 工作流流程任务服务业务实现
@@ -254,11 +254,6 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			// 获取流程定义任务节点配置的任务属性数据
 			WfProcTaskPropertiesBean properties = wfProcDesinerBiz
 					.getTaskProperties(task.getId());
-
-			// 当前用户所属租户ID没有权限启动该工作流
-			if (!authData.getProcTenantId().equals(getProcTenantId(properties))) {
-				throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020107);
-			}
 					
 			// 获取当前流程任务自定义属性
 			Map<String, String> procTaskSelfProps = getProcTaskSelfProperties(properties);
@@ -643,8 +638,8 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			Task task = getProcTaskEntityByInstance(processInstance.getId());
 
 			// 获取流程定义任务节点配置的任务属性数据
-			WfProcTaskPropertiesBean properties = wfProcDesinerBiz.getTaskProperties(task.getId());
-			
+			WfProcTaskPropertiesBean properties = wfProcDesinerBiz
+					.getTaskProperties(task.getId());
 			// 获取当前流程任务自定义属性
 			Map<String, String> procTaskSelfProps = getProcTaskSelfProperties(properties);
 						

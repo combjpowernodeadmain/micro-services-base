@@ -1,7 +1,6 @@
-<<<<<<< HEAD
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.bjzhianjia.scp.security.wf.mapper.WfProcMonitorBeanMapper">
+<mapper namespace="com.bjzhianjia.scp.security.wf.monitor.mapper.WfProcMonitorBeanMapper">
 	<select id="getUserToDoTasks" resultType="com.bjzhianjia.scp.security.wf.monitor.entity.WfProcBackBean">
 		SELECT
 			proc.PROC_ID procId, 

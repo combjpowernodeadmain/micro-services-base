@@ -125,6 +125,8 @@ public class Constants{
         public static final String PROC_TASKUSER = "procTaskUser";
         /** 流程任务用户所属部门 */
         public static final String PROC_DEPATID = "procDeptId";
+        /** 流程任务处理用户所属角色-Token方式 */
+        public static final String PROC_TASKROLE = "procTaskRole";
         /** 流程任务处理用户所属角色列表 - Session方式 */
         public static final String PROC_TASKROLES = "procTaskRoles";
         /** 流程任务处理用户所属机构代码 */

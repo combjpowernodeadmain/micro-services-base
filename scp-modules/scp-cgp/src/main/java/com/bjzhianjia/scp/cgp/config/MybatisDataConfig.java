@@ -31,7 +31,7 @@ import javax.annotation.PostConstruct;
  * @author scp
  * @create 2018/2/11.
  */
-@Configuration
+//@Configuration
 public class MybatisDataConfig {
 
     @Autowired

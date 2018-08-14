@@ -46,4 +46,15 @@ public class DateUtil {
 		return date;
 	}
 	
+	/**
+	 * 以formater为模板，将日期类型转化为字符串表示 的日期
+	 * @author 尚
+	 * @param date
+	 * @param formater
+	 * @return
+	 */
+	public static String dateFromDateToStr(Date date,String formater) {
+		SimpleDateFormat format=new SimpleDateFormat(formater);
+		return format.format(date);
+	}
 }

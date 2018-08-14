@@ -12,6 +12,7 @@ import com.bjzhianjia.scp.cgp.biz.VhclManagementBiz;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.VhclManagement;
 import com.bjzhianjia.scp.cgp.service.VhclManagementService;
+import com.bjzhianjia.scp.cgp.vo.VhclManagementVo;
 
 import org.springframework.web.bind.annotation.RestController;
 
@@ -44,7 +45,7 @@ public class VhclManagementController extends BaseController<VhclManagementBiz,V
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
     @ResponseBody
     @ApiOperation("终端查询分页列表")
-    public TableResultResponse<VhclManagement> page(@RequestParam(defaultValue = "10") @ApiParam(name="页容量") int limit
+    public TableResultResponse<VhclManagementVo> page(@RequestParam(defaultValue = "10") @ApiParam(name="页容量") int limit
     				,@RequestParam(defaultValue = "1") @ApiParam(name="当前页") int page
     				,@RequestParam(defaultValue = "") @ApiParam(name="车辆牌号") String vehicleNum
     				,@RequestParam(defaultValue = "") @ApiParam(name="车辆类型ID") String vehicleType
@@ -60,10 +61,10 @@ public class VhclManagementController extends BaseController<VhclManagementBiz,V
 	@RequestMapping(value = "/get/{id}",method = RequestMethod.GET)
     @ResponseBody
     @ApiOperation("查询单个对象")
-    public ObjectRestResponse<VhclManagement> get(@PathVariable @ApiParam(name="待查询对象ID") Integer id){
-        ObjectRestResponse<VhclManagement> entityObjectRestResponse = new ObjectRestResponse<>();
-        VhclManagement o = vhclService.get(id);
-        VhclManagement vhcl = (VhclManagement)o;
+    public ObjectRestResponse<VhclManagementVo> getOne(@PathVariable @ApiParam(name="待查询对象ID") Integer id){
+        ObjectRestResponse<VhclManagementVo> entityObjectRestResponse = new ObjectRestResponse<>();
+        VhclManagementVo o = vhclService.get(id);
+        VhclManagementVo vhcl = (VhclManagementVo)o;
         if(vhcl != null && vhcl.getIsDeleted().equals("1")) {
         	entityObjectRestResponse.data(null);
         } else {
