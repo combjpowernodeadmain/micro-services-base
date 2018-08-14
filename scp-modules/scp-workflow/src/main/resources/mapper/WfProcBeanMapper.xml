@@ -28,7 +28,7 @@
 		PROC_STATUS,PROC_VERSION,PROC_DISPLAYURL,PROC_TENANT_ID,PROC_DEPART_ID
 	</sql>
 
-	<select id="selectByPrimaryKey1" resultMap="BaseResultMap"
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
 		parameterType="java.lang.String">
 		select
 		<include refid="Base_Column_List" />
