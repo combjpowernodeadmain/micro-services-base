@@ -1,8 +1,10 @@
 package com.bjzhianjia.scp.cgp.service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +64,8 @@ public class LeadershipAssignService {
 		 */
 
 		Result<Void> result = new Result<>();
+		
+		String doingExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_DOING);
 
 		LeadershipAssign selectById = leadershipAssignBiz.selectById(vo.getId());
 		if (selectById == null) {
@@ -69,7 +73,7 @@ public class LeadershipAssignService {
 			// 1.2->否：同时创建热线记录与预立案记录
 
 			// 创建热线记录
-			vo.setExeStatus(Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_DOING);// 此时处理状态应为【处理中】
+			vo.setExeStatus(doingExeStatus);// 此时处理状态应为【处理中】
 			Result<LeadershipAssign> cPublicOinionResult = this.createdLeaderAssignCache(vo);
 			if (!cPublicOinionResult.getIsSuccess()) {
 				result.setMessage(cPublicOinionResult.getMessage());
@@ -77,7 +81,7 @@ public class LeadershipAssignService {
 			}
 		} else {
 			// 1.1->是：将该暂存记录与当前要进行存储的预立案记录关联，并更新热线记录处理状态为【处理中】
-			vo.setExeStatus(Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_DOING);// 处理状态改为【处理中】
+			vo.setExeStatus(doingExeStatus);// 处理状态改为【处理中】
 			Result<LeadershipAssign> update = updateCache(vo);
 			if (!update.getIsSuccess()) {
 				result.setMessage(update.getMessage());
@@ -195,13 +199,18 @@ public class LeadershipAssignService {
 
 		// 判断舆情是否已启动
 		LeadershipAssign leadershipAssign = leadershipAssignBiz.selectById(vo.getId());
-		if (!leadershipAssign.getExeStatus().equals(Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_TODO)) {
+		
+		String toDoExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_TODO);
+		
+		if (!leadershipAssign.getExeStatus().equals(toDoExeStatus)) {
 			result.setIsSuccess(false);
 			result.setMessage("当前记录不能修改，只有【未发起】的热线记录可修改！");
 			return result;
 		}
 
-		vo.setExeStatus(Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_DOING);
+		String doingExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_DOING);
+
+		vo.setExeStatus(doingExeStatus);
 		leadershipAssignBiz.updateSelectiveById(vo);
 
 		// 创建预立案单记录
@@ -254,7 +263,7 @@ public class LeadershipAssignService {
 		
 		//聚和交办领导
 		//交办领导为选填，所以交办领导项有可能为空
-		List<String> leaderIdListStr = new ArrayList<>();
+		Set<String> leaderIdListStr = new HashSet<>();
 		for(LeadershipAssignVo vo:voList) {
 			if(vo.getTaskLeader()!=null) {
 				leaderIdListStr.add(vo.getTaskLeader());
@@ -268,8 +277,10 @@ public class LeadershipAssignService {
 				List<String> leaderNameList=new ArrayList<>();
 				for(String taskLeaderId:split) {
 					String leaderName = leaderMap.get(taskLeaderId);
-					JSONObject leaderNameJObject = JSONObject.parseObject(leaderName);
-					leaderNameList.add(leaderNameJObject.getString("name"));
+					if(null!=leaderName) {
+						JSONObject leaderNameJObject = JSONObject.parseObject(leaderName);
+						leaderNameList.add(leaderNameJObject.getString("name"));
+					}
 				}
 				vo.setLeaderNames(String.join(",", leaderNameList));
 			}
@@ -296,7 +307,18 @@ public class LeadershipAssignService {
 		List<String> collect = voList.stream().map(o -> o.getId() + "").distinct().collect(Collectors.toList());
 		Example caseInfoExample = new Example(CaseInfo.class);
 		Example.Criteria criteria = caseInfoExample.createCriteria();
-		criteria.andEqualTo("sourceType", Constances.BizEventType.ROOT_BIZ_EVENTTYPE_LEADER);
+		
+		Map<String, String> dictValueMap = dictFeign.getDictIdByCode(Constances.BizEventType.ROOT_BIZ_EVENTTYPE_LEADER,
+				false);
+		
+		String dictId = "";
+		if (dictValueMap != null && !dictValueMap.isEmpty()) {
+			List<String> aaList = new ArrayList<>(dictValueMap.keySet());
+			// dictValueMap按code等值查询，得到的结果集为唯一
+			dictId = aaList.get(0);
+		}
+		
+		criteria.andEqualTo("sourceType", dictId);
 		criteria.andIn("sourceCode", collect);
 		List<CaseInfo> caseInfoListInDB = caseInfoBiz.selectByExample(caseInfoExample);
 

@@ -15,7 +15,9 @@ import com.bjzhianjia.scp.cgp.biz.PublicOpinionBiz;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.PublicOpinion;
 import com.bjzhianjia.scp.cgp.entity.Result;
+import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.service.PublicOpinionService;
+import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.vo.PublicOpinionVo;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
@@ -37,6 +39,8 @@ public class PublicOpinionController extends BaseController<PublicOpinionBiz, Pu
 	private PublicOpinionService publicOpinionService;
 	@Autowired
 	private PublicOpinionBiz publicOpinionBiz;
+	@Autowired
+	private DictFeign dictFeign;
 
 	@RequestMapping(value = "/add/cache", method = RequestMethod.POST)
 	@ApiOperation("添加暂存")
@@ -49,7 +53,9 @@ public class PublicOpinionController extends BaseController<PublicOpinionBiz, Pu
 			return restResult;
 		}
 
-		vo.setExeStatus(Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_TODO);// 创建时处理状态为【未发起】
+		String toExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_TODO);
+		
+		vo.setExeStatus(toExeStatus);// 创建时处理状态为【未发起】
 		Result<PublicOpinion> result = publicOpinionService.createdPublicOpinionCache(vo);
 		if (!result.getIsSuccess()) {
 			restResult.setStatus(400);
@@ -219,7 +225,10 @@ public class PublicOpinionController extends BaseController<PublicOpinionBiz, Pu
 			@PathVariable(value = "id") @ApiParam(name = "待查询对象ID") Integer id) {
 		ObjectRestResponse<PublicOpinionVo> result = publicOpinionService.getOne(id);
 		PublicOpinionVo data = result.getData();
-		if (!data.getExeStatus().equals(Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_TODO)) {
+		
+		String toExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_TODO);
+		
+		if (!data.getExeStatus().equals(toExeStatus)) {
 			result.setStatus(400);
 			result.setMessage("当前记录不能修改，只有未发起的热线记录可修改！");
 			result.setData(null);

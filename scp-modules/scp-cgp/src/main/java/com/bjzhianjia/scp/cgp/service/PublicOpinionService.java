@@ -116,6 +116,8 @@ public class PublicOpinionService {
 		 */
 
 		Result<Void> result = new Result<>();
+		
+		String doingExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_DOING);
 
 		PublicOpinion selectById = publicOpinionBiz.selectById(vo.getId());
 		if (selectById == null) {
@@ -123,7 +125,7 @@ public class PublicOpinionService {
 			// 1.2->否：同时创建热线记录与预立案记录
 
 			// 创建热线记录
-			vo.setExeStatus(Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_DOING);// 此时处理状态应为【处理中】
+			vo.setExeStatus(doingExeStatus);// 此时处理状态应为【处理中】
 			Result<PublicOpinion> cPublicOinionResult = this.createdPublicOpinionCache(vo);
 			if (!cPublicOinionResult.getIsSuccess()) {
 				result.setMessage(cPublicOinionResult.getMessage());
@@ -131,7 +133,7 @@ public class PublicOpinionService {
 			}
 		} else {
 			// 1.1->是：将该暂存记录与当前要进行存储的预立案记录关联，并更新热线记录处理状态为【处理中】
-			vo.setExeStatus(Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_DOING);// 处理状态改为【处理中】
+			vo.setExeStatus(doingExeStatus);// 处理状态改为【处理中】
 			Result<PublicOpinion> update = updateCache(vo);
 			if (!update.getIsSuccess()) {
 				result.setMessage(update.getMessage());
@@ -222,10 +224,15 @@ public class PublicOpinionService {
 		if (!result.getIsSuccess()) {
 			return result;
 		}
+		
 
 		// 判断舆情是否已启动
 		PublicOpinion publicOpinion = publicOpinionBiz.selectById(vo.getId());
-		if (!publicOpinion.getExeStatus().equals(Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_TODO)) {
+		
+		String toExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_TODO);
+		String doingExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_DOING);
+		
+		if (!publicOpinion.getExeStatus().equals(toExeStatus)) {
 			result.setIsSuccess(false);
 			result.setMessage("当前记录不能修改，只有【未发起】的热线记录可修改！");
 			return result;
@@ -233,7 +240,7 @@ public class PublicOpinionService {
 
 		// 更新舆情记录
 		// 修改暂存设置其状态为【处理中】
-		vo.setExeStatus(Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_DOING);
+		vo.setExeStatus(doingExeStatus);
 		publicOpinionBiz.updateSelectiveById(vo);
 
 		// 创建预立案单记录

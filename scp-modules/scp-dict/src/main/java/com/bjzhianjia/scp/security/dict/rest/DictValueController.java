@@ -32,6 +32,7 @@ import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import tk.mybatis.mapper.entity.Example;
 
@@ -114,5 +115,20 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 //    	}
 //    	return null;
 		return this.baseBiz.getDictValues(id);
+	}
+	
+	 /**
+     * 按code查询字典值
+     * @author 尚
+     * @param code 查询条件
+     * @param isLike 是否按模糊查询
+     * @return
+     */
+	@IgnoreClientToken
+	@IgnoreUserToken
+	@RequestMapping(value = "/feign/values/{code}", method = RequestMethod.GET)
+	public Map<String, String> getDictIdByCode(@PathVariable("code") String code,@RequestParam(value="isLike",defaultValue="false")boolean isLike) {
+		Map<String, String> result = this.baseBiz.getDictValues(code, isLike);
+		return result;
 	}
 }

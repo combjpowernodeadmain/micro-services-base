@@ -16,7 +16,9 @@ import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.LeadershipAssign;
 import com.bjzhianjia.scp.cgp.entity.PublicOpinion;
 import com.bjzhianjia.scp.cgp.entity.Result;
+import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.service.LeadershipAssignService;
+import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.vo.LeadershipAssignVo;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
@@ -38,6 +40,8 @@ public class LeadershipAssignController extends BaseController<LeadershipAssignB
 	private LeadershipAssignService leadershipAssignService;
 	@Autowired
 	private LeadershipAssignBiz leadershipAssignBiz;
+	@Autowired
+	private DictFeign dictFeign;
 	
 	
 	@RequestMapping(value = "/add/cache", method = RequestMethod.POST)
@@ -51,7 +55,9 @@ public class LeadershipAssignController extends BaseController<LeadershipAssignB
 			return restResult;
 		}
 
-		vo.setExeStatus(Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_TODO);// 创建时处理状态为【未发起】
+		String toDoExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_TODO);
+		
+		vo.setExeStatus(toDoExeStatus);// 创建时处理状态为【未发起】
 		Result<LeadershipAssign> result=new Result<>();
 		try {
 			result = leadershipAssignService.createdLeaderAssignCache(vo);
@@ -117,7 +123,9 @@ public class LeadershipAssignController extends BaseController<LeadershipAssignB
 			return restResult;
 		}
 		
-		leadershipAssign.setExeStatus(Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_TODO);
+		String toDoExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_TODO);
+		
+		leadershipAssign.setExeStatus(toDoExeStatus);
 		Result<LeadershipAssign> result = leadershipAssignService.updateCache(leadershipAssign);
 		if (!result.getIsSuccess()) {
 			restResult.setStatus(400);
@@ -200,7 +208,9 @@ public class LeadershipAssignController extends BaseController<LeadershipAssignB
 		
 		LeadershipAssignVo data = result.getData();
 		
-		if (!data.getExeStatus().equals(Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_TODO)) {
+		String toDoExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_TODO);
+		
+		if (!data.getExeStatus().equals(toDoExeStatus)) {
 			result.setStatus(400);
 			result.setMessage("当前记录不能修改，只有未发起的热线记录可修改！");
 			result.setData(null);

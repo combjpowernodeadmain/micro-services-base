@@ -8,13 +8,16 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.MayorHotline;
 import com.bjzhianjia.scp.cgp.entity.PublicOpinion;
 import com.bjzhianjia.scp.cgp.entity.Result;
+import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.mapper.PublicOpinionMapper;
+import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
@@ -34,6 +37,9 @@ import tk.mybatis.mapper.entity.Example.Criteria;
  */
 @Service
 public class PublicOpinionBiz extends BusinessBiz<PublicOpinionMapper, PublicOpinion> {
+	@Autowired
+	private DictFeign dictFeign;
+	
 	/**
 	 * 获取目前ID最大的那条记录
 	 * 
@@ -133,9 +139,11 @@ public class PublicOpinionBiz extends BusinessBiz<PublicOpinionMapper, PublicOpi
 			idList.add(integer + "");
 		}
 
+		String toExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_TODO);
+		
 		List<PublicOpinion> selectByIds = this.mapper.selectByIds(String.join(",", idList));
 		for (PublicOpinion tmp : selectByIds) {
-			if (!tmp.getExeStatus().equals(Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_TODO)) {
+			if (!toExeStatus.equals(tmp.getExeStatus())) {
 				result.setIsSuccess(false);
 				result.setMessage("当前记录不能删除！");
 				return result;
