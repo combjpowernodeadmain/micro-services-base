@@ -1,8 +1,12 @@
 package com.bjzhianjia.scp.cgp.util;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import com.bjzhianjia.scp.cgp.entity.Result;
+import com.bjzhianjia.scp.cgp.feign.DictFeign;
 
 /**
  * 公共工具类
@@ -65,5 +69,24 @@ public class CommonUtil {
 		caseInfo.append(codePrefix).append(seqMid).append(suffixStr);
 
 		return caseInfo.toString();
+	}
+	
+	/**
+	 * 事件完成状态聚和数据时的帮助类
+	 * @author 尚
+	 * @param dictFeign
+	 * @param code
+	 * @return
+	 */
+	public static String exeStatusUtil(DictFeign dictFeign,String code) {
+		Map<String, String> dictValueMap = dictFeign.getDictIdByCode(code,
+				false);
+
+		if (dictValueMap != null && !dictValueMap.isEmpty()) {
+			List<String> _idList = new ArrayList<>(dictValueMap.keySet());
+			// dictValueMap按code等值查询，得到的结果集为唯一
+			return _idList.get(0);
+		}
+		return null;
 	}
 }

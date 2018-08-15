@@ -71,4 +71,35 @@ public class DictValueBiz extends BusinessBiz<DictValueMapper,DictValue> {
     	}
     	return null;
     }
+    
+    /**
+     * 按code查询字典值
+     * @author 尚
+     * @param code 查询条件
+     * @param isLike 是否按模糊查询
+     * @return
+     */
+    public Map<String, String> getDictValues(String code,boolean isLike){
+    	Example example=new Example(DictValue.class);
+    	Example.Criteria criteria=example.createCriteria();
+    	
+    	if(isLike) {
+    		criteria.andNotLike("code", code);
+    	}else {
+    		criteria.andEqualTo("code",code);
+    	}
+    	
+    	example.setOrderByClause("order_num");//按order_num升序排列
+    	
+    	Map<String, String> result=new HashMap<>();
+    	List<DictValue> dictValueList = mapper.selectByExample(example);
+    	
+    	if(dictValueList!=null) {
+    		for (DictValue dictValue : dictValueList) {
+    			result.put(dictValue.getId(), JSON.toJSONString(dictValue));
+    		}
+    		return result;
+    	}
+    	return null;
+    }
 }

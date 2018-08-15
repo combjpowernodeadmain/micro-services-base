@@ -48,7 +48,7 @@ public class MayorHotlineService {
 	 * @param vo
 	 * @return
 	 */
-	public Result<MayorHotline> createdMayorHotlineCache(MayorHotlineVo vo,String exeStatus) {
+	public Result<MayorHotline> createdMayorHotlineCache(MayorHotlineVo vo, String exeStatus) {
 		Result<MayorHotline> result = checkCache(vo, false);
 
 		if (!result.getIsSuccess()) {
@@ -119,19 +119,31 @@ public class MayorHotlineService {
 		 * 1.1->是：将该暂存记录与当前要进行存储的预立案记录关联，并更新热线记录处理状态为【处理中】 1.2->否：同时创建热线记录与预立案记录
 		 */
 		MayorHotline selectById = mayorHotlineBiz.selectById(vo.getId());
+		
+		Map<String, String> dictValueMap = dictFeign.getDictIdByCode(Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_DOING,
+				false);
+
+		String dictId = "";
+		if (dictValueMap != null && !dictValueMap.isEmpty()) {
+			List<String> aaList = new ArrayList<>(dictValueMap.keySet());
+			// dictValueMap按code等值查询，得到的结果集为唯一
+			dictId = aaList.get(0);
+		}
+		
 		if (selectById == null) {
 			// 用户未进行暂存，直接点击了【预立案】按钮
 			// 1.2->否：同时创建热线记录与预立案记录
 
 			// 创建热线记录
-			Result<MayorHotline> cHotlineResult = this.createdMayorHotlineCache(vo,Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_DOING);
+			Result<MayorHotline> cHotlineResult = this.createdMayorHotlineCache(vo,
+					dictId);
 			if (!cHotlineResult.getIsSuccess()) {
 				result.setMessage(cHotlineResult.getMessage());
 				throw new Exception(cHotlineResult.getMessage());
 			}
 		} else {
 			// 1.1->是：将该暂存记录与当前要进行存储的预立案记录关联，并更新热线记录处理状态为【处理中】
-			vo.setExeStatus(Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_DOING);// 处理状态改为【处理中】
+			vo.setExeStatus(dictId);// 处理状态改为【处理中】
 			Result<MayorHotline> update = updateCache(vo);
 			if (!update.getIsSuccess()) {
 				result.setMessage(update.getMessage());
@@ -218,7 +230,7 @@ public class MayorHotlineService {
 		}
 
 		mayorHotlineBiz.updateSelectiveById(mayorHotline);
-		
+
 		result.setIsSuccess(true);
 		result.setMessage("成功");
 		return result;
@@ -238,15 +250,32 @@ public class MayorHotlineService {
 		if (!result.getIsSuccess()) {
 			return result;
 		}
+		
 
 		// 判断热线是否已启动
+		Map<String, String> toDoMap = dictFeign.getDictIdByCode(Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_TODO,
+				false);
+		Map<String, String> doingMap = dictFeign.getDictIdByCode(Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_DOING,
+				false);
+		String todoId = "";
+		if (toDoMap != null && !toDoMap.isEmpty()) {
+			List<String> idList = new ArrayList<>(toDoMap.keySet());
+			// dictValueMap按code等值查询，得到的结果集为唯一
+			todoId = idList.get(0);
+		}
 		MayorHotline mayorHotline = mayorHotlineBiz.selectById(vo.getId());
-		if (!mayorHotline.getExeStatus().equals(Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_TODO)) {
+		if (!todoId.equals(mayorHotline.getExeStatus())) {
 			throw new Exception("当前记录不能修改，只有【未发起】的热线记录可修改！");
+		}
+		String doingId = "";
+		if (doingMap != null && !doingMap.isEmpty()) {
+			List<String> idList = new ArrayList<>(doingMap.keySet());
+			// dictValueMap按code等值查询，得到的结果集为唯一
+			doingId = idList.get(0);
 		}
 
 		// 更新热线记录
-		vo.setExeStatus(Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_DOING);//设置其状态为“处理中”
+		vo.setExeStatus(doingId);// 设置其状态为“处理中”
 		mayorHotlineBiz.updateSelectiveById(vo);
 
 		// 创建预立案单记录
@@ -283,27 +312,39 @@ public class MayorHotlineService {
 
 	private List<MayorHotlineVo> queryAssist(List<MayorHotline> rows) {
 		List<MayorHotlineVo> voList = BeanUtil.copyBeanList_New(rows, MayorHotlineVo.class);
-		
-		//聚和处理状态
+
+		// 聚和处理状态
 		Map<String, String> dictIdMap = dictFeign.getDictIds(Constances.ROOT_BIZ_12345STATE);
-		if(dictIdMap!=null&&!dictIdMap.isEmpty()) {
+		if (dictIdMap != null && !dictIdMap.isEmpty()) {
 			for (MayorHotlineVo vo : voList) {
 				vo.setExeStatusName(dictIdMap.get(vo.getExeStatus()));
 			}
 		}
-		
-		//相关立案单
-		List<String> collect = voList.stream().map(o->o.getId()+"").distinct().collect(Collectors.toList());
-		Example caseInfoExample=new Example(CaseInfo.class);
-		Example.Criteria criteria=caseInfoExample.createCriteria();
-		criteria.andEqualTo("sourceType", Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345);
+
+		// 相关立案单
+		List<String> collect = voList.stream().map(o -> o.getId() + "").distinct().collect(Collectors.toList());
+		Example caseInfoExample = new Example(CaseInfo.class);
+		Example.Criteria criteria = caseInfoExample.createCriteria();
+
+		Map<String, String> dictValueMap = dictFeign.getDictIdByCode(Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345,
+				false);
+
+		String dictId = "";
+		if (dictValueMap != null && !dictValueMap.isEmpty()) {
+			List<String> aaList = new ArrayList<>(dictValueMap.keySet());
+			// dictValueMap按code等值查询，得到的结果集为唯一
+			dictId = aaList.get(0);
+		}
+
+		criteria.andEqualTo("sourceType", dictId);
 		criteria.andIn("sourceCode", collect);
 		List<CaseInfo> caseInfoListInDB = caseInfoBiz.selectByExample(caseInfoExample);
-		
-		Map<String, String> caseInfoMap = caseInfoListInDB.stream().collect(Collectors.toMap(CaseInfo::getSourceCode, CaseInfo::getCaseCode));
-		if(caseInfoMap!=null&&!caseInfoMap.isEmpty()) {
+
+		Map<String, String> caseInfoMap = caseInfoListInDB.stream()
+				.collect(Collectors.toMap(CaseInfo::getSourceCode, CaseInfo::getCaseCode));
+		if (caseInfoMap != null && !caseInfoMap.isEmpty()) {
 			for (MayorHotlineVo vo : voList) {
-				vo.setCaseCode(caseInfoMap.get(vo.getId()+""));
+				vo.setCaseCode(caseInfoMap.get(vo.getId() + ""));
 			}
 		}
 
@@ -335,10 +376,13 @@ public class MayorHotlineService {
 	public Result<Void> reply(Integer id) {
 		Result<Void> result = new Result<>();
 		result.setIsSuccess(false);
+		
+		String doneExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_DONE);
+		String feedBackExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_FEEDBACK);
 
 		MayorHotline mayorHotline = mayorHotlineBiz.selectById(id);
-		if (mayorHotline.getExeStatus().equals(Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_DONE)) {
-			mayorHotline.setExeStatus(Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_FEEDBACK);
+		if (mayorHotline.getExeStatus().equals(doneExeStatus)) {
+			mayorHotline.setExeStatus(feedBackExeStatus);
 			mayorHotlineBiz.updateSelectiveById(mayorHotline);
 			result.setIsSuccess(true);
 			result.setMessage("成功");

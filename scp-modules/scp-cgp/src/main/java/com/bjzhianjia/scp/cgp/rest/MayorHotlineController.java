@@ -1,5 +1,9 @@
 package com.bjzhianjia.scp.cgp.rest;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
@@ -15,6 +19,7 @@ import com.bjzhianjia.scp.cgp.biz.MayorHotlineBiz;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.MayorHotline;
 import com.bjzhianjia.scp.cgp.entity.Result;
+import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.service.MayorHotlineService;
 import com.bjzhianjia.scp.cgp.vo.MayorHotlineVo;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
@@ -37,6 +42,8 @@ public class MayorHotlineController extends BaseController<MayorHotlineBiz, Mayo
 	private MayorHotlineService mayorHotlineService;
 	@Autowired
 	private MayorHotlineBiz mayorHotLineBiz;
+	@Autowired
+	private DictFeign dictFeign;
 
 	@RequestMapping(value = "/add/cache", method = RequestMethod.POST)
 	@ApiOperation("添加暂存")
@@ -49,8 +56,18 @@ public class MayorHotlineController extends BaseController<MayorHotlineBiz, Mayo
 			restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
 			return restResult;
 		}
+		
+		Map<String, String> dictValueMap = dictFeign.getDictIdByCode(Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_TODO,
+				false);
 
-		Result<MayorHotline> result = mayorHotlineService.createdMayorHotlineCache(mayorHotline,Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_TODO);
+		String dictId = "";
+		if (dictValueMap != null && !dictValueMap.isEmpty()) {
+			List<String> aaList = new ArrayList<>(dictValueMap.keySet());
+			// dictValueMap按code等值查询，得到的结果集为唯一
+			dictId = aaList.get(0);
+		}
+
+		Result<MayorHotline> result = mayorHotlineService.createdMayorHotlineCache(mayorHotline,dictId);
 		if (!result.getIsSuccess()) {
 			restResult.setStatus(400);
 			restResult.setMessage(result.getMessage());
@@ -176,8 +193,19 @@ public class MayorHotlineController extends BaseController<MayorHotlineBiz, Mayo
 	public ObjectRestResponse<MayorHotlineVo> getToDo(
 			@PathVariable(value = "id") @ApiParam(name = "待查询对象ID") Integer id) {
 		ObjectRestResponse<MayorHotlineVo> result = mayorHotlineService.getOne(id);
+		
+		Map<String, String> dictValueMap = dictFeign.getDictIdByCode(Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_TODO,
+				false);
+
+		String dictId = "";
+		if (dictValueMap != null && !dictValueMap.isEmpty()) {
+			List<String> aaList = new ArrayList<>(dictValueMap.keySet());
+			// dictValueMap按code等值查询，得到的结果集为唯一
+			dictId = aaList.get(0);
+		}
+		
 		MayorHotlineVo data = result.getData();
-		if (!data.getExeStatus().equals(Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_TODO)) {
+		if (!dictId.equals(data.getExeStatus())) {
 			result.setStatus(400);
 			result.setMessage("当前记录不能修改，只有未发起的热线记录可修改！");
 			result.setData(null);
