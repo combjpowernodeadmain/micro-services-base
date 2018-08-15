@@ -124,7 +124,7 @@ public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
     		/*
     		 * 剔除result中Depart==null的对象，因权限问题，某部门的父部门有可能查询不到
     		 */
-    		if(tmpDepart==null) {
+    		if(tmpDepart!=null) {
     			result.add(tmpDepart);
     		}
     	}
