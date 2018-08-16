@@ -62,29 +62,36 @@ public class AreaGridService {
 		}
 		areaGrid.setId(CurrAreaGridId);
 
-		// 插入网格
-		Result<Void> result = insertAreaGrid(areaGrid);
+		// 检验网格
+		Result<Void> result = checkAreaGrid(areaGrid);
 		if (!result.getIsSuccess()) {
 			return result;
 		}
 
 		// 插入网格成员
-		if (areaGridJObject.getBooleanValue("flag")) {
-			Result<List<AreaGridMember>> resultM = insertAreaGridMember(areaGridJObject, areaGrid.getId());
+		if (areaGridJObject.getBooleanValue("flag")) {//flag为true，说明使用了带添加网格成员的网页模板，但并不一定添加网格成员
+			Result<List<AreaGridMember>> resultM = checkAreaGridMember(areaGridJObject, areaGrid.getId());
 			if (!resultM.getIsSuccess()) {
 				result.setMessage(resultM.getMessage());
+				result.setIsSuccess(false);
 				return result;
 			}
 
 			List<AreaGridMember> areaGridMemberList = resultM.getData();
-			areaGridMemberMapper.insertAreaGridMemberList(areaGridMemberList);
+			/*
+			 * 当areaGridMemberList为空时，说明前端没有插入网格员，这时进行查询时会按一个新example进行查询，检索出数据库中所有记录,
+			 * 需进行非空验证
+			 */
+			if(areaGridMemberList!=null&&!areaGridMemberList.isEmpty()) {
+				areaGridMemberMapper.insertAreaGridMemberList(areaGridMemberList);
+			}
 		}
 
 		areaGridBiz.insertSelective(areaGrid);
 		return result;
 	}
 
-	public Result<Void> insertAreaGrid(AreaGrid areaGrid) {
+	public Result<Void> checkAreaGrid(AreaGrid areaGrid) {
 		Result<Void> result = new Result<>();
 		result.setIsSuccess(false);
 
@@ -132,7 +139,7 @@ public class AreaGridService {
 		return result;
 	}
 
-	public Result<List<AreaGridMember>> insertAreaGridMember(JSONObject areaGridJObject, int gridId) {
+	public Result<List<AreaGridMember>> checkAreaGridMember(JSONObject areaGridJObject, int gridId) {
 		Result<List<AreaGridMember>> result = new Result<>();
 		result.setIsSuccess(false);
 
@@ -159,6 +166,12 @@ public class AreaGridService {
 			areaGridMember.setTenantId(BaseContextHandler.getTenantID());
 
 			String areaGridMemStrs = areaGridMemJObject.getString("gridMember");
+			/*
+			 * gridMember中有可能包含多个人，如果是多个人，则每个人需要对应一条记录，
+			 * 所以将areaGridMember对象按gridMember中人数转化为areaGridMember集合。
+			 * gridMember中也可能没有人，这时不需要进行插入记录，areaGridMemberList
+			 * 空集合即可
+			 */
 			if (StringUtils.isNotBlank(areaGridMemStrs)) {
 				String[] split = areaGridMemStrs.split(",");
 				for (String string : split) {
@@ -252,7 +265,7 @@ public class AreaGridService {
 
 		if (areaGridJObject.getBooleanValue("flag")) {
 			areaGridMemberBiz.deleteByGridId(areaGrid.getId());
-			Result<List<AreaGridMember>> resultM = insertAreaGridMember(areaGridJObject, areaGrid.getId());
+			Result<List<AreaGridMember>> resultM = checkAreaGridMember(areaGridJObject, areaGrid.getId());
 			if (!resultM.getIsSuccess()) {
 				result.setMessage(resultM.getMessage());
 				return result;

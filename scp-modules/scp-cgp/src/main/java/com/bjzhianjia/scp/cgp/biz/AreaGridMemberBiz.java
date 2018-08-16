@@ -1,8 +1,5 @@
 package com.bjzhianjia.scp.cgp.biz;
 
-import static org.hamcrest.CoreMatchers.endsWith;
-
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,16 +54,24 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
 	public List<AreaGridMember> getAreaGridMember(List<AreaGridMember> conditionList) {
 		Example example = new Example(AreaGridMember.class);
 
-		for (AreaGridMember areaGridMember : conditionList) {
-			Criteria criteria = example.or();
-			criteria.andEqualTo("isDeleted", "0");
-			criteria.andEqualTo("gridMember", areaGridMember.getGridMember());
-			criteria.andEqualTo("gridRole", areaGridMember.getGridRole());
-			criteria.andEqualTo("gridId", areaGridMember.getGridId());
+		/*
+		 * 当condigionList为空时，说明前端没有插入网格员，这时进行查询时会按一个新example进行查询，检索出数据库中所有记录,
+		 * 需进行非空验证
+		 */
+		if(conditionList!=null&&!conditionList.isEmpty()) {
+			for (AreaGridMember areaGridMember : conditionList) {
+				Criteria criteria = example.or();
+				criteria.andEqualTo("isDeleted", "0");
+				criteria.andEqualTo("gridMember", areaGridMember.getGridMember());
+				criteria.andEqualTo("gridRole", areaGridMember.getGridRole());
+				criteria.andEqualTo("gridId", areaGridMember.getGridId());
+			}
+			
+			List<AreaGridMember> list = this.mapper.selectByExample(example);
+			return list;
+		}else {
+			return null;
 		}
-
-		List<AreaGridMember> list = this.mapper.selectByExample(example);
-		return list;
 	}
 	
 	/**

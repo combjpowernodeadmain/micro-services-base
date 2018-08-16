@@ -6,7 +6,6 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import com.bjzhianjia.scp.cgp.entity.AreaGridMember;
-import com.bjzhianjia.scp.security.common.data.Tenant;
 import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 
 /**
