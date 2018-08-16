@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ import com.bjzhianjia.scp.cgp.entity.RegulaObjectType;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
+import com.bjzhianjia.scp.cgp.vo.RegulaObjectVo;
 import com.bjzhianjia.scp.cgp.vo.Regula_EnterPriseVo;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
@@ -117,23 +119,22 @@ public class RegulaObjectService {
 		}
 
 		/*
-		 * 验证所选事件类别是否已被删除 事件类别存储结构
-		 * 22,23;25;26,27
+		 * 验证所选事件类别是否已被删除 事件类别存储结构 22,23;25;26,27
 		 */
 		String eventListLongStr = regulaObject.getEventList();
 		if (StringUtils.isNotBlank(eventListLongStr)) {
-			List<String> eventIdList=new ArrayList<>();
-			
+			List<String> eventIdList = new ArrayList<>();
+
 			String[] eventIDGroups = eventListLongStr.split(";");
 			for (String eventIDGroup : eventIDGroups) {
 				String[] eventIDs = eventIDGroup.split(",");
 				for (String eventID : eventIDs) {
-					if(!eventID.equals("-")) {
+					if (!eventID.equals("-")) {
 						eventIdList.add(eventID);
 					}
 				}
 			}
-			if(eventIdList!=null&&!eventIdList.isEmpty()) {
+			if (eventIdList != null && !eventIdList.isEmpty()) {
 				List<EventType> eventTypeList = eventTypeBiz.getByIds(eventIdList);
 				for (EventType eventType : eventTypeList) {
 					if (eventType == null || eventType.getIsDeleted().equals("1")) {
@@ -142,7 +143,7 @@ public class RegulaObjectService {
 					}
 				}
 			}
-			
+
 //			JSONArray eventTypeJArray = JSONArray.parseArray(eventListLongStr);
 //			for (int i = 0; i < eventTypeJArray.size(); i++) {
 //				JSONObject eventTypeJObject = eventTypeJArray.getJSONObject(i);
@@ -168,17 +169,17 @@ public class RegulaObjectService {
 		String bizListJArrayStr = regulaObject.getBizList();
 		if (StringUtils.isNotBlank(bizListJArrayStr)) {
 			Map<String, String> bizTypes = dictFeign.getDictIds(Constances.ROOT_BIZ_TYPE);
-			
+
 			String[] byzTypeIds = bizListJArrayStr.split(",");
 			for (String bizTypeId : byzTypeIds) {
-				if(!bizTypeId.equals("-")) {
+				if (!bizTypeId.equals("-")) {
 					if (!bizTypes.containsKey(bizTypeId)) {
 						result.setMessage("所选业务条线不存在");
 						return result;
 					}
 				}
 			}
-			
+
 //			JSONArray bizTypeJArray = JSONArray.parseArray(bizListJArrayStr);
 //			for (int i = 0; i < bizTypeJArray.size(); i++) {
 //				JSONObject bizTypeJObject = bizTypeJArray.getJSONObject(i);
@@ -222,7 +223,7 @@ public class RegulaObjectService {
 			if (rows != null) {
 				if (isUpdate) {
 					for (RegulaObject tmp : rows) {
-						if (!tmp.getId().equals(regulaObject.getId())&&!tmp.getIsDeleted().equals("1")) {
+						if (!tmp.getId().equals(regulaObject.getId()) && !tmp.getIsDeleted().equals("1")) {
 							result.setMessage("所填监管对象编码已存在");
 							return result;
 						}
@@ -234,7 +235,7 @@ public class RegulaObjectService {
 							return result;
 						}
 					}
-					
+
 //					if (rows.size() > 0) {
 //						result.setMessage("所填监管对象编码已存在");
 //						return result;
@@ -254,7 +255,7 @@ public class RegulaObjectService {
 			if (rows != null) {
 				if (isUpdate) {
 					for (RegulaObject tmp : rows) {
-						if (!tmp.getId().equals(regulaObject.getId())&&!tmp.getIsDeleted().equals("1")) {
+						if (!tmp.getId().equals(regulaObject.getId()) && !tmp.getIsDeleted().equals("1")) {
 							result.setMessage("所填监管对象名称已存在");
 							return result;
 						}
@@ -284,15 +285,15 @@ public class RegulaObjectService {
 	 * @return
 	 */
 	public Result<Void> updateRegulaObject(RegulaObject regulaObject, EnterpriseInfo enterpriseInfo) {
-		Map<String, Object> conditions=new HashMap<>();
+		Map<String, Object> conditions = new HashMap<>();
 		conditions.put("regulaObjId", regulaObject.getId());
-		List<EnterpriseInfo> enterpriseInfoList=enterpriseInfoBiz.getByMap(conditions);
-		if(enterpriseInfoList!=null&&!enterpriseInfoList.isEmpty()) {
+		List<EnterpriseInfo> enterpriseInfoList = enterpriseInfoBiz.getByMap(conditions);
+		if (enterpriseInfoList != null && !enterpriseInfoList.isEmpty()) {
 			enterpriseInfo.setId(enterpriseInfoList.get(0).getId());
-		}else {
+		} else {
 			throw new NullPointerException("没有与待更新的监管对象对应的企业信息");
 		}
-		
+
 		Result<Void> result = new Result<>();
 
 		result = check(regulaObject, enterpriseInfo, true);
@@ -315,14 +316,9 @@ public class RegulaObjectService {
 	 * @param limit
 	 * @return
 	 */
-	public TableResultResponse<RegulaObject> getList(RegulaObject regulaObject, int page, int limit) {
+	public TableResultResponse<RegulaObjectVo> getList(RegulaObject regulaObject, int page, int limit) {
 		TableResultResponse<RegulaObject> tableResult = regulaObjectBiz.getList(regulaObject, page, limit);
 		List<RegulaObject> rows = tableResult.getData().getRows();
-
-		/*
-		 * 进行业务条线聚和 业务条线存储结构[{"bizList","$业务条线ID"},{"bizList","$业务条线ID"}]
-		 */
-		queryAssist(rows);
 		
 		try {
 			mergeCore.mergeResult(RegulaObject.class, rows);
@@ -335,94 +331,119 @@ public class RegulaObjectService {
 		} catch (ExecutionException e) {
 			e.printStackTrace();
 		}
+		
+		/*
+		 * 进行业务条线聚和 业务条线存储结构[{"bizList","$业务条线ID"},{"bizList","$业务条线ID"}]
+		 */
+		List<RegulaObjectVo> voList = queryAssist(rows);
 
-		return tableResult;
+		return new TableResultResponse<>(tableResult.getData().getTotal(), voList);
 	}
 
-	private void queryAssist(List<RegulaObject> rows) {
-		List<String> bizTypeIds = new ArrayList<String>();
+	private List<RegulaObjectVo> queryAssist(List<RegulaObject> rows) {
+		List<RegulaObjectVo> voList = BeanUtil.copyBeanList_New(rows, RegulaObjectVo.class);
 
-		for (RegulaObject tmp : rows) {
+		List<String> bizTypeIds = new ArrayList<String>();
+		List<String> objTypeIdStrList = new ArrayList<>();
+
+		for (RegulaObjectVo tmp : voList) {
+			// 数据库记录中biz_list字段有可能 为空
 			String bizList = tmp.getBizList();
-			String[] split = bizList.split(",");
-			for (String string : split) {
-				bizTypeIds.add(string);
+			if (StringUtils.isNotBlank(bizList) && !"-".equals(bizList)) {
+				String[] split = bizList.split(",");
+				for (String string : split) {
+					bizTypeIds.add(string);
+				}
 			}
+
+			objTypeIdStrList.add(tmp.getObjType() + "");
 		}
-		
-		//聚和业务条线及事件类别
+
+		// 聚和业务条线及事件类别
 		if (bizTypeIds != null && !bizTypeIds.isEmpty()) {
 			Map<String, String> bizTypeMap = dictFeign.getDictValueByID(String.join(",", bizTypeIds));
-			
-			for (RegulaObject tmp : rows) {
-				JSONArray bizResultJArray = new JSONArray(); 
-				
+
+			for (RegulaObjectVo tmp : voList) {
+				JSONArray bizResultJArray = new JSONArray();
+
 				String bizList = tmp.getBizList();
-				String[] bizListSplit = bizList.split(",");
-				
-				for (int i=0;i<bizListSplit.length;i++) {
-					String string=bizListSplit[i];
-					JSONObject bizResultJObject=new JSONObject();
-					if(!string.equals("-")) {
+				boolean isBizListEmpty = (bizList == null || bizList.isEmpty());
+				String[] bizListSplit = isBizListEmpty ? new String[0] : bizList.split(",");
+
+				for (int i = 0; i < bizListSplit.length; i++) {
+					String string = bizListSplit[i];
+					JSONObject bizResultJObject = new JSONObject();
+					if (!string.equals("-")) {
 						String bizType = bizTypeMap.get(string);
 						bizResultJObject = JSONObject.parseObject(bizType);
 					}
 					bizResultJArray.add(bizResultJObject);
 				}
-				
+
 				tmp.setBizList(bizResultJArray.toJSONString());
 			}
 		}
+
+		// 所属监管对象类型
+		List<RegulaObjectType> regulaObjTypeList = regulaObjectTypeBiz.selectByIds(String.join(",", objTypeIdStrList));
+		Map<Integer, String> type_ID_NAME_Map = regulaObjTypeList.stream()
+				.collect(Collectors.toMap(RegulaObjectType::getId, RegulaObjectType::getObjectTypeName));
+		for (RegulaObjectVo tmp : voList) {
+			tmp.setObjTypeName(type_ID_NAME_Map.get(tmp.getObjType()));
+		}
+		return voList;
 	}
-	
+
 	/**
 	 * 获取单个对象
+	 * 
 	 * @author 尚
 	 * @param id
 	 * @return
 	 */
-	public Regula_EnterPriseVo getById(Integer id){
-		//查询监管对象
+	public Regula_EnterPriseVo getById(Integer id) {
+		// 查询监管对象
 		RegulaObject regulaObject = regulaObjectBiz.selectById(id);
-		
-		if(regulaObject==null) {
+
+		if (regulaObject == null) {
 			return null;
-		}else if(regulaObject.getIsDeleted().equals("1")) {
+		} else if (regulaObject.getIsDeleted().equals("1")) {
 			return null;
 		}
-		
-		//查询企业信息
-		Example example=new Example(EnterpriseInfo.class);
-		Example.Criteria criteria=example.createCriteria();
-		criteria.andEqualTo("regulaObjId",id);
+
+		// 查询企业信息
+		Example example = new Example(EnterpriseInfo.class);
+		Example.Criteria criteria = example.createCriteria();
+		criteria.andEqualTo("regulaObjId", id);
 		EnterpriseInfo enterpriseInfo = enterpriseInfoBiz.selectByExample(example).get(0);
-		
+
 //		List<RegulaObject> list=new ArrayList<>();
 //		list.add(regulaObject);
-		
-		//聚和监管对象类别
-		//监管对象类别放弃使用字典值，类型使用监管对象类别表，数据类型为Integer
+
+		// 聚和监管对象类别
+		// 监管对象类别放弃使用字典值，类型使用监管对象类别表，数据类型为Integer
 		Integer objTypeId = regulaObject.getObjType();
 		RegulaObjectType regulaObjectType = regulaObjectTypeBiz.selectById(objTypeId);
 //		Map<String, String> objTypeMap = dictFeign.getDictValueByID(objTypeId);
 //		regulaObject.setObjType(objTypeMap.get(objTypeId));
 //		queryAssist(list);
-		
+
 		/*
 		 * 聚和企业类型与证件类型
 		 */
 		String typeCodeId = enterpriseInfo.getTypeCode();
 		String certificateTypeId = enterpriseInfo.getCertificateType();
-		
-		Map<String, String> map = dictFeign.getDictValueByID(typeCodeId+","+certificateTypeId);
+
+		Map<String, String> map = dictFeign.getDictValueByID(typeCodeId + "," + certificateTypeId);
 		enterpriseInfo.setTypeCode(map.get(typeCodeId));
 		enterpriseInfo.setCertificateType(map.get(certificateTypeId));
-		
+
 		String regulaObjectJStr = JSON.toJSONString(regulaObject);
-		String enterpriseInfoJStr=JSON.toJSONString(enterpriseInfo);
-		
-		JSONObject other = BeanUtil.jsonObjectMergeOther(JSONObject.parseObject(regulaObjectJStr), JSONObject.parseObject(enterpriseInfoJStr));
-		
+		String enterpriseInfoJStr = JSON.toJSONString(enterpriseInfo);
+
+		JSONObject other = BeanUtil.jsonObjectMergeOther(JSONObject.parseObject(regulaObjectJStr),
+				JSONObject.parseObject(enterpriseInfoJStr));
+
 		Regula_EnterPriseVo result = JSON.parseObject(other.toJSONString(), Regula_EnterPriseVo.class);
 		result.setObjType(JSON.toJSONString(regulaObjectType));
 		return result;

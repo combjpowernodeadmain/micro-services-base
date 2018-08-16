@@ -106,4 +106,14 @@ public class RegulaObjectTypeBiz extends BusinessBiz<RegulaObjectTypeMapper, Reg
 	public void remove(Integer[] ids) {
 		this.mapper.deleteByIds(ids, BaseContextHandler.getUserID(), BaseContextHandler.getUsername(), new Date());
 	}
+	
+	/**
+	 * 按Id集合查询
+	 * @author 尚
+	 * @param ids 多个id集合，用逗号隔开，如"1,2,3,4"
+	 * @return
+	 */
+	public List<RegulaObjectType> selectByIds(String ids){
+		return this.mapper.selectByIds(ids);
+	}
 }

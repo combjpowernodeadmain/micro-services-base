@@ -2,12 +2,12 @@ package com.bjzhianjia.scp.cgp.entity;
 
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.*;
+
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 import org.springframework.format.annotation.DateTimeFormat;
-
-import com.bjzhianjia.scp.cgp.feign.DictFeign;
-import com.bjzhianjia.scp.merge.annonation.MergeField;
 
 /**
  * 监管对象

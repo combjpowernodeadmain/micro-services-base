@@ -117,4 +117,14 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 		List<RegulaObject> rows = regulaObjectMapper.selectByExample(example);
 		return new TableResultResponse<>(-1, rows);
 	}
+	
+	/**
+	 * 按Id查询记录
+	 * @author 尚
+	 * @param ids 多个id集合，逗号隔开，如"1,2,3,4"
+	 * @return
+	 */
+	public List<RegulaObject> selectByIds(String ids){
+		return this.mapper.selectByIds(ids);
+	}
 }

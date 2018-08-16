@@ -19,6 +19,7 @@ import com.bjzhianjia.scp.cgp.entity.RegulaObject;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.service.RegulaObjectService;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
+import com.bjzhianjia.scp.cgp.vo.RegulaObjectVo;
 import com.bjzhianjia.scp.cgp.vo.Regula_EnterPriseVo;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
@@ -108,7 +109,7 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
 
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	@ApiOperation("分页获取对象")
-	public TableResultResponse<RegulaObject> page(@RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
+	public TableResultResponse<RegulaObjectVo> page(@RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
 			@RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
 			@ModelAttribute @ApiParam(name = "接收查询条件的实例") RegulaObject regulaObject) {
 
