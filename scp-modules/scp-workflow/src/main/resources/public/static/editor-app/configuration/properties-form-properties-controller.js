@@ -76,7 +76,50 @@ var KisBpmFormPropertiesPopupCtrl = ['$scope', '$q', '$translate', function($sco
                 { field: 'type', displayName: $scope.labels.typeLabel}]
         };
     });
+    // predefined properties 
+    
+    var predefinedProperties = {
+    		 taskUrl: {name: "审批页面URL", type: "string", required: true, description: "配置审批页面URL，通过待办任务可以打开该URL地址进行审批" },
+             displayUrl: {name: "查看页面URL",  type: "string", required: true, description: "配置流程审批查看页面URL，通过已办任务，可以打开该URL地址查看流程信息" },
+             detailUrl: {name: "流程查询详情页面", type: "string", required: true, description: "配置流程查询详情页面URL，通过流程查询，可以打开该URL地址查看流程详情信息。如果该参数没有配置，则默认为displayUrl配置。" },
+             refuseTask: {name: "拒绝回退任务", type: "string", required: false, description: "流程任务参与决策时有效。审批拒绝时，将回退到本配置指定的流程任务节点，如果没有配置拒绝回退任务，则根据流程流转配置生成下一任务" },
+             callback: {name: "回调函数类", type: "string", required: false, description: "每个配置了回调类的流程任务，系统在执行相关操作时会进行回调操作。" },
+             tenantPermission: {name: "租户权限", type: "string",required: false, description: "工作流租户权限管理配置：0表示不启用；1表示启用；默认不启用。" },
+             dataPermission: {name: "数据权限", type: "string",required: false, description: "" },
+             orgPermission: {name: "组织权限", type: "string",required: false, description: "" },
+             deptPermission: {name: "部门权限", type: "string",required: false, description: "" },
+             selfPermission1: {name: "自定义权限1", type: "string",required: false, description: "" },
+             selfPermission2: {name: "自定义权限2", type: "string",required: false, description: "" },
+             selfPermission3: {name: "自定义权限3", type: "string",required: false, description: "" },
+             selfPermission4: {name: "自定义权限4", type: "string",required: false, description: "" },
+             selfPermission5: {name: "自定义权限5", type: "string",required: false, description: "" },
+             retrieve: {name: "可撤回标识", type: "string",required: false, description: "" },
+             voteTask: {name: "是否参与决策", type: "string",required: false, description: "" },
+             votePower: {name: "特殊决策权", type: "string",required: false, description: "" },
+             voteRule: {name: "投票规则", type: "string",required: false, description: "" },
+             voteWeight: {name: "投票权重", type: "string",required: false, description: "" },
+             voteThreshold: {name: "投票阈值", type: "string",required: false, description: "" },
+             voteQuickly: {name: "是否速决", type: "string",required: false, description: "" },
+             isNotify: {name: "是否发送流程任务通知", type: "string",required: false, description: "" },
+             notifyKey: {name: "流程任务消息类型关键字", type: "string",required: false, description: "" },
+             notifyUsersBySms: {name: "流程任务短信通知指定用户", type: "string",required: false, description: "" },
+             notifyUsersByMail: {name: "流程任务邮件通知指定用户", type: "string",required: false, description: "" },
+             notifyUsersByInnMsg: {name: "流程任务内部消息指定用户", type: "string",required: false, description: "" },
+             notifyUsersByWechat: {name: "流程任务微信通知指定用户", type: "string",required: false, description: "" }
+    };
+    
+    // Handler for when the value of the predefinedProperteis dropdown changes
+    $scope.predefinedPropertyTypeChanged = function() {
 
+        // Check date. If date, show date pattern
+    	var selectedPreDefinedProperty = $scope.selectedProperties[0].predefinedProperty
+    	if (predefinedProperties[selectedPreDefinedProperty]) {
+            $scope.selectedProperties[0].id = selectedPreDefinedProperty;
+            $scope.selectedProperties[0].name = predefinedProperties[selectedPreDefinedProperty].name;
+            $scope.selectedProperties[0].type = predefinedProperties[selectedPreDefinedProperty].type;
+        }
+    };
+    
     // Handler for when the value of the type dropdown changes
     $scope.propertyTypeChanged = function() {
 
@@ -114,6 +157,25 @@ var KisBpmFormPropertiesPopupCtrl = ['$scope', '$q', '$translate', function($sco
             type : 'string',
             readable: true,
             writable: true});
+    };
+    
+    // Add required predefined Properties
+    $scope.addRequiredPredefinedProperties = function() {
+        $scope.formProperties.push({ id : 'taskUrl',
+            name : predefinedProperties.taskUrl.name,
+            type : 'string',
+            readable: true,
+            writable: true});
+        $scope.formProperties.push({ id : 'displayUrl',
+        	name : predefinedProperties.displayUrl.name,
+        	type : 'string',
+        	readable: true,
+        	writable: true});
+        $scope.formProperties.push({ id : 'detailUrl',
+        	name : predefinedProperties.detailUrl.name,
+        	type : 'string',
+        	readable: true,
+        	writable: true});
     };
 
     // Click handler for remove button

@@ -15,6 +15,7 @@ package com.bjzhianjia.scp.security.wf.monitor.service;
 import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.fastjson.JSONObject;
+import com.bjzhianjia.scp.security.wf.exception.WorkflowException;
 import com.bjzhianjia.scp.security.wf.monitor.entity.WfMyProcBackBean;
 import com.bjzhianjia.scp.security.wf.monitor.entity.WfProcBackBean;
 import com.github.pagehelper.PageInfo;
@@ -35,14 +36,16 @@ import com.github.pagehelper.PageInfo;
  */
 public interface IWfMonitorService {
 
-    public PageInfo<WfMyProcBackBean> getUserDoneTasks(JSONObject objs) ;
-
+    public PageInfo<WfMyProcBackBean> getUserDoneTasks(JSONObject objs) throws WorkflowException;
+    public int getUserDoneTaskCount(JSONObject objs) throws WorkflowException;
+    
     public PageInfo<WfMyProcBackBean> getActiveProcessList(JSONObject objs) ;
 
     public PageInfo<WfMyProcBackBean> getOrgProcessList(JSONObject objs) ;
 
-    public PageInfo<WfProcBackBean> getUserToDoTasks(JSONObject objs) ;
-
+    public PageInfo<WfProcBackBean> getUserToDoTasks(JSONObject objs) throws WorkflowException ;
+    public int getUserToDoTaskCount(JSONObject objs) throws WorkflowException;
+    
 	public PageInfo<WfMyProcBackBean> getProcessDelegateList(JSONObject objs) ;
 
 	public PageInfo<WfMyProcBackBean> geyProcessSummary(JSONObject objs) ;

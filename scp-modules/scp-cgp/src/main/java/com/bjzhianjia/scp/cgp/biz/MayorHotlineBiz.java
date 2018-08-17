@@ -9,12 +9,15 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.MayorHotline;
 import com.bjzhianjia.scp.cgp.entity.Result;
+import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.mapper.MayorHotlineMapper;
+import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
@@ -34,6 +37,9 @@ import tk.mybatis.mapper.entity.Example.Criteria;
  */
 @Service
 public class MayorHotlineBiz extends BusinessBiz<MayorHotlineMapper,MayorHotline> {
+	@Autowired
+	private DictFeign dictFeign;
+	
 	/**
 	 * 获取目前ID最大的那条记录
 	 * @author 尚
@@ -129,8 +135,11 @@ public class MayorHotlineBiz extends BusinessBiz<MayorHotlineMapper,MayorHotline
 		}
 		
 		List<MayorHotline> selectByIds = this.mapper.selectByIds(String.join(",", idList));
+		
+		String toDoExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_TODO);
+		
 		for (MayorHotline mayorHotline : selectByIds) {
-			if(!mayorHotline.getExeStatus().equals(Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_TODO)) {
+			if(!toDoExeStatus.equals(mayorHotline.getExeStatus())) {
 				result.setIsSuccess(false);
 				result.setMessage("当前记录不能删除！");
 				return result;

@@ -81,18 +81,9 @@ public interface IWfProcTaskService {
      * @throws WorkflowException
      * @throws Exception
      */
-    public void completeProcessInstanceByTaskId(JSONObject objs) throws WorkflowException;
+    public void completeProcessInstance(JSONObject objs) throws WorkflowException;
     
-    /**
-     * 通过流程任务代码审批当前流程任务
-     * 
-     * @param objs  接口参数Json对象，包括：
-     * 
-     * @throws WorkflowException
-     * @throws Exception
-     */
-    public void completeProcessInstanceByTaskCode(JSONObject objs) throws WorkflowException;
-    
+        
     /**
      * 通过流程任务ID删除当前流程任务，删除的流程可以在我的流程中查询到
      * 

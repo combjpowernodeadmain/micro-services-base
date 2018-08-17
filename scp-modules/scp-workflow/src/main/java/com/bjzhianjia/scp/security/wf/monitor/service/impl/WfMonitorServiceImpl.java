@@ -13,6 +13,7 @@
 package com.bjzhianjia.scp.security.wf.monitor.service.impl;
 
 import java.io.OutputStream;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -31,16 +32,17 @@ import com.bjzhianjia.scp.security.common.util.DatePattern;
 import com.bjzhianjia.scp.security.common.util.DateTools;
 import com.bjzhianjia.scp.security.wf.auth.biz.WfProcUserAuthBiz;
 import com.bjzhianjia.scp.security.wf.constant.WorkflowEnumResults;
-import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcessAuthData;
-import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcessVariableDataAttr;
+import com.bjzhianjia.scp.security.wf.constant.Constants.WfRequestDataTypeAttr;
 import com.bjzhianjia.scp.security.wf.exception.WorkflowException;
 import com.bjzhianjia.scp.security.wf.monitor.biz.WfMonitorBiz;
 import com.bjzhianjia.scp.security.wf.monitor.entity.WfMyProcBackBean;
 import com.bjzhianjia.scp.security.wf.monitor.entity.WfProcBackBean;
 import com.bjzhianjia.scp.security.wf.monitor.service.IWfMonitorService;
 import com.bjzhianjia.scp.security.wf.utils.DateUtil;
+import com.bjzhianjia.scp.security.wf.utils.JSONUtil;
 import com.bjzhianjia.scp.security.wf.utils.StringUtil;
 import com.bjzhianjia.scp.security.wf.vo.WfProcAuthDataBean;
+import com.bjzhianjia.scp.security.wf.vo.WfProcBizDataBean;
 import com.github.pagehelper.PageInfo;
 
 /**
@@ -70,27 +72,37 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
      * @throws WorkflowException
      */
     public PageInfo<WfMyProcBackBean> getUserDoneTasks(JSONObject objs) throws WorkflowException {
-    	userAuthenticate(objs, false, false);
+    	WfProcAuthDataBean authData = parseAuthData(objs);
+    	WfProcBizDataBean bizData = parseBizData(objs);
+    	wfProcUserAuthBiz.userAuthenticate(authData, false, false, false);
+    	JSONObject queryObj = parseQueryData(authData, bizData);
+    	
+        parseAndUpdateDate(queryObj, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        parseAndUpdateDate(queryObj, "procFinishedTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procFinishedTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
 
-        parseAndUpdateDate(objs, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
-        parseAndUpdateDate(objs, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
-        parseAndUpdateDate(objs, "procFinishedTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
-        parseAndUpdateDate(objs, "procFinishedTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
-
-        return new PageInfo<WfMyProcBackBean>(wfMonitorBiz.getUserDoneTasks(objs));
+        return new PageInfo<WfMyProcBackBean>(wfMonitorBiz.getUserDoneTasks(queryObj));
     }
 
     /**
-     * 查询用户待办流程任务列表
+     * 查询用户已办流程任务数量
      * @param objs
      * @return
      * @throws WorkflowException
      */
-    public PageInfo<WfProcBackBean> getUserToDoTasks(JSONObject objs) throws WorkflowException {
-        userAuthenticate(objs, true, true);
+    public int getUserDoneTaskCount(JSONObject objs) throws WorkflowException {
+    	WfProcAuthDataBean authData = parseAuthData(objs);
+    	WfProcBizDataBean bizData = parseBizData(objs);
+    	wfProcUserAuthBiz.userAuthenticate(authData, false, false, false);
+    	JSONObject queryObj = parseQueryData(authData, bizData);
 
-        List<WfProcBackBean> list = wfMonitorBiz.getUserToDoTasks(objs);
-        return new PageInfo<WfProcBackBean>(list);
+        parseAndUpdateDate(queryObj, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        parseAndUpdateDate(queryObj, "procFinishedTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procFinishedTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+
+        return wfMonitorBiz.getUserDoneTaskCount(queryObj);
     }
     
     /**
@@ -99,15 +111,59 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
      * @return
      * @throws WorkflowException
      */
+    public PageInfo<WfProcBackBean> getUserToDoTasks(JSONObject objs) throws WorkflowException {
+    	WfProcAuthDataBean authData = parseAuthData(objs);
+    	WfProcBizDataBean bizData = parseBizData(objs);
+    	wfProcUserAuthBiz.userAuthenticate(authData, false, false, true);
+    	JSONObject queryObj = parseQueryData(authData, bizData);
+
+    	parseAndUpdateDate(queryObj, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        parseAndUpdateDate(queryObj, "procTaskCommitTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procTaskCommitTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        
+        List<WfProcBackBean> list = wfMonitorBiz.getUserToDoTasks(queryObj);
+        return new PageInfo<WfProcBackBean>(list);
+    }
+    
+    /**
+     * 查询用户待办流程任务数量
+     * @param objs
+     * @return
+     * @throws WorkflowException
+     */
+    public int getUserToDoTaskCount(JSONObject objs) throws WorkflowException {
+    	WfProcAuthDataBean authData = parseAuthData(objs);
+    	WfProcBizDataBean bizData = parseBizData(objs);
+    	wfProcUserAuthBiz.userAuthenticate(authData, false, false, true);
+    	JSONObject queryObj = parseQueryData(authData, bizData);
+
+    	parseAndUpdateDate(queryObj, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        parseAndUpdateDate(queryObj, "procTaskCommitTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procTaskCommitTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        
+        return wfMonitorBiz.getUserToDoTaskCount(queryObj);
+    }
+    
+    /**
+     * 流程监控查询
+     * @param objs
+     * @return
+     * @throws WorkflowException
+     */
     public PageInfo<WfMyProcBackBean> getActiveProcessList(JSONObject objs) throws WorkflowException {
-        userAuthenticate(objs, false, false);
+    	WfProcAuthDataBean authData = parseAuthData(objs);
+    	WfProcBizDataBean bizData = parseBizData(objs);
+    	wfProcUserAuthBiz.userAuthenticate(authData, false, false, false);
+    	JSONObject queryObj = parseQueryData(authData, bizData);
 
-        parseAndUpdateDate(objs, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
-        parseAndUpdateDate(objs, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
-        parseAndUpdateDate(objs, "procCommitTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
-        parseAndUpdateDate(objs, "procCommitTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        parseAndUpdateDate(queryObj, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        parseAndUpdateDate(queryObj, "procCommitTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procCommitTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
 
-        return new PageInfo<WfMyProcBackBean>(wfMonitorBiz.getActiveProcessList(objs));
+        return new PageInfo<WfMyProcBackBean>(wfMonitorBiz.getActiveProcessList(queryObj));
     }
     
     /**
@@ -117,14 +173,17 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
      * @throws WorkflowException
      */
     public PageInfo<WfMyProcBackBean> getOrgProcessList(JSONObject objs) throws WorkflowException {
-        userAuthenticate(objs, true, false);
+    	WfProcAuthDataBean authData = parseAuthData(objs);
+    	WfProcBizDataBean bizData = parseBizData(objs);
+    	wfProcUserAuthBiz.userAuthenticate(authData, false, false, false);
+    	JSONObject queryObj = parseQueryData(authData, bizData);
 
-        parseAndUpdateDate(objs, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
-        parseAndUpdateDate(objs, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
-        parseAndUpdateDate(objs, "procCommitTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
-        parseAndUpdateDate(objs, "procCommitTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        parseAndUpdateDate(queryObj, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        parseAndUpdateDate(queryObj, "procCommitTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procCommitTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
 
-        return new PageInfo<WfMyProcBackBean>(wfMonitorBiz.getOrgProcessList(objs));
+        return new PageInfo<WfMyProcBackBean>(wfMonitorBiz.getOrgProcessList(queryObj));
     }
     
     /**
@@ -134,14 +193,17 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
      * @throws WorkflowException
      */
     public PageInfo<WfMyProcBackBean> geyProcessSummary(JSONObject objs) throws WorkflowException {
-        userAuthenticate(objs, true, false);
+    	WfProcAuthDataBean authData = parseAuthData(objs);
+    	WfProcBizDataBean bizData = parseBizData(objs);
+    	wfProcUserAuthBiz.userAuthenticate(authData, false, false, false);
+    	JSONObject queryObj = parseQueryData(authData, bizData);
 
-        parseAndUpdateDate(objs, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
-        parseAndUpdateDate(objs, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
-        parseAndUpdateDate(objs, "procFinishedTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
-        parseAndUpdateDate(objs, "procFinishedTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        parseAndUpdateDate(queryObj, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        parseAndUpdateDate(queryObj, "procFinishedTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procFinishedTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
         
-        return new PageInfo<WfMyProcBackBean>(wfMonitorBiz.geyProcessSummary(objs));
+        return new PageInfo<WfMyProcBackBean>(wfMonitorBiz.geyProcessSummary(queryObj));
     }
     
     /**
@@ -150,16 +212,19 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
      * @return
      * @throws WorkflowException
      */
-    public PageInfo<WfMyProcBackBean> getProcessDelegateList(JSONObject objs)
-        throws WorkflowException {
-        userAuthenticate(objs, true, false);
+	public PageInfo<WfMyProcBackBean> getProcessDelegateList(JSONObject objs)
+			throws WorkflowException {
+		WfProcAuthDataBean authData = parseAuthData(objs);
+		WfProcBizDataBean bizData = parseBizData(objs);
+		wfProcUserAuthBiz.userAuthenticate(authData, false, false, false);
+		JSONObject queryObj = parseQueryData(authData, bizData);
 
-        parseAndUpdateDate(objs, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
-        parseAndUpdateDate(objs, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
-        parseAndUpdateDate(objs, "procFinishedTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
-        parseAndUpdateDate(objs, "procFinishedTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        parseAndUpdateDate(queryObj, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        parseAndUpdateDate(queryObj, "procFinishedTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procFinishedTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
 
-        return new PageInfo<WfMyProcBackBean>(wfMonitorBiz.getProcessDelegateList(objs));
+        return new PageInfo<WfMyProcBackBean>(wfMonitorBiz.getProcessDelegateList(queryObj));
     }
     
     /**
@@ -168,11 +233,14 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
      * @return
      * @throws WorkflowException
      */
-    public PageInfo<WfMyProcBackBean> getMyProcDelegateList(JSONObject objs) throws WorkflowException {
-        userAuthenticate(objs, true, false);
+	public PageInfo<WfMyProcBackBean> getMyProcDelegateList(JSONObject objs)
+			throws WorkflowException {
+		WfProcAuthDataBean authData = parseAuthData(objs);
+		wfProcUserAuthBiz.userAuthenticate(authData, false, false, false);
+		JSONObject queryObj = parseQueryData(authData, null);
 
-        return new PageInfo<WfMyProcBackBean>(wfMonitorBiz.getMyProcDelegateList(objs));
-    }
+		return new PageInfo<WfMyProcBackBean>(wfMonitorBiz.getMyProcDelegateList(queryObj));
+	}
     
     /**
      * 根据指定格式解析时间字符串，并转化成int类型更新对应数据
@@ -187,56 +255,97 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
             objs.put(key, DateUtil.getTime(value, DatePattern.DATEPARTTEN_YYYYMMDD_TYPE3, type));
         }
     }
-
-	private void userAuthenticate(JSONObject objs,
-			boolean checkOrg, boolean checkRole) throws WorkflowException {
-		WfProcAuthDataBean authData = new WfProcAuthDataBean();
-		authData.setProcTenantId(objs.getString(WfProcessAuthData.PROC_TENANTID));
-		authData.setProcAuthType(objs.getString(WfProcessAuthData.PROC_AUTHTYPE));
-		authData.setProcTokenUser(objs.getString(WfProcessAuthData.PROC_TOKENUSER));
-		authData.setProcTokenPass(objs.getString(WfProcessAuthData.PROC_TOKENPASS));
-        authData.setProcTaskUser(objs.getString(WfProcessAuthData.PROC_TASKUSER));
-        authData.setProcTaskRole(objs.getString(WfProcessAuthData.PROC_TASKROLE));
-        authData.setProcOrgCode(objs.getString(WfProcessVariableDataAttr.PROC_ORGCODE));
+    
+	/**
+     * 解析流程认证数据
+     * @param objs  请求Json数据
+     * @return
+     * @throws WorkflowException
+     */
+    private WfProcAuthDataBean parseAuthData(JSONObject objs) throws WorkflowException {
+        WfProcAuthDataBean authData = null;
         
-        wfProcUserAuthBiz.userAuthenticate(authData, checkOrg, checkRole);
+        if (objs.containsKey(WfRequestDataTypeAttr.PROC_AUTHDATA)) {
+            authData =
+                JSONUtil.toJavaObject(objs.getJSONObject(WfRequestDataTypeAttr.PROC_AUTHDATA),
+                    WfProcAuthDataBean.class);
+        }
         
-        objs.put(WfProcessAuthData.PROC_TENANTID, authData.getProcTenantId());
-        objs.put(WfProcessAuthData.PROC_DEPATID, authData.getProcDeptId());
-        objs.put(WfProcessAuthData.PROC_TOKENUSER, authData.getProcTokenUser());
-        objs.put(WfProcessAuthData.PROC_TOKENPASS, authData.getProcTokenPass());
-        objs.put(WfProcessAuthData.PROC_TASKUSER, authData.getProcTaskUser());
-        objs.put(WfProcessAuthData.PROC_TASKROLE, authData.getProcTaskRole());
-        objs.put(WfProcessAuthData.PROC_ORGCODE, authData.getProcOrgCode());
-        objs.put(WfProcessAuthData.PROC_TASKROLES, authData.getProcTaskRoles());
-        objs.put(WfProcessAuthData.PROC_AUTHORGCODES, authData.getProcAuthOrgCodes());
-        objs.put(WfProcessAuthData.PROC_SELFPERMISSIONDATA1, wfProcUserAuthBiz.getSelfPermissionData1());
-        objs.put(WfProcessAuthData.PROC_SELFPERMISSIONDATA2, wfProcUserAuthBiz.getSelfPermissionData2());
-        objs.put(WfProcessAuthData.PROC_SELFPERMISSIONDATA3, wfProcUserAuthBiz.getSelfPermissionData3());
-        objs.put(WfProcessAuthData.PROC_SELFPERMISSIONDATA4, wfProcUserAuthBiz.getSelfPermissionData4());
-        objs.put(WfProcessAuthData.PROC_SELFPERMISSIONDATA5, wfProcUserAuthBiz.getSelfPermissionData5());
+        if (authData == null || authData.isEmpty()) {
+            throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020000);
+        }
+        
+        return authData;
     }
     
     /**
-     * 导出流程实例汇总
+     * 解析流程查询条件数据
+     * @param objs  请求Json数据
+     * @return
+     * @throws WorkflowException
+     */
+    private WfProcBizDataBean parseBizData(JSONObject objs) throws WorkflowException {
+        if (objs.containsKey(WfRequestDataTypeAttr.PROC_BIZDATA)) {
+            WfProcBizDataBean bizData = JSONUtil.toJavaObject(objs, WfProcBizDataBean.class);
+            return (bizData == null || bizData.isEmpty()) ? new WfProcBizDataBean() : bizData;
+        } else {
+            throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020000);
+        }
+    }  
+    
+    /**
+     * 解析流程业务数据
+     * @param authData  用户认证数据
+     * @param bizData	用户查询数据
+     * @return
+     * @throws WorkflowException
+     */
+	private JSONObject parseQueryData(WfProcAuthDataBean authData,
+			WfProcBizDataBean bizData) throws WorkflowException {
+		JSONObject queryObj = new JSONObject();
+		
+		if (bizData != null) {
+			Iterator<String> iterBiz = bizData.getBizData().keySet().iterator();
+			while (iterBiz.hasNext()) {
+				String key  = iterBiz.next();
+				queryObj.put(key, bizData.getBizData(key));
+			}
+		}
+		
+		if (authData != null) {
+			Iterator<String> iterAuth = authData.getAuthData().keySet().iterator();
+			while (iterAuth.hasNext()) {
+				String key  = iterAuth.next();
+				queryObj.put(key, authData.getAuthData(key));
+			}
+		}
+		
+		return queryObj;
+	}
+    
+    /**
+     * 导出流程汇总查询数据
      * @param params
      * @return  
      * @throws Exception 
-     * @Author haojinlong 
      * Create Date: 2017年11月22日
      */
     @Override
     public String exportProcessSummary(JSONObject objs, HttpServletResponse response) {
         try {
-            userAuthenticate(objs, true, false);
+        	WfProcAuthDataBean authData = parseAuthData(objs);
+        	WfProcBizDataBean bizData = parseBizData(objs);
+        	wfProcUserAuthBiz.userAuthenticate(authData, false, false, false);
+        	JSONObject queryObj = parseQueryData(authData, bizData);
 
-            parseAndUpdateDate(objs, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
-            parseAndUpdateDate(objs, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
-            parseAndUpdateDate(objs, "procFinishedTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
-            parseAndUpdateDate(objs, "procFinishedTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+            parseAndUpdateDate(queryObj, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+            parseAndUpdateDate(queryObj, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+            parseAndUpdateDate(queryObj, "procFinishedTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+            parseAndUpdateDate(queryObj, "procFinishedTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+
             // 获取流程实例汇总列表
-            List<WfMyProcBackBean> procList = wfMonitorBiz.getProcessSummary(objs);
-            
+            List<WfMyProcBackBean> procList = wfMonitorBiz.getProcessSummary(queryObj);
+              
             // 2.导出excel表格
             HSSFWorkbook workbook = this.exportShouldDebtDetailList(procList);
             response.setContentType("application/vnd.ms-excel");
@@ -249,9 +358,11 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
         } catch (Exception e) {
             throw new WorkflowException(WorkflowEnumResults.WF_DESIGN_02010104);
         }
+        
         return "success";
     }
- // 导出
+    
+    // 导出
     private HSSFWorkbook exportShouldDebtDetailList(List<WfMyProcBackBean> list) {
         String[] excelHeader =
         {"序号", "流程名称", "业务ID", "流程创建时间", "流程完成时间", "流程摘要", "任务名称", "提交人", "处理人/角色",

@@ -97,19 +97,19 @@ public class Constances {
 		/**
 		 * 12345
 		 */
-		public static final String ROOT_BIZ_EVENTTYPE_12345="586c6ce8a6034d998793f0282697f0e1";
+		public static final String ROOT_BIZ_EVENTTYPE_12345="root_biz_eventType_12345";
 		/**
 		 * 巡查上报
 		 */
-		public static final String ROOT_BIZ_EVENTTYPE_CHECK="1cc6e1ad298e4e56b3744c741645ff4f";
+		public static final String ROOT_BIZ_EVENTTYPE_CHECK="root_biz_eventType_check";
 		/**
 		 * 领导交办
 		 */
-		public static final String ROOT_BIZ_EVENTTYPE_LEADER="70d3be12fb244630965624e965e4dddd";
+		public static final String ROOT_BIZ_EVENTTYPE_LEADER="root_biz_eventType_leader";
 		/**
 		 * 舆情
 		 */
-		public static final String ROOT_BIZ_EVENTTYPE_CONSENSUS="ea584f4088024e1ba62dea13d9632068";
+		public static final String ROOT_BIZ_EVENTTYPE_CONSENSUS="root_biz_eventType_consensus";
 	}
 	
 	/**
@@ -121,24 +121,24 @@ public class Constances {
 		/**
 		 * 未发起
 		 */
-		public static final String ROOT_BIZ_12345STATE_TODO="9d22db93f3fe47e2bc745eaa375b4c91";
+		public static final String ROOT_BIZ_12345STATE_TODO="root_biz_12345state_todo";
 		
 		/**
 		 * 处理中
 		 */
-		public static final String ROOT_BIZ_12345STATE_DOING="48df69cd7d08411b9fba0c6b692cd21c";
+		public static final String ROOT_BIZ_12345STATE_DOING="root_biz_12345state_doing";
 		/**
 		 * 已终止
 		 */
-		public static final String ROOT_BIZ_12345STATE_STOP="0f4c42611fdc4758b85abdcfd6a2fd3c";
+		public static final String ROOT_BIZ_12345STATE_STOP="root_biz_12345state_stop";
 		/**
 		 * 已反馈
 		 */
-		public static final String ROOT_BIZ_12345STATE_FEEDBACK="be9bad2901c14b719feb039ef269a188";
+		public static final String ROOT_BIZ_12345STATE_FEEDBACK="root_biz_12345state_feedback";
 		/**
 		 * 已处理
 		 */
-		public static final String ROOT_BIZ_12345STATE_DONE="e48f8d4f22794f7f828addbca8d6bfd3";
+		public static final String ROOT_BIZ_12345STATE_DONE="root_biz_12345state_done";
 		
 	}
 	/**
@@ -150,20 +150,20 @@ public class Constances {
 		/**
 		 * 未发起
 		 */
-		public static final String ROOT_BIZ_CONSTATE_TODO="a1dccb296d5c4af08a98ea17fde4a4e1";
+		public static final String ROOT_BIZ_CONSTATE_TODO="root_biz_conState_todo";
 		
 		/**
 		 * 处理中
 		 */
-		public static final String ROOT_BIZ_CONSTATE_DOING="7911df65493e4fd491a3d4cb8098aab2";
+		public static final String ROOT_BIZ_CONSTATE_DOING="root_biz_conState_doing";
 		/**
 		 * 已终止
 		 */
-		public static final String ROOT_BIZ_CONSTATE_STOP="ac1a55785fe04afc8da3856c42fa611f";
+		public static final String ROOT_BIZ_CONSTATE_STOP="root_biz_conState_stop";
 		/**
 		 * 已完成
 		 */
-		public static final String ROOT_BIZ_CONSTATE_FINISH="9bee20c238094baebee1490d2bc392a9";
+		public static final String ROOT_BIZ_CONSTATE_FINISH="root_biz_conState_finish";
 	}
 	/**
 	 * 领导交办处理状态
@@ -174,19 +174,19 @@ public class Constances {
 		/**
 		 * 未发起
 		 */
-		public static final String ROOT_BIZ_LDSTATE_TODO="4e202c44eca042e6923ba241a330723d";
+		public static final String ROOT_BIZ_LDSTATE_TODO="root_biz_ldState_todo";
 		
 		/**
 		 * 处理中
 		 */
-		public static final String ROOT_BIZ_LDSTATE_DOING="f8f70463793140928bfa55772a171343";
+		public static final String ROOT_BIZ_LDSTATE_DOING="root_biz_ldState_doing";
 		/**
 		 * 已终止
 		 */
-		public static final String ROOT_BIZ_LDSTATE_STOP="61aaf9d63fc24ea394e922f7d55243fb";
+		public static final String ROOT_BIZ_LDSTATE_STOP="root_biz_ldState_stop";
 		/**
 		 * 已完成
 		 */
-		public static final String ROOT_BIZ_LDSTATE_FINISH="f081aca084674577b6d6ab3596a7d86e";
+		public static final String ROOT_BIZ_LDSTATE_FINISH="root_biz_ldState_finish";
 	}
 }

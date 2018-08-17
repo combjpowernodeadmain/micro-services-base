@@ -190,7 +190,6 @@
 		WHERE delegate.PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
 		AND delegate.PROC_MANDATARY = #{mandatary,jdbcType=VARCHAR}
 		and delegate.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
-		and delegate.PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR}
 		AND delegate.PROC_LICENSE_ISVALID = '1'
 	</select>
 	
@@ -202,7 +201,6 @@
 		WHERE delegate.PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
 		AND delegate.PROC_LICENSOR = #{procLicensor,jdbcType=VARCHAR}
 		and delegate.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
-		and delegate.PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR}
 		AND delegate.PROC_LICENSE_ISVALID = '1'
 	</select>
 	
@@ -214,7 +212,6 @@
 		WHERE delegate.PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
 		AND delegate.PROC_MANDATARY = #{mandatary,jdbcType=VARCHAR}
 		and delegate.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
-		and delegate.PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR}
 		AND delegate.PROC_LICENSE_ISVALID = '1'
 	</select>
 	
