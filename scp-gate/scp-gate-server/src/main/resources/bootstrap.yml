@@ -1,4 +1,3 @@
-#
 zuul:
   ignored-services: "*"
   sensitive-headers:
