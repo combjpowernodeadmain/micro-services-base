@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,8 @@ import com.bjzhianjia.scp.cgp.entity.RegulaObjectType;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.mapper.RegulaObjectTypeMapper;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
+import com.bjzhianjia.scp.cgp.vo.RegulaObjectTypeVo;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
@@ -185,7 +188,7 @@ public class RegulaObjectTypeService {
 	 * @param regulaObjectType
 	 * @return
 	 */
-	public TableResultResponse<RegulaObjectType> getList(int page, int limit, RegulaObjectType regulaObjectType) {
+	public TableResultResponse<RegulaObjectTypeVo> getList(int page, int limit, RegulaObjectType regulaObjectType) {
 		TableResultResponse<RegulaObjectType> tableResult = regulaObjectTypeBiz.getList(page, limit, regulaObjectType);
 		List<RegulaObjectType> list = tableResult.getData().getRows();
 
@@ -203,10 +206,30 @@ public class RegulaObjectTypeService {
 		} catch (ExecutionException e) {
 			e.printStackTrace();
 		}
+		
+		List<RegulaObjectTypeVo> voList = queryAssist(list);
 
-		return tableResult;
+		return new TableResultResponse<RegulaObjectTypeVo>(tableResult.getData().getTotal(), voList);
 	}
 	
+	private List<RegulaObjectTypeVo> queryAssist(List<RegulaObjectType> list) {
+		List<RegulaObjectTypeVo> voList=BeanUtil.copyBeanList_New(list, RegulaObjectTypeVo.class);
+		
+		List<String> parentIdList = voList.stream().map(o->o.getParentObjectTypeId()+"").distinct().collect(Collectors.toList());
+		
+		List<RegulaObjectType> byParentInstance = regulaObjectTypeBiz.selectByIds(String.join(",",parentIdList));
+		Map<Integer, String> type_ID_NAME_Map = byParentInstance.stream().collect(Collectors.toMap(RegulaObjectType::getId, RegulaObjectType::getObjectTypeName));
+		
+		for (RegulaObjectTypeVo vo:voList) {
+			if(!"-1".equals(vo.getParentObjectTypeId()+"")) {
+				Integer parentId = vo.getParentObjectTypeId();
+				vo.setParentObjectTypeName(type_ID_NAME_Map.get(parentId));
+			}
+		}
+		
+		return voList;
+	}
+
 	/**
 	 * 获取单个对象
 	 * @author 尚
@@ -221,10 +244,12 @@ public class RegulaObjectTypeService {
 		}
 		
 		//查询该对象父级对象
-		RegulaObjectType parent = regulaObjectTypeBiz.selectById(regulaObjectType.getParentObjectTypeId());
-		
 		JSONObject jsonObj = JSONObject.parseObject(JSON.toJSONString(regulaObjectType));
-		jsonObj.put("parentObjectTypeName", parent.getObjectTypeName());
+		if(!regulaObjectType.getParentObjectTypeId().equals(-1)) {
+			RegulaObjectType parent = regulaObjectTypeBiz.selectById(regulaObjectType.getParentObjectTypeId());
+			
+			jsonObj.put("parentObjectTypeName", parent.getObjectTypeName());
+		}
 		
 		return new ObjectRestResponse<JSONObject>().data(jsonObj); 
 	}

@@ -186,9 +186,10 @@ public class AreaGridService {
 		List<AreaGridMember> areaGridMemberInDB = areaGridMemberBiz.getAreaGridMember(areaGridMemberList);
 		if (!(areaGridMemberInDB == null || areaGridMemberInDB.isEmpty())) {
 			StringBuffer buffer = new StringBuffer();
-			buffer.append("【").append(areaGridMemberInDB.get(0).getGridId()).append("-")
-					.append(areaGridMemberInDB.get(0).getGridRole()).append("-")
-					.append(areaGridMemberInDB.get(0).getGridMember()).append("】已存在");
+			buffer.append("网格内人员重复，请核实");
+//			buffer.append("【").append(areaGridMemberInDB.get(0).getGridId()).append("-")
+//			.append(areaGridMemberInDB.get(0).getGridRole()).append("-")
+//			.append(areaGridMemberInDB.get(0).getGridMember()).append("】已存在");
 			result.setMessage(buffer.toString());
 			return result;
 		}

@@ -50,7 +50,7 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
 		ObjectRestResponse<JSONObject> restResult = new ObjectRestResponse<>();
 
 		if (bindingResult.hasErrors()) {
-			restResult.setStatus(200);
+			restResult.setStatus(400);
 			restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
 			return restResult;
 		}

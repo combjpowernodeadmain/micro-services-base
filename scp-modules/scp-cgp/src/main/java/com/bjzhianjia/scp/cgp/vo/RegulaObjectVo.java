@@ -2,6 +2,11 @@ package com.bjzhianjia.scp.cgp.vo;
 
 import com.bjzhianjia.scp.cgp.entity.RegulaObject;
 
+/**
+ * 
+ * @author 尚
+ *
+ */
 public class RegulaObjectVo extends RegulaObject {
 	
 	/**
