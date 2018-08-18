@@ -59,12 +59,12 @@
     <distributionManagement>
         <snapshotRepository>
             <id>nexus</id>
-            <url>http://blcneuxs.zxbit.cn/repository/blc-snapshots/</url>
+            <url>http://nexus.lutuo.com/repository/maven-snapshots/</url>
         </snapshotRepository>
         <repository>
             <id>nexus</id>
             <name>Maven Central Staging Repository</name>
-            <url>http://blcneuxs.zxbit.cn/repository/blc-release/</url>
+            <url>http://nexus.lutuo.com/repository/maven-releases/</url>
         </repository>
     </distributionManagement>
 </project>
