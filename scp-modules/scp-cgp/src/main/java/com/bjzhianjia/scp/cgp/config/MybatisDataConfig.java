@@ -26,6 +26,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import javax.sql.DataSource;
 
@@ -38,7 +39,7 @@ import javax.sql.DataSource;
 @Configuration
 @MapperScan(basePackages = { "com.bjzhianjia.scp.cgp.mapper" }, sqlSessionFactoryRef = "cgpsqlSessionFactory")
 public class MybatisDataConfig {
-
+	
 	/*
 	 * @Autowired private SqlSessionFactory sqlSessionFactory;
 	 * 
@@ -71,6 +72,7 @@ public class MybatisDataConfig {
 	public SqlSessionFactory cgpsqlSessionFactory() throws Exception {
 		SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
 		factoryBean.setDataSource(cgpDataSource()); // 使用workflow数据源, 连接workflow库
+		factoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath*:mapper/*.xml"));
 		return factoryBean.getObject();
 
 	}
