@@ -3,7 +3,6 @@ package com.bjzhianjia.scp.cgp;
 import com.bjzhianjia.scp.merge.EnableAceMerge;
 import com.bjzhianjia.scp.security.auth.client.EnableAceAuthClient;
 import com.spring4all.swagger.EnableSwagger2Doc;
-import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -27,7 +26,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 // 开启服务鉴权
 @EnableFeignClients({"com.bjzhianjia.scp.security.auth.client.feign","com.bjzhianjia.scp.cgp.feign"})
 @ComponentScan({"com.bjzhianjia.scp.cgp","org.activiti.rest.diagram", "com.bjzhianjia.scp.security.wf.base"})
-@MapperScan({"com.bjzhianjia.scp.cgp.mapper","com.bjzhianjia.scp.security.wf.base.*.mapper"})
 @EnableAceAuthClient
 @EnableAceMerge
 @EnableSwagger2Doc
