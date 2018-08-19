@@ -1,0 +1,719 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bjzhianjia.scp.security.wf.base.monitor.mapper.WfProcMonitorBeanMapper">
+	<select id="getUserToDoTasks" resultType="com.bjzhianjia.scp.security.wf.base.monitor.entity.WfProcBackBean">
+		SELECT
+			proc.PROC_ID procId, 
+			proc.PROC_KEY procKey, 
+			proc.PROC_NAME procName, 
+			proc.PROC_INST_ID procInstId, 
+			proc.PROC_BIZID procBizid, 
+			proc.PROC_BIZTYPE procBiztype, 
+			proc.PROC_ORGCODE procOrgcode, 
+			proc.PROC_MEMO procMemo, 
+			task.PROC_TASK_STATUS procTaskStatus, 
+			CASE
+				WHEN task.PROC_TASK_STATUS = '1' THEN
+					'待签收'
+				WHEN task.PROC_TASK_STATUS = '2' THEN
+					'待处理'
+				WHEN task.PROC_TASK_STATUS = '3' THEN
+					'已处理'
+				WHEN task.PROC_TASK_STATUS = '4' THEN
+					'已终止'
+				ELSE
+					'未知'
+				END procTaskStatusName, 
+			task.ID id, 
+			task.PROC_CTASKID procCtaskId, 
+			task.PROC_CTASKCODE procCtaskcode, 
+			task.PROC_CTASKNAME procCtaskname, 
+			task.PROC_TASK_COMMITTER procTaskCommitter, 
+			task.PROC_APPROVEURL procApproveurl, 
+			task.PROC_SELF_PROPERTIES procSelfProperties,
+			IF (
+				task.PROC_TASK_STATUS = '1',
+				task.PROC_TASK_GROUP,
+				task.PROC_TASK_ASSIGNEE
+			) procTaskAssignee, 
+			task.PROC_LICENSOR procLicensor, 
+			FROM_UNIXTIME(task.PROC_TASK_COMMITTIME, '%Y/%m/%d %H:%i:%s') procTaskCommittime, 
+			FROM_UNIXTIME(task.PROC_TASK_ASSIGNTIME, '%Y/%m/%d %H:%i:%s') procTaskAssigntime, 
+			task.PROC_REFUSETASK procRefusetask 
+		FROM SCP_WF_PROC proc
+		JOIN SCP_WF_PROC_TASK task 
+			ON proc.PROC_INST_ID = task.PROC_INST_ID
+		LEFT JOIN SCP_WF_PROC_DELEGATE delegate 
+			ON	delegate.PROC_INST_ID =	proc.PROC_INST_ID
+		 	AND delegate.PROC_MANDATARY = #{procTaskUser}
+			AND	delegate.PROC_LICENSE_ISVALID =	'1' 
+		WHERE
+			proc.PROC_STATUS = '0' 
+			AND task.PROC_TASK_STATUS IN ('1', '2') 
+			AND (
+			(
+				task.PROC_TASK_STATUS = '1' AND (
+			<if test="procTaskRoles != null and procTaskRoles.size > 0">
+				task.PROC_TASK_GROUP in
+				<foreach item="item" index="index" collection="procTaskRoles" open="("
+					separator="," close=")">
+					#{item}
+				</foreach>
+				OR
+			</if>
+				delegate.PROC_MANDATARY=#{procTaskUser} and	task.PROC_TASK_GROUP=delegate.PROC_LICENSOR_ROLE )				 
+			)
+			OR (
+				task.PROC_TASK_STATUS = '2' AND task.PROC_TASK_ASSIGNEE = #{procTaskUser} 				 
+			)
+			)
+			AND (
+				task.PROC_DATAPERMISSION = '0'
+				OR task.PROC_DATAPERMISSION = '1' AND proc.PROC_ORGCODE = #{procOrgCode}
+				OR task.PROC_DATAPERMISSION = '2'	AND SUBSTR(proc.PROC_ORGCODE, 1, LENGTH(#{procOrgCode}))=#{procOrgCode} and	LENGTH(proc.PROC_ORGCODE) > LENGTH(#{procOrgCode})
+				OR task.PROC_DATAPERMISSION = '3'	AND SUBSTR(proc.PROC_ORGCODE, 1, LENGTH(#{procOrgCode}))=#{procOrgCode}
+				OR task.PROC_DATAPERMISSION = '9' AND task.PROC_APPOINT_USERS = #{procTaskUser})
+			AND (task.PROC_TENANTPERMISSION = '0' OR task.PROC_TENANTPERMISSION = '1' and proc.PROC_TENANT_ID = #{procTenantId})
+			AND (task.PROC_ORGPERMISSION = '0' 
+				OR task.PROC_ORGPERMISSION = '1' and task.PROC_ORGCODE = #{procOrgCode}
+				OR task.PROC_ORGPERMISSION = '2' and (task.PROC_ORGCODE = #{procOrgCode} or
+					<if test="procAuthOrgCodes != null and procAuthOrgCodes.size > 0">
+						task.PROC_ORGCODE in
+						<foreach item="item" index="index" collection="procAuthOrgCodes" open="("
+							separator="," close=")">
+							#{item}
+						</foreach>
+					</if>)
+				OR task.PROC_ORGPERMISSION = '3'  and 
+					<if test="procAuthOrgCodes != null and procAuthOrgCodes.size > 0">
+						task.PROC_ORGCODE in
+						<foreach item="item" index="index" collection="procAuthOrgCodes" open="("
+							separator="," close=")">
+							#{item}
+						</foreach>
+					</if>
+				OR task.PROC_ORGPERMISSION = '9' AND task.PROC_APPOINT_USERS = #{procTaskUser})
+			AND (task.PROC_DEPTPERMISSION = '0' OR task.PROC_DEPTPERMISSION = '1' and task.PROC_DEPART_ID = #{procDeptId})
+			AND (task.PROC_SELFPERMISSION1 = '0' OR task.PROC_SELFPERMISSION1 = '1' and task.PROC_SELFDATA1 = #{procSelfPermissionData1})
+			AND (task.PROC_SELFPERMISSION2 = '0' OR task.PROC_SELFPERMISSION2 = '1' and task.PROC_SELFDATA2 = #{procSelfPermissionData2})
+			AND (task.PROC_SELFPERMISSION3 = '0' OR task.PROC_SELFPERMISSION3 = '1' and task.PROC_SELFDATA3 = #{procSelfPermissionData3})
+			AND (task.PROC_SELFPERMISSION4 = '0' OR task.PROC_SELFPERMISSION4 = '1' and task.PROC_SELFDATA4 = #{procSelfPermissionData4})
+			AND (task.PROC_SELFPERMISSION5 = '0' OR task.PROC_SELFPERMISSION5 = '1' and task.PROC_SELFDATA5 = #{procSelfPermissionData5})
+			<if test="procName != '' and procName != null">
+				and proc.PROC_NAME LIKE "%"#{procName}"%"
+			</if>
+			<if test="procCtaskname != '' and procCtaskname != null">
+				and task.PROC_CTASKNAME LIKE "%"#{procCtaskname}"%"
+			</if>
+			<if test="procMemo != '' and procMemo != null">
+				and proc.PROC_MEMO LIKE "%"#{procMemo}"%"
+			</if>
+			<if test="procTaskStatus != '' and procTaskStatus != null">
+				and task.PROC_TASK_STATUS = #{procTaskStatus}
+			</if>
+			<if test="procBizid != '' and procBizid != null">
+				and proc.PROC_BIZID LIKE "%"#{procBizid}"%"
+			</if>
+			<!-- 查询条件：流程创建时间-开始 -->
+			<if test="procCreateTimeStart != null and procCreateTimeStart != ''">
+				AND proc.PROC_CREATETIME &gt;= #{procCreateTimeStart}
+			</if>
+			<!-- 查询条件：流程创建时间-结束 -->
+			<if test="procCreateTimeEnd != null and procCreateTimeEnd != ''">
+				AND proc.PROC_CREATETIME &lt;= #{procCreateTimeEnd}
+			</if>
+			<!-- 查询条件：流程任务到达时间-开始 -->
+			<if test="procTaskCommitTimeStart != null and procTaskCommitTimeStart != ''">
+				AND task.PROC_TASK_COMMITTIME &gt;= #{procTaskCommitTimeStart}
+			</if>
+			<!-- 查询条件：流程任务到达时间-结束 -->
+			<if test="procTaskCommitTimeEnd != null and procTaskCommitTimeEnd != ''">
+				AND task.PROC_TASK_COMMITTIME &lt;= #{procTaskCommitTimeEnd}
+			</if>
+		ORDER BY task.PROC_TASK_COMMITTIME ASC
+	</select>
+	
+	<select id="getUserToDoTaskCount" resultType="int">
+		SELECT count(task.PROC_CTASKID)
+		FROM SCP_WF_PROC proc
+		JOIN SCP_WF_PROC_TASK task 
+			ON proc.PROC_INST_ID = task.PROC_INST_ID
+		LEFT JOIN SCP_WF_PROC_DELEGATE delegate 
+			ON	delegate.PROC_INST_ID =	proc.PROC_INST_ID
+		 	AND delegate.PROC_MANDATARY = #{procTaskUser}
+			AND	delegate.PROC_LICENSE_ISVALID =	'1' 
+		WHERE
+			proc.PROC_STATUS = '0' 
+			AND task.PROC_TASK_STATUS IN ('1', '2') 
+			AND (
+			(
+				task.PROC_TASK_STATUS = '1' AND (
+			<if test="procTaskRoles != null and procTaskRoles.size > 0">
+				task.PROC_TASK_GROUP in
+				<foreach item="item" index="index" collection="procTaskRoles" open="("
+					separator="," close=")">
+					#{item}
+				</foreach>
+				OR
+			</if>
+				delegate.PROC_MANDATARY=#{procTaskUser} and	task.PROC_TASK_GROUP=delegate.PROC_LICENSOR_ROLE )				 
+			)
+			OR (
+				task.PROC_TASK_STATUS = '2' AND task.PROC_TASK_ASSIGNEE = #{procTaskUser} 				 
+			)
+			)
+			AND (
+				task.PROC_DATAPERMISSION = '0'
+				OR task.PROC_DATAPERMISSION = '1' AND proc.PROC_ORGCODE = #{procOrgCode}
+				OR task.PROC_DATAPERMISSION = '2'	AND SUBSTR(proc.PROC_ORGCODE, 1, LENGTH(#{procOrgCode}))=#{procOrgCode} and	LENGTH(proc.PROC_ORGCODE) > LENGTH(#{procOrgCode})
+				OR task.PROC_DATAPERMISSION = '3'	AND SUBSTR(proc.PROC_ORGCODE, 1, LENGTH(#{procOrgCode}))=#{procOrgCode}
+				OR task.PROC_DATAPERMISSION = '9' AND task.PROC_APPOINT_USERS = #{procTaskUser})
+			AND (task.PROC_TENANTPERMISSION = '0' OR task.PROC_TENANTPERMISSION = '1' and proc.PROC_TENANT_ID = #{procTenantId})
+			AND (task.PROC_ORGPERMISSION = '0' 
+				OR task.PROC_ORGPERMISSION = '1' and task.PROC_ORGCODE = #{procOrgCode}
+				OR task.PROC_ORGPERMISSION = '2' and (task.PROC_ORGCODE = #{procOrgCode} or
+					<if test="procAuthOrgCodes != null and procAuthOrgCodes.size > 0">
+						task.PROC_ORGCODE in
+						<foreach item="item" index="index" collection="procAuthOrgCodes" open="("
+							separator="," close=")">
+							#{item}
+						</foreach>
+					</if>)
+				OR task.PROC_ORGPERMISSION = '3'  and 
+					<if test="procAuthOrgCodes != null and procAuthOrgCodes.size > 0">
+						task.PROC_ORGCODE in
+						<foreach item="item" index="index" collection="procAuthOrgCodes" open="("
+							separator="," close=")">
+							#{item}
+						</foreach>
+					</if>
+				OR task.PROC_ORGPERMISSION = '9' task.PROC_APPOINT_USERS = #{procTaskUser})
+			AND (task.PROC_DEPTPERMISSION = '0' OR task.PROC_DEPTPERMISSION = '1' and task.PROC_DEPART_ID = #{procDeptId})
+			AND (task.PROC_SELFPERMISSION1 = '0' OR task.PROC_SELFPERMISSION1 = '1' and task.PROC_SELFDATA1 = #{procSelfPermissionData1})
+			AND (task.PROC_SELFPERMISSION2 = '0' OR task.PROC_SELFPERMISSION2 = '1' and task.PROC_SELFDATA2 = #{procSelfPermissionData2})
+			AND (task.PROC_SELFPERMISSION3 = '0' OR task.PROC_SELFPERMISSION3 = '1' and task.PROC_SELFDATA3 = #{procSelfPermissionData3})
+			AND (task.PROC_SELFPERMISSION4 = '0' OR task.PROC_SELFPERMISSION4 = '1' and task.PROC_SELFDATA4 = #{procSelfPermissionData4})
+			AND (task.PROC_SELFPERMISSION5 = '0' OR task.PROC_SELFPERMISSION5 = '1' and task.PROC_SELFDATA5 = #{procSelfPermissionData5})
+			<if test="procName != '' and procName != null">
+				and proc.PROC_NAME LIKE "%"#{procName}"%"
+			</if>
+			<if test="procCtaskname != '' and procCtaskname != null">
+				and task.PROC_CTASKNAME LIKE "%"#{procCtaskname}"%"
+			</if>
+			<if test="procMemo != '' and procMemo != null">
+				and proc.PROC_MEMO LIKE "%"#{procMemo}"%"
+			</if>
+			<if test="procTaskStatus != '' and procTaskStatus != null">
+				and task.PROC_TASK_STATUS = #{procTaskStatus}
+			</if>
+			<if test="procBizid != '' and procBizid != null">
+				and proc.PROC_BIZID LIKE "%"#{procBizid}"%"
+			</if>
+		ORDER BY task.PROC_TASK_COMMITTIME ASC
+	</select>
+	
+	<!-- 已办任务 -->
+	<select id="selectMyProcTasks" parameterType="java.util.Map"
+		resultType="com.bjzhianjia.scp.security.wf.base.monitor.entity.WfMyProcBackBean">
+		SELECT DISTINCT
+		myproc.proc_inst_id procInstId,
+		myproc.PROC_TASKID procTaskid,
+		CASE myproc.PROC_USER_TYPE
+			WHEN '1' THEN '流程创建者'
+			WHEN '2' THEN '流程参与者'
+			WHEN '3' THEN '流程订阅者'
+			WHEN '4' THEN '流程委托人'
+			WHEN '5' THEN '流程受托人'
+			ELSE '未知'
+			END AS procUserType,
+		task.PROC_CTASKCODE procTaskcode,
+		task.PROC_CTASKNAME procTaskname,
+		proc.proc_bizid procBizId,
+		proc.PROC_BIZTYPE procBiztype,
+		proc.PROC_ORGCODE procOrgcode,
+		proc.proc_name procName,
+		FROM_UNIXTIME(proc.PROC_CREATETIME, '%Y/%m/%d %H:%i:%s') procCreatetime,
+		FROM_UNIXTIME(proc.PROC_ENDTIME, '%Y/%m/%d %H:%i:%s') procEndtime,
+		proc.PROC_MEMO procMemo,
+		proc.PROC_STATUS procStatus,
+		CASE proc.PROC_STATUS
+			WHEN '0' THEN '审批中'
+			WHEN '3' THEN '已暂停'
+			WHEN '4' THEN '已终止'
+			WHEN '5' THEN '已删除'
+			WHEN '6' THEN '已完成'
+			WHEN '7' THEN '已取消'
+			ELSE '未知'
+			END AS procStatusName,
+		myproc.PROC_DISPLAYURL procDisplayurl,
+		task.PROC_TASK_COMMITTER procTaskCommitter,
+		IF (task.PROC_TASK_STATUS = '1', task.PROC_TASK_GROUP,
+		task.PROC_TASK_ASSIGNEE) procTaskAssignee,
+		task.PROC_LICENSOR procLicensor,
+		FROM_UNIXTIME(task.PROC_TASK_COMMITTIME, '%Y/%m/%d %H:%i:%s') procTaskCommittime,
+		FROM_UNIXTIME(task.PROC_TASK_ASSIGNTIME, '%Y/%m/%d %H:%i:%s') procTaskAssigntime,
+		FROM_UNIXTIME(task.PROC_TASK_ENDTIME, '%Y/%m/%d %H:%i:%s') procTaskEndime,
+		task.PROC_TASK_STATUS procTaskstatus
+		FROM SCP_wf_my_proc myproc
+		LEFT JOIN SCP_wf_proc proc ON myproc.proc_inst_id = proc.proc_inst_id
+		LEFT JOIN SCP_wf_proc_task task ON task.proc_inst_id = myproc.proc_inst_id
+		AND task.PROC_CTASKID = myproc.PROC_TASKID
+		WHERE
+		myproc.PROC_USER = #{procTaskUser,jdbcType=VARCHAR}
+		and proc.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
+		<if test="procStatus != null and procStatus != ''">
+			AND proc.PROC_STATUS = #{procStatus,jdbcType=VARCHAR}
+		</if>
+		<!-- 查询条件：创建时间-开始 -->
+		<if test="procCreateTimeStart != null and procCreateTimeStart != ''">
+			AND proc.PROC_CREATETIME &gt;= #{procCreateTimeStart}
+		</if>
+		<!-- 查询条件：创建时间-结束 -->
+		<if test="procCreateTimeEnd != null and procCreateTimeEnd != ''">
+			AND proc.PROC_CREATETIME &lt;= #{procCreateTimeEnd}
+		</if>
+		<!-- 查询条件：完成时间-开始 -->
+		<if test="procFinishedTimeStart != null and procFinishedTimeStart != ''">
+			AND proc.PROC_ENDTIME &gt;= #{procFinishedTimeStart}
+		</if>
+		<!-- 查询条件：完成时间-结束 -->
+		<if test="procFinishedTimeEnd != null and procFinishedTimeEnd != ''">
+			AND proc.PROC_ENDTIME &lt;= #{procFinishedTimeEnd}
+		</if>
+		<!-- 查询条件：业务ID -->
+		<if test="procBizid != null and procBizid != ''">
+			AND proc.proc_bizid LIKE CONCAT('%', #{procBizid},'%')
+		</if>
+		<!-- 查询条件：流程名称 -->
+		<if test="procName != null and procName != ''">
+			AND proc.PROC_NAME LIKE CONCAT('%', #{procName},'%')
+		</if>
+		<!-- 查询条件：流程摘要 -->
+		<if test="procMemo != null and procMemo != ''">
+			AND proc.PROC_MEMO LIKE CONCAT('%', #{procMemo},'%')
+		</if>
+		ORDER BY proc.PROC_CREATETIME DESC
+	</select>
+
+	<!-- 已办任务数量 -->
+	<select id="getMyProcTaskCount" parameterType="java.util.Map" resultType="int">
+		SELECT count(DISTINCT myproc.PROC_TASKID)
+		FROM SCP_wf_my_proc myproc
+		LEFT JOIN SCP_wf_proc proc ON myproc.proc_inst_id = proc.proc_inst_id
+		WHERE
+		myproc.PROC_USER = #{procTaskUser,jdbcType=VARCHAR}
+		and proc.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
+		<if test="procStatus != null and procStatus != ''">
+			AND proc.PROC_STATUS = #{procStatus,jdbcType=VARCHAR}
+		</if>
+		<!-- 查询条件：创建时间-开始 -->
+		<if test="procCreateTimeStart != null and procCreateTimeStart != ''">
+			AND proc.PROC_CREATETIME &gt;= #{procCreateTimeStart}
+		</if>
+		<!-- 查询条件：创建时间-结束 -->
+		<if test="procCreateTimeEnd != null and procCreateTimeEnd != ''">
+			AND proc.PROC_CREATETIME &lt;= #{procCreateTimeEnd}
+		</if>
+		<!-- 查询条件：完成时间-开始 -->
+		<if test="procFinishedTimeStart != null and procFinishedTimeStart != ''">
+			AND proc.PROC_ENDTIME &gt;= #{procFinishedTimeStart}
+		</if>
+		<!-- 查询条件：完成时间-结束 -->
+		<if test="procFinishedTimeEnd != null and procFinishedTimeEnd != ''">
+			AND proc.PROC_ENDTIME &lt;= #{procFinishedTimeEnd}
+		</if>
+		<!-- 查询条件：业务ID -->
+		<if test="procBizid != null and procBizid != ''">
+			AND proc.proc_bizid LIKE CONCAT('%', #{procBizid},'%')
+		</if>
+		<!-- 查询条件：流程名称 -->
+		<if test="procName != null and procName != ''">
+			AND proc.PROC_NAME LIKE CONCAT('%', #{procName},'%')
+		</if>
+		<!-- 查询条件：流程摘要 -->
+		<if test="procMemo != null and procMemo != ''">
+			AND proc.PROC_MEMO LIKE CONCAT('%', #{procMemo},'%')
+		</if>
+		ORDER BY proc.PROC_CREATETIME DESC
+	</select>
+	
+	<!-- 流程监控 -->
+	<select id="selectActiveProcessList" resultType="com.bjzhianjia.scp.security.wf.base.monitor.entity.WfMyProcBackBean">
+		SELECT
+			proc.PROC_INST_ID procInstId,
+			proc.PROC_NAME procName,
+			proc.PROC_BIZID procBizId,
+			proc.PROC_BIZTYPE procBiztype,
+			proc.PROC_MEMO procMemo,
+			proc.PROC_ORGCODE procOrgcode,
+			task.PROC_CTASKID procTaskid,
+			task.PROC_CTASKCODE procTaskcode,
+			task.PROC_CTASKNAME procTaskname,
+			proc.PROC_DISPLAYURL procDisplayurl,
+			task.PROC_TASK_COMMITTER procTaskCommitter,
+			IF (
+				task.PROC_TASK_STATUS = '1',
+				task.PROC_TASK_GROUP,
+				task.PROC_TASK_ASSIGNEE
+			) procTaskAssignee,
+			task.PROC_LICENSOR procLicensor,
+			FROM_UNIXTIME(
+				proc.PROC_CREATETIME,
+				'%Y/%m/%d %H:%i:%s'
+			) procCreatetime,
+			FROM_UNIXTIME(
+			task.PROC_TASK_COMMITTIME,
+			'%Y/%m/%d %H:%i:%s'
+		) procTaskCommittime,
+		 FROM_UNIXTIME(
+			task.PROC_TASK_ASSIGNTIME,
+			'%Y/%m/%d %H:%i:%s'
+		) procTaskAssigntime,
+			proc.PROC_STATUS procStatus,
+			CASE proc.PROC_STATUS
+				WHEN '0' THEN
+					'审批中'
+				WHEN '3' THEN
+					'已暂停'
+				ELSE
+					'未知'
+			END AS procStatusName
+		FROM
+			SCP_WF_PROC proc
+		LEFT JOIN SCP_WF_PROC_TASK task ON (
+			proc.PROC_INST_ID = task.PROC_INST_ID
+			AND task.PROC_TASK_STATUS IN (1, 2)
+		)
+		WHERE
+			proc.PROC_STATUS IN (0, 3)
+			and proc.PROC_TENANT_ID = #{procTenantId, jdbcType=VARCHAR}
+			<if test="procStatus != null and procStatus != ''">
+				AND proc.PROC_STATUS = #{procStatus,jdbcType=VARCHAR}
+			</if>
+			<!-- 查询条件：流程创建时间-开始 -->
+			<if test="procCreateTimeStart != null and procCreateTimeStart != ''">
+				AND proc.PROC_CREATETIME &gt;= #{procCreateTimeStart}
+			</if>
+			<!-- 查询条件：流程创建时间-结束 -->
+			<if test="procCreateTimeEnd != null and procCreateTimeEnd != ''">
+				AND proc.PROC_CREATETIME &lt;= #{procCreateTimeEnd}
+			</if>
+			<!-- 查询条件：任务到达时间-开始 -->
+			<if test="procCommitTimeStart != null and procCommitTimeStart != ''">
+				AND task.PROC_TASK_COMMITTIME &gt;= #{procCommitTimeStart}
+			</if>
+			<!-- 查询条件：任务到达时间-结束 -->
+			<if test="procCommitTimeEnd != null and procCommitTimeEnd != ''">
+				AND task.PROC_TASK_COMMITTIME &lt;= #{procCommitTimeEnd}
+			</if>
+			<!-- 查询条件：业务ID -->
+			<if test="procBizid != null and procBizid != ''">
+				AND proc.proc_bizid LIKE CONCAT('%', #{procBizid},'%')
+			</if>
+			<!-- 查询条件：流程名称 -->
+			<if test="procName != null and procName != ''">
+				AND proc.PROC_NAME LIKE CONCAT('%', #{procName},'%')
+			</if>
+			<!-- 查询条件：流程摘要 -->
+			<if test="procMemo != null and procMemo != ''">
+				AND proc.PROC_MEMO LIKE CONCAT('%', #{procMemo},'%')
+			</if>
+		ORDER BY proc.PROC_CREATETIME ASC, task.PROC_TASK_COMMITTIME ASC
+	</select>
+	
+	<!-- 按照授权机构代码查询未结束的流程任务 -->
+	<select id="selectOrgProcessList" resultType="com.bjzhianjia.scp.security.wf.base.monitor.entity.WfMyProcBackBean">
+		SELECT
+			proc.PROC_INST_ID procInstId,
+			proc.PROC_NAME procName,
+			proc.PROC_BIZID procBizId,
+			proc.PROC_BIZTYPE procBiztype,
+			proc.PROC_MEMO procMemo,
+			proc.PROC_ORGCODE procOrgcode,
+			task.PROC_CTASKID procTaskid,
+			task.PROC_CTASKCODE procTaskcode,
+			task.PROC_CTASKNAME procTaskname,
+			proc.PROC_DISPLAYURL procDisplayurl,
+			task.PROC_TASK_COMMITTER procTaskCommitter,
+			IF (
+				task.PROC_TASK_STATUS = '1',
+				task.PROC_TASK_GROUP,
+				task.PROC_TASK_ASSIGNEE
+			) procTaskAssignee,
+			task.PROC_LICENSOR procLicensor,
+			FROM_UNIXTIME(
+				proc.PROC_CREATETIME,
+				'%Y/%m/%d %H:%i:%s'
+			) procCreatetime,
+			FROM_UNIXTIME(
+			task.PROC_TASK_COMMITTIME,
+			'%Y/%m/%d %H:%i:%s'
+		) procTaskCommittime,
+		 FROM_UNIXTIME(
+			task.PROC_TASK_ASSIGNTIME,
+			'%Y/%m/%d %H:%i:%s'
+		) procTaskAssigntime,
+			proc.PROC_STATUS procStatus,
+			CASE proc.PROC_STATUS
+				WHEN '0' THEN
+					'审批中'
+				WHEN '3' THEN
+					'已暂停'
+				ELSE
+					'未知'
+			END AS procStatusName
+		FROM
+			SCP_WF_PROC proc
+		LEFT JOIN SCP_WF_PROC_TASK task ON (
+			proc.PROC_INST_ID = task.PROC_INST_ID
+			AND task.PROC_TASK_STATUS IN (1, 2)
+		)
+		WHERE proc.PROC_STATUS IN (0, 3)
+			and proc.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
+			AND (proc.PROC_ORGCODE = #{procOrgCode} or
+				<if test="procAuthOrgCodes != null and procAuthOrgCodes.size > 0">
+					proc.PROC_ORGCODE in
+					<foreach item="item" index="index" collection="procAuthOrgCodes" open="("
+						separator="," close=")">
+						#{item}
+					</foreach>
+				</if>)
+			<if test="procStatus != null and procStatus != ''">
+				AND proc.PROC_STATUS = #{procStatus,jdbcType=VARCHAR}
+			</if>
+			<!-- 查询条件：流程创建时间-开始 -->
+			<if test="procCreateTimeStart != null and procCreateTimeStart != ''">
+				AND proc.PROC_CREATETIME &gt;= #{procCreateTimeStart}
+			</if>
+			<!-- 查询条件：流程创建时间-结束 -->
+			<if test="procCreateTimeEnd != null and procCreateTimeEnd != ''">
+				AND proc.PROC_CREATETIME &lt;= #{procCreateTimeEnd}
+			</if>
+			<!-- 查询条件：任务到达时间-开始 -->
+			<if test="procCommitTimeStart != null and procCommitTimeStart != ''">
+				AND task.PROC_TASK_COMMITTIME &gt;= #{procCommitTimeStart}
+			</if>
+			<!-- 查询条件：r任务到达时间-结束 -->
+			<if test="procCommitTimeEnd != null and procCommitTimeEnd != ''">
+				AND task.PROC_TASK_COMMITTIME &lt;= #{procCommitTimeEnd}
+			</if>
+			<!-- 查询条件：业务ID -->
+			<if test="procBizid != null and procBizid != ''">
+				AND proc.proc_bizid LIKE CONCAT('%', #{procBizid},'%')
+			</if>
+			<!-- 查询条件：流程名称 -->
+			<if test="procName != null and procName != ''">
+				AND proc.PROC_NAME LIKE CONCAT('%', #{procName},'%')
+			</if>
+			<!-- 查询条件：流程摘要 -->
+			<if test="procMemo != null and procMemo != ''">
+				AND proc.PROC_MEMO LIKE CONCAT('%', #{procMemo},'%')
+			</if>
+		ORDER BY proc.PROC_CREATETIME ASC, task.PROC_TASK_COMMITTIME ASC
+	</select>
+	
+	<!-- 流程委托查询 -->
+	<select id="selectProcessDelegate" resultType="com.bjzhianjia.scp.security.wf.base.monitor.entity.WfMyProcBackBean">
+		SELECT
+			delegate.PROC_INST_ID procInstId,
+			proc.PROC_NAME procName,
+			proc.PROC_BIZID procBizId,
+			proc.PROC_BIZTYPE procBiztype,
+			proc.PROC_MEMO procMemo,
+			proc.PROC_ORGCODE procOrgcode,
+			proc.PROC_DISPLAYURL procDisplayurl,
+			delegate.PROC_LICENSOR procLicensor,
+			delegate.PROC_MANDATARY procMandatary,
+			FROM_UNIXTIME(
+				delegate.PROC_LICENSE_TIME,
+				'%Y/%m/%d %H:%i:%s'
+			) procLicenseTime,
+			FROM_UNIXTIME(
+				proc.PROC_CREATETIME,
+				'%Y/%m/%d %H:%i:%s'
+			) procCreatetime,
+			FROM_UNIXTIME(
+				proc.PROC_ENDTIME,
+				'%Y/%m/%d %H:%i:%s'
+		 ) procEndtime,
+			proc.PROC_STATUS procStatus,
+			CASE proc.PROC_STATUS
+				WHEN '0' THEN '审批中'
+			    WHEN '3' THEN '已暂停'
+			    WHEN '4' THEN '已终止'
+			    WHEN '5' THEN '已删除'
+			    WHEN '6' THEN '已完成'
+			    WHEN '7' THEN '已取消'
+			    ELSE '未知'
+		    END AS procStatusName
+		FROM
+			SCP_wf_proc_delegate delegate
+		LEFT JOIN SCP_wf_proc proc ON proc.PROC_INST_ID = delegate.PROC_INST_ID
+		WHERE delegate.PROC_LICENSE_ISVALID='1'
+			and proc.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
+			AND (proc.PROC_ORGCODE = #{procOrgCode} or
+				<if test="procAuthOrgCodes != null and procAuthOrgCodes.size > 0">
+					proc.PROC_ORGCODE in
+					<foreach item="item" index="index" collection="procAuthOrgCodes" open="("
+						separator="," close=")">
+						#{item}
+					</foreach>
+				</if>)
+			<if test="procStatus != null and procStatus != ''">
+				AND proc.PROC_STATUS = #{procStatus,jdbcType=VARCHAR}
+			</if>
+			<!-- 查询条件：流程创建时间-开始 -->
+			<if test="procCreateTimeStart != null and procCreateTimeStart != ''">
+				AND proc.PROC_CREATETIME &gt;= #{procCreateTimeStart}
+			</if>
+			<!-- 查询条件：流程创建时间-结束 -->
+			<if test="procCreateTimeEnd != null and procCreateTimeEnd != ''">
+				AND proc.PROC_CREATETIME &lt;= #{procCreateTimeEnd}
+			</if>
+			<!-- 查询条件：完成时间-开始 -->
+			<if test="procFinishedTimeStart != null and procFinishedTimeStart != ''">
+				AND proc.PROC_ENDTIME &gt;= #{procFinishedTimeStart}
+			</if>
+			<!-- 查询条件：完成时间-结束 -->
+			<if test="procFinishedTimeEnd != null and procFinishedTimeEnd != ''">
+				AND proc.PROC_ENDTIME &lt;= #{procFinishedTimeEnd}
+			</if>
+			<!-- 查询条件：业务ID -->
+			<if test="procBizid != null and procBizid != ''">
+				AND proc.proc_bizid LIKE CONCAT('%', #{procBizid},'%')
+			</if>
+			<!-- 查询条件：流程名称 -->
+			<if test="procName != null and procName != ''">
+				AND proc.PROC_NAME LIKE CONCAT('%', #{procName},'%')
+			</if>
+			<!-- 查询条件：流程摘要 -->
+			<if test="procMemo != null and procMemo != ''">
+				AND proc.PROC_MEMO LIKE CONCAT('%', #{procMemo},'%')
+			</if>
+		ORDER BY proc.PROC_CREATETIME DESC, delegate.PROC_LICENSE_TIME ASC
+	</select>
+	
+	<!-- 流程委托查询 -->
+	<select id="selectMyProcessDelegate" resultType="com.bjzhianjia.scp.security.wf.base.monitor.entity.WfMyProcBackBean">
+		SELECT
+			delegate.PROC_INST_ID procInstId,
+			proc.PROC_NAME procName,
+			proc.PROC_BIZID procBizId,
+			proc.PROC_BIZTYPE procBiztype,
+			proc.PROC_MEMO procMemo,
+			proc.PROC_ORGCODE procOrgcode,
+			proc.PROC_DISPLAYURL procDisplayurl,
+			delegate.PROC_LICENSOR procLicensor,
+			delegate.PROC_MANDATARY procMandatary,
+			FROM_UNIXTIME(
+				delegate.PROC_LICENSE_TIME,
+				'%Y/%m/%d %H:%i:%s'
+			) procLicenseTime,
+			FROM_UNIXTIME(
+				proc.PROC_CREATETIME,
+				'%Y/%m/%d %H:%i:%s'
+			) procCreatetime,
+			FROM_UNIXTIME(
+				proc.PROC_ENDTIME,
+				'%Y/%m/%d %H:%i:%s'
+			) procEndtime,
+			proc.PROC_STATUS procStatus,
+			CASE proc.PROC_STATUS
+		WHEN '0' THEN
+			'审批中'
+		WHEN '3' THEN
+			'已暂停'
+		ELSE
+			'未知'
+		END AS procStatusName
+		FROM
+			SCP_wf_proc_delegate delegate
+		LEFT JOIN SCP_wf_proc proc ON proc.PROC_INST_ID = delegate.PROC_INST_ID
+		WHERE delegate.PROC_LICENSE_ISVALID = '1'
+			and proc.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
+			AND	delegate.PROC_LICENSOR = #{procTaskUser,jdbcType=VARCHAR}
+			AND proc.PROC_STATUS in ('0', '3')
+		ORDER BY
+			proc.PROC_CREATETIME DESC,
+			delegate.PROC_LICENSE_TIME ASC
+	</select>
+	
+	<!-- 流程实例汇总查询 -->
+	<select id="selectProcessSummary" parameterType="java.util.Map"
+		resultType="com.bjzhianjia.scp.security.wf.base.monitor.entity.WfMyProcBackBean">
+		SELECT
+		proc.proc_inst_id procInstId,
+		proc.proc_bizid procBizId,
+		proc.PROC_BIZTYPE procBiztype,
+		proc.PROC_ORGCODE procOrgcode,
+		proc.proc_name procName,
+		FROM_UNIXTIME(proc.PROC_CREATETIME, '%Y/%m/%d %H:%i:%s') procCreatetime,
+		FROM_UNIXTIME(proc.PROC_ENDTIME, '%Y/%m/%d %H:%i:%s') procEndtime,
+		proc.PROC_MEMO procMemo,
+		proc.PROC_DISPLAYURL procDisplayurl,
+		proc.PROC_STATUS procStatus,
+		CASE proc.PROC_STATUS
+		WHEN '0' THEN '审批中'
+		WHEN '3' THEN '已暂停'
+		WHEN '4' THEN '已终止'
+		WHEN '5' THEN '已删除'
+		WHEN '6' THEN '已完成'
+		WHEN '7' THEN '已取消'
+		ELSE '未知'
+		END AS procStatusName,
+		task.PROC_CTASKID procTaskid,
+		task.PROC_CTASKCODE procTaskcode,
+		task.PROC_CTASKNAME procTaskname,
+		task.PROC_TASK_COMMITTER procTaskCommitter,
+		IF (task.PROC_TASK_STATUS = '1', task.PROC_TASK_GROUP,
+		task.PROC_TASK_ASSIGNEE) procTaskAssignee,
+		task.PROC_LICENSOR procLicensor,
+		FROM_UNIXTIME(task.PROC_TASK_COMMITTIME, '%Y/%m/%d %H:%i:%s') procTaskCommittime,
+		FROM_UNIXTIME(task.PROC_TASK_ASSIGNTIME, '%Y/%m/%d %H:%i:%s') procTaskAssigntime,
+		task.PROC_TASK_STATUS procTaskstatus
+		FROM SCP_wf_proc proc
+		LEFT JOIN SCP_wf_proc_task task ON task.proc_inst_id = proc.proc_inst_id
+		AND task.PROC_TASK_STATUS IN ('1', '2')
+		WHERE proc.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
+		AND (proc.PROC_ORGCODE = #{procOrgCode} or
+			<if test="procAuthOrgCodes != null and procAuthOrgCodes.size > 0">
+				proc.PROC_ORGCODE in
+				<foreach item="item" index="index" collection="procAuthOrgCodes" open="("
+					separator="," close=")">
+					#{item}
+				</foreach>
+			</if>)
+		<if test="procStatus != null and procStatus != ''">
+			AND proc.PROC_STATUS = #{procStatus,jdbcType=VARCHAR}
+		</if>
+		<!-- 查询条件：创建时间-开始 -->
+		<if test="procCreateTimeStart != null and procCreateTimeStart != ''">
+			AND proc.PROC_CREATETIME &gt;= #{procCreateTimeStart}
+		</if>
+		<!-- 查询条件：创建时间-结束 -->
+		<if test="procCreateTimeEnd != null and procCreateTimeEnd != ''">
+			AND proc.PROC_CREATETIME &lt;= #{procCreateTimeEnd}
+		</if>
+		<!-- 查询条件：完成时间-开始 -->
+		<if test="procFinishedTimeStart != null and procFinishedTimeStart != ''">
+			AND proc.PROC_ENDTIME &gt;= #{procFinishedTimeStart}
+		</if>
+		<!-- 查询条件：完成时间-结束 -->
+		<if test="procFinishedTimeEnd != null and procFinishedTimeEnd != ''">
+			AND proc.PROC_ENDTIME &lt;= #{procFinishedTimeEnd}
+		</if>
+		<!-- 查询条件：业务ID -->
+		<if test="procBizid != null and procBizid != ''">
+			AND proc.proc_bizid LIKE CONCAT('%', #{procBizid},'%')
+		</if>
+		<!-- 查询条件：流程名称 -->
+		<if test="procName != null and procName != ''">
+			AND proc.PROC_NAME LIKE CONCAT('%', #{procName},'%')
+		</if>
+		<!-- 查询条件：流程摘要 -->
+		<if test="procMemo != null and procMemo != ''">
+			AND proc.PROC_MEMO LIKE CONCAT('%', #{procMemo},'%')
+		</if>
+		ORDER BY proc.PROC_CREATETIME DESC, task.PROC_TASK_COMMITTIME DESC
+	</select>
+</mapper>

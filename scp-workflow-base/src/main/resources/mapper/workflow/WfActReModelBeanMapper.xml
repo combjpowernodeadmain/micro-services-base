@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bjzhianjia.scp.security.wf.base.design.mapper.WfActReModelBeanMapper" >
+  <resultMap id="BaseResultMap" type="com.bjzhianjia.scp.security.wf.base.design.entity.WfProcActReModelBean" >
+    <id column="ID_" property="id" jdbcType="VARCHAR" />
+    <result column="REV_" property="rev" jdbcType="INTEGER" />
+    <result column="NAME_" property="name" jdbcType="VARCHAR" />
+    <result column="KEY_" property="key" jdbcType="VARCHAR" />
+    <result column="CATEGORY_" property="category" jdbcType="VARCHAR" />
+    <result column="CREATE_TIME_" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="LAST_UPDATE_TIME_" property="lastUpdateTime" jdbcType="TIMESTAMP" />
+    <result column="VERSION_" property="version" jdbcType="INTEGER" />
+    <result column="META_INFO_" property="metaInfo" jdbcType="VARCHAR" />
+    <result column="DEPLOYMENT_ID_" property="deploymentId" jdbcType="VARCHAR" />
+    <result column="EDITOR_SOURCE_VALUE_ID_" property="editorSourceValueId" jdbcType="VARCHAR" />
+    <result column="EDITOR_SOURCE_EXTRA_VALUE_ID_" property="editorSourceExtraValueId" jdbcType="VARCHAR" />
+    <result column="TENANT_ID_" property="tenantId" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID_, REV_, NAME_, KEY_, CATEGORY_, CREATE_TIME_, LAST_UPDATE_TIME_, VERSION_, META_INFO_, 
+    DEPLOYMENT_ID_, EDITOR_SOURCE_VALUE_ID_, EDITOR_SOURCE_EXTRA_VALUE_ID_, TENANT_ID_
+  </sql>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String">
+    select 
+    <include refid="Base_Column_List" />
+    from ACT_RE_MODEL
+    where ID_ = #{id,jdbcType=VARCHAR}
+  </select>
+  
+   <select id="selectModelList" resultMap="BaseResultMap" >
+    select 
+    <include refid="Base_Column_List" />
+    from ACT_RE_MODEL
+    WHERE TENANT_ID_ = #{tenantId,jdbcType=VARCHAR}
+		<if test="key!=null and key!=''">
+			and KEY_ like "%"#{key}"%"
+		</if>
+		<if test="name!=null and name!=''">
+			and NAME_ like "%"#{name}"%"
+		</if>
+		order by CREATE_TIME_ desc
+  </select>
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from ACT_RE_MODEL
+    where ID_ = #{id,jdbcType=VARCHAR}
+    and TENANT_ID_ = #{tenantId,jdbcType=VARCHAR}
+  </delete>
+  
+</mapper>
