@@ -37,7 +37,7 @@ pipeline {
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
-                                execCommand: 'kill -9 $(cat /data/scp/1_center/tpid) && kill -9 $(cat /data/scp/2_auth/tpid) && kill -9 $(cat /data/scp/3_dict/tpid) && kill -9 $(cat /data/scp/4_admin/tpid) && kill -9 $(cat /data/scp/5_gate/tpid) && kill -9 $(cat /data/scp/6_cgp/tpid)', 
+                                execCommand: 'sudo ./stop-scp.sh', 
                                 execTimeout: 120000, 
                                 flatten: false, 
                                 makeEmptyDirs: false, 
@@ -183,7 +183,7 @@ pipeline {
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
-                                execCommand: 'cd /data/scp/1_center && ./start_center.sh', 
+                                execCommand: 'cd /data/scp/1_center && sudo ./start_center.sh', 
                                 execTimeout: 120000, 
                                 flatten: false, 
                                 makeEmptyDirs: false, 
@@ -209,7 +209,7 @@ pipeline {
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
-                                execCommand: 'cd /data/scp/2_auth && ./start_auth.sh', 
+                                execCommand: 'cd /data/scp/2_auth && sudo ./start_auth.sh', 
                                 execTimeout: 120000, 
                                 flatten: false, 
                                 makeEmptyDirs: false, 
@@ -235,7 +235,7 @@ pipeline {
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
-                                execCommand: 'cd /data/scp/3_dict && ./start_dict.sh', 
+                                execCommand: 'cd /data/scp/3_dict && sudo ./start_dict.sh', 
                                 execTimeout: 120000, 
                                 flatten: false, 
                                 makeEmptyDirs: false, 
@@ -261,7 +261,7 @@ pipeline {
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
-                                execCommand: 'cd /data/scp/4_admin && ./start_admin.sh', 
+                                execCommand: 'cd /data/scp/4_admin && sudo ./start_admin.sh', 
                                 execTimeout: 120000, 
                                 flatten: false, 
                                 makeEmptyDirs: false, 
@@ -287,7 +287,7 @@ pipeline {
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
-                                execCommand: 'cd /data/scp/5_gate && ./start_gate.sh', 
+                                execCommand: 'cd /data/scp/5_gate && sudo ./start_gate.sh', 
                                 execTimeout: 120000, 
                                 flatten: false, 
                                 makeEmptyDirs: false, 
@@ -313,7 +313,7 @@ pipeline {
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
-                                execCommand: 'cd /data/scp/6_cgp && ./start_cgp.sh', 
+                                execCommand: 'cd /data/scp/6_cgp && sudo ./start_cgp.sh', 
                                 execTimeout: 120000, 
                                 flatten: false, 
                                 makeEmptyDirs: false, 
