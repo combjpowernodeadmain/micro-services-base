@@ -201,7 +201,7 @@ pipeline {
                     )
                 ])
 
-                sleep 30
+                sleep 50
 
                 sshPublisher(publishers: [
                     sshPublisherDesc(
@@ -227,7 +227,7 @@ pipeline {
                     )
                 ])
 
-                sleep 40
+                sleep 70
 
                 sshPublisher(publishers: [
                     sshPublisherDesc(
@@ -253,7 +253,7 @@ pipeline {
                     )
                 ])
 
-                sleep 40
+                sleep 70
 
                 sshPublisher(publishers: [
                     sshPublisherDesc(
@@ -279,7 +279,7 @@ pipeline {
                     )
                 ])
 
-                sleep 40
+                sleep 70
                 
                 sshPublisher(publishers: [
                     sshPublisherDesc(
@@ -305,7 +305,7 @@ pipeline {
                     )
                 ])
 
-                sleep 40
+                sleep 70
 
                 sshPublisher(publishers: [
                     sshPublisherDesc(
