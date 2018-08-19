@@ -45,6 +45,10 @@ public class ConcernedPerson implements Serializable {
 	    //当事人单位地址
     @Column(name = "company_addr")
     private String companyAddr;
+    
+    	//后加字段
+    @Column(name="case_id")
+    private Integer caseId;
 	
 
 	/**
@@ -131,4 +135,18 @@ public class ConcernedPerson implements Serializable {
 	public String getCompanyAddr() {
 		return companyAddr;
 	}
+	/**
+	 * 获取：涉及案件ID
+	 */
+	public Integer getCaseId() {
+		return caseId;
+	}
+	/**
+	 * 设置：涉及案件ID
+	 */
+	public void setCaseId(Integer caseId) {
+		this.caseId = caseId;
+	}
+	
+	
 }

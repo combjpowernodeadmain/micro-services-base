@@ -1,9 +1,8 @@
 package com.bjzhianjia.scp.cgp.exception;
 
-import com.bjzhianjia.scp.security.wf.base.constant.EnumResultTemplate;
 import com.bjzhianjia.scp.security.wf.base.exception.WorkflowException;
 
-public class BizException extends Exception {
+public class BizException extends WorkflowException {
 
 
 	/**
@@ -13,7 +12,6 @@ public class BizException extends Exception {
 
 	public BizException(String message) {
 		super(message);
-		// TODO Auto-generated constructor stub
 	}
 	
 	
