@@ -701,6 +701,14 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 
 			procVarData.setProcBiztype(bizData.getProcBizId());
 			procVarData.setProcOrgcode(bizData.getProcOrgCode());
+			
+			//业务数据存库，重新设置业务id
+			String bizId = "-1"; //-1  业务数据为空
+			if(!bizId.equals(bizData.getProcBizId())) { 
+				wfProcBean.setProcBizid(bizData.getProcBizId());
+				wfProcTaskBean.setProcBizid(bizData.getProcBizId());
+			}
+
 
 			// 对流程开始节点任务进行自动提交操作
 			log.debug("启动流程--开始提交业务流程(" + processInstance.getId()
