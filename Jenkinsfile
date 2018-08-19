@@ -183,7 +183,7 @@ pipeline {
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
-                                execCommand: 'echo SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS', 
+                                execCommand: 'cd /data/scp/1_center && ./start_center.sh', 
                                 execTimeout: 120000, 
                                 flatten: false, 
                                 makeEmptyDirs: false, 
@@ -201,6 +201,134 @@ pipeline {
                     )
                 ])
 
+                sleep 20
+
+                sshPublisher(publishers: [
+                    sshPublisherDesc(
+                        configName: 'AliyunServerZZ001', 
+                        transfers: [
+                            sshTransfer(
+                                excludes: '', 
+                                execCommand: 'cd /data/scp/2_auth && ./start_auth.sh', 
+                                execTimeout: 120000, 
+                                flatten: false, 
+                                makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: '', 
+                                sourceFiles: ''
+                            )
+                        ], 
+                        usePromotionTimestamp: false, 
+                        useWorkspaceInPromotion: false, 
+                        verbose: false
+                    )
+                ])
+
+                sleep 40
+
+                sshPublisher(publishers: [
+                    sshPublisherDesc(
+                        configName: 'AliyunServerZZ001', 
+                        transfers: [
+                            sshTransfer(
+                                excludes: '', 
+                                execCommand: 'cd /data/scp/3_dict && ./start_dict.sh', 
+                                execTimeout: 120000, 
+                                flatten: false, 
+                                makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: '', 
+                                sourceFiles: ''
+                            )
+                        ], 
+                        usePromotionTimestamp: false, 
+                        useWorkspaceInPromotion: false, 
+                        verbose: false
+                    )
+                ])
+
+                sleep 40
+
+                sshPublisher(publishers: [
+                    sshPublisherDesc(
+                        configName: 'AliyunServerZZ001', 
+                        transfers: [
+                            sshTransfer(
+                                excludes: '', 
+                                execCommand: 'cd /data/scp/4_admin && ./start_admin.sh', 
+                                execTimeout: 120000, 
+                                flatten: false, 
+                                makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: '', 
+                                sourceFiles: ''
+                            )
+                        ], 
+                        usePromotionTimestamp: false, 
+                        useWorkspaceInPromotion: false, 
+                        verbose: false
+                    )
+                ])
+
+                sleep 40sshPublisher(publishers: [
+                    sshPublisherDesc(
+                        configName: 'AliyunServerZZ001', 
+                        transfers: [
+                            sshTransfer(
+                                excludes: '', 
+                                execCommand: 'cd /data/scp/5_gate && ./start_gate.sh', 
+                                execTimeout: 120000, 
+                                flatten: false, 
+                                makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: '', 
+                                sourceFiles: ''
+                            )
+                        ], 
+                        usePromotionTimestamp: false, 
+                        useWorkspaceInPromotion: false, 
+                        verbose: false
+                    )
+                ])
+
+                sleep 40
+
+                sshPublisher(publishers: [
+                    sshPublisherDesc(
+                        configName: 'AliyunServerZZ001', 
+                        transfers: [
+                            sshTransfer(
+                                excludes: '', 
+                                execCommand: 'cd /data/scp/6_cgp && ./start_cgp.sh', 
+                                execTimeout: 120000, 
+                                flatten: false, 
+                                makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: '', 
+                                sourceFiles: ''
+                            )
+                        ], 
+                        usePromotionTimestamp: false, 
+                        useWorkspaceInPromotion: false, 
+                        verbose: false
+                    )
+                ])
+ 
             }
         }
     }
