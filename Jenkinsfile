@@ -101,7 +101,7 @@ pipeline {
                                 makeEmptyDirs: false, 
                                 noDefaultExcludes: false, 
                                 patternSeparator: '[, ]+', 
-                                remoteDirectory: '/data/scp/1_center', 
+                                remoteDirectory: '1_center', 
                                 remoteDirectorySDF: false, 
                                 removePrefix: 'scp-center/target/', 
                                 sourceFiles: 'scp-center/target/scp-center.jar'),
@@ -112,7 +112,7 @@ pipeline {
                                 makeEmptyDirs: false, 
                                 noDefaultExcludes: false, 
                                 patternSeparator: '[, ]+', 
-                                remoteDirectory: '/data/scp/2_auth', 
+                                remoteDirectory: '2_auth', 
                                 remoteDirectorySDF: false, 
                                 removePrefix: 'scp-auth/scp-auth-server/target/', 
                                 sourceFiles: 'scp-auth/scp-auth-server/target/scp-auth.jar'),
@@ -124,7 +124,7 @@ pipeline {
                                 makeEmptyDirs: false, 
                                 noDefaultExcludes: false, 
                                 patternSeparator: '[, ]+', 
-                                remoteDirectory: '/data/scp/3_dict', 
+                                remoteDirectory: '3_dict', 
                                 remoteDirectorySDF: false, 
                                 removePrefix: 'scp-modules/scp-dict/target', 
                                 sourceFiles: 'scp-modules/scp-dict/target/scp-dict.jar'
@@ -136,7 +136,7 @@ pipeline {
                                 makeEmptyDirs: false, 
                                 noDefaultExcludes: false, 
                                 patternSeparator: '[, ]+', 
-                                remoteDirectory: '/data/scp/4_admin', 
+                                remoteDirectory: '4_admin', 
                                 remoteDirectorySDF: false, 
                                 removePrefix: 'scp-modules/scp-admin/target/', 
                                 sourceFiles: 'scp-modules/scp-admin/target/scp-admin.jar'
@@ -148,7 +148,7 @@ pipeline {
                                 makeEmptyDirs: false, 
                                 noDefaultExcludes: false, 
                                 patternSeparator: '[, ]+', 
-                                remoteDirectory: '/data/scp/5_gate', 
+                                remoteDirectory: '5_gate', 
                                 remoteDirectorySDF: false, 
                                 removePrefix: 'scp-gate/scp-gate-server/target/', 
                                 sourceFiles: 'scp-gate/scp-gate-server/target/scp-gate.jar'
@@ -159,7 +159,7 @@ pipeline {
                                 flatten: false, makeEmptyDirs: false, 
                                 noDefaultExcludes: false, 
                                 patternSeparator: '[, ]+', 
-                                remoteDirectory: '/data/scp/6_cgp', 
+                                remoteDirectory: '6_cgp', 
                                 remoteDirectorySDF: false, 
                                 removePrefix: 'scp-modules/scp-cgp/target/', 
                                 sourceFiles: 'scp-modules/scp-cgp/target/scp-cgp.jar'
