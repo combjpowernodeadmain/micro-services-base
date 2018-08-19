@@ -3,7 +3,8 @@ package com.bjzhianjia.scp.cgp;
 import com.bjzhianjia.scp.merge.EnableAceMerge;
 import com.bjzhianjia.scp.security.auth.client.EnableAceAuthClient;
 import com.spring4all.swagger.EnableSwagger2Doc;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+
+import org.springframework.boot.actuate.autoconfigure.ManagementWebSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -18,7 +19,13 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * @version 1.0
  */
 @EnableEurekaClient
-@SpringBootApplication(exclude= {DataSourceAutoConfiguration.class})
+@SpringBootApplication(exclude= {
+		DataSourceAutoConfiguration.class, //关闭默认数据源
+		//activiti中默认引入了spring security认证,这里不需要所以禁用掉
+		org.activiti.spring.boot.SecurityAutoConfiguration.class, 
+		org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration.class,
+		ManagementWebSecurityAutoConfiguration.class,
+		})
 // 开启事务
 @EnableTransactionManagement
 // 开启熔断监控
@@ -29,11 +36,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableAceAuthClient
 @EnableAceMerge
 @EnableSwagger2Doc
-@EnableAutoConfiguration(exclude = {
-		org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration.class,
-		org.activiti.spring.boot.SecurityAutoConfiguration.class,
-		org.springframework.boot.actuate.autoconfigure.ManagementWebSecurityAutoConfiguration.class
-})
 public class CgpBootstrap {
 	
     public static void main(String[] args) {
