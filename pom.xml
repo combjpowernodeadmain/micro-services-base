@@ -40,6 +40,7 @@
         <module>scps-job</module>
         <module>scp-merge-parent</module>
         <module>jwt-core</module>
+        <module>scp-workflow-base</module>
     </modules>
 
     <packaging>pom</packaging>
