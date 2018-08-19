@@ -37,7 +37,7 @@ pipeline {
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
-                                execCommand: 'sudo ./stop-scp.sh', 
+                                execCommand: 'cd /data/scp && sudo ./stop-scp.sh', 
                                 execTimeout: 120000, 
                                 flatten: false, 
                                 makeEmptyDirs: false, 
