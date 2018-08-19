@@ -28,5 +28,11 @@ pipeline {
                 }
             }
         }
+
+        stage ('Deploy To aliyun') {
+            steps {
+                sh 'echo Deploy to aliyun'
+            }
+        }
     }
 }
