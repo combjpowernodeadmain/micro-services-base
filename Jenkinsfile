@@ -201,7 +201,7 @@ pipeline {
                     )
                 ])
 
-                sleep 20
+                sleep 30
 
                 sshPublisher(publishers: [
                     sshPublisherDesc(
