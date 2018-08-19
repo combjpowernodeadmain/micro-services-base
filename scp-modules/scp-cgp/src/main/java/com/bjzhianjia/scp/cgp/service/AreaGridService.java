@@ -271,9 +271,12 @@ public class AreaGridService {
 				result.setMessage(resultM.getMessage());
 				return result;
 			}
-
 			List<AreaGridMember> areaGridMemberList = resultM.getData();
-			areaGridMemberMapper.insertAreaGridMemberList(areaGridMemberList);
+			
+			if(areaGridMemberList!=null&&!areaGridMemberList.isEmpty()) {
+				areaGridMemberMapper.insertAreaGridMemberList(areaGridMemberList);
+			}
+			
 		}
 
 		areaGridBiz.updateSelectiveById(areaGrid);
