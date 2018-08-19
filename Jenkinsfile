@@ -94,19 +94,6 @@ pipeline {
                         configName: 'AliyunServerZZ001', 
                         transfers: [
                             
-                            sshTransfer(
-                                excludes: '', 
-                                execCommand: 'kill -9 $(cat /data/scp/1_center/tpid) & kill -9 $(cat /data/scp/2_auth/tpid) & kill -9 $(cat /data/scp/3_dict/tpid) & kill -9 $(cat /data/scp/4_admin/tpid) & kill -9 $(cat /data/scp/5_gate/tpid) & kill -9 $(cat /data/scp/6_cgp/tpid)', 
-                                execTimeout: 120000, 
-                                flatten: false, 
-                                makeEmptyDirs: false, 
-                                noDefaultExcludes: false, 
-                                patternSeparator: '[, ]+', 
-                                remoteDirectory: '', 
-                                remoteDirectorySDF: false, 
-                                removePrefix: '', 
-                                sourceFiles: ''
-                            ),
                             sshTransfer(excludes: '', 
                                 execCommand: '', 
                                 execTimeout: 120000, 
