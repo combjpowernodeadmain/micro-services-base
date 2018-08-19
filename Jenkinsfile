@@ -279,7 +279,9 @@ pipeline {
                     )
                 ])
 
-                sleep 40sshPublisher(publishers: [
+                sleep 40
+                
+                sshPublisher(publishers: [
                     sshPublisherDesc(
                         configName: 'AliyunServerZZ001', 
                         transfers: [
