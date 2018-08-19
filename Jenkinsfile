@@ -17,8 +17,8 @@ pipeline {
 
         stage ('Build') {
             steps {
-                withMaven(globalMavenSettingsConfig: 'c79fc3fc-9de4-4dfb-bfd0-bf179d7950c2', jdk: 'JDK8', maven: 'MAVEN', mavenSettingsConfig: '4557b50b-90a1-4723-8dac-40554c29de07', publisherStrategy: 'EXPLICIT') {
-                    sh 'mvn clean install deploy -Dmven.test.skip=true'   
+                withMaven(globalMavenSettingsConfig: 'MavenNexusLutuoSettings', jdk: 'JDK8', maven: 'MAVEN', mavenSettingsConfig: 'MavenNexusLutuoSettings', publisherStrategy: 'EXPLICIT') {
+                    sh 'mvn clean install -Dmven.test.skip=true -U'   
                 }
                 
             }
@@ -26,6 +26,12 @@ pipeline {
                 success {
                     sh 'echo success'
                 }
+            }
+        }
+
+        stage ('Deploy To aliyun') {
+            steps {
+                sh 'echo Deploy to aliyun'
             }
         }
     }
