@@ -14,4 +14,25 @@
         <result property="companyAddr" column="company_addr"/>
     </resultMap>
 
+	<insert id="insertConcernPersonList" parameterType="java.util.List">
+		INSERT INTO concerned_person (
+		concerned_person.`name`,
+		concerned_person.`phone`,
+		concerned_person.`cred_type`,
+		concerned_person.`cred_code`,
+		concerned_person.`company`,
+		concerned_person.`company_addr`)
+		VALUES
+		<foreach collection="concernedPersonList" index="index" item="item"
+			separator=",">
+			(
+			#{item.name},
+			#{item.phone},
+			#{item.cred_type},
+			#{item.cred_code},
+			#{item.company},
+			#{item.company_addr}
+			)
+		</foreach>
+	</insert>
 </mapper>

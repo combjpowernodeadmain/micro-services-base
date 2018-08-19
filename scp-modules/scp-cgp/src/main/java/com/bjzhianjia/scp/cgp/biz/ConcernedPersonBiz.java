@@ -38,4 +38,14 @@ public class ConcernedPersonBiz extends BusinessBiz<ConcernedPersonMapper,Concer
 		List<ConcernedPerson> rows=this.mapper.selectByExample(example);
 		return new TableResultResponse<>(pageInfo.getTotal(), rows);
 	}
+	
+	/**
+	 * 插入多条记录
+	 * @author 尚
+	 * @param concernedPersonList
+	 * @return
+	 */
+	public int concernedPersonList(List<ConcernedPerson> concernedPersonList) {
+		return this.mapper.insertConcernPersonList(concernedPersonList);
+	}
 }

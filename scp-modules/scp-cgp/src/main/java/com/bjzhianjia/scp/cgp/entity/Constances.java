@@ -89,7 +89,12 @@ public class Constances {
 	}
 	
 	/**
-	 * 事件来源类型(12345,舆情，领导交办，巡查上报)
+	 * 事件来源类型前缀
+	 */
+	public static final String ROOT_BIZ_EVENTTYPE="root_biz_eventType";
+	
+	/**
+	 * 事件来源类型常量包装类(12345,舆情，领导交办，巡查上报)
 	 * @author 尚
 	 *
 	 */

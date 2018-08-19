@@ -70,7 +70,7 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 
 		//是否输入了按监管对象名称查询
 		if (StringUtils.isNotBlank(regulaObject.getObjName())) {
-			criteria.andLike("objName", "%" + regulaObject.getObjName());
+			criteria.andLike("objName", "%" + regulaObject.getObjName()+"%");
 		}
 
 		//是否输入了按监管对象类型查询

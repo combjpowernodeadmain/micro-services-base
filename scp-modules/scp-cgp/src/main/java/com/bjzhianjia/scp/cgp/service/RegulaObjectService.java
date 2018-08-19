@@ -3,8 +3,10 @@ package com.bjzhianjia.scp.cgp.service;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -343,8 +345,8 @@ public class RegulaObjectService {
 	private List<RegulaObjectVo> queryAssist(List<RegulaObject> rows) {
 		List<RegulaObjectVo> voList = BeanUtil.copyBeanList_New(rows, RegulaObjectVo.class);
 
-		List<String> bizTypeIds = new ArrayList<String>();
-		List<String> objTypeIdStrList = new ArrayList<>();
+		Set<String> bizTypeIds = new HashSet<>();
+		Set<String> objTypeIdStrList = new HashSet<>();
 
 		for (RegulaObjectVo tmp : voList) {
 			// 数据库记录中biz_list字段有可能 为空
@@ -385,11 +387,13 @@ public class RegulaObjectService {
 		}
 
 		// 所属监管对象类型
-		List<RegulaObjectType> regulaObjTypeList = regulaObjectTypeBiz.selectByIds(String.join(",", objTypeIdStrList));
-		Map<Integer, String> type_ID_NAME_Map = regulaObjTypeList.stream()
-				.collect(Collectors.toMap(RegulaObjectType::getId, RegulaObjectType::getObjectTypeName));
-		for (RegulaObjectVo tmp : voList) {
-			tmp.setObjTypeName(type_ID_NAME_Map.get(tmp.getObjType()));
+		if(objTypeIdStrList!=null && !objTypeIdStrList.isEmpty()) {
+			List<RegulaObjectType> regulaObjTypeList = regulaObjectTypeBiz.selectByIds(String.join(",", objTypeIdStrList));
+			Map<Integer, String> type_ID_NAME_Map = regulaObjTypeList.stream()
+					.collect(Collectors.toMap(RegulaObjectType::getId, RegulaObjectType::getObjectTypeName));
+			for (RegulaObjectVo tmp : voList) {
+				tmp.setObjTypeName(type_ID_NAME_Map.get(tmp.getObjType()));
+			}
 		}
 		return voList;
 	}
