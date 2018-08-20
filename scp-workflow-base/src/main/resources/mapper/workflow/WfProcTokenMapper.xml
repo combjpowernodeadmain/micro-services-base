@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bjzhianjia.scp.security.wf.base.auth.mapper.WfProcTokenMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.bjzhianjia.scp.security.wf.base.auth.entity.WfProcTokenBean" id="wfProcTokenMap">
+        <result property="id" column="ID"/>
+        <result property="procTenantId" column="PROC_TENANT_ID"/>
+        <result property="procDepartId" column="PROC_DEPART_ID"/>
+        <result property="procTokenUser" column="PROC_TOKEN_USER"/>
+        <result property="procTokenPass" column="PROC_TOKEN_PASS"/>
+        <result property="procSystemName" column="PROC_SYSTEM_NAME"/>
+        <result property="isEnable" column="IS_ENABLE"/>
+        <result property="isDeleted" column="IS_DELETED"/>
+        <result property="deleteOperateTime" column="DELETE_OPERATE_TIME"/>
+        <result property="enableOperateTime" column="ENABLE_OPERATE_TIME"/>
+    </resultMap>
+
+
+	<sql id="Base_Column_List">
+		ID, PROC_TENANT_ID, PROC_DEPART_ID, PROC_TOKEN_USER,
+		PROC_TOKEN_PASS, PROC_SYSTEM_NAME, IS_ENABLE,
+		IS_DELETED, DELETE_OPERATE_TIME, ENABLE_OPERATE_TIME
+	</sql>
+
+	<!-- 根据主键查询token信息  -->
+	<select id="selectByPrimaryKey" resultMap="wfProcTokenMap"
+		parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from SCP_WF_PROC_TOKEN
+		where ID = #{id,jdbcType=INTEGER} and id_deleted='0';
+	</select>
+	
+	<!-- 分页查询token数据 -->
+	<select id="selectByExample" resultType="java.util.List" >
+		select
+		<include refid="Base_Column_List" />
+		from SCP_WF_PROC_TOKEN
+		where id_deleted='0' limit #{index, jdbcType=INTEGER} , #{pageSize, jdbcType=INTEGER};
+	</select>
+	
+	<!-- 根据用户tenantId查询token数据 -->
+	<select id="selectByTenantId" resultMap="wfProcTokenMap"
+		parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from SCP_WF_PROC_TOKEN
+		where PROC_TENANT_ID = #{tenantId,jdbcType=INTEGER} and id_deleted='0';
+	</select>
+	
+	<!--  插入token实体  -->
+	<insert id="insert">
+	insert INTEGERo SCP_WF_PROC_TOKEN
+		(
+		PROC_TENANT_ID, 
+		PROC_DEPART_ID, 
+		PROC_TOKEN_USER,
+		PROC_TOKEN_PASS, 
+		PROC_SYSTEM_NAME, 
+		IS_ENABLE,
+		IS_DELETED, 
+		DELETE_OPERATE_TIME, 
+		ENABLE_OPERATE_TIME
+		)
+		values
+		(
+		#{procTenantId,jdbcType=VARCHAR},
+		#{procDepartId,jdbcType=VARCHAR},
+		#{procTokenUser,jdbcType=VARCHAR},
+		#{procTokenPass,jdbcType=VARCHAR},
+		#{procSystemName,jdbcType=VARCHAR},
+		#{isEnable,jdbcType=CHAR},
+		#{isDeleted,jdbcType=CHAR},
+		#{deleteOperateTime,jdbcType=DATE},
+		#{enableOperateTime,jdbcType=DATE}
+		)
+	</insert>
+	
+	<!-- 选择性插入token实体  -->
+	<insert id="insertSelective" parameterType="com.bjzhianjia.scp.security.wf.base.auth.entity.WfProcTokenBean">
+		insert INTEGERo SCP_WF_PROC_TOKEN
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="procTenantId != null">
+				PROC_TENANT_ID,
+			</if>
+			<if test="procDepartId != null">
+				PROC_DEPART_ID,
+			</if>
+			<if test="procTokenUser != null">
+				PROC_TOKEN_USER,
+			</if>
+			<if test="procTokenPass != null">
+				PROC_TOKEN_PASS,
+			</if>
+			<if test="procSystemName != null">
+				PROC_SYSTEM_NAME,
+			</if>
+			<if test="isEnable != null">
+				IS_ENABLE,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+			<if test="deleteOperateTime != null">
+				DELETE_OPERATE_TIME,
+			</if>
+			<if test="enableOperateTime != null">
+				ENABLE_OPERATE_TIME,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="procTenantId != null">
+				#{procTenantId,jdbcType=VARCHAR},
+			</if>
+			<if test="procDepartId != null">
+				#{procDepartId,jdbcType=VARCHAR},
+			</if>
+			<if test="procTokenUser != null">
+				#{procTokenUser,jdbcType=VARCHAR},
+			</if>
+			<if test="procTokenPass != null">
+				#{procTokenPass,jdbcType=VARCHAR},
+			</if>
+			<if test="procSystemName != null">
+				#{procSystemName,jdbcType=VARCHAR},
+			</if>
+			<if test="isEnable != null">
+				#{isEnable,jdbcType=CHAR},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted,jdbcType=CHAR},
+			</if>
+			<if test="deleteOperateTime != null">
+				#{deleteOperateTime,jdbcType=DATE},
+			</if>
+			<if test="enableOperateTime != null">
+				#{enableOperateTime,jdbcType=DATE},
+			</if>
+		</trim>
+	</insert>
+	
+	<!-- 根据主键删除/恢复token -->
+	<update id="deleteOrRecoverByPrimaryKey">
+	UPDATE  SCP_WF_PROC_TOKEN set IS_DELETED = ${flag, jdbcType=VARCHAR} where ID=#{id, jdbcType=INTEGER}
+	</update>
+	
+	<!-- 根据主键启用/禁用token -->
+	<update id="enableOrDisableByPrimaryKey">
+	update  SCP_WF_PROC_TOKEN set IS_ENABLE = #{flag, jdbcType=VARCHAR} where ID=#{id, jdbcType=INTEGER}
+	</update>
+	
+</mapper>

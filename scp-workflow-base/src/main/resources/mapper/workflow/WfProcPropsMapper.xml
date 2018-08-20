@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bjzhianjia.scp.security.wf.base.design.mapper.WfProcPropsMapper">
+	<resultMap id="BaseResultMap"
+		type="com.bjzhianjia.scp.security.wf.base.design.entity.WfProcPropsBean">
+		<id column="ID" property="id" jdbcType="INTEGER" />
+		<result column="PROC_ID" property="procId" jdbcType="VARCHAR" />
+		<result column="PROC_TASK_CODE" property="procTaskCode"
+			jdbcType="VARCHAR" />
+		<result column="PROC_PROPS_TYPE" property="procPropsType"
+			jdbcType="CHAR" />
+		<result column="PROC_PROPS_KEY" property="procPropsKey"
+			jdbcType="VARCHAR" />
+		<result column="PROC_PROPS_VALUE" property="procPropsValue"
+			jdbcType="VARCHAR" />
+		<result column="PROC_PROPS_CREATOR" property="procPropsCreator"
+			jdbcType="VARCHAR" />
+		<result column="PROC_PROPS_CREATETIME" property="procPropsCreatetime"
+			jdbcType="INTEGER" />
+		<result column="PROC_PROPS_UPDATOR" property="procPropsUpdator"
+			jdbcType="VARCHAR" />
+		<result column="PROC_PROPS_UPDATETIME" property="procPropsUpdatetime"
+			jdbcType="INTEGER" />
+		<result column="PROC_TENANT_ID" property="procTenantId" jdbcType="VARCHAR" />
+		<result column="PROC_DEPART_ID" property="procDepartId" jdbcType="VARCHAR" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		ID, PROC_ID, PROC_TASK_CODE, PROC_PROPS_TYPE, PROC_PROPS_KEY,
+		PROC_PROPS_VALUE, PROC_PROPS_CREATOR,PROC_PROPS_CREATETIME, 
+		PROC_PROPS_UPDATOR, PROC_PROPS_UPDATETIME,PROC_TENANT_ID,PROC_DEPART_ID
+	</sql>
+
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.Integer">
+		select
+		<include refid="Base_Column_List" />
+		from SCP_WF_PROC_PROPS
+		where ID = #{id,jdbcType=INTEGER}
+	</select>
+
+	 <select id="selectPropertyList" parameterType="com.bjzhianjia.scp.security.wf.base.design.entity.WfProcPropsBean"
+		resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from
+		SCP_WF_PROC_PROPS
+		where 1=1
+		<if test=" id !=null">
+			and ID=#{id}
+		</if>
+		<if test=" procId !=null">
+			and PROC_ID=#{procId}
+		</if>
+		<if test=" procTaskCode !=null">
+			and PROC_TASK_CODE=#{procTaskCode}
+		</if>
+		<if test=" procPropsType !=null">
+			and PROC_PROPS_TYPE=#{procPropsType}
+		</if>
+		<if test=" procPropsKey !=null">
+			and PROC_PROPS_KEY=#{procPropsKey}
+		</if>
+		<if test=" procPropsValue !=null">
+			and PROC_PROPS_VALUE=#{procPropsValue}
+		</if>
+		<if test=" procTenantId !=null">
+			and PROC_TENANT_ID=#{procTenantId}
+		</if>
+		<if test=" procDepartId !=null">
+			and PROC_DEPART_ID=#{procDepartId}
+		</if>
+	</select> 
+
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		delete from
+		SCP_WF_PROC_PROPS
+		where ID = #{id,jdbcType=INTEGER}
+	</delete>
+	<insert id="insert" parameterType="com.bjzhianjia.scp.security.wf.base.design.entity.WfProcPropsBean">
+		insert into SCP_WF_PROC_PROPS
+		(ID, PROC_ID, PROC_TASK_CODE,
+		PROC_PROPS_TYPE, PROC_PROPS_KEY, PROC_PROPS_VALUE,
+		PROC_PROPS_CREATOR, PROC_PROPS_CREATETIME,
+		PROC_PROPS_UPDATOR, PROC_PROPS_UPDATETIME,
+		PROC_TENANT_ID,PROC_DEPART_ID)
+		values
+		(#{id,jdbcType=INTEGER}, #{procId,jdbcType=VARCHAR},
+		#{procTaskCode,jdbcType=VARCHAR},
+		#{procPropsType,jdbcType=CHAR},
+		#{procPropsKey,jdbcType=VARCHAR}, #{procPropsValue,jdbcType=VARCHAR},
+		#{procPropsCreator,jdbcType=VARCHAR},
+		#{procPropsCreatetime,jdbcType=INTEGER},
+		#{procPropsUpdator,jdbcType=VARCHAR},
+		#{procPropsUpdatetime,jdbcType=INTEGER},
+		#{procTenantId,jdbcType=VARCHAR},
+		#{procDepartId,jdbcType=VARCHAR})
+	</insert>
+	
+	<update id="updateByPrimaryKeySelective" parameterType="com.bjzhianjia.scp.security.wf.base.design.entity.WfProcPropsBean" >
+	    update SCP_WF_PROC_PROPS
+	    <set >
+	      <if test="procId != null" >
+	        PROC_ID = #{procId,jdbcType=VARCHAR},
+	      </if>
+	      <if test="procTaskCode != null" >
+	        PROC_TASK_CODE = #{procTaskCode,jdbcType=VARCHAR},
+	      </if>
+	      <if test="procPropsType != null" >
+	        PROC_PROPS_TYPE = #{procPropsType,jdbcType=CHAR},
+	      </if>
+	      <if test="procPropsKey != null" >
+	        PROC_PROPS_KEY = #{procPropsKey,jdbcType=VARCHAR},
+	      </if>
+	      <if test="procPropsValue != null" >
+	        PROC_PROPS_VALUE = #{procPropsValue,jdbcType=VARCHAR},
+	      </if>
+	      <if test="procPropsCreator != null" >
+	        PROC_PROPS_CREATOR = #{procPropsCreator,jdbcType=VARCHAR},
+	      </if>
+	      <if test="procPropsCreatetime != null" >
+	        PROC_PROPS_CREATETIME = #{procPropsCreatetime,jdbcType=INTEGER},
+	      </if>
+	      <if test="procPropsUpdator != null" >
+	        PROC_PROPS_UPDATOR = #{procPropsUpdator,jdbcType=VARCHAR},
+	      </if>
+	      <if test="procPropsUpdatetime != null" >
+	        PROC_PROPS_UPDATETIME = #{procPropsUpdatetime,jdbcType=INTEGER},
+	      </if>
+	      <if test="procPropsVersion != null" >
+	        PROC_PROPS_VERSION = #{procPropsVersion,jdbcType=INTEGER},
+	      </if>
+	      <if test="procTenantId != null" >
+	        PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR},
+	      </if>
+	      <if test="procDepartId != null" >
+	        PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR},
+	      </if>
+	    </set>
+	    where ID = #{id,jdbcType=INTEGER}
+	  </update>
+</mapper>
