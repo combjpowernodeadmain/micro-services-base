@@ -1,7 +1,6 @@
 package com.bjzhianjia.scp.cgp.task.service;
 
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +52,19 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService{
 			throw new BizException("请指定事件来源");
 		}
 		
-		switch (key) {
+		/*
+		 * 查询字典里的事件来源，将字典里的code与前端传code对比，确定ID 将确定后的ID保存到数据库中
+		 */
+		String _key = "";
+		Map<String, String> dictValueByID = dictFeign.getDictValueByID(key);
+		if(dictValueByID!=null&&!dictValueByID.isEmpty()) {
+			JSONObject jObject = JSONObject.parseObject(dictValueByID.get(key));
+			_key = jObject.getString("code");
+		}else {
+			throw new BizException("未找到与事件来源类型对应的编号");
+		}
+		
+		switch (_key) {
 		case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345:
 			// 市长热线
 			addMayorLine(procBizData);
@@ -93,7 +104,11 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService{
 	private void addLeaderAssign(Map<String, Object> procBizData) throws BizException {
 		LeadershipAssignVo vo = JSON.parseObject(JSON.toJSONString(procBizData), LeadershipAssignVo.class);
 
-		vo.setCaseSource(getSourceTypeId(procBizData));
+		vo.setCaseSource((String) procBizData.get("sourceType"));
+		
+		if(vo.getId()==null&&StringUtils.isNotBlank((String)procBizData.get("procBizId"))) {
+			vo.setId(Integer.valueOf((String)procBizData.get("procBizId")));
+		}
 
 		Result<Void> result = new Result<>();
 		try {
@@ -118,7 +133,11 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService{
 	private void addPublicOpinion(Map<String, Object> procBizData) throws BizException {
 		PublicOpinionVo vo = JSON.parseObject(JSON.toJSONString(procBizData), PublicOpinionVo.class);
 
-		vo.setCaseSource(getSourceTypeId(procBizData));
+		vo.setCaseSource((String) procBizData.get("sourceType"));
+		
+		if(vo.getId()==null&&StringUtils.isNotBlank((String)procBizData.get("procBizId"))) {
+			vo.setId(Integer.valueOf((String)procBizData.get("procBizId")));
+		}
 
 		Result<Void> result = new Result<>();
 		try {
@@ -144,7 +163,11 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService{
 
 		MayorHotlineVo vo = JSON.parseObject(JSON.toJSONString(procBizData), MayorHotlineVo.class);
 
-		vo.setCaseSource(getSourceTypeId(procBizData));
+		vo.setCaseSource((String) procBizData.get("sourceType"));
+		
+		if(vo.getId()==null&&StringUtils.isNotBlank((String)procBizData.get("procBizId"))) {
+			vo.setId(Integer.valueOf((String)procBizData.get("procBizId")));
+		}
 
 		Result<Void> result = new Result<>();
 		try {
@@ -158,31 +181,4 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService{
 			throw new BizException(StringUtils.isBlank(result.getMessage()) ? e.getMessage() : result.getMessage());
 		}
 	}
-
-	/**
-	 * 获取事件来源具体类型对应的ID
-	 * 
-	 * @author 尚
-	 * @param procBizData
-	 * @param eventTypeMap
-	 * @return
-	 */
-	private String getSourceTypeId(Map<String, Object> procBizData) {
-		/*
-		 * 查询字典里的事件来源，将字典里的code与前端传code对比，确定ID 将确定后的ID保存到数据库中
-		 */
-		Map<String, String> eventTypeMap = dictFeign.getDictIdByCode(Constances.ROOT_BIZ_EVENTTYPE, true);
-
-		String id = "";
-		Set<String> keySet = eventTypeMap.keySet();
-		for (String string : keySet) {
-			JSONObject jObject = JSONObject.parseObject(eventTypeMap.get(string));
-			if (jObject.getString("code").equals(procBizData.get("sourceType"))) {
-				id = string;
-				break;
-			}
-		}
-		return id;
-	}
-
 }

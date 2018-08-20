@@ -217,6 +217,36 @@ public class AreaGridService {
 
 		if (areaGridJObject.getBooleanValue("flag")) {
 			//验证所选网格管理人员是否存在
+			
+			/*
+			 * areaGridMember:[{'gridMember':'m11,m12','gridRole':'r1'},{'gridMember':'m2',
+			 * 'gridRole':'r2'},{'gridMember':'m3','gridRole':'r3'},{'
+			 * gridMember':'m4','gridRole':'r4'},{'gridMember':'m5',' gridRole':'r5'}]
+			 */
+			String areaGridMemberJArrayStr = areaGridJObject.getString("areaGridMember");
+			JSONArray areaGridMemberJArray = JSONArray.parseArray(areaGridMemberJArrayStr);
+			List<String> areaGridMemberIdList=new ArrayList<>();
+			
+			//收集前端传入的用户ID集合
+			for(int i=0;i<areaGridMemberJArray.size();i++) {
+				JSONObject jsonObject = areaGridMemberJArray.getJSONObject(i);
+				String[] split = jsonObject.getString("gridMember").split(",");
+				for (String string : split) {
+					areaGridMemberIdList.add(string);
+				}
+			}
+			
+			Map<String, String> dictValueByID = dictFeign.getDictValueByID(String.join(",",areaGridMemberIdList));
+			Set<String> keySet = dictValueByID.keySet();
+			for(String memberId:areaGridMemberIdList) {
+				if(!keySet.contains(memberId)) {
+					//如果从数据库中查询到的人物集合不包括前端传入的某个ID，说明该风格员不存在
+					result.setIsSuccess(false);
+					result.setMessage("网格管理人员不存在");
+					return result;
+				}
+			}
+			
 		}else {
 			// 验证所选管理部门是否存在
 			if (StringUtils.isNotBlank(areaGrid.getMgrDept())) {
