@@ -39,7 +39,12 @@ spring:
         host: ${REDIS_HOST:localhost}
         port: ${REDIS_PORT:6379}
         pool:
-            max-active: 20
+            max-active: 100
+    
+    # 工作流配置
+    activiti: 
+        database-schema-update: flase     # true： 如果表不存在，则自动创建  flase： 默认值。如果没有表或者版本不匹配，将抛出异常。
+        check-process-definitions: false  # 校验流程文件 :true-开启（默认）、false-关闭
 
 # 配置数据库
 mybatis:
@@ -77,3 +82,30 @@ merge:
     
 mapper:
   mappers: com.bjzhianjia.scp.security.common.mapper.CommonMapper
+  
+  
+  
+#工作流数据源 
+workflow: 
+  datasource:
+      name: wfDataSource2
+      url: jdbc:mysql://${WORKFLOW.MYSQL_HOST:localhost}:${WORKFLOW.MYSQL_PORT:3306}/scp_workflow?useUnicode=true&characterEncoding=UTF8
+      username: ${WORKFLOW.MYSQL_USER_NAME:root}
+      password: ${WORKFLOW.MYSQL_USER_PASS:123456}
+      type: com.alibaba.druid.pool.DruidDataSource
+      driver-class-name: com.mysql.jdbc.Driver
+      druid:
+          filters: stat
+          maxActive: 20
+          initialSize: 1
+          maxWait: 60000
+          minIdle: 1
+          timeBetweenEvictionRunsMillis: 60000
+          minEvictableIdleTimeMillis: 300000
+          validationQuery: select 'x'
+          testWhileIdle: true
+          testOnBorrow: false
+          testOnReturn: false
+          poolPreparedStatements: true
+          maxOpenPreparedStatements: 20
+  
