@@ -17,11 +17,11 @@
 
 package com.bjzhianjia.scp.config;
 
+import java.io.Serializable;
+
 import org.hibernate.validator.constraints.Range;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-
-import java.io.Serializable;
 
 /**
  * 云存储配置信息
@@ -33,7 +33,7 @@ public class CloudStorageConfig implements Serializable {
     private static final long serialVersionUID = 1L;
 
     //类型 1：七牛  2：阿里云  3：腾讯云
-    @Range(min=1, max=3, message = "类型错误")
+    @Range(min=1, max=8, message = "类型错误")
     private Integer type;
 
     //七牛绑定的域名
@@ -74,6 +74,22 @@ public class CloudStorageConfig implements Serializable {
     private String qcloudBucketName;
     //腾讯云COS所属地区
     private String qcloudRegion;
+    
+    
+    // Fastdfs 存储配置
+    private String fdfsConnectTimeout;
+    private String fdfsNetworkTimeout;
+    
+    private String fdfsCharset;
+    private String fdfsHttpTrackerHttpPort;
+    private String fdfsHttpAntiStealToken;
+    private String fdfsHttpSecretKey;
+    private String fdfsTrackerServers;
+    
+    // local存储配置
+    private String localStoragePathPrefix;
+    private String localIsNameByDate;
+    
 
     public Integer getType() {
         return type;
@@ -225,5 +241,77 @@ public class CloudStorageConfig implements Serializable {
 
 	public void setQcloudRegion(String qcloudRegion) {
 		this.qcloudRegion = qcloudRegion;
+	}
+
+	public String getFdfsConnectTimeout() {
+		return fdfsConnectTimeout;
+	}
+
+	public void setFdfsConnectTimeout(String fdfsConnectTimeout) {
+		this.fdfsConnectTimeout = fdfsConnectTimeout;
+	}
+
+	public String getFdfsNetworkTimeout() {
+		return fdfsNetworkTimeout;
+	}
+
+	public void setFdfsNetworkTimeout(String fdfsNetworkTimeout) {
+		this.fdfsNetworkTimeout = fdfsNetworkTimeout;
+	}
+
+	public String getFdfsCharset() {
+		return fdfsCharset;
+	}
+
+	public void setFdfsCharset(String fdfsCharset) {
+		this.fdfsCharset = fdfsCharset;
+	}
+
+	public String getFdfsHttpTrackerHttpPort() {
+		return fdfsHttpTrackerHttpPort;
+	}
+
+	public void setFdfsHttpTrackerHttpPort(String fdfsHttpTrackerHttpPort) {
+		this.fdfsHttpTrackerHttpPort = fdfsHttpTrackerHttpPort;
+	}
+
+	public String getFdfsHttpAntiStealToken() {
+		return fdfsHttpAntiStealToken;
+	}
+
+	public void setFdfsHttpAntiStealToken(String fdfsHttpAntiStealToken) {
+		this.fdfsHttpAntiStealToken = fdfsHttpAntiStealToken;
+	}
+
+	public String getFdfsHttpSecretKey() {
+		return fdfsHttpSecretKey;
+	}
+
+	public void setFdfsHttpSecretKey(String fdfsHttpSecretKey) {
+		this.fdfsHttpSecretKey = fdfsHttpSecretKey;
+	}
+
+	public String getFdfsTrackerServers() {
+		return fdfsTrackerServers;
+	}
+
+	public void setFdfsTrackerServers(String fdfsTrackerServers) {
+		this.fdfsTrackerServers = fdfsTrackerServers;
+	}
+
+	public String getLocalStoragePathPrefix() {
+		return localStoragePathPrefix;
+	}
+
+	public void setLocalStoragePathPrefix(String localStoragePathPrefix) {
+		this.localStoragePathPrefix = localStoragePathPrefix;
+	}
+
+	public String getLocalIsNameByDate() {
+		return localIsNameByDate;
+	}
+
+	public void setLocalIsNameByDate(String localIsNameByDate) {
+		this.localIsNameByDate = localIsNameByDate;
 	}
 }
