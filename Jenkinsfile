@@ -184,7 +184,7 @@ pipeline {
                             sshTransfer(
                                 excludes: '', 
                                 execCommand: 'cd /data/scp/ && sudo ./start-scp.sh', 
-                                execTimeout: 120000, 
+                                execTimeout: 480000, 
                                 flatten: false, 
                                 makeEmptyDirs: false, 
                                 noDefaultExcludes: false, 
