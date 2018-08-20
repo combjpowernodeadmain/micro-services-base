@@ -215,12 +215,16 @@ public class AreaGridService {
 		Result<Void> result = new Result<>();
 		result.setIsSuccess(false);
 
-		// 验证所选管理部门是否存在
-		if (StringUtils.isNotBlank(areaGrid.getMgrDept())) {
-			Map<String, String> depart = adminFeign.getDepart(areaGrid.getMgrDept());
-			if (depart == null || depart.isEmpty()) {
-				result.setMessage("所选部门不存在");
-				return result;
+		if (areaGridJObject.getBooleanValue("flag")) {
+			//验证所选网格管理人员是否存在
+		}else {
+			// 验证所选管理部门是否存在
+			if (StringUtils.isNotBlank(areaGrid.getMgrDept())) {
+				Map<String, String> depart = adminFeign.getDepart(areaGrid.getMgrDept());
+				if (depart == null || depart.isEmpty()) {
+					result.setMessage("所选部门不存在");
+					return result;
+				}
 			}
 		}
 
@@ -395,6 +399,7 @@ public class AreaGridService {
 		String gridMember = "";
 		if (areaGridMemberList != null && !areaGridMemberList.isEmpty()) {
 			// 按岗位收集网格员，形式如--------"岗位":"网格员1，网格员2，网格员3"
+			//positionUserMap内的List集合用于存在同一角色下的多个网格员的ID
 			Map<String, List<String>> positionUserMap = new HashMap<>();
 			for (AreaGridMember areaGridMember : areaGridMemberList) {
 				List<String> pUList = positionUserMap.get(areaGridMember.getGridRole());
@@ -425,7 +430,7 @@ public class AreaGridService {
 				memberJObject.put("gridRole", gridRole);
 				memberJObject.put("gridRoleName", gridMemberMap.get(gridRole));
 
-				// 同一岗位下的多个人员
+				// 同一岗位(角色)下的多个人员
 				List<String> list = positionUserMap.get(gridRole);
 
 				List<String> memberTmpList = new ArrayList<>();
@@ -433,8 +438,14 @@ public class AreaGridService {
 				for (String gridMeber : list) {
 					memberTmpList.add(gridMeber);
 					String userJStr = userMap.get(gridMeber);
-					JSONObject userJObj = JSONObject.parseObject(userJStr);
-					memberNameTmpList.add(userJObj.getString("name"));
+					if(StringUtils.isNotBlank(userJStr)) {
+						/*
+						 * 可能因为在网格成员表里引入了某个人员，但该人员在base_user表里进行了删除，所以admimFeign.getUser方法
+						 * 返回的map集合中没有该人员，造成空指针
+						 */
+						JSONObject userJObj = JSONObject.parseObject(userJStr);
+						memberNameTmpList.add(userJObj.getString("name"));
+					}
 				}
 				memberJObject.put("gridMember", String.join(",", memberTmpList));
 				memberJObject.put("gridMemberName", String.join(",", memberNameTmpList));

@@ -162,6 +162,7 @@ public class MayorHotlineService {
 //		int i=1/0;//模拟异常
 		caseInfoBiz.insertSelective(resultCaseInfo.getData());
 
+		result.setIsSuccess(true);
 		result.setMessage("成功");
 		return result;
 	}

@@ -20,6 +20,7 @@ import com.bjzhianjia.scp.cgp.service.PublicOpinionService;
 import com.bjzhianjia.scp.cgp.vo.LeadershipAssignVo;
 import com.bjzhianjia.scp.cgp.vo.MayorHotlineVo;
 import com.bjzhianjia.scp.cgp.vo.PublicOpinionVo;
+import com.bjzhianjia.scp.security.wf.base.task.service.IWfProcTaskCallBackService;
 
 /**
  * 处理预立案单
@@ -29,7 +30,7 @@ import com.bjzhianjia.scp.cgp.vo.PublicOpinionVo;
  */
 @Service
 @Transactional
-public class PreCaseCallBackServiceImpl {
+public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService{
 	@Autowired
 	private MayorHotlineService mayorHotlineService;
 	@Autowired
@@ -39,6 +40,7 @@ public class PreCaseCallBackServiceImpl {
 	@Autowired
 	private DictFeign dictFeign;
 
+	@Override
 	public void before(String dealType, Map<String, Object> procBizData) throws BizException {
 		/*
 		 * 在进行预立案单处理时，业务ID还没有生成，所以将业务逻辑放在before方法进行操作，以获取业务ID
@@ -46,6 +48,11 @@ public class PreCaseCallBackServiceImpl {
 		
 		// 前端将来源的字典code传入
 		String key = (String) procBizData.get("sourceType");
+		
+		if(StringUtils.isBlank(key)) {
+			throw new BizException("请指定事件来源");
+		}
+		
 		switch (key) {
 		case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345:
 			// 市长热线
@@ -68,6 +75,7 @@ public class PreCaseCallBackServiceImpl {
 		}
 	}
 
+	@Override
 	public void after(String dealType, Map<String, Object> procBizData) throws BizException {
 
 	}
@@ -144,7 +152,7 @@ public class PreCaseCallBackServiceImpl {
 			if (!result.getIsSuccess()) {
 				throw new BizException(result.getMessage());
 			}
-			procBizData.put("procBizId", vo.getId());
+			procBizData.put("procBizId", String.valueOf(vo.getId()));
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new BizException(StringUtils.isBlank(result.getMessage()) ? e.getMessage() : result.getMessage());

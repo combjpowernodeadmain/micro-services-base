@@ -127,4 +127,9 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 	public List<RegulaObject> selectByIds(String ids){
 		return this.mapper.selectByIds(ids);
 	}
+	
+	
+	public List<Map<String, String>> selectRegulaObjCountByType(){
+		return this.mapper.selectRegulaObjCountByType();
+	}
 }
