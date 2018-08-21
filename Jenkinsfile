@@ -115,7 +115,7 @@ pipeline {
                                 remoteDirectory: '7_tool', 
                                 remoteDirectorySDF: false, 
                                 removePrefix: 'scp-modules/scp-tool/target/', 
-                                sourceFiles: 'scp-modules/scp-tool/target/scp-gate.jar'),
+                                sourceFiles: 'scp-modules/scp-tool/target/scp-tool.jar'),
                             sshTransfer(excludes: '', 
                                 execCommand: '', 
                                 execTimeout: 120000, 
