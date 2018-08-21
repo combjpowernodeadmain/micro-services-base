@@ -1,5 +1,7 @@
 package com.bjzhianjia.scp.cgp.rest;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -8,8 +10,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.CaseInfoBiz;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.Result;
@@ -23,12 +27,14 @@ import com.bjzhianjia.scp.security.common.rest.BaseController;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("caseInfo")
 @CheckClientToken
 @CheckUserToken
 @Api(tags="立案管理")
+@Slf4j
 public class CaseInfoController extends BaseController<CaseInfoBiz,CaseInfo,Integer> {
 	@Autowired
 	private CaseInfoService caserInfoService;
@@ -70,4 +76,21 @@ public class CaseInfoController extends BaseController<CaseInfoBiz,CaseInfo,Inte
 	public ObjectRestResponse<CaseInfo> get(@PathVariable("id") @ApiParam(name="待查询对象ID") Integer id){
 		return caserInfoService.get(id);
 	}
+	
+	
+	/**
+     * 查询用户待办流程任务列表
+     * @param objs
+     * @param request
+     * @return
+     */
+    @ApiOperation("查询我的待办")
+    @ResponseBody
+    @RequestMapping(value = { "/userToDoTasks" }, method = RequestMethod.POST)
+    public TableResultResponse<JSONObject> getUserToDoTasks(@RequestBody JSONObject objs, HttpServletRequest request) {
+        log.debug("SCP信息---开始查询用户待办任务列表...");
+        
+        TableResultResponse<JSONObject> userToDoTasks = caserInfoService.getUserToDoTasks(objs);
+        return userToDoTasks;
+    }
 }

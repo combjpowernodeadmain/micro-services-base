@@ -39,6 +39,10 @@ public class CaseInfo implements Serializable {
 	    //事件描述
     @Column(name = "case_desc")
     private String caseDesc;
+    	
+    	//事件级别（后加字段）
+    @Column(name="case_level")
+    private String caseLevel;
 	
 	    //涉及监管对象（ID集合，逗号隔开）
     @Column(name = "regula_obj_list")
@@ -63,6 +67,10 @@ public class CaseInfo implements Serializable {
 	    //事件发生地点
     @Column(name = "occur_addr")
     private String occurAddr;
+    
+    	//事件发生时间(后加字段)
+    @Column(name="occur_time")
+    private Date occurTime;
 	
 	    //地理标识
     @Column(name = "map_info")
@@ -739,5 +747,17 @@ public class CaseInfo implements Serializable {
 	 */
 	public String getDeptId() {
 		return deptId;
+	}
+	public Date getOccurTime() {
+		return occurTime;
+	}
+	public void setOccurTime(Date occurTime) {
+		this.occurTime = occurTime;
+	}
+	public String getCaseLevel() {
+		return caseLevel;
+	}
+	public void setCaseLevel(String caseLevel) {
+		this.caseLevel = caseLevel;
 	}
 }

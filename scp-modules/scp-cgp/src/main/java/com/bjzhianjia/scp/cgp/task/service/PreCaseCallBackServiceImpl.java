@@ -1,9 +1,11 @@
 package com.bjzhianjia.scp.cgp.task.service;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +40,8 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService{
 	private LeadershipAssignService leadershipAssignService;
 	@Autowired
 	private DictFeign dictFeign;
+	@Autowired
+	private StringRedisTemplate stringRedisTemplate;
 
 	@Override
 	public void before(String dealType, Map<String, Object> procBizData) throws BizException {
@@ -116,7 +120,7 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService{
 			if (!result.getIsSuccess()) {
 				throw new BizException(result.getMessage());
 			}
-			procBizData.put("procBizId", vo.getId());
+			procBizData.put("procBizId", String.valueOf(vo.getId()));
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new BizException(StringUtils.isBlank(result.getMessage()) ? e.getMessage() : result.getMessage());
@@ -145,7 +149,7 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService{
 			if (!result.getIsSuccess()) {
 				throw new BizException(result.getMessage());
 			}
-			procBizData.put("procBizId", vo.getId());
+			procBizData.put("procBizId", String.valueOf(vo.getId()));
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new BizException(StringUtils.isBlank(result.getMessage()) ? e.getMessage() : result.getMessage());
@@ -176,9 +180,26 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService{
 				throw new BizException(result.getMessage());
 			}
 			procBizData.put("procBizId", String.valueOf(vo.getId()));
+			
+			//添加缓存到Redis
+//			String redisField="caseInfo_"+vo.getId();
+//			
+//			stringRedisTemplate.opsForHash().put(redisKey, "caseCode", vo.getCaseCode());
+//			stringRedisTemplate.opsForHash().put(redisKey, "caseTitle", vo.getCaseCode());
+//			stringRedisTemplate.opsForHash().put(redisKey, "occurTime", vo.getAppealDatetime());
+//			stringRedisTemplate.opsForHash().put(redisKey, "bizList", "");//热线不涉及业务条线
+//			stringRedisTemplate.opsForHash().put(redisKey, "eventTypeList", "");//热线也不涉及事件类别
+//			stringRedisTemplate.opsForHash().put(redisKey, "sourceCode", vo.getCaseSource());
+//			stringRedisTemplate.opsForHash().put(redisKey, "caseLevel", "");
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new BizException(StringUtils.isBlank(result.getMessage()) ? e.getMessage() : result.getMessage());
 		}
+	}
+	
+	
+	private void addCacheDataToRedis(Map<String, Object> toCache) {
+		
 	}
 }

@@ -184,9 +184,11 @@ public class MayorHotlineService {
 			throw new Exception(caseCodeResult.getMessage());// 向外抛出异常，使事务回滚
 		}
 		caseInfo.setCaseCode(caseCodeResult.getData());
+		vo.setCaseCode(caseCodeResult.getData());//将生成的事件编号也放入到vo中一份，带出到工作流回调方法中
 
 		caseInfo.setCaseTitle(vo.getHotlnTitle());//  立案单.事件标题
 		caseInfo.setCaseDesc(vo.getAppealDesc());//  立案单.事件描述
+		caseInfo.setOccurTime(vo.getAppealDatetime());
 
 		result.setIsSuccess(true);
 		result.setData(caseInfo);
