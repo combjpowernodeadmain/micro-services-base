@@ -10,7 +10,9 @@ spring:
         host: ${REDIS_HOST:127.0.0.1}
         port: ${REDIS_PORT:6379}
         pool:
-            max-active: 300
+            max-active: 1000
+            max-idle: 100
+            min-idle: 50
     datasource:
       name: test
       url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/scp_auth?useUnicode=true&characterEncoding=UTF8

@@ -40,6 +40,10 @@ public class OSSFactory {
             return new AliyunCloudStorageService(config);
         } else if (config.getType().equals(OSSConstant.TYPE_QCLOUD)) {
             return new QcloudCloudStorageService(config);
+        } else if(config.getType().equals(OSSConstant.TYPE_LOCAL)) {
+        	return new LocalStorageService(config);
+        } else if(config.getType().equals(OSSConstant.TYPE_FASTDFS)) {
+        	return new FastdfsStorageService(config);
         }
         return null;
     }
