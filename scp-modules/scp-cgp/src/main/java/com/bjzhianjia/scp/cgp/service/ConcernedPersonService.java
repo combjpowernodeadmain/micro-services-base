@@ -1,5 +1,7 @@
 package com.bjzhianjia.scp.cgp.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,5 +62,22 @@ public class ConcernedPersonService {
 	public ObjectRestResponse<ConcernedPerson> getOne(Integer id){
 		ConcernedPerson concernedPerson = concernedPersonBiz.selectById(id);
 		return new ObjectRestResponse<ConcernedPerson>().data(concernedPerson);
+	}
+	
+	/**
+	 * 添加多个对象
+	 * @author 尚
+	 * @param concernedPersonList 待添加对象集合
+	 * @return
+	 */
+	public Result<Void> created(List<ConcernedPerson> concernedPersonList){
+		Result<Void> result=new Result<>();
+		result.setIsSuccess(false);
+		
+		concernedPersonBiz.insertConcernedPersonList(concernedPersonList);
+		
+		result.setIsSuccess(true);
+		return result;
+		
 	}
 }

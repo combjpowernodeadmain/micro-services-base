@@ -45,7 +45,7 @@ public class ConcernedPersonBiz extends BusinessBiz<ConcernedPersonMapper,Concer
 	 * @param concernedPersonList
 	 * @return
 	 */
-	public int concernedPersonList(List<ConcernedPerson> concernedPersonList) {
+	public int insertConcernedPersonList(List<ConcernedPerson> concernedPersonList) {
 		return this.mapper.insertConcernPersonList(concernedPersonList);
 	}
 }

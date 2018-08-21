@@ -12,6 +12,7 @@ import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.exception.BizException;
 import com.bjzhianjia.scp.cgp.service.CaseInfoService;
+import com.bjzhianjia.scp.security.wf.base.task.service.IWfProcTaskCallBackService;
 
 /**
  * 立案单处理
@@ -20,10 +21,11 @@ import com.bjzhianjia.scp.cgp.service.CaseInfoService;
  */
 @Service
 @Transactional
-public class CaseCallBackServiceImpl {
+public class CaseCallBackServiceImpl implements IWfProcTaskCallBackService{
 	@Autowired
 	private CaseInfoService caseInfoService;
 
+	@Override
 	public void before(String dealType, Map<String, Object> procBizData) throws BizException {
 		
 	}
@@ -37,6 +39,7 @@ public class CaseCallBackServiceImpl {
 		}
 	}
 
+	@Override
 	public void after(String dealType, Map<String, Object> procBizData) throws BizException {
 		CaseInfo caseInfo = JSON.parseObject(JSON.toJSONString(procBizData), CaseInfo.class);
 

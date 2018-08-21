@@ -1,6 +1,8 @@
 package com.bjzhianjia.scp.cgp.mapper;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -24,4 +26,6 @@ public interface RegulaObjectMapper extends CommonMapper<RegulaObject> {
 	 */
 	public void deleteByIds(@Param("ids") Integer[] ids, @Param("updUserId") String updUserId,
 			@Param("updUserName") String updUserName, @Param("updTime") Date updTime);
+	
+	public List<Map<String, String>> selectRegulaObjCountByType();
 }
