@@ -1,5 +1,7 @@
 package com.bjzhianjia.scp.cgp.rest;
 
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,5 +94,35 @@ public class CaseInfoController extends BaseController<CaseInfoBiz,CaseInfo,Inte
         
         TableResultResponse<JSONObject> userToDoTasks = caserInfoService.getUserToDoTasks(objs);
         return userToDoTasks;
+    }
+    
+    
+    @ApiOperation("完成任务")
+    @ResponseBody
+    @RequestMapping(value = { "/completeProcess" }, method = RequestMethod.POST)
+    public void completeProcess(@RequestBody JSONObject objs, HttpServletRequest request) {
+    	log.debug("SCP信息---开始启动并提交工作流...");
+    	caserInfoService.completeProcess(objs);
+    }
+    
+    
+    @RequestMapping(value="/get/userToDoTask")
+    @ApiOperation("查询详细待办任务")
+    public ObjectRestResponse<JSONObject> getUserToDoTask(@RequestBody JSONObject objs, HttpServletRequest request){
+    	
+    	return caserInfoService.getUserToDoTask(objs);
+    }
+    
+    
+    /**
+     * 通过流程任务ID终止当前流程任务，终止的流程可在我的流程中查询到
+     * @param objs
+     * @param request
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = { "/endProcess"}, method =  RequestMethod.POST )
+    public void endProcessInstance(@RequestBody JSONObject objs,HttpServletRequest reques) {
+    	caserInfoService.emdProcess(objs);
     }
 }
