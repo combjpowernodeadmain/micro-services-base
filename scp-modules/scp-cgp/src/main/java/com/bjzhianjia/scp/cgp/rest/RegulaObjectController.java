@@ -113,9 +113,15 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
 	public TableResultResponse<RegulaObjectVo> page(@RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
 			@RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
 			@ModelAttribute @ApiParam(name = "接收查询条件的实例") RegulaObject regulaObject) {
-		String tenantID = BaseContextHandler.getTenantID();
-		String userId=BaseContextHandler.getUserID();
-		return regulaObjectService.getList(regulaObject, page, limit);
+		return regulaObjectService.getList(regulaObject, page, limit,false);
+	}
+	
+	@RequestMapping(value = "/list/objType", method = RequestMethod.GET)
+	@ApiOperation("获取公共机构及企业下的监管对象")
+	public TableResultResponse<RegulaObjectVo> page_ObjType(@RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
+			@RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
+			@ModelAttribute @ApiParam(name = "接收查询条件的实例") RegulaObject regulaObject) {
+		return regulaObjectService.getList(regulaObject, page, limit,true);
 	}
 
 	@RequestMapping(value = "/get/{id}", method = RequestMethod.GET)

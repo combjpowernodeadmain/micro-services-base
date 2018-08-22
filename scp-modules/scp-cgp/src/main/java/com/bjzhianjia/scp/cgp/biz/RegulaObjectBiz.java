@@ -62,7 +62,7 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 	 * @param limit
 	 * @return
 	 */
-	public TableResultResponse<RegulaObject> getList(RegulaObject regulaObject, int page, int limit) {
+	public TableResultResponse<RegulaObject> getList(RegulaObject regulaObject, int page, int limit,boolean isObjType) {
 		Example example = new Example(RegulaObject.class);
 		Example.Criteria criteria = example.createCriteria();
 		
@@ -75,6 +75,9 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 
 		//是否输入了按监管对象类型查询
 		if (regulaObject.getObjType()!=null) {
+			if(isObjType) {
+				regulaObject.getObjType();
+			}
 			criteria.andEqualTo("objType", regulaObject.getObjType());
 		}
 

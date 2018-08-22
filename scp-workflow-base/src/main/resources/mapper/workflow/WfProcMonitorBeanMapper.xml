@@ -12,6 +12,7 @@
 			proc.PROC_ORGCODE procOrgcode, 
 			proc.PROC_MEMO procMemo, 
 			task.PROC_TASK_STATUS procTaskStatus, 
+			task.PROC_TASK_PROPERTIES procTaskProperties,
 			CASE
 				WHEN task.PROC_TASK_STATUS = '1' THEN
 					'待签收'

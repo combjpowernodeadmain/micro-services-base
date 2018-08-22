@@ -318,8 +318,13 @@ public class RegulaObjectService {
 	 * @param limit
 	 * @return
 	 */
-	public TableResultResponse<RegulaObjectVo> getList(RegulaObject regulaObject, int page, int limit) {
-		TableResultResponse<RegulaObject> tableResult = regulaObjectBiz.getList(regulaObject, page, limit);
+	public TableResultResponse<RegulaObjectVo> getList(RegulaObject regulaObject, int page, int limit,boolean isObjType) {
+		TableResultResponse<RegulaObject> tableResult=new TableResultResponse<>();
+		if(isObjType) {
+			
+		}else {
+			tableResult = regulaObjectBiz.getList(regulaObject, page, limit,false);
+		}
 		List<RegulaObject> rows = tableResult.getData().getRows();
 		
 		try {
