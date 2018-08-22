@@ -22,8 +22,10 @@ package com.bjzhianjia.scp.oss.constants;
  * @create 2018/3/4.
  */
 public class OSSConstant {
-    //类型 1：七牛  2：阿里云  3：腾讯云
+    //类型 1：七牛  2：阿里云  3：腾讯云  6:本地  8：fastdfs
     public final static Integer TYPE_QINIU = 1;
     public final static Integer TYPE_ALIYUN = 2;
     public final static Integer TYPE_QCLOUD = 3;
+    public final static Integer TYPE_LOCAL=6;
+    public final static Integer TYPE_FASTDFS=8;
 }

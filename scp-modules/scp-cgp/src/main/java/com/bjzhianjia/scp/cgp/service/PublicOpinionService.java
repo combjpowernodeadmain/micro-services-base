@@ -185,6 +185,7 @@ public class PublicOpinionService {
 		caseInfo.setCaseTitle(vo.getOpinTitle());//  立案单.事件标题
 		caseInfo.setCaseDesc(vo.getOpinDesc());//  立案单.事件描述
 		caseInfo.setOccurAddr(vo.getOpinAddr());//  立案单.发生地址
+		caseInfo.setOccurTime(vo.getPublishTime());
 
 		result.setIsSuccess(true);
 		result.setData(caseInfo);

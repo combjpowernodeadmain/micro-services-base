@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -126,6 +127,7 @@ public class LeadershipAssignService {
 		caseInfo.setOccurAddr(vo.getTaskAddr());
 		caseInfo.setDeadLine(vo.getDeadLine());
 		caseInfo.setRegulaObjList(vo.getRegulaObjList());
+		caseInfo.setOccurTime(vo.getTaskTime());
 
 		result.setIsSuccess(true);
 		result.setData(caseInfo);
@@ -272,14 +274,17 @@ public class LeadershipAssignService {
 		Map<String, String> leaderMap = adminFeign.getUser(String.join(",", leaderIdListStr));
 		if(leaderMap!=null&&!leaderMap.isEmpty()) {
 			for(LeadershipAssignVo vo:voList) {
-				String taskLeaders = vo.getTaskLeader();
-				String[] split = taskLeaders.split(",");
 				List<String> leaderNameList=new ArrayList<>();
-				for(String taskLeaderId:split) {
-					String leaderName = leaderMap.get(taskLeaderId);
-					if(null!=leaderName) {
-						JSONObject leaderNameJObject = JSONObject.parseObject(leaderName);
-						leaderNameList.add(leaderNameJObject.getString("name"));
+				String taskLeaders = vo.getTaskLeader();
+				
+				if(StringUtils.isNotBlank(taskLeaders)) {
+					String[] split = taskLeaders.split(",");
+					for(String taskLeaderId:split) {
+						String leaderName = leaderMap.get(taskLeaderId);
+						if(null!=leaderName) {
+							JSONObject leaderNameJObject = JSONObject.parseObject(leaderName);
+							leaderNameList.add(leaderNameJObject.getString("name"));
+						}
 					}
 				}
 				vo.setLeaderNames(String.join(",", leaderNameList));

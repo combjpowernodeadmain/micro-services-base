@@ -1,10 +1,11 @@
 package com.bjzhianjia.scp.cgp.task.service;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ import com.bjzhianjia.scp.cgp.service.PublicOpinionService;
 import com.bjzhianjia.scp.cgp.vo.LeadershipAssignVo;
 import com.bjzhianjia.scp.cgp.vo.MayorHotlineVo;
 import com.bjzhianjia.scp.cgp.vo.PublicOpinionVo;
+import com.bjzhianjia.scp.security.wf.base.task.service.IWfProcTaskCallBackService;
 
 /**
  * 处理预立案单
@@ -29,7 +31,7 @@ import com.bjzhianjia.scp.cgp.vo.PublicOpinionVo;
  */
 @Service
 @Transactional
-public class PreCaseCallBackServiceImpl {
+public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService{
 	@Autowired
 	private MayorHotlineService mayorHotlineService;
 	@Autowired
@@ -38,7 +40,10 @@ public class PreCaseCallBackServiceImpl {
 	private LeadershipAssignService leadershipAssignService;
 	@Autowired
 	private DictFeign dictFeign;
+	@Autowired
+	private StringRedisTemplate stringRedisTemplate;
 
+	@Override
 	public void before(String dealType, Map<String, Object> procBizData) throws BizException {
 		/*
 		 * 在进行预立案单处理时，业务ID还没有生成，所以将业务逻辑放在before方法进行操作，以获取业务ID
@@ -46,7 +51,24 @@ public class PreCaseCallBackServiceImpl {
 		
 		// 前端将来源的字典code传入
 		String key = (String) procBizData.get("sourceType");
-		switch (key) {
+		
+		if(StringUtils.isBlank(key)) {
+			throw new BizException("请指定事件来源");
+		}
+		
+		/*
+		 * 查询字典里的事件来源，将字典里的code与前端传code对比，确定ID 将确定后的ID保存到数据库中
+		 */
+		String _key = "";
+		Map<String, String> dictValueByID = dictFeign.getDictValueByID(key);
+		if(dictValueByID!=null&&!dictValueByID.isEmpty()) {
+			JSONObject jObject = JSONObject.parseObject(dictValueByID.get(key));
+			_key = jObject.getString("code");
+		}else {
+			throw new BizException("未找到与事件来源类型对应的编号");
+		}
+		
+		switch (_key) {
 		case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345:
 			// 市长热线
 			addMayorLine(procBizData);
@@ -68,6 +90,7 @@ public class PreCaseCallBackServiceImpl {
 		}
 	}
 
+	@Override
 	public void after(String dealType, Map<String, Object> procBizData) throws BizException {
 
 	}
@@ -85,7 +108,11 @@ public class PreCaseCallBackServiceImpl {
 	private void addLeaderAssign(Map<String, Object> procBizData) throws BizException {
 		LeadershipAssignVo vo = JSON.parseObject(JSON.toJSONString(procBizData), LeadershipAssignVo.class);
 
-		vo.setCaseSource(getSourceTypeId(procBizData));
+		vo.setCaseSource((String) procBizData.get("sourceType"));
+		
+		if(vo.getId()==null&&StringUtils.isNotBlank((String)procBizData.get("procBizId"))) {
+			vo.setId(Integer.valueOf((String)procBizData.get("procBizId")));
+		}
 
 		Result<Void> result = new Result<>();
 		try {
@@ -93,7 +120,7 @@ public class PreCaseCallBackServiceImpl {
 			if (!result.getIsSuccess()) {
 				throw new BizException(result.getMessage());
 			}
-			procBizData.put("procBizId", vo.getId());
+			procBizData.put("procBizId", String.valueOf(vo.getId()));
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new BizException(StringUtils.isBlank(result.getMessage()) ? e.getMessage() : result.getMessage());
@@ -110,7 +137,11 @@ public class PreCaseCallBackServiceImpl {
 	private void addPublicOpinion(Map<String, Object> procBizData) throws BizException {
 		PublicOpinionVo vo = JSON.parseObject(JSON.toJSONString(procBizData), PublicOpinionVo.class);
 
-		vo.setCaseSource(getSourceTypeId(procBizData));
+		vo.setCaseSource((String) procBizData.get("sourceType"));
+		
+		if(vo.getId()==null&&StringUtils.isNotBlank((String)procBizData.get("procBizId"))) {
+			vo.setId(Integer.valueOf((String)procBizData.get("procBizId")));
+		}
 
 		Result<Void> result = new Result<>();
 		try {
@@ -118,7 +149,7 @@ public class PreCaseCallBackServiceImpl {
 			if (!result.getIsSuccess()) {
 				throw new BizException(result.getMessage());
 			}
-			procBizData.put("procBizId", vo.getId());
+			procBizData.put("procBizId", String.valueOf(vo.getId()));
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new BizException(StringUtils.isBlank(result.getMessage()) ? e.getMessage() : result.getMessage());
@@ -136,7 +167,11 @@ public class PreCaseCallBackServiceImpl {
 
 		MayorHotlineVo vo = JSON.parseObject(JSON.toJSONString(procBizData), MayorHotlineVo.class);
 
-		vo.setCaseSource(getSourceTypeId(procBizData));
+		vo.setCaseSource((String) procBizData.get("sourceType"));
+		
+		if(vo.getId()==null&&StringUtils.isNotBlank((String)procBizData.get("procBizId"))) {
+			vo.setId(Integer.valueOf((String)procBizData.get("procBizId")));
+		}
 
 		Result<Void> result = new Result<>();
 		try {
@@ -144,37 +179,27 @@ public class PreCaseCallBackServiceImpl {
 			if (!result.getIsSuccess()) {
 				throw new BizException(result.getMessage());
 			}
-			procBizData.put("procBizId", vo.getId());
+			procBizData.put("procBizId", String.valueOf(vo.getId()));
+			
+			//添加缓存到Redis
+//			String redisField="caseInfo_"+vo.getId();
+//			
+//			stringRedisTemplate.opsForHash().put(redisKey, "caseCode", vo.getCaseCode());
+//			stringRedisTemplate.opsForHash().put(redisKey, "caseTitle", vo.getCaseCode());
+//			stringRedisTemplate.opsForHash().put(redisKey, "occurTime", vo.getAppealDatetime());
+//			stringRedisTemplate.opsForHash().put(redisKey, "bizList", "");//热线不涉及业务条线
+//			stringRedisTemplate.opsForHash().put(redisKey, "eventTypeList", "");//热线也不涉及事件类别
+//			stringRedisTemplate.opsForHash().put(redisKey, "sourceCode", vo.getCaseSource());
+//			stringRedisTemplate.opsForHash().put(redisKey, "caseLevel", "");
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new BizException(StringUtils.isBlank(result.getMessage()) ? e.getMessage() : result.getMessage());
 		}
 	}
-
-	/**
-	 * 获取事件来源具体类型对应的ID
-	 * 
-	 * @author 尚
-	 * @param procBizData
-	 * @param eventTypeMap
-	 * @return
-	 */
-	private String getSourceTypeId(Map<String, Object> procBizData) {
-		/*
-		 * 查询字典里的事件来源，将字典里的code与前端传code对比，确定ID 将确定后的ID保存到数据库中
-		 */
-		Map<String, String> eventTypeMap = dictFeign.getDictIdByCode(Constances.ROOT_BIZ_EVENTTYPE, true);
-
-		String id = "";
-		Set<String> keySet = eventTypeMap.keySet();
-		for (String string : keySet) {
-			JSONObject jObject = JSONObject.parseObject(eventTypeMap.get(string));
-			if (jObject.getString("code").equals(procBizData.get("sourceType"))) {
-				id = string;
-				break;
-			}
-		}
-		return id;
+	
+	
+	private void addCacheDataToRedis(Map<String, Object> toCache) {
+		
 	}
-
 }

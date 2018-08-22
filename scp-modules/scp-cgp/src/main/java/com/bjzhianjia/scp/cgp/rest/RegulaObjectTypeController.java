@@ -1,7 +1,9 @@
 package com.bjzhianjia.scp.cgp.rest;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSONObject;
+import com.bjzhianjia.scp.cgp.biz.RegulaObjectBiz;
 import com.bjzhianjia.scp.cgp.biz.RegulaObjectTypeBiz;
 import com.bjzhianjia.scp.cgp.entity.RegulaObjectType;
 import com.bjzhianjia.scp.cgp.entity.Result;
@@ -46,6 +49,8 @@ public class RegulaObjectTypeController extends BaseController<RegulaObjectTypeB
 	private RegulaObjectTypeService regulaObjectTypeService;
 	@Autowired
 	private RegulaObjectTypeBiz regulaObjectTypeBiz;
+	@Autowired
+	private RegulaObjectBiz regulaObjectBiz;
 
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
 	@ResponseBody
@@ -152,20 +157,29 @@ public class RegulaObjectTypeController extends BaseController<RegulaObjectTypeB
 	@RequestMapping(value = "/tree", method = RequestMethod.GET)
 	public List<RegulaObjTypeTree> getTree() {
 		TableResultResponse<RegulaObjectType> list = regulaObjectTypeBiz.getList(1, 2147483647, new RegulaObjectType());
-		List<RegulaObjectType> all =list.getData().getRows();
+		List<RegulaObjectType> all = list.getData().getRows();
+
+		List<Map<String, String>> regulaObjCountByTypeMap = regulaObjectBiz.selectRegulaObjCountByType();
 		
+		Map<Object, Object> mapTmp = new HashMap<>();
+		if(regulaObjCountByTypeMap!=null) {
+			for (Map<String, String> map : regulaObjCountByTypeMap) {
+				mapTmp.put(map.get("objType"), map.get("regulaCount"));
+			}
+		}
+
 		List<RegulaObjTypeTree> trees = new ArrayList<>();
 		all.forEach(o -> {
-			trees.add(new RegulaObjTypeTree(o.getId()+"", o.getParentObjectTypeId()+"", o.getObjectTypeName(),
-					o.getObjectTypeCode(),o.getTempletType()));
+			trees.add(new RegulaObjTypeTree(o.getId() + "", o.getParentObjectTypeId() + "", o.getObjectTypeName(),
+					o.getObjectTypeCode(), o.getTempletType(), mapTmp.get(o.getId())));
 		});
 
 		return TreeUtil.bulid(trees, "-1", null);
 	}
-	
-	@RequestMapping(value="/get/{id}",method=RequestMethod.GET)
+
+	@RequestMapping(value = "/get/{id}", method = RequestMethod.GET)
 	@ApiOperation("获取单个对象")
-	public ObjectRestResponse<JSONObject> getOne(@PathVariable @ApiParam(name="待查询对象ID") Integer id){
+	public ObjectRestResponse<JSONObject> getOne(@PathVariable @ApiParam(name = "待查询对象ID") Integer id) {
 		ObjectRestResponse<JSONObject> result = regulaObjectTypeService.get(id);
 		return result;
 	}
