@@ -194,4 +194,89 @@ public class Constances {
 		 */
 		public static final String ROOT_BIZ_LDSTATE_FINISH="root_biz_ldState_finish";
 	}
+	
+	/**
+	 * 工作流节点code
+	 * @author 尚
+	 *
+	 */
+	public static class ProcCTaskCode{
+		/**
+		 * 创建预立案单
+		 */
+		public static final String PRECASE="preCase";
+		/**
+		 * 受理员受理
+		 */
+		public static final String GRIDMEMBERNODE="gridMemberNode";
+		/**
+		 * 指挥长审批
+		 */
+		public static final String COMMANDERAPPROVE="commanderApprove";
+		/**
+		 * 立案检查
+		 */
+		public static final String AUDIT="audit";
+		/**
+		 * 部门处理中
+		 */
+		public static final String PROCESSING="processing";
+		/**
+		 * 待结案
+		 */
+		public static final String TOFINISH="toFinish";
+		/**
+		 * 待结案核查
+		 */
+		public static final String FINISHCHEC="finishChec";
+	}
+	
+	/**
+	 * 工作流流向
+	 * @author 尚
+	 *
+	 */
+	public static class ProcFlowWork{
+		/**
+		 * 去立案检查
+		 */
+		public static final String TOAUDIT="toAudit";
+		/**
+		 * 去指挥长审批
+		 */
+		public static final String TOCOMMANDAPPROVE="toCommandApprove";
+		/**
+		 * 去部门处理中
+		 */
+		public static final String TOPROCESSING="toProcessing";
+		/**
+		 * 去受理员受理
+		 */
+		public static final String TOGRIMMEMBER="toGrimMember";
+		/**
+		 * 去待结案检查
+		 */
+		public static final String TOFINISHCHECK="toFinishCheck";
+		public static final String TOFINISHWORKFLOW="toFinishWorkFlow";
+	}
+	
+	/**
+	 * 事件级别
+	 * @author 尚
+	 *
+	 */
+	public static class EventLevel{
+		/**
+		 * 一般等级
+		 */
+		public static final String ROOT_BIZ_EVENTLEVEL_NORMAL="root_biz_eventLevel_normal";
+		/**
+		 * 特急
+		 */
+		public static final String ROOT_BIZ_EVENTLEVEL_TEJI="root_biz_eventLevel_teji";
+		/**
+		 * 紧急
+		 */
+		public static final String ROOT_BIZ_EVENTLEVEL_JINJI="root_biz_eventLevel_jinji";
+	}
 }

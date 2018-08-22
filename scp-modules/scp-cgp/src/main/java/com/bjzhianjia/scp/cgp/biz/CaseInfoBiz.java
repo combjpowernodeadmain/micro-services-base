@@ -10,6 +10,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Service;
 
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
+import com.bjzhianjia.scp.cgp.exception.BizException;
 import com.bjzhianjia.scp.cgp.mapper.CaseInfoMapper;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
@@ -96,6 +97,9 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper,CaseInfo> {
 		
 		criteria.andEqualTo("isDeleted", "0");
 		if(StringUtils.isNotBlank(caseInfo.getCaseTitle())) {
+			if(caseInfo.getCaseTitle().length()>127) {
+				throw new BizException("事件名称应该小于127个字符");
+			}
 			criteria.andLike("caseTitle", "%"+caseInfo.getCaseTitle()+"%");
 		}
 		if(StringUtils.isNotBlank(caseInfo.getBizList())) {
@@ -119,7 +123,6 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper,CaseInfo> {
 			criteria.andIn("id", ids);
 		}
 		
-		example.setOrderByClause("id desc");
 		Page<Object> pageInfo = PageHelper.startPage(page, limit);
 		List<CaseInfo> list = this.mapper.selectByExample(example);
 		

@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.*;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.alibaba.fastjson.annotation.JSONField;
+
 
 /**
  * 预立案信息
@@ -70,6 +74,8 @@ public class CaseInfo implements Serializable {
     
     	//事件发生时间(后加字段)
     @Column(name="occur_time")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     private Date occurTime;
 	
 	    //地理标识
@@ -82,6 +88,8 @@ public class CaseInfo implements Serializable {
 	
 	    //检查时间
     @Column(name = "check_time")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     private Date checkTime;
 	
 	    //检查人
@@ -102,11 +110,17 @@ public class CaseInfo implements Serializable {
 	
 	    //办理期限
     @Column(name = "dead_line")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     private Date deadLine;
 	
 	    //事件办理部门
     @Column(name = "execute_dept")
     private String executeDept;
+    
+    	//事件处理信息，后加字段
+    @Column(name="execute_info")
+    private Integer executeInfo;
 	
 	    //事件要求
     @Column(name = "requirements")
@@ -122,6 +136,8 @@ public class CaseInfo implements Serializable {
 	
 	    //结案检查时间
     @Column(name = "finish_check_time")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     private Date finishCheckTime;
 	
 	    //结案检查人
@@ -146,6 +162,8 @@ public class CaseInfo implements Serializable {
 	
 	    //结案时间
     @Column(name = "finish_time")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     private Date finishTime;
 	
 	    //结案说明
@@ -158,6 +176,8 @@ public class CaseInfo implements Serializable {
 	
 	    //反馈时间
     @Column(name = "reply_time")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     private Date replyTime;
 	
 	    //反馈说明
@@ -170,6 +190,8 @@ public class CaseInfo implements Serializable {
 	
 	    //创建时间
     @Column(name = "crt_time")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     private Date crtTime;
 	
 	    //创建人ID
@@ -182,6 +204,8 @@ public class CaseInfo implements Serializable {
 	
 	    //更新时间
     @Column(name = "upd_time")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     private Date updTime;
 	
 	    //更新人ID
@@ -207,6 +231,10 @@ public class CaseInfo implements Serializable {
     	//与哪个案件重复
     @Column(name="duplicate_with")
     private Integer duplicateWith;
+    
+    	//案件是否完成(后加字段)
+    @Column(name="is_finished")
+    private String isFinished;
     
 	public String getIsDuplicate() {
 		return isDuplicate;
@@ -759,5 +787,17 @@ public class CaseInfo implements Serializable {
 	}
 	public void setCaseLevel(String caseLevel) {
 		this.caseLevel = caseLevel;
+	}
+	public String getIsFinished() {
+		return isFinished;
+	}
+	public void setIsFinished(String isFinished) {
+		this.isFinished = isFinished;
+	}
+	public Integer getExecuteInfo() {
+		return executeInfo;
+	}
+	public void setExecuteInfo(Integer executeInfo) {
+		this.executeInfo = executeInfo;
 	}
 }

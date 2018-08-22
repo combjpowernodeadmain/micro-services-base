@@ -2,7 +2,12 @@ package com.bjzhianjia.scp.cgp.entity;
 
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.*;
+
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import com.alibaba.fastjson.annotation.JSONField;
 
 
 /**
@@ -46,6 +51,7 @@ public class MayorHotline implements Serializable {
 	
 	    //诉求时间
     @Column(name = "appeal_datetime")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     private Date appealDatetime;
 	
 	    //诉求内容
@@ -54,6 +60,7 @@ public class MayorHotline implements Serializable {
 	
 	    //反馈时间
     @Column(name = "reply_datetime")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     private Date replyDatetime;
 	
 	    //是否删除(1:删除|0:未删除)
@@ -62,6 +69,7 @@ public class MayorHotline implements Serializable {
 	
 	    //创建时间(上报时间)
     @Column(name = "crt_time")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     private Date crtTime;
 	
 	    //创建人ID(上报人)
@@ -74,6 +82,7 @@ public class MayorHotline implements Serializable {
 	
 	    //更新时间
     @Column(name = "upd_time")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     private Date updTime;
 	
 	    //更新人ID

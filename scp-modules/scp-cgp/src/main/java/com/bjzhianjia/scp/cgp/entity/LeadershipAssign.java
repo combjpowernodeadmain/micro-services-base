@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.*;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 
 /**
  * 
@@ -42,6 +44,7 @@ public class LeadershipAssign implements Serializable {
 	
 	    //交办时间
     @Column(name = "task_time")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     private Date taskTime;
 	
 	    //完成期限
@@ -62,6 +65,7 @@ public class LeadershipAssign implements Serializable {
 	
 	    //创建时间
     @Column(name = "crt_time")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     private Date crtTime;
 	
 	    //创建人ID
@@ -74,6 +78,7 @@ public class LeadershipAssign implements Serializable {
 	
 	    //更新时间
     @Column(name = "upd_time")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     private Date updTime;
 	
 	    //更新人ID

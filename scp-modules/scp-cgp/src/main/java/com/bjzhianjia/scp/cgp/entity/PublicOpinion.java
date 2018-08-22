@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.*;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 
 /**
  * 记录来自舆情的事件
@@ -38,6 +40,7 @@ public class PublicOpinion implements Serializable {
 	
 	    //发布时间
     @Column(name = "publish_time")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     private Date publishTime;
 	
 	    //事件处理状态
@@ -66,6 +69,7 @@ public class PublicOpinion implements Serializable {
 	
 	    //创建时间
     @Column(name = "crt_time")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     private Date crtTime;
 	
 	    //创建人ID
@@ -78,6 +82,7 @@ public class PublicOpinion implements Serializable {
 	
 	    //更新时间
     @Column(name = "upd_time")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     private Date updTime;
 	
 	    //更新人ID

@@ -12,6 +12,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
 import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.entity.Example.Criteria;
 
 /**
  * 案件办理情况
@@ -38,5 +39,20 @@ public class ExecuteInfoBiz extends BusinessBiz<ExecuteInfoMapper,ExecuteInfo> {
 		List<ExecuteInfo> rows = this.mapper.selectByExample(example);
 		
 		return new TableResultResponse<>(pageInfo.getTotal(), rows);
+	}
+	
+	/**
+	 * 按事件Id查询处理信息
+	 * @author 尚
+	 * @param caseInfoIdList
+	 * @return
+	 */
+	public List<ExecuteInfo> getListByCaseInfoId(Integer id ){
+		Example example=new Example(ExecuteInfo.class);
+		Criteria criteria = example.createCriteria();
+		criteria.andEqualTo("caseId", id);
+		
+		List<ExecuteInfo> list = this.mapper.selectByExample(example);
+		return list;
 	}
 }

@@ -31,7 +31,7 @@ import com.bjzhianjia.scp.security.wf.base.task.service.IWfProcTaskCallBackServi
  */
 @Service
 @Transactional
-public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService{
+public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService {
 	@Autowired
 	private MayorHotlineService mayorHotlineService;
 	@Autowired
@@ -48,26 +48,26 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService{
 		/*
 		 * 在进行预立案单处理时，业务ID还没有生成，所以将业务逻辑放在before方法进行操作，以获取业务ID
 		 */
-		
+
 		// 前端将来源的字典code传入
 		String key = (String) procBizData.get("sourceType");
-		
-		if(StringUtils.isBlank(key)) {
+
+		if (StringUtils.isBlank(key)) {
 			throw new BizException("请指定事件来源");
 		}
-		
+
 		/*
 		 * 查询字典里的事件来源，将字典里的code与前端传code对比，确定ID 将确定后的ID保存到数据库中
 		 */
 		String _key = "";
 		Map<String, String> dictValueByID = dictFeign.getDictValueByID(key);
-		if(dictValueByID!=null&&!dictValueByID.isEmpty()) {
+		if (dictValueByID != null && !dictValueByID.isEmpty()) {
 			JSONObject jObject = JSONObject.parseObject(dictValueByID.get(key));
 			_key = jObject.getString("code");
-		}else {
+		} else {
 			throw new BizException("未找到与事件来源类型对应的编号");
 		}
-		
+
 		switch (_key) {
 		case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345:
 			// 市长热线
@@ -109,9 +109,10 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService{
 		LeadershipAssignVo vo = JSON.parseObject(JSON.toJSONString(procBizData), LeadershipAssignVo.class);
 
 		vo.setCaseSource((String) procBizData.get("sourceType"));
-		
-		if(vo.getId()==null&&StringUtils.isNotBlank((String)procBizData.get("procBizId"))) {
-			vo.setId(Integer.valueOf((String)procBizData.get("procBizId")));
+
+		if (vo.getId() == null && StringUtils.isNotBlank((String) procBizData.get("procBizId"))
+				&& !"-1".equals((String) procBizData.get("procBizId"))) {
+			vo.setId(Integer.valueOf((String) procBizData.get("procBizId")));
 		}
 
 		Result<Void> result = new Result<>();
@@ -120,7 +121,7 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService{
 			if (!result.getIsSuccess()) {
 				throw new BizException(result.getMessage());
 			}
-			procBizData.put("procBizId", String.valueOf(vo.getId()));
+			procBizData.put("procBizId", String.valueOf(vo.getCaseId()));
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new BizException(StringUtils.isBlank(result.getMessage()) ? e.getMessage() : result.getMessage());
@@ -138,9 +139,10 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService{
 		PublicOpinionVo vo = JSON.parseObject(JSON.toJSONString(procBizData), PublicOpinionVo.class);
 
 		vo.setCaseSource((String) procBizData.get("sourceType"));
-		
-		if(vo.getId()==null&&StringUtils.isNotBlank((String)procBizData.get("procBizId"))) {
-			vo.setId(Integer.valueOf((String)procBizData.get("procBizId")));
+
+		if (vo.getId() == null && StringUtils.isNotBlank((String) procBizData.get("procBizId"))
+				&& !"-1".equals((String) procBizData.get("procBizId"))) {
+			vo.setId(Integer.valueOf((String) procBizData.get("procBizId")));
 		}
 
 		Result<Void> result = new Result<>();
@@ -149,7 +151,7 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService{
 			if (!result.getIsSuccess()) {
 				throw new BizException(result.getMessage());
 			}
-			procBizData.put("procBizId", String.valueOf(vo.getId()));
+			procBizData.put("procBizId", String.valueOf(vo.getCaseId()));
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new BizException(StringUtils.isBlank(result.getMessage()) ? e.getMessage() : result.getMessage());
@@ -168,9 +170,10 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService{
 		MayorHotlineVo vo = JSON.parseObject(JSON.toJSONString(procBizData), MayorHotlineVo.class);
 
 		vo.setCaseSource((String) procBizData.get("sourceType"));
-		
-		if(vo.getId()==null&&StringUtils.isNotBlank((String)procBizData.get("procBizId"))) {
-			vo.setId(Integer.valueOf((String)procBizData.get("procBizId")));
+
+		if (vo.getId() == null && StringUtils.isNotBlank((String) procBizData.get("procBizId"))
+				&& !"-1".equals((String) procBizData.get("procBizId"))) {
+			vo.setId(Integer.valueOf((String) procBizData.get("procBizId")));
 		}
 
 		Result<Void> result = new Result<>();
@@ -179,9 +182,9 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService{
 			if (!result.getIsSuccess()) {
 				throw new BizException(result.getMessage());
 			}
-			procBizData.put("procBizId", String.valueOf(vo.getId()));
-			
-			//添加缓存到Redis
+			procBizData.put("procBizId", String.valueOf(vo.getCaseId()));
+
+			// 添加缓存到Redis
 //			String redisField="caseInfo_"+vo.getId();
 //			
 //			stringRedisTemplate.opsForHash().put(redisKey, "caseCode", vo.getCaseCode());
@@ -191,15 +194,14 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService{
 //			stringRedisTemplate.opsForHash().put(redisKey, "eventTypeList", "");//热线也不涉及事件类别
 //			stringRedisTemplate.opsForHash().put(redisKey, "sourceCode", vo.getCaseSource());
 //			stringRedisTemplate.opsForHash().put(redisKey, "caseLevel", "");
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new BizException(StringUtils.isBlank(result.getMessage()) ? e.getMessage() : result.getMessage());
 		}
 	}
-	
-	
+
 	private void addCacheDataToRedis(Map<String, Object> toCache) {
-		
+
 	}
 }

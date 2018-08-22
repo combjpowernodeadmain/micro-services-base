@@ -12,6 +12,7 @@ public class LeadershipAssignVo extends LeadershipAssign {
 	private String regulaObjName;
 	private String caseCode;//相关立案编号
 	private String leaderNames;//交办领导姓名
+	private String caseId;
 	
 	public String getCaseSource() {
 		return caseSource;
@@ -42,5 +43,11 @@ public class LeadershipAssignVo extends LeadershipAssign {
 	}
 	public void setLeaderNames(String leaderNames) {
 		this.leaderNames = leaderNames;
+	}
+	public String getCaseId() {
+		return caseId;
+	}
+	public void setCaseId(String caseId) {
+		this.caseId = caseId;
 	}
 }

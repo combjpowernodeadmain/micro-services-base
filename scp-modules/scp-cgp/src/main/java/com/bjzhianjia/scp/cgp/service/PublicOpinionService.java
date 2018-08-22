@@ -174,6 +174,9 @@ public class PublicOpinionService {
 		caseInfo.setSourceCode(vo.getId() + "");
 
 		CaseInfo maxOne = caseInfoBiz.getMaxOne();
+		
+		int nextId=maxOne.getId()==null?1:(maxOne.getId()+1);
+		
 		// 立案单事件编号
 		Result<String> caseCodeResult = CommonUtil.generateCaseCode(maxOne.getCaseCode());
 		if (!caseCodeResult.getIsSuccess()) {
@@ -181,6 +184,7 @@ public class PublicOpinionService {
 			throw new Exception(caseCodeResult.getMessage());// 向外抛出异常，使事务回滚
 		}
 		caseInfo.setCaseCode(caseCodeResult.getData());
+		vo.setCaseId(nextId+"");//将生成的立案单ID也放入到vo中一份，带出到工作流回调方法中
 
 		caseInfo.setCaseTitle(vo.getOpinTitle());//  立案单.事件标题
 		caseInfo.setCaseDesc(vo.getOpinDesc());//  立案单.事件描述

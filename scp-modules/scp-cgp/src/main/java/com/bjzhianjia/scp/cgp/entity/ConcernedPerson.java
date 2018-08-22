@@ -3,6 +3,7 @@ package com.bjzhianjia.scp.cgp.entity;
 import java.io.Serializable;
 
 import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -20,6 +21,7 @@ public class ConcernedPerson implements Serializable {
 	
 	    //主键
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 	
 	    //当事人姓名

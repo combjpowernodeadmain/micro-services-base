@@ -13,6 +13,7 @@ public class PublicOpinionVo extends PublicOpinion {
 	private String opinTypeName;//舆情来源类型名称
 	private String opinLevelName;//舆情等级名称
 	private String caseCode;//相关立案编号
+	private String caseId;
 	
 	public String getCaseSource() {
 		return caseSource;
@@ -43,5 +44,11 @@ public class PublicOpinionVo extends PublicOpinion {
 	}
 	public void setCaseCode(String caseCode) {
 		this.caseCode = caseCode;
+	}
+	public String getCaseId() {
+		return caseId;
+	}
+	public void setCaseId(String caseId) {
+		this.caseId = caseId;
 	}
 }

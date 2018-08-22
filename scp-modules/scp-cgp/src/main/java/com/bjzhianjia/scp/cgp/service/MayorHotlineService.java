@@ -169,14 +169,18 @@ public class MayorHotlineService {
 
 	public Result<CaseInfo> createCaseInfo(MayorHotlineVo vo) throws Exception {
 		Result<CaseInfo> result = new Result<>();
+		CaseInfo maxOne = caseInfoBiz.getMaxOne();
+		
+		int nextId=maxOne==null?1:(maxOne.getId()+1);
+		
 		// 验证该登记单是否创建了预立案
 
 		// 创建预立案单
 		CaseInfo caseInfo = new CaseInfo();
+		caseInfo.setId(nextId);
 		caseInfo.setSourceType(vo.getCaseSource());// 来源事件类型
 		caseInfo.setSourceCode(vo.getId() + "");// 来源事件编号
 
-		CaseInfo maxOne = caseInfoBiz.getMaxOne();
 		// 立案单事件编号
 		Result<String> caseCodeResult = CommonUtil.generateCaseCode(maxOne == null ? null : maxOne.getCaseCode());
 		if (!caseCodeResult.getIsSuccess()) {
@@ -185,6 +189,7 @@ public class MayorHotlineService {
 		}
 		caseInfo.setCaseCode(caseCodeResult.getData());
 		vo.setCaseCode(caseCodeResult.getData());//将生成的事件编号也放入到vo中一份，带出到工作流回调方法中
+		vo.setCaseId(nextId+"");//将生成的立案单ID也放入到vo中一份，带出到工作流回调方法中
 
 		caseInfo.setCaseTitle(vo.getHotlnTitle());//  立案单.事件标题
 		caseInfo.setCaseDesc(vo.getAppealDesc());//  立案单.事件描述
@@ -342,9 +347,14 @@ public class MayorHotlineService {
 		criteria.andEqualTo("sourceType", dictId);
 		criteria.andIn("sourceCode", collect);
 		List<CaseInfo> caseInfoListInDB = caseInfoBiz.selectByExample(caseInfoExample);
+		
+		Map<String, String> caseInfoMap=new HashMap<>();
+		for(CaseInfo caseInfo:caseInfoListInDB) {
+			caseInfoMap.put(caseInfo.getSourceCode(), caseInfo.getCaseCode());
+		}
 
-		Map<String, String> caseInfoMap = caseInfoListInDB.stream()
-				.collect(Collectors.toMap(CaseInfo::getSourceCode, CaseInfo::getCaseCode));
+//		Map<String, String> caseInfoMap = caseInfoListInDB.stream()
+//				.collect(Collectors.toMap(CaseInfo::getSourceCode, CaseInfo::getCaseCode));
 		if (caseInfoMap != null && !caseInfoMap.isEmpty()) {
 			for (MayorHotlineVo vo : voList) {
 				vo.setCaseCode(caseInfoMap.get(vo.getId() + ""));
