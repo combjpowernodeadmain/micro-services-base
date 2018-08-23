@@ -63,7 +63,7 @@ public class PatrolTask implements Serializable {
 
 	// 事件类别id
 	@Column(name = "event_type_id")
-	private String eventTypeId;
+	private Integer eventTypeId;
 
 	// 详细地理位置
 	@Column(name = "address")
@@ -252,14 +252,14 @@ public class PatrolTask implements Serializable {
 	/**
 	 * 设置：事件类别id
 	 */
-	public void setEventTypeId(String eventTypeId) {
+	public void setEventTypeId(Integer eventTypeId) {
 		this.eventTypeId = eventTypeId;
 	}
 
 	/**
 	 * 获取：事件类别id
 	 */
-	public String getEventTypeId() {
+	public Integer getEventTypeId() {
 		return eventTypeId;
 	}
 

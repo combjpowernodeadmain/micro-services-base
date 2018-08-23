@@ -46,44 +46,6 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
 
 	@Autowired
 	private PatrolTaskService patrolTaskService;
-
-//	public ObjectRestResponse<PatrolTask> add(@RequestBody @Validated @ApiParam(name = "待添加对象实例") PatrolTaskVo patrolTask,
-//			BindingResult bindingResult) {
-//		ObjectRestResponse<PatrolTask> restResult = new ObjectRestResponse<>();
-//		restResult.setStatus(400);
-//
-//		if (bindingResult.hasErrors()) {
-//			restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
-//			return restResult;
-//		}
-//
-//		if (!StringUtils.isNotBlank(patrolTask.getHandleStatus())) {
-//			restResult.setMessage("处理状态不能为空！");
-//			return restResult;
-//		}
-//
-//		if (!StringUtils.isNotBlank(patrolTask.getPatrolName()) && patrolTask.getPatrolName().length() > 127) {
-//			restResult.setMessage("事件名称不能为空！");
-//			return restResult;
-//		}
-//
-//		if (!StringUtils.isNotBlank(patrolTask.getPatrolLevel())) {
-//			restResult.setMessage("事件级别不能为空！");
-//			return restResult;
-//		}
-//
-//		if (!StringUtils.isNotBlank(patrolTask.getAddress()) && !StringUtils.isNotBlank(patrolTask.getMapInfo())) {
-//			restResult.setMessage("当前位置不能为空！");
-//			return restResult;
-//		}
-//
-//		if (!StringUtils.isNotBlank(patrolTask.getContent()) && patrolTask.getContent().length() > 1024) {
-//			restResult.setMessage("巡查事项内容不能为空！");
-//			return restResult;
-//		}
-//		
-//	}
-
 	
 	/**
 	 * 创建巡查任务
@@ -118,7 +80,7 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
 	
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	@ResponseBody
-	@ApiOperation("终端查询分页列表")
+	@ApiOperation("分页列表")
 	public TableResultResponse<Map<String, Object>> page(@RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
 			@RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
 			@RequestParam(defaultValue = "") @ApiParam(name = "专项任务名称") String speName,
@@ -145,10 +107,15 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
 		return patrolTaskService.getList(patrolTask, speName, _startTime, _endTimeTmp, page, limit);
 	}
 	
+	
 	@RequestMapping(value="/get/{id}",method=RequestMethod.GET)
-	@ApiOperation("查询 单个对象")
-	public ObjectRestResponse<PatrolTask> getOne(@PathVariable(value="id") @ApiParam(name="待查询巡查任务id") Integer id){
-		return patrolTaskService.get(id);
+	@ApiOperation("巡查记录详情")
+	public ObjectRestResponse<Map<String ,Object>> getOne(@PathVariable(value="id") @ApiParam(name="待查询巡查任务id") Integer id){
+		ObjectRestResponse<Map<String ,Object>> restResult = new ObjectRestResponse<>();
+		Map<String,Object> data = patrolTaskService.getByIdInfo(id);
+		restResult.setData(data);
+		
+		return restResult;
 	}
 	
 }

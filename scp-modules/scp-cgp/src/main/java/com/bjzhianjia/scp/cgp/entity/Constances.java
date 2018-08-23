@@ -203,6 +203,10 @@ public class Constances {
 	public static class PartolTaskStatus{
 		
 		/**
+		 *  巡查任务状态
+		 */
+		public static final String ROOT_BIZ_PARTOLTASKT = "root_biz_partoltaskt";
+		/**
 		 *  处理中
 		 */
 		public static final String ROOT_BIZ_PARTOLTASKT_DOING = "root_biz_partoltaskt_doing";
@@ -241,12 +245,12 @@ public class Constances {
 		/**
 		 *  当事人：个人
 		 */
-		public static final String ROOT_BIZ_CONCERNEDT_PERSON = "root_biz_concernedt_person";
+		public static final String ROOT_BIZ_CONCERNEDT_PERSON = "root_biz_concernedT_person";
 		
 		/**
 		 *  当事人：单位
 		 */
-		public static final String ROOT_BIZ_CONCERNEDT_ORG = "root_biz_concernedt_org";
+		public static final String ROOT_BIZ_CONCERNEDT_ORG = "root_biz_concernedT_org";
 	}
 	
 	/**

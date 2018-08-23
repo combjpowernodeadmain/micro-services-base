@@ -35,4 +35,12 @@ public class ConcernedCompanyService {
 		result.setMessage("成功");
 		return result;
 	}
+	/**
+	 * 通过当事人id查询
+	 * @param id
+	 * @return
+	 */
+	public ConcernedCompany selectById(Integer id) {
+		return concernedCompanyBiz.selectById(id);
+	}
 }

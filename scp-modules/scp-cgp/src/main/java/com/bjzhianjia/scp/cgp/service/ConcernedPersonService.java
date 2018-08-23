@@ -80,4 +80,13 @@ public class ConcernedPersonService {
 		return result;
 		
 	}
+	/**
+	 * 获取单个对象
+	 * @author chenshuai
+	 * @param id
+	 * @return
+	 */
+	public ConcernedPerson selectById(Integer id){
+		return concernedPersonBiz.selectById(id);
+	}
 }
