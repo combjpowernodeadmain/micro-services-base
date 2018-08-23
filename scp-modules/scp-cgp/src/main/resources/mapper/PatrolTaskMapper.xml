@@ -41,10 +41,10 @@
 		pk.source_type,
 		se.spe_name,
 		pk.status,
-		pk.grid_code
+		pk.area_grid_code
 		FROM
 		patrol_task AS pk
-		INNER JOIN special_event AS se
+		LEFT JOIN special_event AS se
 
 		ON pk.source_task_id = se.id
 
