@@ -134,4 +134,19 @@ public class InspectItemsBiz extends BusinessBiz<InspectItemsMapper,InspectItems
 	public void deleteByIds(Integer[] ids) {
 		inspectItemsMapper.deleteByIds(ids, BaseContextHandler.getUserID(),BaseContextHandler.getName(),new Date());
 	}
+	/**
+	 *  根据事件类别id查询清单
+	 * @param eventTypeId 事件类别id
+	 * @return
+	 * 		巡查事项清单
+	 */
+	public List<InspectItems> getByEventType(Integer eventTypeId) {
+		
+		Example example = new Example(InspectItems.class);
+		Criteria criteria = example.createCriteria();
+		criteria.andEqualTo("type", eventTypeId);
+		List<InspectItems> list = inspectItemsMapper.selectByExample(example);
+		
+		return list;
+	}
 }
