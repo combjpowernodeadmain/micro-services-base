@@ -196,6 +196,60 @@ public class Constances {
 	}
 	
 	/**
+	 *   巡查任务状态
+	 * @author chenshuai
+	 *
+	 */
+	public static class PartolTaskStatus{
+		
+		/**
+		 *  处理中
+		 */
+		public static final String ROOT_BIZ_PARTOLTASKT_DOING = "root_biz_partoltaskt_doing";
+		
+		
+		/**
+		 *   已终止
+		 */
+		public static final String ROOT_BIZ_PARTOLTASKT_STOP = "root_biz_partolTaskT_stop";
+		
+		
+		/**
+		 *   已完成
+		 */
+		public static final String ROOT_BIZ_PARTOLTASKT_FINISH = "root_biz_partolTaskT_finish";
+		
+		
+		/**
+		 *   日常巡查
+		 */
+		public static final String ROOT_BIZ_PATROLTYPE_DAILY = "root_biz_patrolType_daily";
+		
+		/**
+		 *   专项巡查
+		 */
+		public static final String ROOT_BIZ_PATROLTYPE_SPECIAL = "root_biz_patrolType_special";
+		
+	}
+	/**
+	 *  当事人相关状态
+	 * @author chenshuai
+	 *
+	 */
+	public static class ConcernedStatus{
+		
+		/**
+		 *  当事人：个人
+		 */
+		public static final String ROOT_BIZ_CONCERNEDT_PERSON = "root_biz_concernedt_person";
+		
+		/**
+		 *  当事人：单位
+		 */
+		public static final String ROOT_BIZ_CONCERNEDT_ORG = "root_biz_concernedt_org";
+	}
+	
+	/**
 	 * 工作流节点code
 	 * @author 尚
 	 *

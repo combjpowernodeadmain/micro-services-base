@@ -232,6 +232,15 @@ public class CaseInfo implements Serializable {
     @Column(name="duplicate_with")
     private Integer duplicateWith;
     
+        	// 涉及监管对象类型
+	@Column(name = "regula_object_type_id")
+	private String regulaObjectTypeId;
+    
+    
+    	// 当事人类型（个人，单位）
+	@Column(name = "concerned_type")
+	private String concernedType;
+	
     	//案件是否完成(后加字段)
     @Column(name="is_finished")
     private String isFinished;
@@ -787,6 +796,33 @@ public class CaseInfo implements Serializable {
 	}
 	public void setCaseLevel(String caseLevel) {
 		this.caseLevel = caseLevel;
+	}
+			/**
+	 * 获取：涉及监管对象类型id
+	 */
+	public String getRegulaObjTypeId() {
+		return regulaObjectTypeId;
+	}
+
+	/**
+	 * 设置：涉及监管对象类型id
+	 */
+	public void setRegulaObjTypeId(String regulaObjectTypeId) {
+		this.regulaObjectTypeId = regulaObjectTypeId;
+	}
+
+	/**
+	 * 获取：当事人类型
+	 */
+	public String getConcernedType() {
+		return concernedType;
+	}
+
+	/**
+	 * 设置获取：当事人类型
+	 */
+	public void setConcernedType(String concernedType) {
+		this.concernedType = concernedType;
 	}
 	public String getIsFinished() {
 		return isFinished;
