@@ -1,6 +1,8 @@
 package com.bjzhianjia.scp.cgp.service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,17 +15,26 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.AreaGridBiz;
 import com.bjzhianjia.scp.cgp.biz.CaseInfoBiz;
+import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
+import com.bjzhianjia.scp.cgp.biz.InspectItemsBiz;
+import com.bjzhianjia.scp.cgp.biz.PatrolResBiz;
 import com.bjzhianjia.scp.cgp.biz.PatrolTaskBiz;
 import com.bjzhianjia.scp.cgp.biz.RegulaObjectBiz;
+import com.bjzhianjia.scp.cgp.biz.RegulaObjectTypeBiz;
+import com.bjzhianjia.scp.cgp.biz.SpecialEventBiz;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.ConcernedCompany;
 import com.bjzhianjia.scp.cgp.entity.ConcernedPerson;
 import com.bjzhianjia.scp.cgp.entity.Constances;
+import com.bjzhianjia.scp.cgp.entity.EventType;
+import com.bjzhianjia.scp.cgp.entity.InspectItems;
 import com.bjzhianjia.scp.cgp.entity.PatrolRes;
 import com.bjzhianjia.scp.cgp.entity.PatrolTask;
 import com.bjzhianjia.scp.cgp.entity.RegulaObject;
+import com.bjzhianjia.scp.cgp.entity.RegulaObjectType;
 import com.bjzhianjia.scp.cgp.entity.Result;
+import com.bjzhianjia.scp.cgp.entity.SpecialEvent;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
@@ -64,11 +75,27 @@ public class PatrolTaskService {
 	
 	@Autowired
 	private RegulaObjectBiz regulaObjectBiz;
-
+	
+	@Autowired
+	private RegulaObjectTypeBiz regulaObjectTypeBiz;
+	
 	
 	@Autowired
 	private AreaGridBiz areaGridBiz;
 	
+	@Autowired
+	private SpecialEventBiz specialEventBiz;
+	
+	
+	@Autowired
+	private EventTypeBiz eventTypeBiz;
+	
+	
+	@Autowired
+	private InspectItemsBiz inspectItemsBiz;
+	
+	@Autowired
+	private PatrolResBiz patrolResBiz;
 	
 	/**
 	 * 创建巡查任务
@@ -213,7 +240,7 @@ public class PatrolTaskService {
 		caseInfo.setRegulaObjList(String.valueOf(patrolTask.getRegulaObjectId()));
 		caseInfo.setRegulaObjTypeId(String.valueOf(patrolTask.getRegulaObjectTypeId()));
 		caseInfo.setBizList(patrolTask.getBizTypeId());
-		caseInfo.setEventTypeList(patrolTask.getEventTypeId());
+		caseInfo.setEventTypeList(String.valueOf(patrolTask.getEventTypeId()));
 		caseInfo.setConcernedPerson(String.valueOf(patrolTask.getConcernedId()));
 		caseInfo.setConcernedType(String.valueOf(patrolTask.getConcernedType()));
 		caseInfo.setMapInfo(patrolTask.getMapInfo());
@@ -264,6 +291,133 @@ public class PatrolTaskService {
 		return new ObjectRestResponse<PatrolTask>().data(patrolTask);
 	}
 
+	
+	/**
+	 *  通过巡查任务id详情
+	 * @return
+	 */
+	public Map<String ,Object> getByIdInfo(Integer id){
+		Map<String ,Object> result = new HashMap<>();
+		String labelZhCh = "labelZhCh";//数据字典名称
+		
+		PatrolTask patrolTask = patrolTaskBiz.selectById(id);
+		
+		result.put("patrolCode", patrolTask.getPatrolCode());
+		result.put("patrolName", patrolTask.getPatrolName());
+		result.put("releaseUserName", patrolTask.getReleaseUserName());
+		result.put("crtTime", patrolTask.getCrtTime());	//上报时间
+		
+		//判断任务来源类型
+		String sourceTypeSpecia = CommonUtil.exeStatusUtil(dictFeign, Constances.PartolTaskStatus.ROOT_BIZ_PATROLTYPE_SPECIAL);
+		if(patrolTask.getSourceType().equals(sourceTypeSpecia)) {//专项任务
+			SpecialEvent specialEvent = specialEventBiz.selectById(patrolTask.getSourceTaskId());
+			if(specialEvent != null)
+			{
+				result.put("speName",specialEvent.getSpeName());//所属专项名称
+			}
+		}
+		
+		//监管对象类型
+		RegulaObjectType regulaObjectType= regulaObjectTypeBiz.selectById(patrolTask.getRegulaObjectTypeId());
+		if(regulaObjectType != null)
+		{
+			result.put("regulaObject", regulaObjectType.getObjectTypeName());
+		}
+		
+		//监管对象
+		List<RegulaObject> regulaObjects= regulaObjectBiz.selectByIds(String.valueOf(patrolTask.getRegulaObjectId()));
+		if(regulaObjects != null && regulaObjects.size() == 1)
+		{
+			RegulaObject regulaObject = regulaObjects.get(0);
+			
+			if(regulaObjects!=null) {
+				result.put("regulaObject", regulaObject.getObjName());
+			}
+		}
+		
+		//事件级别
+		Map<String, String> dictPatrolLevel = dictFeign.getDictValueByID(patrolTask.getPatrolLevel());
+		if(dictPatrolLevel != null) {
+			JSONObject jsonPatrolLevel = JSONObject.parseObject(dictPatrolLevel.get(patrolTask.getPatrolLevel()));
+			if(jsonPatrolLevel != null) {
+				result.put("patrolLevel", jsonPatrolLevel.get(labelZhCh));
+			}
+		}
+		
+		//获取巡查任务状态
+		Map<String, String> dictStatus = dictFeign.getDictValueByID(patrolTask.getStatus());
+		if(dictStatus != null) {
+			JSONObject jsonStatus = JSONObject.parseObject(dictStatus.get(patrolTask.getStatus()));
+			if(jsonStatus != null) {
+				result.put("status", jsonStatus.get(labelZhCh));
+			}
+		}
+		
+		//业务条线
+		Map<String, String> dictBizType = dictFeign.getDictValueByID(patrolTask.getBizTypeId());
+		if(dictStatus != null) {
+			JSONObject jsonBizType = JSONObject.parseObject(dictBizType.get(patrolTask.getBizTypeId()));
+			if(jsonBizType != null) {
+				result.put("bizType", jsonBizType.get(labelZhCh));
+			}
+		}
+		
+		//事件类别
+		EventType eventType = eventTypeBiz.selectById(patrolTask.getEventTypeId());
+		if(eventType!=null) {
+			result.put("eventType", eventType.getTypeName());
+		}
+		
+		
+		//巡查事项清单
+		List<InspectItems> inspectItemsList =inspectItemsBiz.getByEventType(patrolTask.getEventTypeId());
+		if(inspectItemsList!=null && inspectItemsList.size()>0) {
+			List<String> names = new ArrayList<>();
+			for(InspectItems inspectItems : inspectItemsList) {
+				names.add(inspectItems.getName());
+			}
+			result.put("InspectItems",names);
+		}
+		
+		result.put("content", patrolTask.getContent());
+		result.put("address", patrolTask.getAddress());
+		result.put("mapInfo", patrolTask.getMapInfo());
+		
+		//当事人
+		Map<String, String> dictConcernedType = dictFeign.getDictValueByID(patrolTask.getConcernedType());
+		if(dictConcernedType != null) {
+			JSONObject jsonConcernedType = JSONObject.parseObject(dictConcernedType.get(patrolTask.getConcernedType()));
+			if(jsonConcernedType != null) {
+				result.put("concernedType", jsonConcernedType.get(labelZhCh));
+				String code = (String) jsonConcernedType.get("code");
+				//单位
+				if(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG.equals(code)) {
+					ConcernedCompany concernedCompany = concernedCompanyService.selectById(patrolTask.getConcernedId());
+					result.put("concernedData", concernedCompany);
+				}
+				//个人
+				if(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON.equals(code)){
+					ConcernedPerson concernedPerson = concernedPersonService.selectById(patrolTask.getConcernedId());
+					result.put("concernedData", concernedPerson);
+				}
+			}
+		}
+		//获取图片集
+		List<PatrolRes> patrolResList = patrolResBiz.getByPatrolTaskId(patrolTask.getId());
+		List<String> urls = new ArrayList<>();
+		if(patrolResList != null && patrolResList.size()>0) {
+			for(PatrolRes patrolRes:patrolResList) {
+				urls.add(patrolRes.getUrl());
+			}
+		}
+		result.put("urls", urls);
+		
+		return result;
+	}
+	
+	
+	
+	
 	/**
 	 * 解析json 获取实体对象
 	 * 
