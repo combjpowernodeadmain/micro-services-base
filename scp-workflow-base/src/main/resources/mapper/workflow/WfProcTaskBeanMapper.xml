@@ -823,9 +823,9 @@
 		) procTaskAssignee,  <!-- 流程任务处理人 -->
 		task.PROC_LICENSOR procLicensor,
 		task.PROC_TASK_COMMITTER procTaskCommitter,
-		FROM_UNIXTIME(task.PROC_TASK_COMMITTIME, '%Y/%m/%d %H:%i:%s') procTaskCommittime,  <!-- 流程提交时间 -->
-		FROM_UNIXTIME(task.PROC_TASK_ASSIGNTIME, '%Y/%m/%d %H:%i:%s') procTaskAssigntime,  <!-- 流程受理时间 -->
-		FROM_UNIXTIME(task.PROC_TASK_ENDTIME, '%Y/%m/%d %H:%i:%s') procTaskEndtime,
+		FROM_UNIXTIME(task.PROC_TASK_COMMITTIME, '%Y-%m-%d %H:%i:%s') procTaskCommittime,  <!-- 流程提交时间 -->
+		FROM_UNIXTIME(task.PROC_TASK_ASSIGNTIME, '%Y-%m-%d %H:%i:%s') procTaskAssigntime,  <!-- 流程受理时间 -->
+		FROM_UNIXTIME(task.PROC_TASK_ENDTIME, '%Y-%m-%d %H:%i:%s') procTaskEndtime,
 		CASE
 			WHEN task.PROC_TASK_APPR_STATUS = '1' THEN
 				'通过'
