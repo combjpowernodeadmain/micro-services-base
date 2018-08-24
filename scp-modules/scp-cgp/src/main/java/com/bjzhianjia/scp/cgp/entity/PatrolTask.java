@@ -16,6 +16,16 @@ import javax.persistence.Table;
 @Table(name = "patrol_task")
 public class PatrolTask implements Serializable {
 	private static final long serialVersionUID = 1L;
+	
+	/**
+	 * 监管对象名称列表
+	 */
+	public static final String REGULA_OBJECT_NAME="cgp:regula:object:name";
+	/**
+	 *  监管对象经纬度列表
+	 */
+	public static final String REGULA_OBJECT_LOCATION="cgp:regula:object:location";
+	
 	//自增主键
 	@Id
 	@GeneratedValue(generator = "JDBC")
