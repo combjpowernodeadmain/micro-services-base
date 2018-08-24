@@ -35,6 +35,15 @@
         <result property="tenantId" column="tenant_id"/>
     </resultMap>
     
+    <!-- 通过范围查询监管对象列表 -->
+    <resultMap type="com.bjzhianjia.scp.cgp.entity.RegulaObject" id="regulaObjDistance">
+        <result property="id" column="id"/>
+        <result property="objName" column="obj_name"/>
+        <result property="objType" column="obj_type"/>
+        <result property="longitude" column="longitude"/>
+        <result property="latitude" column="latitude"/>
+    </resultMap>
+    
     <update id="deleteByIds">
     	update regula_object set upd_user_id=#{updUserId},upd_user_name=#{updUserName},upd_time=#{updTime},is_deleted = '1' where id in
     	<foreach collection="ids" item="id" open="(" separator="," close=")">
@@ -44,6 +53,17 @@
     
     <select id="selectRegulaObjCountByType" resultType="java.util.Map">
     	SELECT COUNT(*) AS regulaCount,obj_type AS objType FROM regula_object GROUP BY obj_type
+    </select>
+
+    <select id="selectDistanceAll" resultMap="regulaObjDistance">
+    	SELECT
+			id,
+			obj_name,
+			obj_type,
+			longitude,
+			latitude
+		FROM
+			regula_object
     </select>
 
 </mapper>

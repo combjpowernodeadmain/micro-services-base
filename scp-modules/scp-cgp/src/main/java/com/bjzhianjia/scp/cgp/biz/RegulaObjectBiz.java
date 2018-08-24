@@ -135,4 +135,13 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 	public List<Map<String, String>> selectRegulaObjCountByType(){
 		return this.mapper.selectRegulaObjCountByType();
 	}
+	
+	/**
+	 *   监管对象列表  
+	 * @return
+	 * 		集合中只有 id,obj_name,obj_type,longitude,latitude 属性
+	 */
+	public List<RegulaObject> selectDistanceAll(){
+		return mapper.selectDistanceAll();
+	}
 }

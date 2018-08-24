@@ -1,5 +1,8 @@
 package com.bjzhianjia.scp.cgp.rest;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -21,7 +24,6 @@ import com.bjzhianjia.scp.cgp.service.RegulaObjectService;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.vo.RegulaObjectVo;
 import com.bjzhianjia.scp.cgp.vo.Regula_EnterPriseVo;
-import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
@@ -193,4 +195,35 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
 //		}
 //		return newFilePathList;
 //	}
+	
+	@RequestMapping(value="distance",method={RequestMethod.GET})
+	@ApiOperation("获取指定范围内的监管对象")
+	public ObjectRestResponse<List<Map<String, Object>>> distance(@RequestParam(value="longitude") @ApiParam("经度") Double longitude ,
+			@RequestParam(value="latitude") @ApiParam("纬度") Double latitude,
+			@RequestParam(value="objType") @ApiParam("监管对象类型id")Integer objType){
+		ObjectRestResponse<List<Map<String, Object>>> result = new ObjectRestResponse<>();
+		
+		if(longitude == null) {
+			result.setStatus(400);
+			result.setMessage("经度不能为空！");
+			return result;
+		}
+		if(latitude == null) {
+			result.setStatus(400);
+			result.setMessage("纬度不能为空！");
+			return result;
+		}
+		if(objType == null) {
+			result.setStatus(400);
+			result.setMessage("监管对象类型id不能为空！");
+			return result;
+		}
+		double size = 500; //范围（单位：米）
+
+		List<Map<String, Object>> objs = regulaObjectService.getByDistance(longitude, latitude,objType,size);
+		result.setData(objs);
+		return result;
+	}
+
+
 }
