@@ -108,12 +108,12 @@ public class PatrolTask implements Serializable {
 	private String deptId;
 	
 	// 上报人用户id
+	@Column(name = "crt_user_id")
+	private String crtUserId;
+	
+	// 上报人用户名称
 	@Column(name = "crt_user_name")
 	private String crtUserName;
-	
-	// 上报人姓名
-	@Column(name = "release_user_name")
-	private String releaseUserName;
 
 	// 上报时间
 	@Column(name = "crt_time")
@@ -386,20 +386,6 @@ public class PatrolTask implements Serializable {
 	}
 
 	/**
-	 * 设置：上报人
-	 */
-	public void setReleaseUserName(String releaseUserName) {
-		this.releaseUserName = releaseUserName;
-	}
-
-	/**
-	 * 获取：上报人
-	 */
-	public String getReleaseUserName() {
-		return releaseUserName;
-	}
-
-	/**
 	 * 设置：上报时间
 	 */
 	public void setCrtTime(Date crtTime) {
@@ -427,15 +413,27 @@ public class PatrolTask implements Serializable {
 	}
 	
 	/**
-	 * 获取：用户id
+	 * 获取：上报人用户名
 	 */
 	public String getCrtUserName() {
 		return crtUserName;
 	}
 	/**
-	 * 设置：用户id
+	 * 设置：上报人用户名
 	 */
 	public void setCrtUserName(String crtUserName) {
 		this.crtUserName = crtUserName;
+	}
+	/**
+	 * 获取：用户id
+	 */
+	public String getCrtUserId() {
+		return crtUserId;
+	}
+	/**
+	 * 设置：用户id
+	 */
+	public void setCrtUserId(String crtUserId) {
+		this.crtUserId = crtUserId;
 	}
 }
