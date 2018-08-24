@@ -1,6 +1,5 @@
 package com.bjzhianjia.scp.cgp.task.service;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -17,6 +16,7 @@ import com.bjzhianjia.scp.cgp.exception.BizException;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.service.LeadershipAssignService;
 import com.bjzhianjia.scp.cgp.service.MayorHotlineService;
+import com.bjzhianjia.scp.cgp.service.PatrolTaskService;
 import com.bjzhianjia.scp.cgp.service.PublicOpinionService;
 import com.bjzhianjia.scp.cgp.vo.LeadershipAssignVo;
 import com.bjzhianjia.scp.cgp.vo.MayorHotlineVo;
@@ -42,6 +42,8 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService {
 	private DictFeign dictFeign;
 	@Autowired
 	private StringRedisTemplate stringRedisTemplate;
+	@Autowired
+	private PatrolTaskService patrolTaskService;
 
 	@Override
 	public void before(String dealType, Map<String, Object> procBizData) throws BizException {
@@ -83,7 +85,7 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService {
 			break;
 		case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CHECK:
 			// 巡查上报
-			addCheck(procBizData);
+			addPatrolTask(procBizData);
 			break;
 		default:
 			break;
@@ -95,7 +97,19 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService {
 
 	}
 
-	private void addCheck(Map<String, Object> procBizData) {
+	/**
+	 * 添加巡查上报
+	 * @author 尚
+	 * @param procBizData
+	 */
+	private void addPatrolTask(Map<String, Object> procBizData) {
+		JSONObject patroTaskJObj = JSONObject.parseObject(JSON.toJSONString(procBizData));
+		try {
+			patrolTaskService.createPatrolTask(patroTaskJObj);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new BizException(e.getMessage());
+		}
 	}
 
 	/**
