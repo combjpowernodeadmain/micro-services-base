@@ -13,12 +13,15 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.geo.Circle;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Point;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisGeoCommands.DistanceUnit;
 import org.springframework.data.redis.connection.RedisGeoCommands.GeoLocation;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -32,9 +35,9 @@ import com.bjzhianjia.scp.cgp.biz.RegulaObjectBiz;
 import com.bjzhianjia.scp.cgp.biz.RegulaObjectTypeBiz;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.Constances;
-import com.bjzhianjia.scp.cgp.entity.Constances.RegulaObjectStatus;
 import com.bjzhianjia.scp.cgp.entity.EnterpriseInfo;
 import com.bjzhianjia.scp.cgp.entity.EventType;
+import com.bjzhianjia.scp.cgp.entity.PatrolTask;
 import com.bjzhianjia.scp.cgp.entity.RegulaObject;
 import com.bjzhianjia.scp.cgp.entity.RegulaObjectType;
 import com.bjzhianjia.scp.cgp.entity.Result;
@@ -104,7 +107,7 @@ public class RegulaObjectService {
 
 		regulaObjectBiz.insertSelective(regulaObject);
 		enterpriseInfoBiz.insertSelective(enterpriseInfo);
-
+		this.initCacheData();
 		return result;
 	}
 
@@ -320,7 +323,7 @@ public class RegulaObjectService {
 
 		regulaObjectBiz.updateSelectiveById(regulaObject);
 		enterpriseInfoBiz.updateSelectiveById(enterpriseInfo);
-
+		this.initCacheData();
 		return result;
 	}
 
@@ -481,6 +484,7 @@ public class RegulaObjectService {
 	 */
 	public void remove(Integer[] ids) {
 		regulaObjectBiz.remove(ids);
+		this.initCacheData();
 	}
 	
 	/**
@@ -492,38 +496,47 @@ public class RegulaObjectService {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public List<Map<String ,Object>> getByDistance(double longitude,double latitude,int objType,Double size){
+	public List<Map<String ,Object>> getByDistance(double longitude,double latitude,Integer objType,Double size){
 		List<Map<String ,Object>> result = new ArrayList<>();
+		
 		//监管对象列表
-		List<Map<String ,Object>> objNameList = (List<Map<String, Object>>) redisTemplate.opsForValue().get(RegulaObjectStatus.REGULA_OBJECT_NAME);
+		List<Map<String ,Object>> objNameList = (List<Map<String, Object>>) redisTemplate.opsForValue().get(PatrolTask.REGULA_OBJECT_NAME);
 		if(objNameList == null) {
-			this.initCacheDate();
-			objNameList = (List<Map<String, Object>>) redisTemplate.opsForValue().get(RegulaObjectStatus.REGULA_OBJECT_NAME);
+			this.initCacheData();
+			objNameList = (List<Map<String, Object>>) redisTemplate.opsForValue().get(PatrolTask.REGULA_OBJECT_NAME);
 		}
 		
 		//获取指定范围的所有监管对象
 		Circle within = new Circle(new Point(longitude,latitude), new Distance(size,DistanceUnit.METERS));
-		GeoResults<GeoLocation<Object>>  geoResults = redisTemplate.opsForGeo().geoRadius(RegulaObjectStatus.REGULA_OBJECT_LOCATION, within);
+		GeoResults<GeoLocation<Object>>  geoResults = redisTemplate.opsForGeo().geoRadius(PatrolTask.REGULA_OBJECT_LOCATION, within);
 		//指定范围内的ids
 		List<Integer> ids = new ArrayList<>();
 		geoResults.forEach(geoLocation -> {
 			ids.add((Integer) geoLocation.getContent().getName());
 		});
-		//TODO 优化
+		
 		//筛选指定监控类型和指定范围内的数据
 		Map<String,Object> resultMap = null;
-		if(objNameList.size() > 0) {
-			for(Map<String,Object> obj : objNameList) {
-				if(obj.get("objType").equals(objType)) { //匹配类型
-					for(Integer id:ids) {
-						if(obj.get("id").equals(id)) { //匹配范围内id
-							resultMap = new HashMap<>();
-							resultMap.put("id", obj.get("id"));
-							resultMap.put("objName", obj.get("objName"));
-							result.add(resultMap);
-						}
-					}
-					
+		RegulaObject regulaObject = null;
+		if(objNameList.size() > 0 && (ids != null && ids.size() > 0)) {
+			//数据筛选，匹配符合监管对象类型
+			Map<String,RegulaObject> objs = new HashMap<>();
+			for(Map<String ,Object> obj:objNameList) {
+				if(objType.equals(obj.get("objType"))) { //匹配类型
+					regulaObject = new RegulaObject();
+					regulaObject.setId(new Integer(obj.get("id").toString()));
+					regulaObject.setObjName(String.valueOf(obj.get("objName")));
+					objs.put(String.valueOf(obj.get("id")), regulaObject);
+				}
+			}
+		
+			for(Integer id : ids) { //匹配范围内id
+				regulaObject = objs.get(String.valueOf(id));
+				if(regulaObject != null) {
+					resultMap = new HashMap<>();
+					resultMap.put("id", regulaObject.getId());
+					resultMap.put("objName", regulaObject.getObjName());
+					result.add(resultMap);
 				}
 			}
 		}
@@ -539,30 +552,31 @@ public class RegulaObjectService {
 	 * key: regulaObjNameceList , value: 监管对象id和对象名称集.
 	 * </p>
 	 */
-	private void initCacheDate() {
-		
+	private void initCacheData() {
 		List<Map<String ,Object>> result = new ArrayList<>();
-		Map<String,Object> distanceMap = null;
 		
 		List<RegulaObject> regulaObjects = regulaObjectBiz.selectDistanceAll();
 		if(regulaObjects != null && regulaObjects.size() > 0) {
-			for(RegulaObject regulaObject : regulaObjects) {
-				//封装id和对象名
-				distanceMap = new HashMap<>();
-				distanceMap.put("id", regulaObject.getId());
-				distanceMap.put("objName", regulaObject.getObjName());
-				distanceMap.put("objType", regulaObject.getObjType());
-				result.add(distanceMap);
-				//缓存经纬度
-				try {
-					redisTemplate.opsForGeo().geoAdd(RegulaObjectStatus.REGULA_OBJECT_LOCATION, new Point(regulaObject.getLongitude(), regulaObject.getLatitude()),regulaObject.getId());
-				}catch (Exception e) {
-					log.info("缓存经纬度错误！错误对象："+regulaObject.toString());
-				}
-			}
-			
+			redisTemplate.execute(new RedisCallback<Boolean>() { //批量提交
+	            public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
+	            	Map<String,Object> distanceMap = null;
+	            	for(RegulaObject regulaObject : regulaObjects) {
+	            		String objId = String.valueOf(regulaObject.getId());
+	    				//封装id和对象名
+	    				distanceMap = new HashMap<>();
+	    				distanceMap.put("id", objId);
+	    				distanceMap.put("objName", regulaObject.getObjName());
+	    				distanceMap.put("objType", regulaObject.getObjType());
+	    				result.add(distanceMap);
+	    				//缓存经纬度
+	    				connection.geoAdd(PatrolTask.REGULA_OBJECT_LOCATION.getBytes(), new Point(regulaObject.getLongitude(), regulaObject.getLatitude()),objId.getBytes());
+	    			}
+	                return true;
+	            }
+	        },false, true);
 		}
+		
 		//缓存监管对象名称
-		redisTemplate.opsForValue().set(RegulaObjectStatus.REGULA_OBJECT_NAME, result,24,TimeUnit.DAYS);
+		redisTemplate.opsForValue().set(PatrolTask.REGULA_OBJECT_NAME, result,24,TimeUnit.DAYS);
 	}
 }

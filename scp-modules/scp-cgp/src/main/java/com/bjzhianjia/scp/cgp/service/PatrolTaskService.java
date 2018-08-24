@@ -125,7 +125,12 @@ public class PatrolTaskService {
 		Integer concernedId = 0;// 当事人id
 		// 巡查任务记录
 	    PatrolTask patrolTask = this.parseData(json, "patrolTask", PatrolTask.class);
-	    
+		
+	    Result<Void> checkPatrolTask = this.checkPatrolTask(patrolTask);
+		if(checkPatrolTask.getIsSuccess()) {
+			return checkPatrolTask;
+		}
+		
 		// 当事人（个人，单位）
 		if ("person".equals(concernedType)) {
 			ConcernedPerson concernedPerson = this.parseData(json, "concernedPerson", ConcernedPerson.class);
@@ -180,11 +185,10 @@ public class PatrolTaskService {
 		if (!patrolResult.getIsSuccess()) {
 			throw new Exception(patrolResult.getMessage());
 		}
-		patrolTask.setReleaseUserName(BaseContextHandler.getUserID());
 		patrolTask.setPatrolCode("ZXXC" + patrolResult.getData());
 		patrolTask.setConcernedId(concernedId);
 		patrolTask.setConcernedType(_concernedType);
-		patrolTask.setReleaseUserName(BaseContextHandler.getName());//上报人姓名
+		patrolTask.setCrtUserId(BaseContextHandler.getUserID());//上报人姓名
 		patrolTaskBiz.insertSelective(patrolTask);
 		// 巡查任务记录资源
 		for (int i = 0; urls != null && i < urls.length; i++) {
@@ -304,7 +308,7 @@ public class PatrolTaskService {
 		
 		result.put("patrolCode", patrolTask.getPatrolCode());
 		result.put("patrolName", patrolTask.getPatrolName());
-		result.put("releaseUserName", patrolTask.getReleaseUserName());
+		result.put("releaseUserName", patrolTask.getCrtUserName());
 		result.put("crtTime", patrolTask.getCrtTime());	//上报时间
 		
 		//判断任务来源类型
@@ -415,9 +419,6 @@ public class PatrolTaskService {
 		return result;
 	}
 	
-	
-	
-	
 	/**
 	 * 解析json 获取实体对象
 	 * 
@@ -427,9 +428,14 @@ public class PatrolTaskService {
 	 * @return
 	 */
 	private <T> T parseData(JSONObject objs, String jsonKey, Class<T> clazz) {
-		if (objs.containsKey(jsonKey)) {
-			return (T) JSON.toJavaObject(objs.getJSONObject(jsonKey), clazz);
-		} else {
+		try {
+			if (objs.containsKey(jsonKey)) {
+				return (T) JSON.toJavaObject(objs.getJSONObject(jsonKey), clazz);
+			} else {
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
 		}
 		return null;
 	}
@@ -449,5 +455,37 @@ public class PatrolTaskService {
 			return null;
 		}
 		return caseInfoList.get(0);
+	}
+	
+	/**
+	 * 检查巡查任务
+	 * @param patrolTask
+	 * @return
+	 */
+	public Result<Void> checkPatrolTask(PatrolTask patrolTask) {
+		Result<Void> restResult = new Result<Void>();
+		restResult.setIsSuccess(true);
+	
+		if (!StringUtils.isNotBlank(patrolTask.getPatrolName()) && patrolTask.getPatrolName().length() > 127) {
+			restResult.setMessage("事件名称不能为空！");
+			return restResult;
+		}
+	
+		if (!StringUtils.isNotBlank(patrolTask.getPatrolLevel())) {
+			restResult.setMessage("事件级别不能为空！");
+			return restResult;
+		}
+	
+		if (!StringUtils.isNotBlank(patrolTask.getAddress()) && !StringUtils.isNotBlank(patrolTask.getMapInfo())) {
+			restResult.setMessage("当前位置不能为空！");
+			return restResult;
+		}
+	
+		if (!StringUtils.isNotBlank(patrolTask.getContent()) && patrolTask.getContent().length() > 1024) {
+			restResult.setMessage("巡查事项内容不能为空！");
+			return restResult;
+		}
+		
+		return restResult;
 	}
 }

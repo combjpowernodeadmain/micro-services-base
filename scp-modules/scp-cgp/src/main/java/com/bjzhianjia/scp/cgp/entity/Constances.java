@@ -337,20 +337,5 @@ public class Constances {
 		 */
 		public static final String ROOT_BIZ_EVENTLEVEL_JINJI="root_biz_eventLevel_jinji";
 	}
-	/**
-	 *  监管对象状态
-	 * @author chenshuai
-	 *
-	 */
-	public static class RegulaObjectStatus {
-		/**
-		 * 监管对象名称列表
-		 */
-		public static final String REGULA_OBJECT_NAME="cgp:regula:object:name";
-		/**
-		 *  监管对象经纬度列表
-		 */
-		public static final String REGULA_OBJECT_LOCATION="cgp:regula:object:location";
-		
-	}
+
 }

@@ -200,7 +200,9 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
 	@ApiOperation("获取指定范围内的监管对象")
 	public ObjectRestResponse<List<Map<String, Object>>> distance(@RequestParam(value="longitude") @ApiParam("经度") Double longitude ,
 			@RequestParam(value="latitude") @ApiParam("纬度") Double latitude,
-			@RequestParam(value="objType") @ApiParam("监管对象类型id")Integer objType){
+			@RequestParam(value="objType") @ApiParam("监管对象类型id")Integer objType,
+			@RequestParam(value="size",defaultValue="500") @ApiParam("监管对象范围大小（单位：米）")Double size){
+		
 		ObjectRestResponse<List<Map<String, Object>>> result = new ObjectRestResponse<>();
 		
 		if(longitude == null) {
@@ -218,8 +220,6 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
 			result.setMessage("监管对象类型id不能为空！");
 			return result;
 		}
-		double size = 500; //范围（单位：米）
-
 		List<Map<String, Object>> objs = regulaObjectService.getByDistance(longitude, latitude,objType,size);
 		result.setData(objs);
 		return result;

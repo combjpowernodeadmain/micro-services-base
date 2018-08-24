@@ -60,7 +60,7 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
 	public ObjectRestResponse<Void> add(@RequestBody @ApiParam(name = "待添加对象实例") JSONObject json) {
 		ObjectRestResponse<Void> restResult = new ObjectRestResponse<>();
 		restResult.setStatus(200);
-		
+		//TODO 数据验证
 		Result<Void> result = null;
 		try {
 			result = patrolTaskService.createPatrolTask(json);
