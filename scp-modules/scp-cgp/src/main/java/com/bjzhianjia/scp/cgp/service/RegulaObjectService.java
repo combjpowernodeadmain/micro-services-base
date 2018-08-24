@@ -8,10 +8,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.Circle;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResults;
+import org.springframework.data.geo.Point;
+import org.springframework.data.redis.connection.RedisGeoCommands.DistanceUnit;
+import org.springframework.data.redis.connection.RedisGeoCommands.GeoLocation;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
@@ -24,6 +32,7 @@ import com.bjzhianjia.scp.cgp.biz.RegulaObjectBiz;
 import com.bjzhianjia.scp.cgp.biz.RegulaObjectTypeBiz;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.Constances;
+import com.bjzhianjia.scp.cgp.entity.Constances.RegulaObjectStatus;
 import com.bjzhianjia.scp.cgp.entity.EnterpriseInfo;
 import com.bjzhianjia.scp.cgp.entity.EventType;
 import com.bjzhianjia.scp.cgp.entity.RegulaObject;
@@ -36,6 +45,7 @@ import com.bjzhianjia.scp.cgp.vo.Regula_EnterPriseVo;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 
+import lombok.extern.log4j.Log4j;
 import tk.mybatis.mapper.entity.Example;
 
 /**
@@ -44,6 +54,7 @@ import tk.mybatis.mapper.entity.Example;
  *
  */
 @Service
+@Log4j
 public class RegulaObjectService {
 	@Autowired
 	private AreaGridBiz areaGridBiz;
@@ -55,10 +66,14 @@ public class RegulaObjectService {
 	private RegulaObjectBiz regulaObjectBiz;
 	@Autowired
 	private EnterpriseInfoBiz enterpriseInfoBiz;
+	
 	@Autowired
 	private MergeCore mergeCore;
 	@Autowired
 	private RegulaObjectTypeBiz regulaObjectTypeBiz;
+	
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
 	/**
 	 * 添加监管对象-经营单位
@@ -466,5 +481,88 @@ public class RegulaObjectService {
 	 */
 	public void remove(Integer[] ids) {
 		regulaObjectBiz.remove(ids);
+	}
+	
+	/**
+	 *  通过指定范围，获取监管对象集
+	 * @param longitude 经度
+	 * @param latitude 纬度
+	 * @param objType 监管对象类型
+	 * @param size 范围（单位：米）
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Map<String ,Object>> getByDistance(double longitude,double latitude,int objType,Double size){
+		List<Map<String ,Object>> result = new ArrayList<>();
+		//监管对象列表
+		List<Map<String ,Object>> objNameList = (List<Map<String, Object>>) redisTemplate.opsForValue().get(RegulaObjectStatus.REGULA_OBJECT_NAME);
+		if(objNameList == null) {
+			this.initCacheDate();
+			objNameList = (List<Map<String, Object>>) redisTemplate.opsForValue().get(RegulaObjectStatus.REGULA_OBJECT_NAME);
+		}
+		
+		//获取指定范围的所有监管对象
+		Circle within = new Circle(new Point(longitude,latitude), new Distance(size,DistanceUnit.METERS));
+		GeoResults<GeoLocation<Object>>  geoResults = redisTemplate.opsForGeo().geoRadius(RegulaObjectStatus.REGULA_OBJECT_LOCATION, within);
+		//指定范围内的ids
+		List<Integer> ids = new ArrayList<>();
+		geoResults.forEach(geoLocation -> {
+			ids.add((Integer) geoLocation.getContent().getName());
+		});
+		//TODO 优化
+		//筛选指定监控类型和指定范围内的数据
+		Map<String,Object> resultMap = null;
+		if(objNameList.size() > 0) {
+			for(Map<String,Object> obj : objNameList) {
+				if(obj.get("objType").equals(objType)) { //匹配类型
+					for(Integer id:ids) {
+						if(obj.get("id").equals(id)) { //匹配范围内id
+							resultMap = new HashMap<>();
+							resultMap.put("id", obj.get("id"));
+							resultMap.put("objName", obj.get("objName"));
+							result.add(resultMap);
+						}
+					}
+					
+				}
+			}
+		}
+		
+		
+		return result;
+	}
+	
+	/**
+	 * 初始化监管对象缓存数据
+	 * <p>
+	 * key：regulaObjDistanceList ，value：监管对象的id和经纬度集.<br>
+	 * key: regulaObjNameceList , value: 监管对象id和对象名称集.
+	 * </p>
+	 */
+	private void initCacheDate() {
+		
+		List<Map<String ,Object>> result = new ArrayList<>();
+		Map<String,Object> distanceMap = null;
+		
+		List<RegulaObject> regulaObjects = regulaObjectBiz.selectDistanceAll();
+		if(regulaObjects != null && regulaObjects.size() > 0) {
+			for(RegulaObject regulaObject : regulaObjects) {
+				//封装id和对象名
+				distanceMap = new HashMap<>();
+				distanceMap.put("id", regulaObject.getId());
+				distanceMap.put("objName", regulaObject.getObjName());
+				distanceMap.put("objType", regulaObject.getObjType());
+				result.add(distanceMap);
+				//缓存经纬度
+				try {
+					redisTemplate.opsForGeo().geoAdd(RegulaObjectStatus.REGULA_OBJECT_LOCATION, new Point(regulaObject.getLongitude(), regulaObject.getLatitude()),regulaObject.getId());
+				}catch (Exception e) {
+					log.info("缓存经纬度错误！错误对象："+regulaObject.toString());
+				}
+			}
+			
+		}
+		//缓存监管对象名称
+		redisTemplate.opsForValue().set(RegulaObjectStatus.REGULA_OBJECT_NAME, result,24,TimeUnit.DAYS);
 	}
 }
