@@ -1,6 +1,5 @@
 package com.bjzhianjia.scp.cgp.util;
 
-import com.alibaba.fastjson.JSONObject;
 
 /**
  * 经纬度工具类
@@ -36,15 +35,5 @@ public class LocationUtils {
 		s = Math.round(s * 10000d) / 10000d;
 		s = s * 1000;
 		return s;
-	}
-
-	public static void main(String[] args) {
-		JSONObject json = JSONObject.parseObject("{\"lng\":116.514134,\"lat\":39.816509}");
-		JSONObject json2 = JSONObject.parseObject("{\"lng\":116.506851,\"lat\":39.812801}");
-		
-		double mishu = LocationUtils.getDistance(json.getDoubleValue("lat"), json.getDoubleValue("lng"),
-			json2.getDoubleValue("lat"), json2.getDoubleValue("lng"));
-		System.out.println("相差米数："+mishu);
-		
 	}
 }
