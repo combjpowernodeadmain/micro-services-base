@@ -41,14 +41,14 @@ public class CaseCallBackServiceImpl implements IWfProcTaskCallBackService{
 
 	@Override
 	public void after(String dealType, Map<String, Object> procBizData) throws BizException {
-		CaseInfo caseInfo = JSON.parseObject(JSON.toJSONString(procBizData), CaseInfo.class);
-
-		//对procBizDate的procBizId及caseInfo.getId进行验证，避免前端未在caseInfo中添加ID
-		check(procBizData, caseInfo);
-
-		Result<Void> result = caseInfoService.update(caseInfo);
-		if(!result.getIsSuccess()) {
-			throw new BizException(result.getMessage());
-		}
+//		CaseInfo caseInfo = JSON.parseObject(JSON.toJSONString(procBizData), CaseInfo.class);
+//
+//		//对procBizDate的procBizId及caseInfo.getId进行验证，避免前端未在caseInfo中添加ID
+//		check(procBizData, caseInfo);
+//
+//		Result<Void> result = caseInfoService.update(caseInfo);
+//		if(!result.getIsSuccess()) {
+//			throw new BizException(result.getMessage());
+//		}
 	}
 }

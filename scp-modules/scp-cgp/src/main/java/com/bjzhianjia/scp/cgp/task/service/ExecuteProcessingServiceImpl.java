@@ -43,16 +43,16 @@ public class ExecuteProcessingServiceImpl implements IWfProcTaskCallBackService{
 	 */
 	@Override
 	public void after(String dealType, Map<String, Object> procBizData) throws BizException {
-		String isInsertConcernPerson=String.valueOf(procBizData.get("isInsertConcernPerson"));//是否涉及当事人
-		String isInsertExecuteInfo=String.valueOf(procBizData.get("isInsertExecuteInfo"));//是否添加处理案件的那个部门的信息
-		
-		if("true".equals(isInsertConcernPerson)) {
-			insertConcernPersons(procBizData);
-		}
-		
-		if("true".equals(isInsertExecuteInfo)) {
-			insertExecuteInfo(procBizData);
-		}
+//		String isInsertConcernPerson=String.valueOf(procBizData.get("isInsertConcernPerson"));//是否涉及当事人
+//		String isInsertExecuteInfo=String.valueOf(procBizData.get("isInsertExecuteInfo"));//是否添加处理案件的那个部门的信息
+//		
+//		if("true".equals(isInsertConcernPerson)) {
+//			insertConcernPersons(procBizData);
+//		}
+//		
+//		if("true".equals(isInsertExecuteInfo)) {
+//			insertExecuteInfo(procBizData);
+//		}
 	}
 
 	private void insertConcernPersons(Map<String, Object> procBizData) {

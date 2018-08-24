@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 
@@ -86,6 +89,20 @@ public class CommonUtil {
 			List<String> _idList = new ArrayList<>(dictValueMap.keySet());
 			// dictValueMap按code等值查询，得到的结果集为唯一
 			return _idList.get(0);
+		}
+		return null;
+	}
+	
+	/**
+	 * 从一个json格式字符串中获取key所对应的value<br/>
+	 * 如key为“key” 则从{"name":"尚","id":"123"}中获取到尚<br/>
+	 * @author 尚
+	 * @return
+	 */
+	public static String getNameFromJObjStr(String jObjStr,String key) {
+		if(StringUtils.isNotBlank(jObjStr)) {
+			JSONObject jobj = JSONObject.parseObject(jObjStr);
+			return jobj.getString(key)==null?null:jobj.getString(key);
 		}
 		return null;
 	}

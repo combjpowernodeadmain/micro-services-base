@@ -98,9 +98,14 @@ public class CaseInfoController extends BaseController<CaseInfoBiz,CaseInfo,Inte
     @ApiOperation("完成任务")
     @ResponseBody
     @RequestMapping(value = { "/completeProcess" }, method = RequestMethod.POST)
-    public void completeProcess(@RequestBody JSONObject objs, HttpServletRequest request) {
+    public ObjectRestResponse<JSONObject> completeProcess(@RequestBody JSONObject objs, HttpServletRequest request) {
     	log.debug("SCP信息---开始启动并提交工作流...");
+    	
+    	ObjectRestResponse<JSONObject> restResult=new ObjectRestResponse<>();
     	caserInfoService.completeProcess(objs);
+    	
+    	restResult.setMessage("成功");
+    	return restResult;
     }
     
     
@@ -120,7 +125,12 @@ public class CaseInfoController extends BaseController<CaseInfoBiz,CaseInfo,Inte
      */
     @ResponseBody
     @RequestMapping(value = { "/endProcess"}, method =  RequestMethod.POST )
-    public void endProcessInstance(@RequestBody JSONObject objs,HttpServletRequest reques) {
-    	caserInfoService.emdProcess(objs);
+    public ObjectRestResponse<JSONObject> endProcessInstance(@RequestBody JSONObject objs,HttpServletRequest reques) {
+    	ObjectRestResponse<JSONObject> restResult=new ObjectRestResponse<>();
+    	
+    	caserInfoService.endProcess(objs);
+    	
+    	restResult.setMessage("成功");
+    	return restResult;
     }
 }
