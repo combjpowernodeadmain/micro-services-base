@@ -95,11 +95,11 @@ public class CommonUtil {
 	
 	/**
 	 * 从一个json格式字符串中获取key所对应的value<br/>
-	 * 如key为“key” 则从{"name":"尚","id":"123"}中获取到尚<br/>
+	 * 如key为“name” 则从{"name":"尚","id":"123"}中获取到尚<br/>
 	 * @author 尚
 	 * @return
 	 */
-	public static String getNameFromJObjStr(String jObjStr,String key) {
+	public static String getValueFromJObjStr(String jObjStr,String key) {
 		if(StringUtils.isNotBlank(jObjStr)) {
 			JSONObject jobj = JSONObject.parseObject(jObjStr);
 			return jobj.getString(key)==null?null:jobj.getString(key);

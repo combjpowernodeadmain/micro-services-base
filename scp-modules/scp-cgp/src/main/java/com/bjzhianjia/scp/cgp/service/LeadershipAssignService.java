@@ -1,18 +1,14 @@
 package com.bjzhianjia.scp.cgp.service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.CaseInfoBiz;
 import com.bjzhianjia.scp.cgp.biz.LeadershipAssignBiz;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
@@ -65,8 +61,9 @@ public class LeadershipAssignService {
 		 */
 
 		Result<Void> result = new Result<>();
-		
-		String doingExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_DOING);
+
+		String doingExeStatus = CommonUtil.exeStatusUtil(dictFeign,
+				Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_DOING);
 
 		LeadershipAssign selectById = leadershipAssignBiz.selectById(vo.getId());
 		if (selectById == null) {
@@ -114,9 +111,9 @@ public class LeadershipAssignService {
 		caseInfo.setSourceCode(vo.getId() + "");
 
 		CaseInfo maxOne = caseInfoBiz.getMaxOne();
-		
-		int nextId=maxOne.getId()==null?1:(maxOne.getId()+1);
-		
+
+		int nextId = maxOne.getId() == null ? 1 : (maxOne.getId() + 1);
+
 		// 立案单事件编号
 		Result<String> caseCodeResult = CommonUtil.generateCaseCode(maxOne.getCaseCode());
 		if (!caseCodeResult.getIsSuccess()) {
@@ -124,8 +121,8 @@ public class LeadershipAssignService {
 			throw new Exception(caseCodeResult.getMessage());// 向外抛出异常，使事务回滚
 		}
 		caseInfo.setCaseCode(caseCodeResult.getData());
-		
-		vo.setCaseId(nextId+"");//将生成的立案单ID也放入到vo中一份，带出到工作流回调方法中
+
+		vo.setCaseId(nextId + "");// 将生成的立案单ID也放入到vo中一份，带出到工作流回调方法中
 
 		caseInfo.setCaseTitle(vo.getTaskTitle());
 		caseInfo.setCaseDesc(vo.getTaskDesc());
@@ -150,8 +147,8 @@ public class LeadershipAssignService {
 		List<LeadershipAssign> inDBList = leadershipAssignBiz.selectByExample(example);
 		if (inDBList != null && !inDBList.isEmpty()) {
 			if (isUpdate) {
-				for(LeadershipAssign tmp:inDBList) {
-					if(!tmp.getId().equals(vo.getId())&&tmp.getIsDeleted().equals("0")) {
+				for (LeadershipAssign tmp : inDBList) {
+					if (!tmp.getId().equals(vo.getId()) && tmp.getIsDeleted().equals("0")) {
 						result.setMessage("领导交办事项编号已存在");
 						return result;
 					}
@@ -206,16 +203,18 @@ public class LeadershipAssignService {
 
 		// 判断舆情是否已启动
 		LeadershipAssign leadershipAssign = leadershipAssignBiz.selectById(vo.getId());
-		
-		String toDoExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_TODO);
-		
+
+		String toDoExeStatus = CommonUtil.exeStatusUtil(dictFeign,
+				Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_TODO);
+
 		if (!leadershipAssign.getExeStatus().equals(toDoExeStatus)) {
 			result.setIsSuccess(false);
 			result.setMessage("当前记录不能修改，只有【未发起】的热线记录可修改！");
 			return result;
 		}
 
-		String doingExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_DOING);
+		String doingExeStatus = CommonUtil.exeStatusUtil(dictFeign,
+				Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_DOING);
 
 		vo.setExeStatus(doingExeStatus);
 		leadershipAssignBiz.updateSelectiveById(vo);
@@ -267,76 +266,86 @@ public class LeadershipAssignService {
 				vo.setExeStatusName(dictIdMap.get(vo.getExeStatus()));
 			}
 		}
-		
-		//聚和交办领导
-		//交办领导为选填，所以交办领导项有可能为空
-		Set<String> leaderIdListStr = new HashSet<>();
-		for(LeadershipAssignVo vo:voList) {
-			if(vo.getTaskLeader()!=null) {
-				leaderIdListStr.add(vo.getTaskLeader());
-			}
-		}
-		Map<String, String> leaderMap = adminFeign.getUser(String.join(",", leaderIdListStr));
-		if(leaderMap!=null&&!leaderMap.isEmpty()) {
-			for(LeadershipAssignVo vo:voList) {
-				List<String> leaderNameList=new ArrayList<>();
-				String taskLeaders = vo.getTaskLeader();
-				
-				if(StringUtils.isNotBlank(taskLeaders)) {
-					String[] split = taskLeaders.split(",");
-					for(String taskLeaderId:split) {
-						String leaderName = leaderMap.get(taskLeaderId);
-						if(null!=leaderName) {
-							JSONObject leaderNameJObject = JSONObject.parseObject(leaderName);
-							leaderNameList.add(leaderNameJObject.getString("name"));
-						}
-					}
-				}
-				vo.setLeaderNames(String.join(",", leaderNameList));
-			}
-		}
+
+		// 聚和交办领导《数据库中直接保存的是领导人的人名》
+		// 交办领导为选填，所以交办领导项有可能为空
+
+		/*
+		 * 以下注释代码不要删
+		 */
+//		Set<String> leaderIdListStr = new HashSet<>();
+//		for(LeadershipAssignVo vo:voList) {
+//			if(vo.getTaskLeader()!=null) {
+//				leaderIdListStr.add(vo.getTaskLeader());
+//			}
+//		}
+//		Map<String, String> leaderMap = adminFeign.getUser(String.join(",", leaderIdListStr));
+//		if(leaderMap!=null&&!leaderMap.isEmpty()) {
+//			for(LeadershipAssignVo vo:voList) {
+//				List<String> leaderNameList=new ArrayList<>();
+//				String taskLeaders = vo.getTaskLeader();
+//				
+//				if(StringUtils.isNotBlank(taskLeaders)) {
+//					String[] split = taskLeaders.split(",");
+//					for(String taskLeaderId:split) {
+//						String leaderName = leaderMap.get(taskLeaderId);
+//						if(null!=leaderName) {
+//							JSONObject leaderNameJObject = JSONObject.parseObject(leaderName);
+//							leaderNameList.add(leaderNameJObject.getString("name"));
+//						}
+//					}
+//				}
+//				vo.setLeaderNames(String.join(",", leaderNameList));
+//			}
+//		}
+		/*
+		 * 以上注释代码不要删
+		 */
 
 		// 解析监管对象
 		for (LeadershipAssignVo tmp : voList) {
 			String regulaObjListStr = tmp.getRegulaObjList();
 			List<RegulaObject> regulaObjectList = regulaObjectMapper.selectByIds(regulaObjListStr);
 			if (regulaObjectList != null && !regulaObjectList.isEmpty()) {
-				List<String> collect=new ArrayList<>();
-				for(RegulaObject regulaObjectTmp:regulaObjectList) {
-					//不聚和已删除的监管对象
-					if(regulaObjectTmp.getIsDeleted().equals("0")) {
+				List<String> collect = new ArrayList<>();
+				for (RegulaObject regulaObjectTmp : regulaObjectList) {
+					// 不聚和已删除的监管对象
+					if (regulaObjectTmp.getIsDeleted().equals("0")) {
 						collect.add(regulaObjectTmp.getObjName());
 					}
 				}
-				
+
 				tmp.setRegulaObjName(String.join(",", collect));
 			}
 		}
 
 		// 聚和相关立案编号
 		List<String> collect = voList.stream().map(o -> o.getId() + "").distinct().collect(Collectors.toList());
-		Example caseInfoExample = new Example(CaseInfo.class);
-		Example.Criteria criteria = caseInfoExample.createCriteria();
-		
-		Map<String, String> dictValueMap = dictFeign.getDictIdByCode(Constances.BizEventType.ROOT_BIZ_EVENTTYPE_LEADER,
-				false);
-		
-		String dictId = "";
-		if (dictValueMap != null && !dictValueMap.isEmpty()) {
-			List<String> aaList = new ArrayList<>(dictValueMap.keySet());
-			// dictValueMap按code等值查询，得到的结果集为唯一
-			dictId = aaList.get(0);
-		}
-		
-		criteria.andEqualTo("sourceType", dictId);
-		criteria.andIn("sourceCode", collect);
-		List<CaseInfo> caseInfoListInDB = caseInfoBiz.selectByExample(caseInfoExample);
 
-		Map<String, String> caseInfoMap = caseInfoListInDB.stream()
-				.collect(Collectors.toMap(CaseInfo::getSourceCode, CaseInfo::getCaseCode));
-		if (caseInfoMap != null && !caseInfoMap.isEmpty()) {
-			for (LeadershipAssignVo vo : voList) {
-				vo.setCaseCode(caseInfoMap.get(vo.getId() + ""));
+		if (collect != null && !collect.isEmpty()) {
+			Example caseInfoExample = new Example(CaseInfo.class);
+			Example.Criteria criteria = caseInfoExample.createCriteria();
+
+			Map<String, String> dictValueMap = dictFeign
+					.getDictIdByCode(Constances.BizEventType.ROOT_BIZ_EVENTTYPE_LEADER, false);
+
+			String dictId = "";
+			if (dictValueMap != null && !dictValueMap.isEmpty()) {
+				List<String> aaList = new ArrayList<>(dictValueMap.keySet());
+				// dictValueMap按code等值查询，得到的结果集为唯一
+				dictId = aaList.get(0);
+			}
+
+			criteria.andEqualTo("sourceType", dictId);
+			criteria.andIn("sourceCode", collect);
+			List<CaseInfo> caseInfoListInDB = caseInfoBiz.selectByExample(caseInfoExample);
+
+			Map<String, String> caseInfoMap = caseInfoListInDB.stream()
+					.collect(Collectors.toMap(CaseInfo::getSourceCode, CaseInfo::getCaseCode));
+			if (caseInfoMap != null && !caseInfoMap.isEmpty()) {
+				for (LeadershipAssignVo vo : voList) {
+					vo.setCaseCode(caseInfoMap.get(vo.getId() + ""));
+				}
 			}
 		}
 
@@ -367,17 +376,17 @@ public class LeadershipAssignService {
 	 * @throws Exception
 	 */
 	public Result<LeadershipAssign> createdLeaderAssignCache(LeadershipAssignVo vo) throws Exception {
-		Result<LeadershipAssign> result=new Result<>();
-		
+		Result<LeadershipAssign> result = new Result<>();
+
 		LeadershipAssign maxOne = leadershipAssignBiz.getMaxOne();
 		int maxId = -1;
 		String preTaskCode = "";
 		if (maxOne == null) {
 			maxId = 1;
-			preTaskCode=null;
+			preTaskCode = null;
 		} else {
 			maxId = maxOne.getId() + 1;
-			preTaskCode=maxOne.getTaskCode().substring(4);
+			preTaskCode = maxOne.getTaskCode().substring(4);
 		}
 
 		vo.setId(maxId);
@@ -387,7 +396,7 @@ public class LeadershipAssignService {
 			result.setMessage(taskCodeResult.getMessage());
 			throw new Exception(taskCodeResult.getMessage());// 向外抛出异常，使事务回滚
 		}
-		
+
 		vo.setTaskCode("LDJB" + taskCodeResult.getData());
 		result = check(vo, false);
 		if (!result.getIsSuccess()) {
