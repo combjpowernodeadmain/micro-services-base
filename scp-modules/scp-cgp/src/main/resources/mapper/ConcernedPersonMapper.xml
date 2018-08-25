@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bjzhianjia.scp.cgp.mapper.ConcernedPersonMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.bjzhianjia.scp.cgp.entity.ConcernedPerson" id="concernedPersonMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="phone" column="phone"/>
+        <result property="credType" column="cred_type"/>
+        <result property="credCode" column="cred_code"/>
+        <result property="company" column="company"/>
+        <result property="companyAddr" column="company_addr"/>
+    </resultMap>
+
+	<insert id="insertConcernPersonList" parameterType="java.util.List">
+		INSERT INTO concerned_person (
+		concerned_person.`name`,
+		concerned_person.`phone`,
+		concerned_person.`cred_type`,
+		concerned_person.`cred_code`,
+		concerned_person.`company`,
+		concerned_person.`company_addr`)
+		VALUES
+		<foreach collection="concernedPersonList" index="index" item="item"
+			separator=",">
+			(
+			#{item.name},
+			#{item.phone},
+			#{item.cred_type},
+			#{item.cred_code},
+			#{item.company},
+			#{item.company_addr}
+			)
+		</foreach>
+	</insert>
+</mapper>

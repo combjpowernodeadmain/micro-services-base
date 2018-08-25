@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.bjzhianjia.scp.security.wf.mapper.WfProcDelegateBeanMapper">
+<mapper namespace="com.bjzhianjia.scp.security.wf.task.mapper.WfProcDelegateBeanMapper">
 	<resultMap id="BaseResultMap"
 		type="com.bjzhianjia.scp.security.wf.task.entity.WfProcDelegateBean">
 		<id column="ID" property="id" jdbcType="INTEGER" />
@@ -17,11 +17,12 @@
 			jdbcType="INTEGER" />
 		<result column="PROC_LICENSE_ISVALID" property="procLicenseIsvalid"
 			jdbcType="CHAR" />
+		<result column="PROC_TENANT_ID" property="procTenantId" jdbcType="VARCHAR" />
+		<result column="PROC_DEPART_ID" property="procDepartId" jdbcType="VARCHAR" />
 	</resultMap>
 	<sql id="Base_Column_List">
 		ID, PROC_INST_ID, PROC_LICENSOR, PROC_LICENSOR_ROLE, PROC_MANDATARY,
-		PROC_LICENSE_TIME, PROC_CANCEL_TIME,
-		PROC_LICENSE_ISVALID
+		PROC_LICENSE_TIME, PROC_CANCEL_TIME, PROC_LICENSE_ISVALID,PROC_TENANT_ID,PROC_DEPART_ID
 	</sql>
 	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
 		parameterType="java.lang.Integer">
@@ -37,16 +38,17 @@
 	<insert id="insert"
 		parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcDelegateBean">
 		insert into SCP_WF_PROC_DELEGATE (ID, PROC_INST_ID, PROC_LICENSOR,
-		PROC_LICENSOR_ROLE,
-		PROC_MANDATARY, PROC_LICENSE_TIME, PROC_CANCEL_TIME,
-		PROC_LICENSE_ISVALID)
+		PROC_LICENSOR_ROLE, PROC_MANDATARY, PROC_LICENSE_TIME, PROC_CANCEL_TIME,
+		PROC_LICENSE_ISVALID, PROC_TENANT_ID,PROC_DEPART_ID)
 		values (#{id,jdbcType=INTEGER}, #{procInstId,jdbcType=VARCHAR},
 		#{procLicensor,jdbcType=VARCHAR},
 		#{procLicensorRole,jdbcType=VARCHAR},
 		#{procMandatary,jdbcType=VARCHAR},
 		#{procLicenseTime,jdbcType=INTEGER},
 		#{procCancelTime,jdbcType=INTEGER},
-		#{procLicenseIsvalid,jdbcType=CHAR})
+		#{procLicenseIsvalid,jdbcType=CHAR},
+		#{procTenantId,jdbcType=VARCHAR},
+		#{procDepartId,jdbcType=VARCHAR})
 	</insert>
 	<insert id="insertSelective"
 		parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfProcDelegateBean">
@@ -76,6 +78,12 @@
 			<if test="procLicenseIsvalid != null">
 				PROC_LICENSE_ISVALID,
 			</if>
+			<if test="procTenantId != null">
+				PROC_TENANT_ID,
+			</if>
+			<if test="procDepartId != null">
+				PROC_DEPART_ID,
+			</if>
 		</trim>
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
 			<if test="id != null">
@@ -101,6 +109,12 @@
 			</if>
 			<if test="procLicenseIsvalid != null">
 				#{procLicenseIsvalid,jdbcType=CHAR},
+			</if>
+			<if test="procTenantId != null">
+				#{procTenantId,jdbcType=VARCHAR},
+			</if>
+			<if test="procDepartId != null">
+				#{procDepartId,jdbcType=VARCHAR},
 			</if>
 		</trim>
 	</insert>
@@ -129,6 +143,12 @@
 			<if test="procLicenseIsvalid != null">
 				PROC_LICENSE_ISVALID = #{procLicenseIsvalid,jdbcType=CHAR},
 			</if>
+			<if test="procTenantId != null">
+				PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR},
+			</if>
+			<if test="procDepartId != null">
+				PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR},
+			</if>
 		</set>
 		where ID = #{id,jdbcType=INTEGER}
 	</update>
@@ -142,7 +162,9 @@
 		PROC_MANDATARY = #{procMandatary,jdbcType=VARCHAR},
 		PROC_LICENSE_TIME = #{procLicenseTime,jdbcType=INTEGER},
 		PROC_CANCEL_TIME = #{procCancelTime,jdbcType=INTEGER},
-		PROC_LICENSE_ISVALID = #{procLicenseIsvalid,jdbcType=CHAR}
+		PROC_LICENSE_ISVALID = #{procLicenseIsvalid,jdbcType=CHAR},
+		PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR},
+		PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR}
 		where ID = #{id,jdbcType=INTEGER}
 	</update>
 
@@ -153,6 +175,8 @@
 			PROC_LICENSE_ISVALID = #{procLicenseIsvalid,jdbcType=CHAR}
 		where PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
 		and PROC_LICENSOR = #{procLicensor,jdbcType=VARCHAR}
+		and PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
+		and PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR}
 	</update>
 	
 	<select id="getProcInstDelegateList"
@@ -165,6 +189,7 @@
 		SCP_WF_PROC_DELEGATE delegate
 		WHERE delegate.PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
 		AND delegate.PROC_MANDATARY = #{mandatary,jdbcType=VARCHAR}
+		and delegate.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
 		AND delegate.PROC_LICENSE_ISVALID = '1'
 	</select>
 	
@@ -175,6 +200,7 @@
 		SCP_WF_PROC_DELEGATE delegate
 		WHERE delegate.PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
 		AND delegate.PROC_LICENSOR = #{procLicensor,jdbcType=VARCHAR}
+		and delegate.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
 		AND delegate.PROC_LICENSE_ISVALID = '1'
 	</select>
 	
@@ -185,6 +211,7 @@
 		SCP_WF_PROC_DELEGATE delegate
 		WHERE delegate.PROC_INST_ID = #{procInstId,jdbcType=VARCHAR}
 		AND delegate.PROC_MANDATARY = #{mandatary,jdbcType=VARCHAR}
+		and delegate.PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
 		AND delegate.PROC_LICENSE_ISVALID = '1'
 	</select>
 	

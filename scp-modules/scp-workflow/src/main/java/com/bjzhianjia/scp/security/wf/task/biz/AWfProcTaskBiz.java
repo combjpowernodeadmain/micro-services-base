@@ -19,6 +19,7 @@ import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcOrgDataPermission
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcParallStatus;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcSelfDataPermissionType;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcTaskProperty;
+import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcTenantDataPermissionType;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcVotePower;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcVoteRole;
 import com.bjzhianjia.scp.security.wf.constant.WorkflowEnumResults;
@@ -90,6 +91,8 @@ public abstract class AWfProcTaskBiz extends WfBaseBiz {
 		wfProcBean.setProcCreator(authData.getProcTaskUser());
 		wfProcBean.setProcCreatetime(DateTools.getCurrTime());
 		wfProcBean.setProcStatus(FlowStatus.PROC10.getRetCode());
+		wfProcBean.setProcTenantId(authData.getProcTenantId());
+		wfProcBean.setProcDepartId(authData.getProcDeptId());
 		
 		return wfProcBean;
     }
@@ -102,12 +105,18 @@ public abstract class AWfProcTaskBiz extends WfBaseBiz {
      * @param properties
      * @return
      */
-    protected WfProcTaskBean createProcStartTaskData(WfProcBean wfProcBean, Task task,
-        WfProcTaskPropertiesBean properties) throws WorkflowException {
-        WfProcTaskBean wfProcTaskBean = new WfProcTaskBean();
-        wfProcTaskBean.setProcInstId(wfProcBean.getProcInstId()); // 流程实例ID
+	protected WfProcTaskBean createProcStartTaskData(WfProcBean wfProcBean,
+			Task task, WfProcAuthDataBean authData,
+			WfProcTaskPropertiesBean properties,
+			Map<String, String> procTaskSelfProps) throws WorkflowException {
+		WfProcTaskBean wfProcTaskBean = new WfProcTaskBean();
+		wfProcTaskBean.setProcInstId(wfProcBean.getProcInstId()); // 流程实例ID
         wfProcTaskBean.setProcId(wfProcBean.getProcId());// 流程定义ID
         wfProcTaskBean.setProcKey(wfProcBean.getProcKey());// 流程定义代码
+        wfProcTaskBean.setProcName(wfProcBean.getProcName());
+        wfProcTaskBean.setProcOrgcode(wfProcBean.getProcOrgcode());
+        wfProcTaskBean.setProcBizid(wfProcBean.getProcBizid());
+        wfProcTaskBean.setProcMemo(wfProcBean.getProcMemo());
         wfProcTaskBean.setProcTaskCommitter(wfProcBean.getProcCreator()); // 流程任务提交人
         wfProcTaskBean.setProcTaskCommittime(wfProcBean.getProcCreatetime()); // 流程任务提交时间
         wfProcTaskBean.setProcCtaskid(task.getId()); // 当前流程任务ID
@@ -119,13 +128,19 @@ public abstract class AWfProcTaskBiz extends WfBaseBiz {
         wfProcTaskBean.setProcTaskAssigntime(wfProcBean.getProcCreatetime()); // 流程任务签收时间
         wfProcTaskBean.setProcRefusetask(DictKeyConst.YESORNO_NO);
         wfProcTaskBean.setProcTaskStatus(FlowStatus.TASK02.getRetCode()); // 启动流程不做提交操作，流程任务状态默认为待处理
-
+        
         // 设置流程任务属性数据
-        String taskProperties = JSONUtil.objToJson(properties);
-        wfProcTaskBean.setProcTaskProperties(taskProperties);
+        wfProcTaskBean.setProcTaskProperties(JSONUtil.objToJson(properties));
+        wfProcTaskBean.setProcSelfProperties(JSONUtil.objToJson(procTaskSelfProps));
 
         // 设置流程任务数据权限类型
-        wfProcTaskBean.setProcDatapermission(getProcTaskDataPermission(properties));
+        wfProcTaskBean.setProcDatapermission(getProcTaskDataPermission(properties));        
+        wfProcTaskBean.setProcOrgpermission(getProcTaskOrgPermission(properties));
+        wfProcTaskBean.setProcDeptpermission(getProcTaskDeptPermission(properties));
+        wfProcTaskBean.setProcDepartId(authData.getProcDeptId());
+        wfProcTaskBean.setProcTenantpermission(getProcTenantPermission(properties));
+        wfProcTaskBean.setProcTenantId(getProcTenantId(properties));
+        
         wfProcTaskBean.setProcParallel(DictKeyConst.YESORNO_NO);
         wfProcTaskBean.setProcParallelStatus(WfProcParallStatus.APPROVED.getRetCode());
         // 设置流程任务参与决策标识
@@ -142,6 +157,10 @@ public abstract class AWfProcTaskBiz extends WfBaseBiz {
         wfProcTaskBean.setProcVotequickly(getProcVoteQuickly(properties));
         // 设置流程任务审批页面URL
         wfProcTaskBean.setProcApproveurl(getProcTaskUrl(properties));
+        
+        // 设置多租户信息
+        wfProcTaskBean.setProcTenantId(authData.getProcTenantId());
+        wfProcTaskBean.setProcDepartId(authData.getProcDeptId());
 
         return wfProcTaskBean;
     }
@@ -161,6 +180,21 @@ public abstract class AWfProcTaskBiz extends WfBaseBiz {
         return null;
     }
 
+    /**
+     * 获取流程任务节点定义的租户ID，如果没有定义则默认不进行租户权限控制
+     * 
+     * @param properties
+     *            流程任务属性
+     * @return
+     */
+    protected String getProcTenantPermission(WfProcTaskPropertiesBean properties) {
+        if (properties != null && properties.containsKey(WfProcTaskProperty.PROC_TENANTPERMISSION)) {
+            return properties.getValue(WfProcTaskProperty.PROC_TENANTPERMISSION);
+        } else {
+        	return WfProcTenantDataPermissionType.NONE.getRetCode();
+        }
+    }
+    
     /**
      * 获取流程任务节点定义的租户ID，如果没有定义则默认不进行租户权限控制
      * 
@@ -664,4 +698,5 @@ public abstract class AWfProcTaskBiz extends WfBaseBiz {
         
         return taskStatus;
     }
+    
 }

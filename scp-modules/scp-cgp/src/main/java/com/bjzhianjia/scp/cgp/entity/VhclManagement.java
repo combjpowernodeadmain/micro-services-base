@@ -3,6 +3,7 @@ package com.bjzhianjia.scp.cgp.entity;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -27,7 +28,8 @@ public class VhclManagement implements Serializable {
     private Integer id;
     
     @Column(name = "ternimal_id")
-    @NotEmpty(message="终端不能为空")
+//    @NotNull(message="终端不能为空")
+    //终端号为先填
     private Integer ternimalId;
 	
 	    //车辆牌号

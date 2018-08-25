@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.bjzhianjia.scp.security.wf.mapper.WfActReProcdefBeanMapper">
+<mapper namespace="com.bjzhianjia.scp.security.wf.design.mapper.WfActReProcdefBeanMapper">
 	<resultMap id="BaseResultMap"
 		type="com.bjzhianjia.scp.security.wf.design.entity.WfProcActReProcdefBean">
 		<id column="ID_" property="id" jdbcType="VARCHAR" />
@@ -51,15 +51,14 @@
 		t.DESCRIPTION_ from
 		ACT_RE_PROCDEF t
 		LEFT JOIN ACT_RE_DEPLOYMENT m on t.DEPLOYMENT_ID_ = m.ID_
-		where
-		EXISTS(
+		where t.TENANT_ID_ = #{tenantId,jdbcType=VARCHAR}
+		and EXISTS(
 		select * from (
 		SELECT MAX(p.VERSION_) a
 		,
 		p.KEY_ FROM ACT_RE_PROCDEF p
 		GROUP BY p.KEY_) b where b.key_=t.key_
-		and
-		b.a=t.VERSION_)
+		and	b.a=t.VERSION_)
 
 		<if test="key!=null and key!=''">
 			and t.KEY_ like "%"#{key}"%"
@@ -67,12 +66,9 @@
 		<if test="name!=null and name!=''">
 			and m.NAME_ like "%"#{name}"%"
 		</if>
-		<if test="suspensionState!=null and 
-			suspensionState!=''">
+		<if test="suspensionState!=null and suspensionState!=''">
 			and t.SUSPENSION_STATE_ = #{suspensionState}
 		</if>
 		ORDER BY DEPLOYMENT_ID_
-
-
 	</select>
 </mapper>

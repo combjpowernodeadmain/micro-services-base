@@ -1,12 +1,3 @@
-MYSQL_HOST: 127.0.0.1
-MYSQL_PORT: 9025
-MYSQL_USER_NAME: dev_user
-MYSQL_PASS: iui098mm112
-REDIS_HOST: 127.0.0.1
-REDIS_PORT: 9081
-RABBIT_MQ_HOST: 127.0.0.1
-RABBIT_MQ_PORT: 9083
-
 spring:
     application:
         name: scp-gate
@@ -44,7 +35,7 @@ server:
 gate:
   # 开发不进行权限校验的路径
   ignore:
-    startWith: /static,/auth/oauth/,/admin/v2/api-docs,/dict/v2/api-docs,/auth/v2/api-docs,/workflow/v2/api-docs,/cgp/v2/api-docs,/dict/dictValue/type/comm_sex
+    startWith: /static,/cgp/static/modeler.html,/auth/oauth/,/admin/v2/api-docs,/dict/v2/api-docs,/auth/v2/api-docs,/workflow/v2/api-docs,/cgp/v2/api-docs,/dict/dictValue/type/comm_sex
 
 auth:
   serviceId: scp-auth

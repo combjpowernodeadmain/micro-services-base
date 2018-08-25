@@ -1,12 +1,13 @@
 package com.bjzhianjia.scp.security.gate.config;
 
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Component;
-import springfox.documentation.swagger.web.SwaggerResource;
-import springfox.documentation.swagger.web.SwaggerResourcesProvider;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Component;
+
+import springfox.documentation.swagger.web.SwaggerResource;
+import springfox.documentation.swagger.web.SwaggerResourcesProvider;
 
 /**
  * @author scp

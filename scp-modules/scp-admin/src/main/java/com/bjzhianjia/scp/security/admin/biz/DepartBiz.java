@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.merge.annonation.MergeResult;
@@ -23,6 +24,8 @@ import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.exception.base.BusinessException;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.util.UUIDUtils;
+
+import tk.mybatis.mapper.entity.Example;
 
 /**
  *
@@ -79,8 +82,23 @@ public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
     		if(result.size() > 0) {
     			Collections.reverse(result);
     			List<String> names = new ArrayList<>();
+    			List<String> ids=new ArrayList<>();
     			result.forEach(d->names.add(d.getName()));
-    			mapResult.put(id, String.join("-", names.toArray(new String[names.size()])));
+    			result.forEach(d->ids.add(d.getId()));
+    			String name= String.join("-", names.toArray(new String[names.size()]));
+    			String idString=String.join("-", ids.toArray(new String[ids.size()]));
+    			
+    			Map<String, String> map=new HashMap<>();
+    			map.put("name", name);
+    			map.put("id", idString);
+    			mapResult.put(id,JSON.toJSONString(map));
+    			
+//    			if(result.size() > 0) {
+//        			Collections.reverse(result);
+//        			List<String> names = new ArrayList<>();
+//        			result.forEach(d->names.add(d.getName()));
+//        			mapResult.put(id, String.join("-", names.toArray(new String[names.size()])));
+//        		}
     		}
     	}
     	
@@ -101,7 +119,22 @@ public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
     	if(tmpDepart != null && !tmpDepart.getParentId().equals("-1")) {
     		result.add(tmpDepart);
     		getDepart(departs, tmpDepart.getParentId(), result);
+    	}else {
+    		//By尚
+    		/*
+    		 * 剔除result中Depart==null的对象，因权限问题，某部门的父部门有可能查询不到
+    		 */
+    		if(tmpDepart!=null) {
+    			result.add(tmpDepart);
+    		}
     	}
+    	
+//    	for(int i=0;i<result.size();i++) {
+//    		if(result.get(i)==null) {
+//    			result.remove(i);
+//    			i--;
+//    		}
+//    	}
     }
 
     public void delDepartUser(String departId, String userId) {
@@ -116,5 +149,20 @@ public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
     public void insertSelective(Depart entity) {
         entity.setId(UUIDUtils.generateUuid());
         super.insertSelective(entity);
+    }
+    
+    /**
+     * 根据父部门ID获取子部门
+     * @author 尚
+     * @param parentId
+     * @return
+     */
+    public List<Depart> getDeptByParent(String parentId){
+    	Example example=new Example(Depart.class);
+    	Example.Criteria criteria=example.createCriteria();
+    	
+    	criteria.andEqualTo("parentId",parentId);
+    	List<Depart> deptList = mapper.selectByExample(example);
+    	return deptList;
     }
 }

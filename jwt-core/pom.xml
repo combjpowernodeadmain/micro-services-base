@@ -55,4 +55,16 @@
             <version>20.0</version>
         </dependency>
     </dependencies>
+    
+    <distributionManagement>
+        <snapshotRepository>
+            <id>nexus</id>
+            <url>http://nexus.lutuo.com/repository/maven-snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>nexus</id>
+            <name>Maven Central Staging Repository</name>
+            <url>http://nexus.lutuo.com/repository/maven-releases/</url>
+        </repository>
+    </distributionManagement>
 </project>

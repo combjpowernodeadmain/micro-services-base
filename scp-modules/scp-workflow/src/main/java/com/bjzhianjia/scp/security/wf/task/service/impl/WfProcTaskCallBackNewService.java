@@ -49,7 +49,7 @@ public class WfProcTaskCallBackNewService implements IWfProcTaskNewCallBackServi
 			if (StringUtil.isNull(bizMemo)) {
 				procBizData.put(PROC_BIZMEMO, "测试流程验证");
 			}
-
+ 
 			if (StringUtil.isNull(orgCode)) {
 				procBizData.put(PROC_ORGCODE, "1001001");
 			}

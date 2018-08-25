@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    triggers{
+        cron('H 22 * * *')
+    }
     tools {
         maven 'MAVEN'
         jdk 'JDK8'
@@ -17,15 +20,201 @@ pipeline {
 
         stage ('Build') {
             steps {
-                withMaven(globalMavenSettingsConfig: 'c79fc3fc-9de4-4dfb-bfd0-bf179d7950c2', jdk: 'JDK8', maven: 'MAVEN', mavenSettingsConfig: '4557b50b-90a1-4723-8dac-40554c29de07', publisherStrategy: 'EXPLICIT') {
-                    sh 'mvn clean install deploy -Dmven.test.skip=true'   
+                withMaven(globalMavenSettingsConfig: 'MavenNexusLutuoSettings', jdk: 'JDK8', maven: 'MAVEN', mavenSettingsConfig: 'MavenNexusLutuoSettings', publisherStrategy: 'EXPLICIT') {
+                    sh 'mvn clean install -Dmven.test.skip=true -U'   
                 }
                 
             }
             post {
                 success {
-                    sh 'echo success'
+                    sh 'echo Build success'
                 }
+            }
+        }
+
+        stage ('Stop Services in aliyun') {
+            steps {
+                sshPublisher(publishers: [
+                    sshPublisherDesc(
+                        configName: 'AliyunServerZZ001', 
+                        transfers: [
+                            sshTransfer(
+                                excludes: '', 
+                                execCommand: 'cd /data/scp && sudo ./stop-scp.sh', 
+                                execTimeout: 120000, 
+                                flatten: false, 
+                                makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: '', 
+                                sourceFiles: ''
+                            )
+                        ], 
+                        usePromotionTimestamp: false, 
+                        useWorkspaceInPromotion: false, 
+                        verbose: false
+                    )
+                ])
+
+            }
+        }
+
+        stage ('Rename Files in aliyun') {
+            steps {
+                sshPublisher(publishers: [
+                    sshPublisherDesc(
+                        configName: 'AliyunServerZZ001', 
+                        transfers: [
+                            sshTransfer(
+                                excludes: '', 
+                                execCommand: 'mv /data/scp/1_center/scp-center.jar /data/scp/1_center/scp-center.${BUILD_ID}.jar && mv /data/scp/2_auth/scp-auth.jar /data/scp/2_auth/scp-auth.${BUILD_ID}.jar && mv /data/scp/3_dict/scp-dict.jar /data/scp/3_dict/scp-dict.${BUILD_ID}.jar && mv /data/scp/4_admin/scp-admin.jar /data/scp/4_admin/scp-admin.${BUILD_ID}.jar && mv /data/scp/5_gate/scp-gate.jar /data/scp/5_gate/scp-gate.${BUILD_ID}.jar && mv /data/scp/6_cgp/scp-cgp.jar /data/scp/6_cgp/scp-cgp.${BUILD_ID}.jar && mv /data/scp/7_tool/scp-tool.jar /data/scp/7_tool/scp-tool.${BUILD_ID}.jar', 
+                                execTimeout: 120000, 
+                                flatten: false, 
+                                makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: '', 
+                                sourceFiles: ''
+                            )
+                        ], 
+                        usePromotionTimestamp: false, 
+                        useWorkspaceInPromotion: false, 
+                        verbose: false
+                    )
+                ])
+
+            }
+        }
+        stage ('Copy Files To aliyun') {
+            steps {
+                sh 'echo Deploy to aliyun'
+                sshPublisher(publishers: [
+                    sshPublisherDesc(
+                        configName: 'AliyunServerZZ001', 
+                        transfers: [
+                            
+                            sshTransfer(excludes: '', 
+                                execCommand: '', 
+                                execTimeout: 120000, 
+                                flatten: false, 
+                                makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '1_center', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: 'scp-center/target/', 
+                                sourceFiles: 'scp-center/target/scp-center.jar'),
+                            sshTransfer(excludes: '', 
+                                execCommand: '', 
+                                execTimeout: 120000, 
+                                flatten: false, 
+                                makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '7_tool', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: 'scp-modules/scp-tool/target/', 
+                                sourceFiles: 'scp-modules/scp-tool/target/scp-tool.jar'),
+                            sshTransfer(excludes: '', 
+                                execCommand: '', 
+                                execTimeout: 120000, 
+                                flatten: false, 
+                                makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '2_auth', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: 'scp-auth/scp-auth-server/target/', 
+                                sourceFiles: 'scp-auth/scp-auth-server/target/scp-auth.jar'),
+                            sshTransfer(
+                                excludes: '', 
+                                execCommand: '', 
+                                execTimeout: 120000, 
+                                flatten: false, 
+                                makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '3_dict', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: 'scp-modules/scp-dict/target', 
+                                sourceFiles: 'scp-modules/scp-dict/target/scp-dict.jar'
+                            ),
+                            sshTransfer(excludes: '', 
+                                execCommand: '', 
+                                execTimeout: 120000, 
+                                flatten: false, 
+                                makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '4_admin', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: 'scp-modules/scp-admin/target/', 
+                                sourceFiles: 'scp-modules/scp-admin/target/scp-admin.jar'
+                            ), 
+                            sshTransfer(excludes: '', 
+                                execCommand: '', 
+                                execTimeout: 120000, 
+                                flatten: false,
+                                makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '5_gate', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: 'scp-gate/scp-gate-server/target/', 
+                                sourceFiles: 'scp-gate/scp-gate-server/target/scp-gate.jar'
+                            ), 
+                            sshTransfer(excludes: '', 
+                                execCommand: '', 
+                                execTimeout: 120000, 
+                                flatten: false, makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '6_cgp', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: 'scp-modules/scp-cgp/target/', 
+                                sourceFiles: 'scp-modules/scp-cgp/target/scp-cgp.jar'
+                            )
+                        ], 
+                        usePromotionTimestamp: false, 
+                        useWorkspaceInPromotion: false, 
+                        verbose: false
+                    )
+                ])
+
+            }
+        }
+
+
+        stage ('Start Services in aliyun') {
+            steps {
+                sshPublisher(publishers: [
+                    sshPublisherDesc(
+                        configName: 'AliyunServerZZ001', 
+                        transfers: [
+                            sshTransfer(
+                                excludes: '', 
+                                execCommand: 'cd /data/scp/ && sudo ./start-scp.sh', 
+                                execTimeout: 480000, 
+                                flatten: false, 
+                                makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: '', 
+                                sourceFiles: ''
+                            )
+                        ], 
+                        usePromotionTimestamp: false, 
+                        useWorkspaceInPromotion: false, 
+                        verbose: false
+                    )
+                ])
+ 
             }
         }
     }

@@ -215,4 +215,5 @@ public class GroupController extends BaseController<GroupBiz, Group,String> {
         }
         return TreeUtil.bulid(trees, root, null);
     }
+    
 }

@@ -1,15 +1,27 @@
 package com.bjzhianjia.scp.cgp.mapper;
 
-import com.bjzhianjia.scp.cgp.entity.RightsIssues;
-import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
+import java.util.Date;
 
-import tk.mybatis.mapper.common.ids.DeleteByIdsMapper;
+import org.apache.ibatis.annotations.Param;
+
+import com.bjzhianjia.scp.cgp.entity.RightsIssues;
+import com.bjzhianjia.scp.security.common.data.Tenant;
+import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 
 /**
  * 权利事项数据访问接口
+ * 
  * @author zzh
  *
  */
-public interface RightsIssuesMapper extends CommonMapper<RightsIssues>, DeleteByIdsMapper<RightsIssues> {
+//@Tenant
+public interface RightsIssuesMapper extends CommonMapper<RightsIssues> {
 
+	/**
+	 * 批量删除
+	 * 
+	 * @param ids id列表
+	 */
+	public void deleteByIds(@Param("ids") Integer[] ids, @Param("updUserId") String updUserId,
+			@Param("updUserName") String updUserName, @Param("updTime") Date updTime);
 }

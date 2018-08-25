@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.bjzhianjia.scp.security.wf.mapper.WfMyProcBeanMapper">
+<mapper namespace="com.bjzhianjia.scp.security.wf.task.mapper.WfMyProcBeanMapper">
 	<resultMap id="BaseResultMap"
 		type="com.bjzhianjia.scp.security.wf.task.entity.WfMyProcBean">
 		<id column="ID" property="id" jdbcType="INTEGER" />
@@ -10,14 +10,15 @@
 		<result column="PROC_TASKID" property="procTaskid" jdbcType="VARCHAR" />
 		<result column="PROC_TASKCODE" property="procTaskcode" jdbcType="VARCHAR" />
 		<result column="PROC_TASKNAME" property="procTaskname" jdbcType="VARCHAR" />
-		<result column="PROC_DISPLAYURL" property="procDisplayurl"
-			jdbcType="VARCHAR" />
+		<result column="PROC_DISPLAYURL" property="procDisplayurl" jdbcType="VARCHAR" />
+		<result column="PROC_TENANT_ID" property="procTenantId" jdbcType="VARCHAR" />
+		<result column="PROC_DEPART_ID" property="procDepartId" jdbcType="VARCHAR" />
 	</resultMap>
 	
 	<sql id="Base_Column_List">
 		ID, PROC_INST_ID, PROC_USER,
 		PROC_USER_TYPE,PROC_TASKID,PROC_TASKCODE,PROC_TASKNAME,
-		PROC_DISPLAYURL
+		PROC_DISPLAYURL, PROC_TENANT_ID, PROC_DEPART_ID
 	</sql>
 	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
 		parameterType="java.lang.Integer">
@@ -31,6 +32,8 @@
 		<include refid="Base_Column_List" />
 		from SCP_WF_MY_PROC
 		where PROC_INST_ID = #{procInstId}
+		and PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
+		and PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR}
 	</select>
 
 	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
@@ -40,14 +43,15 @@
 	</delete>
 	<delete id="deleteByInstIdandUserId">
 		delete from SCP_WF_MY_PROC
-		where PROC_INST_ID =
-		#{instId,jdbcType=VARCHAR} AND PROC_USER
-		=#{userId,jdbcType=VARCHAR}
+		where PROC_INST_ID = #{instId,jdbcType=VARCHAR} 
+		AND PROC_USER = #{userId,jdbcType=VARCHAR}
+		and PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR}
+		and PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR}
 	</delete>
 	<insert id="insert" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfMyProcBean">
 		insert into SCP_WF_MY_PROC
-		(ID, PROC_INST_ID, PROC_USER,
-		PROC_USER_TYPE, PROC_TASKID,PROC_TASKCODE,PROC_TASKNAME, PROC_DISPLAYURL)
+		(ID, PROC_INST_ID, PROC_USER, PROC_USER_TYPE, PROC_TASKID,PROC_TASKCODE,
+		PROC_TASKNAME, PROC_DISPLAYURL, PROC_TENANT_ID, PROC_DEPART_ID)
 		values
 		(#{id,jdbcType=INTEGER}, #{procInstId,jdbcType=VARCHAR},
 		#{procUser,jdbcType=VARCHAR},
@@ -55,7 +59,9 @@
 		#{procTaskid,jdbcType=VARCHAR},
 		#{procTaskcode,jdbcType=VARCHAR},
 		#{procTaskname,jdbcType=VARCHAR},
-		#{procDisplayurl,jdbcType=VARCHAR})
+		#{procDisplayurl,jdbcType=VARCHAR},
+		#{procTenantId,jdbcType=VARCHAR},
+		#{procDepartId,jdbcType=VARCHAR})
 	</insert>
 
 	<select id="getMyProcessByUser" resultMap="BaseResultMap">
@@ -65,7 +71,9 @@
 		SCP_WF_MY_PROC
 		WHERE
 		PROC_INST_ID = #{procInstId}
-		AND PROC_USER = #{userId}
+		AND PROC_USER = #{userId} 
+		and PROC_TENANT_ID = #{procTenantId, jdbcType=VARCHAR}
+		and PROC_DEPART_ID = #{procDepartId, jdbcType=VARCHAR}
 	</select>
 	
 	<select id="getMyProcessByUsers" resultMap="BaseResultMap">
@@ -73,13 +81,14 @@
 		<include refid="Base_Column_List" />
 		FROM
 		SCP_WF_MY_PROC
-		WHERE
-		PROC_INST_ID = #{procInstId}
+		WHERE PROC_INST_ID = #{procInstId}
 		AND PROC_USER in
 		<foreach collection="userId" index="index" item="item"
 			open="(" separator="," close=")">
 			#{item}
 		</foreach>
+		and PROC_TENANT_ID = #{procTenantId, jdbcType=VARCHAR}
+		and PROC_DEPART_ID = #{procDepartId, jdbcType=VARCHAR}
 	</select>
 
 	<insert id="insertSelective" parameterType="com.bjzhianjia.scp.security.wf.task.entity.WfMyProcBean">
@@ -109,6 +118,12 @@
 			<if test="procDisplayurl != null">
 				PROC_DISPLAYURL,
 			</if>
+			<if test="procTenantId != null">
+				PROC_TENANT_ID,
+			</if>
+			<if test="procDepartId != null">
+				PROC_DEPART_ID,
+			</if>
 		</trim>
 		<trim prefix="values (" suffix=")" suffixOverrides=",">
 			<if test="id != null">
@@ -134,6 +149,12 @@
 			</if>
 			<if test="procDisplayurl != null">
 				#{procDisplayurl,jdbcType=VARCHAR},
+			</if>
+			<if test="procTenantId != null">
+				#{procTenantId,jdbcType=VARCHAR},
+			</if>
+			<if test="procDepartId != null">
+				#{procDepartId,jdbcType=VARCHAR},
 			</if>
 		</trim>
 	</insert>
@@ -161,6 +182,12 @@
 			<if test="procDisplayurl != null">
 				PROC_DISPLAYURL = #{procDisplayurl,jdbcType=VARCHAR},
 			</if>
+			<if test="procTenantId != null">
+				PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR},
+			</if>
+			<if test="procDepartId != null">
+				PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR},
+			</if>
 		</set>
 		where ID = #{id,jdbcType=INTEGER}
 	</update>
@@ -173,7 +200,9 @@
 		PROC_TASKID = #{procTaskid,jdbcType=VARCHAR},
 		PROC_TASKCODE = #{procTaskcode,jdbcType=VARCHAR},
 		PROC_TASKNAME = #{procTaskname,jdbcType=VARCHAR},
-		PROC_DISPLAYURL = #{procDisplayurl,jdbcType=VARCHAR}
+		PROC_DISPLAYURL = #{procDisplayurl,jdbcType=VARCHAR},
+		PROC_TENANT_ID = #{procTenantId,jdbcType=VARCHAR},
+		PROC_DEPART_ID = #{procDepartId,jdbcType=VARCHAR}
 		where ID = #{id,jdbcType=INTEGER}
 	</update>
 </mapper>

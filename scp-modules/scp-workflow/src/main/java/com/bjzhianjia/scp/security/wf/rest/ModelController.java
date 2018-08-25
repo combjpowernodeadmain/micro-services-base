@@ -30,6 +30,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
+import com.bjzhianjia.scp.security.wf.auth.service.IWfProcUserAuthService;
 import com.bjzhianjia.scp.security.wf.base.ResultUtils;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcessBizDataAttr;
 import com.bjzhianjia.scp.security.wf.constant.Constants.WfProcessDataAttr;
@@ -52,6 +53,9 @@ public class ModelController {
 
     @Autowired
     RepositoryService repositoryService;
+    
+    @Autowired
+    IWfProcUserAuthService iWfProcUserAuthService;
 
     /**
      * 模型列表
@@ -92,6 +96,7 @@ public class ModelController {
         modelData.setMetaInfo(modelObjectNode.toString());
         modelData.setName(name);
         modelData.setKey(StringUtils.defaultString(key));
+        modelData.setTenantId(iWfProcUserAuthService.getTenantId());
 
         repositoryService.saveModel(modelData);
         repositoryService.addModelEditorSource(modelData.getId(), editorNode.toString().getBytes("utf-8"));
