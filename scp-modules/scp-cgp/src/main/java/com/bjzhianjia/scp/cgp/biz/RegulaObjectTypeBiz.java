@@ -17,6 +17,7 @@ import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.vaadin.event.ListenerMethod;
 
 import tk.mybatis.mapper.entity.Example;
 
@@ -134,5 +135,26 @@ public class RegulaObjectTypeBiz extends BusinessBiz<RegulaObjectTypeMapper, Reg
 			return new TableResultResponse<>(pageInfo.getTotal(), list);
 		}
 		return null;
+	}
+	
+	/**
+	 * 分页查询记录
+	 * @author 尚
+	 * @param page
+	 * @param limit
+	 * @param regulaObjectType
+	 * @return
+	 */
+	public List<RegulaObjectType> getBySecondCategory(List<Integer> secondCategoryId ){
+		Example example=new Example(RegulaObjectType.class);
+		Example.Criteria criteria=example.createCriteria();
+		
+		criteria.andEqualTo("isDeleted","0");
+		if(secondCategoryId!=null) {
+			criteria.andIn("parentObjectTypeId", secondCategoryId);
+		}
+		
+		List<RegulaObjectType> list = this.mapper.selectByExample(example);
+		return list;
 	}
 }

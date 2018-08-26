@@ -31,6 +31,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.AreaGridBiz;
 import com.bjzhianjia.scp.cgp.biz.EnterpriseInfoBiz;
 import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
+import com.bjzhianjia.scp.cgp.biz.RegTypeRelationBiz;
 import com.bjzhianjia.scp.cgp.biz.RegulaObjectBiz;
 import com.bjzhianjia.scp.cgp.biz.RegulaObjectTypeBiz;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
@@ -38,6 +39,7 @@ import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.EnterpriseInfo;
 import com.bjzhianjia.scp.cgp.entity.EventType;
 import com.bjzhianjia.scp.cgp.entity.PatrolTask;
+import com.bjzhianjia.scp.cgp.entity.RegTypeRelation;
 import com.bjzhianjia.scp.cgp.entity.RegulaObject;
 import com.bjzhianjia.scp.cgp.entity.RegulaObjectType;
 import com.bjzhianjia.scp.cgp.entity.Result;
@@ -77,6 +79,8 @@ public class RegulaObjectService {
 	
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    
+    private RegTypeRelationBiz regTypeRelationBiz;
 
 	/**
 	 * 添加监管对象-经营单位
@@ -339,9 +343,31 @@ public class RegulaObjectService {
 	public TableResultResponse<RegulaObjectVo> getList(RegulaObject regulaObject, int page, int limit,boolean isObjType) {
 		TableResultResponse<RegulaObject> tableResult=new TableResultResponse<>();
 		if(isObjType) {
-			tableResult = regulaObjectBiz.getList(regulaObject, page, limit,true);
+			List<Integer> secondCategoryId=new ArrayList<>();
+			if(regulaObject.getObjType()!=null) {
+				//进行了按二级类型查询监管对象
+				
+				//如果isObjType为true，则在regulaObject里封装的监管对象类型参数为二级类型，需要将对应的三级类型查出，再去查找相应的监管对象
+				secondCategoryId.add(regulaObject.getObjType());
+			}else {
+				//根据`reg_type_relation`表的配置项进行查询
+				String regulaObjTypeIds="";
+				RegTypeRelation reTypeRelation=new RegTypeRelation(Constances.RegTypeRelation.CONCERNED_COMPANY, Constances.RegTypeRelation.Z_Z);
+				List<RegTypeRelation> list = regTypeRelationBiz.getList(reTypeRelation);
+				if(list!=null&&!list.isEmpty()) {
+					regulaObjTypeIds=list.get(0).getRegObjId();
+				}
+				String[] split = regulaObjTypeIds.split(",");
+				for (String string : split) {
+					secondCategoryId.add(Integer.valueOf(string));
+				}
+			}
+			List<RegulaObjectType> third = regulaObjectTypeBiz.getBySecondCategory(secondCategoryId);//根据二级类型查出 的三级类型
+			List<Integer> collect = third.stream().map(o->o.getId()).distinct().collect(Collectors.toList());
+			
+			tableResult = regulaObjectBiz.getList(regulaObject, page, limit,collect);
 		}else {
-			tableResult = regulaObjectBiz.getList(regulaObject, page, limit,false);
+			tableResult = regulaObjectBiz.getList(regulaObject, page, limit,null);
 		}
 		List<RegulaObject> rows = tableResult.getData().getRows();
 		
