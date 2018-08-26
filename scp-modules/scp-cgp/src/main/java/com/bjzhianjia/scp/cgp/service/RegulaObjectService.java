@@ -79,7 +79,7 @@ public class RegulaObjectService {
 	
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
-    
+    @Autowired
     private RegTypeRelationBiz regTypeRelationBiz;
 
 	/**
