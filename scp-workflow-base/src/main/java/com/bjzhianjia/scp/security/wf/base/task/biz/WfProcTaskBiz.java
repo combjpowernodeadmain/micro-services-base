@@ -40,7 +40,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSONObject;
-import com.bjzhianjia.scp.security.wf.base.constant.WorkflowEnumResults;
 import com.bjzhianjia.scp.security.wf.base.constant.Attr.DictKeyConst;
 import com.bjzhianjia.scp.security.wf.base.constant.Constants.FlowStatus;
 import com.bjzhianjia.scp.security.wf.base.constant.Constants.ProcUserType;
@@ -50,7 +49,9 @@ import com.bjzhianjia.scp.security.wf.base.constant.Constants.WfProcParallStatus
 import com.bjzhianjia.scp.security.wf.base.constant.Constants.WfProcVotePower;
 import com.bjzhianjia.scp.security.wf.base.constant.Constants.WfProcVoteRole;
 import com.bjzhianjia.scp.security.wf.base.constant.Constants.WfProcessStartModeAttr;
+import com.bjzhianjia.scp.security.wf.base.constant.WorkflowEnumResults;
 import com.bjzhianjia.scp.security.wf.base.design.biz.WfProcDesinerBiz;
+import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.exception.WorkflowException;
 import com.bjzhianjia.scp.security.wf.base.notify.service.IWfProcTaskNotify;
 import com.bjzhianjia.scp.security.wf.base.task.entity.WfMyProcBean;
@@ -436,7 +437,11 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 				log.info("流程处理--流程任务(" + procTaskData.getProcTaskId()
 						+ ")处理前业务回调处理(" + service.getClass().getName() + ")结束.");
 			}
-		} catch (Exception e) {
+		}catch(BizException e) {
+			log.error("调用回调类" + service.getClass().getName() + "失败：", e);
+			throw new BizException(e.getMessage());
+		}
+		catch (Exception e) {
 			log.error("调用回调类" + service.getClass().getName() + "失败：", e);
 			throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020802, e);
 		}
