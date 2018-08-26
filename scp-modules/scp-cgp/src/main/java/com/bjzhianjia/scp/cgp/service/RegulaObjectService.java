@@ -339,7 +339,7 @@ public class RegulaObjectService {
 	public TableResultResponse<RegulaObjectVo> getList(RegulaObject regulaObject, int page, int limit,boolean isObjType) {
 		TableResultResponse<RegulaObject> tableResult=new TableResultResponse<>();
 		if(isObjType) {
-			
+			tableResult = regulaObjectBiz.getList(regulaObject, page, limit,true);
 		}else {
 			tableResult = regulaObjectBiz.getList(regulaObject, page, limit,false);
 		}
@@ -368,54 +368,56 @@ public class RegulaObjectService {
 	private List<RegulaObjectVo> queryAssist(List<RegulaObject> rows) {
 		List<RegulaObjectVo> voList = BeanUtil.copyBeanList_New(rows, RegulaObjectVo.class);
 
-		Set<String> bizTypeIds = new HashSet<>();
-		Set<String> objTypeIdStrList = new HashSet<>();
-
-		for (RegulaObjectVo tmp : voList) {
-			// 数据库记录中biz_list字段有可能 为空
-			String bizList = tmp.getBizList();
-			if (StringUtils.isNotBlank(bizList) && !"-".equals(bizList)) {
-				String[] split = bizList.split(",");
-				for (String string : split) {
-					bizTypeIds.add(string);
-				}
-			}
-
-			objTypeIdStrList.add(tmp.getObjType() + "");
-		}
-
-		// 聚和业务条线及事件类别
-		if (bizTypeIds != null && !bizTypeIds.isEmpty()) {
-			Map<String, String> bizTypeMap = dictFeign.getDictValueByID(String.join(",", bizTypeIds));
-
+		if(voList!=null&&!voList.isEmpty()) {
+			Set<String> bizTypeIds = new HashSet<>();
+			Set<String> objTypeIdStrList = new HashSet<>();
+			
 			for (RegulaObjectVo tmp : voList) {
-				JSONArray bizResultJArray = new JSONArray();
-
+				// 数据库记录中biz_list字段有可能 为空
 				String bizList = tmp.getBizList();
-				boolean isBizListEmpty = (bizList == null || bizList.isEmpty());
-				String[] bizListSplit = isBizListEmpty ? new String[0] : bizList.split(",");
-
-				for (int i = 0; i < bizListSplit.length; i++) {
-					String string = bizListSplit[i];
-					JSONObject bizResultJObject = new JSONObject();
-					if (!string.equals("-")) {
-						String bizType = bizTypeMap.get(string);
-						bizResultJObject = JSONObject.parseObject(bizType);
+				if (StringUtils.isNotBlank(bizList) && !"-".equals(bizList)) {
+					String[] split = bizList.split(",");
+					for (String string : split) {
+						bizTypeIds.add(string);
 					}
-					bizResultJArray.add(bizResultJObject);
 				}
-
-				tmp.setBizList(bizResultJArray.toJSONString());
+				
+				objTypeIdStrList.add(tmp.getObjType() + "");
 			}
-		}
-
-		// 所属监管对象类型
-		if(objTypeIdStrList!=null && !objTypeIdStrList.isEmpty()) {
-			List<RegulaObjectType> regulaObjTypeList = regulaObjectTypeBiz.selectByIds(String.join(",", objTypeIdStrList));
-			Map<Integer, String> type_ID_NAME_Map = regulaObjTypeList.stream()
-					.collect(Collectors.toMap(RegulaObjectType::getId, RegulaObjectType::getObjectTypeName));
-			for (RegulaObjectVo tmp : voList) {
-				tmp.setObjTypeName(type_ID_NAME_Map.get(tmp.getObjType()));
+			
+			// 聚和业务条线及事件类别
+			if (bizTypeIds != null && !bizTypeIds.isEmpty()) {
+				Map<String, String> bizTypeMap = dictFeign.getDictValueByID(String.join(",", bizTypeIds));
+				
+				for (RegulaObjectVo tmp : voList) {
+					JSONArray bizResultJArray = new JSONArray();
+					
+					String bizList = tmp.getBizList();
+					boolean isBizListEmpty = (bizList == null || bizList.isEmpty());
+					String[] bizListSplit = isBizListEmpty ? new String[0] : bizList.split(",");
+					
+					for (int i = 0; i < bizListSplit.length; i++) {
+						String string = bizListSplit[i];
+						JSONObject bizResultJObject = new JSONObject();
+						if (!string.equals("-")) {
+							String bizType = bizTypeMap.get(string);
+							bizResultJObject = JSONObject.parseObject(bizType);
+						}
+						bizResultJArray.add(bizResultJObject);
+					}
+					
+					tmp.setBizList(bizResultJArray.toJSONString());
+				}
+			}
+			
+			// 所属监管对象类型
+			if(objTypeIdStrList!=null && !objTypeIdStrList.isEmpty()) {
+				List<RegulaObjectType> regulaObjTypeList = regulaObjectTypeBiz.selectByIds(String.join(",", objTypeIdStrList));
+				Map<Integer, String> type_ID_NAME_Map = regulaObjTypeList.stream()
+						.collect(Collectors.toMap(RegulaObjectType::getId, RegulaObjectType::getObjectTypeName));
+				for (RegulaObjectVo tmp : voList) {
+					tmp.setObjTypeName(type_ID_NAME_Map.get(tmp.getObjType()));
+				}
 			}
 		}
 		return voList;

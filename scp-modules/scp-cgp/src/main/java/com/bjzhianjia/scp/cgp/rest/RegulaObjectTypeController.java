@@ -183,4 +183,17 @@ public class RegulaObjectTypeController extends BaseController<RegulaObjectTypeB
 		ObjectRestResponse<JSONObject> result = regulaObjectTypeService.get(id);
 		return result;
 	}
+	
+	/**
+	 * 根据`reg_type_relation`表中配置的信息查询监管对象类型
+	 * @author 尚
+	 * @return
+	 */
+	@RequestMapping(value="/list/relagtion",method=RequestMethod.GET)
+	@ApiOperation("根据`reg_type_relation`表中配置的信息查询监管对象类型")
+	public TableResultResponse<RegulaObjectType> getByRelation(@RequestParam(value="page",defaultValue="1")Integer page,
+			@RequestParam(value="limit",defaultValue="10")Integer limit){
+		TableResultResponse<RegulaObjectType> restResult = regulaObjectTypeService.getByRelation(page, limit);
+		return restResult;
+	}
 }

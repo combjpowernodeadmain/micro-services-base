@@ -13,7 +13,10 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.bjzhianjia.scp.cgp.biz.RegTypeRelationBiz;
 import com.bjzhianjia.scp.cgp.biz.RegulaObjectTypeBiz;
+import com.bjzhianjia.scp.cgp.entity.Constances;
+import com.bjzhianjia.scp.cgp.entity.RegTypeRelation;
 import com.bjzhianjia.scp.cgp.entity.RegulaObjectType;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
@@ -35,6 +38,8 @@ public class RegulaObjectTypeService {
 	private RegulaObjectTypeBiz regulaObjectTypeBiz;
 	@Autowired
 	private MergeCore mergeCore;
+	@Autowired
+	private RegTypeRelationBiz regTypeRelationBiz;
 
 	/**
 	 * 新增监管对象类别
@@ -252,5 +257,25 @@ public class RegulaObjectTypeService {
 		}
 		
 		return new ObjectRestResponse<JSONObject>().data(jsonObj); 
+	}
+	
+	/**
+	 * 根据`reg_type_relation`表中配置的信息查询监管对象类型
+	 * @author 尚
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	public TableResultResponse<RegulaObjectType> getByRelation(int page,int limit){
+		String regulaObjTypeIds="";
+		
+		RegTypeRelation reTypeRelation=new RegTypeRelation(Constances.RegTypeRelation.CONCERNED_COMPANY, Constances.RegTypeRelation.Z_Z);
+		List<RegTypeRelation> list = regTypeRelationBiz.getList(reTypeRelation);
+		if(list!=null&&!list.isEmpty()) {
+			regulaObjTypeIds=list.get(0).getRegObjId();
+		}
+		
+		TableResultResponse<RegulaObjectType> result = regulaObjectTypeBiz.getByRelation(regulaObjTypeIds, page, limit);
+		return result;
 	}
 }

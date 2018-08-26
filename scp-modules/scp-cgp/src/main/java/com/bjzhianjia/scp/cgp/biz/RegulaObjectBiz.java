@@ -76,9 +76,11 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 		//是否输入了按监管对象类型查询
 		if (regulaObject.getObjType()!=null) {
 			if(isObjType) {
-				regulaObject.getObjType();
+				//TODO 按类型查询监管对象
+				criteria.andEqualTo("objType", regulaObject.getObjType());//==========================需要修改==============
+			}else {
+				criteria.andEqualTo("objType", regulaObject.getObjType());
 			}
-			criteria.andEqualTo("objType", regulaObject.getObjType());
 		}
 
 		//是否输入了按监管对象所属业务条线查询

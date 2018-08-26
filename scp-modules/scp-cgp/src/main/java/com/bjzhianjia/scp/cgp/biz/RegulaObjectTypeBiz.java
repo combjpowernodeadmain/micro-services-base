@@ -8,6 +8,8 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import com.bjzhianjia.scp.cgp.entity.Constances;
+import com.bjzhianjia.scp.cgp.entity.RegTypeRelation;
 import com.bjzhianjia.scp.cgp.entity.RegulaObjectType;
 import com.bjzhianjia.scp.cgp.mapper.RegulaObjectTypeMapper;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
@@ -115,5 +117,22 @@ public class RegulaObjectTypeBiz extends BusinessBiz<RegulaObjectTypeMapper, Reg
 	 */
 	public List<RegulaObjectType> selectByIds(String ids){
 		return this.mapper.selectByIds(ids);
+	}
+	
+	/**
+	 * 按ID集合分页查询记录
+	 * @author 尚
+	 * @param ids
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	public TableResultResponse<RegulaObjectType> getByRelation(String ids,int page,int limit){
+		if(StringUtils.isNotBlank(ids)) {
+			Page<Object> pageInfo = PageHelper.startPage(page,limit);
+			List<RegulaObjectType> list = this.mapper.selectByIds(ids);
+			return new TableResultResponse<>(pageInfo.getTotal(), list);
+		}
+		return null;
 	}
 }
