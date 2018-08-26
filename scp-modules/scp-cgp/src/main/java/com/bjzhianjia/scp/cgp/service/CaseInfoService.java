@@ -449,12 +449,20 @@ public class CaseInfoService {
 			 * 任务已走向结束<br/> 去执行相应业务应该完成的操作<br/> 1 立案单isFinished：1<br/> 2 来源各变化
 			 */
 			log.info("该请求流向【结束】，流程即将结束。");
+			//查询数据库中的caseInfo,以确定与caseInfo相对应的登记表那条记录的ID
+			CaseInfo caseInfoInDB = caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
+			
+			caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
 			caseInfo.setIsFinished("1");
 			caseInfo.setFinishTime(new Date());// 结案时间
 			gotoFinishSource(caseInfo, false);// 去更新事件来源的状态
 		} else if (Constances.ProcFlowWork.TOFINISHWORKFLOW_DUP.equals(flowDirection)) {
 			// 因重覆而结束
 			log.info("该请求流向【结束】（因事件重复），流程即将结束。");
+			//查询数据库中的caseInfo,以确定与caseInfo相对应的登记表那条记录的ID
+			CaseInfo caseInfoInDB = caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
+			
+			caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
 			caseInfo.setIsDuplicate("1");
 			caseInfo.setDuplicateWith(Integer.valueOf(bizDataJObject.getString("duplicateWith")));
 			gotoFinishSource(caseInfo, false);// 去更新事件来源的状态
@@ -1058,7 +1066,11 @@ public class CaseInfoService {
 
 		// 更新业务数据
 		JSONObject bizDataJObject = objs.getJSONObject("bizData");
-
+		
+		//查询数据库中的caseInfo,以确定与caseInfo相对应的登记表那条记录的ID
+		CaseInfo caseInfoInDB = caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
+		
+		caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
 		caseInfo.setId(Integer.valueOf(bizDataJObject.getString("procBizId")));
 		caseInfo.setSourceType(bizDataJObject.getString("sourceType"));
 		caseInfo.setIsFinished("1");
