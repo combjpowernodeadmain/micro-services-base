@@ -217,6 +217,7 @@
 	<select id="selectMyProcTasks" parameterType="java.util.Map"
 		resultType="com.bjzhianjia.scp.security.wf.base.monitor.entity.WfMyProcBackBean">
 		SELECT DISTINCT
+		proc.PROC_CREATETIME,
 		myproc.proc_inst_id procInstId,
 		myproc.PROC_TASKID procTaskid,
 		CASE myproc.PROC_USER_TYPE
