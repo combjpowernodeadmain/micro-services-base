@@ -66,7 +66,19 @@ public class CaseInfoController extends BaseController<CaseInfoBiz,CaseInfo,Inte
 			@RequestParam(value="limit",defaultValue="10") @ApiParam(name="页容量") Integer limit){
 		CaseInfo caseInfo=new CaseInfo();
 		
-		TableResultResponse<CaseInfo> restResult = caserInfoService.getList(caseInfo, page, limit);
+		TableResultResponse<CaseInfo> restResult = caserInfoService.getList(caseInfo, page, limit,false);
+		
+		return restResult;
+	}
+	
+	@RequestMapping(value="/list/unFinish/{id}",method=RequestMethod.GET)
+	@ApiOperation("分页获取对象")
+	public TableResultResponse<CaseInfo> pageNoFinish(@PathVariable("id") Integer id,@RequestParam(value="page",defaultValue="1") @ApiParam(name="当前页")Integer page,
+			@RequestParam(value="limit",defaultValue="10") @ApiParam(name="页容量") Integer limit){
+		CaseInfo caseInfo=new CaseInfo();
+		caseInfo.setId(id);
+		
+		TableResultResponse<CaseInfo> restResult = caserInfoService.getList(caseInfo, page, limit,true);
 		
 		return restResult;
 	}

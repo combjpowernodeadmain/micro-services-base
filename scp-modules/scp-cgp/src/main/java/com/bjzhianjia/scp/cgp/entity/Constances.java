@@ -315,7 +315,14 @@ public class Constances {
 		 * 去待结案检查
 		 */
 		public static final String TOFINISHCHECK="toFinishCheck";
+		/**
+		 * 正常结束流程
+		 */
 		public static final String TOFINISHWORKFLOW="toFinishWorkFlow";
+		/**
+		 * 因重覆结束流程
+		 */
+		public static final String TOFINISHWORKFLOW_DUP="toFinishWorkFlow_Dup";
 	}
 	
 	/**
@@ -338,4 +345,20 @@ public class Constances {
 		public static final String ROOT_BIZ_EVENTLEVEL_JINJI="root_biz_eventLevel_jinji";
 	}
 
+	/**
+	 * 配置监管对象类型关系常量类<br/>
+	 * 
+	 * @author 尚
+	 *
+	 */
+	public static class RegTypeRelation{
+		/**
+		 * 当事人(企业)
+		 */
+		public static final String CONCERNED_COMPANY="concerned_company";
+		/**
+		 * 项目标识(综治)
+		 */
+		public static final String Z_Z="z_z";
+	}
 }

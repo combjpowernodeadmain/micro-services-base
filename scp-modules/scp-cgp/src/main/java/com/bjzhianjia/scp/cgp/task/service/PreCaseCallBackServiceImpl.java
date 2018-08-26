@@ -124,9 +124,8 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService {
 
 		vo.setCaseSource((String) procBizData.get("sourceType"));
 
-		if (vo.getId() == null && StringUtils.isNotBlank((String) procBizData.get("procBizId"))
-				&& !"-1".equals((String) procBizData.get("procBizId"))) {
-			vo.setId(Integer.valueOf((String) procBizData.get("procBizId")));
+		if (vo.getId() == null && StringUtils.isNotBlank((String) procBizData.get("sourceCode"))) {
+			vo.setId(Integer.valueOf((String) procBizData.get("sourceCode")));
 		}
 
 		Result<Void> result = new Result<>();
@@ -154,9 +153,8 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService {
 
 		vo.setCaseSource((String) procBizData.get("sourceType"));
 
-		if (vo.getId() == null && StringUtils.isNotBlank((String) procBizData.get("procBizId"))
-				&& !"-1".equals((String) procBizData.get("procBizId"))) {
-			vo.setId(Integer.valueOf((String) procBizData.get("procBizId")));
+		if (vo.getId() == null && StringUtils.isNotBlank((String) procBizData.get("sourceCode"))) {
+			vo.setId(Integer.valueOf((String) procBizData.get("sourceCode")));
 		}
 
 		Result<Void> result = new Result<>();
@@ -185,9 +183,8 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService {
 
 		vo.setCaseSource((String) procBizData.get("sourceType"));
 
-		if (vo.getId() == null && StringUtils.isNotBlank((String) procBizData.get("procBizId"))
-				&& !"-1".equals((String) procBizData.get("procBizId"))) {
-			vo.setId(Integer.valueOf((String) procBizData.get("procBizId")));
+		if (vo.getId() == null && StringUtils.isNotBlank((String) procBizData.get("sourceCode"))) {
+			vo.setId(Integer.valueOf((String) procBizData.get("sourceCode")));
 		}
 
 		Result<Void> result = new Result<>();

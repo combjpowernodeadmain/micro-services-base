@@ -74,8 +74,15 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper,CaseInfo> {
 	 * @param limit
 	 * @return
 	 */
-	public TableResultResponse<CaseInfo> getList(CaseInfo caseInfo,int page,int limit){
+	public TableResultResponse<CaseInfo> getList(CaseInfo caseInfo,int page,int limit,boolean isNoFinish){
 		Example example =new Example(CaseInfo.class);
+		
+		Criteria criteria = example.createCriteria();
+		criteria.andEqualTo("isDeleted","0");
+		if(isNoFinish) {
+			criteria.andEqualTo("isFinished", "0");
+			criteria.andNotEqualTo("id", caseInfo.getId());
+		}
 		
 		Page<Object> pageInfo = PageHelper.startPage(page, limit);
 		List<CaseInfo> list = this.mapper.selectByExample(example);
