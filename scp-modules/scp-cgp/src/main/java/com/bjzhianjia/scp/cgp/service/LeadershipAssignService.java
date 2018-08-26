@@ -1,10 +1,12 @@
 package com.bjzhianjia.scp.cgp.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -303,19 +305,36 @@ public class LeadershipAssignService {
 		 */
 
 		// 解析监管对象
+		List<String> reguylaObjIdList = new ArrayList<>();
 		for (LeadershipAssignVo tmp : voList) {
-			String regulaObjListStr = tmp.getRegulaObjList();
-			List<RegulaObject> regulaObjectList = regulaObjectMapper.selectByIds(regulaObjListStr);
-			if (regulaObjectList != null && !regulaObjectList.isEmpty()) {
-				List<String> collect = new ArrayList<>();
-				for (RegulaObject regulaObjectTmp : regulaObjectList) {
-					// 不聚和已删除的监管对象
-					if (regulaObjectTmp.getIsDeleted().equals("0")) {
-						collect.add(regulaObjectTmp.getObjName());
-					}
-				}
+			if (StringUtils.isNotBlank(tmp.getRegulaObjList())) {
+				reguylaObjIdList.add(tmp.getRegulaObjList());
+			}
+		}
 
-				tmp.setRegulaObjName(String.join(",", collect));
+		List<RegulaObject> regulaObjectList = new ArrayList<>();
+		if (reguylaObjIdList != null && !reguylaObjIdList.isEmpty()) {
+			regulaObjectList = regulaObjectMapper.selectByIds(String.join(",", reguylaObjIdList));
+		}
+		for (LeadershipAssignVo tmp : voList) {
+//			String regulaObjListStr = tmp.getRegulaObjList();
+//			List<RegulaObject> regulaObjectList = regulaObjectMapper.selectByIds(regulaObjListStr);
+			if (regulaObjectList != null && !regulaObjectList.isEmpty()) {
+				if (StringUtils.isNotBlank(tmp.getRegulaObjList())) {
+					String regulaObjListStr = tmp.getRegulaObjList();
+					String[] split = regulaObjListStr.split(",");
+					List<String> regulaObjList = Arrays.asList(split); // 当前领导交办包含的监管对象集合
+					
+					List<String> collect = new ArrayList<>();
+					for (RegulaObject regulaObjectTmp : regulaObjectList) {
+						if (regulaObjList.contains(String.valueOf(regulaObjectTmp.getId()))
+								&& regulaObjectTmp.getIsDeleted().equals("0")) {
+							collect.add(regulaObjectTmp.getObjName());
+						}
+					}
+					
+					tmp.setRegulaObjName(String.join(",", collect));
+				}
 			}
 		}
 

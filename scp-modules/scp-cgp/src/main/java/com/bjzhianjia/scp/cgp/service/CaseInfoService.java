@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -41,7 +42,6 @@ import com.bjzhianjia.scp.cgp.entity.PatrolTask;
 import com.bjzhianjia.scp.cgp.entity.PublicOpinion;
 import com.bjzhianjia.scp.cgp.entity.RegulaObject;
 import com.bjzhianjia.scp.cgp.entity.Result;
-import com.bjzhianjia.scp.cgp.exception.BizException;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.mapper.EventTypeMapper;
@@ -50,6 +50,7 @@ import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.monitor.entity.WfProcBackBean;
 import com.bjzhianjia.scp.security.wf.base.monitor.service.impl.WfMonitorServiceImpl;
 import com.bjzhianjia.scp.security.wf.base.task.entity.WfProcTaskHistoryBean;
@@ -64,7 +65,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author 尚
  */
 @Service
-@Transactional
+@Transactional(value = "cgpTransactionManager", rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
 @Slf4j
 public class CaseInfoService {
 	@Autowired
@@ -356,7 +357,10 @@ public class CaseInfoService {
 //			}
 			// 涉及监管对象名称
 			String regulaObjList = leadershipAssign.getRegulaObjList();
-			List<RegulaObject> regulaObjectList = regulaObjectMapper.selectByIds(regulaObjList);
+			List<RegulaObject> regulaObjectList = new ArrayList<>();
+			if (StringUtils.isNotBlank(regulaObjList)) {
+				regulaObjectList = regulaObjectMapper.selectByIds(regulaObjList);
+			}
 			List<String> regulaObjNameList = new ArrayList<>();
 			if (regulaObjectList != null && !regulaObjectList.isEmpty()) {
 				for (RegulaObject regulaObject : regulaObjectList) {
@@ -426,6 +430,7 @@ public class CaseInfoService {
 		// 完成已签收的任务，将工作流向下推进
 		wfProcTaskService.completeProcessInstance(objs);
 
+//		System.out.println(1/0);//模拟异常
 		/*
 		 * ===============更新业务数据===================开始=============
 		 */
@@ -449,9 +454,9 @@ public class CaseInfoService {
 			 * 任务已走向结束<br/> 去执行相应业务应该完成的操作<br/> 1 立案单isFinished：1<br/> 2 来源各变化
 			 */
 			log.info("该请求流向【结束】，流程即将结束。");
-			//查询数据库中的caseInfo,以确定与caseInfo相对应的登记表那条记录的ID
+			// 查询数据库中的caseInfo,以确定与caseInfo相对应的登记表那条记录的ID
 			CaseInfo caseInfoInDB = caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
-			
+
 			caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
 			caseInfo.setIsFinished("1");
 			caseInfo.setFinishTime(new Date());// 结案时间
@@ -459,12 +464,13 @@ public class CaseInfoService {
 		} else if (Constances.ProcFlowWork.TOFINISHWORKFLOW_DUP.equals(flowDirection)) {
 			// 因重覆而结束
 			log.info("该请求流向【结束】（因事件重复），流程即将结束。");
-			//查询数据库中的caseInfo,以确定与caseInfo相对应的登记表那条记录的ID
+			// 查询数据库中的caseInfo,以确定与caseInfo相对应的登记表那条记录的ID
 			CaseInfo caseInfoInDB = caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
-			
+
 			caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
+			caseInfo.setIsFinished("1");
 			caseInfo.setIsDuplicate("1");
-			caseInfo.setDuplicateWith(Integer.valueOf(bizDataJObject.getString("duplicateWith")));
+//			caseInfo.setDuplicateWith(Integer.valueOf(bizDataJObject.getString("duplicateWith")));
 			gotoFinishSource(caseInfo, false);// 去更新事件来源的状态
 		}
 
@@ -486,6 +492,7 @@ public class CaseInfoService {
 			ConcernedCompany concernedCompany = JSONObject.parseObject(concernedCompanyJObj.toJSONString(),
 					ConcernedCompany.class);
 			concernedCompanyService.created(concernedCompany);
+			caseInfo.setConcernedPerson(String.valueOf(concernedCompany.getId()));
 
 			Map<String, String> concernedStatusMap = dictFeign
 					.getDictIdByCode(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG, false);
@@ -584,7 +591,7 @@ public class CaseInfoService {
 	 * 
 	 * @author 尚
 	 * @param sourceCode 事件来源ID
-	 * @param exeStatus  事件处理状态
+	 * @param exeStatus  事件处理状态（code表示）
 	 * @return sourceCode="source_abc",code="code_abc"(与之对应的字典中ID为"dict_id_abc"),则返回<br/>
 	 *         {"source_abc":"dict_id_abc"}
 	 */
@@ -593,10 +600,18 @@ public class CaseInfoService {
 		jsonObject.put("id", sourceCode);
 
 		// 查询已完成状态的ID
-		Map<String, String> dictIds = dictFeign.getDictIds(exeStatus);
+		Map<String, String> dictIds = dictFeign.getDictIdByCode(exeStatus, false);
+//		Map<String, String> dictIds = dictFeign.getDictIds(exeStatus);
 		Set<String> keySet = dictIds.keySet();
 		for (String string : keySet) {
-			if (exeStatus.equals(dictIds.get(string))) {
+			/*
+			 * 如果string所对应的记录内code字段值与传入的exeStatus值相同，说明该记录的ID即为与exeStatus状态所对应的记录ID<br/>
+			 * 如:dictIds={"abc1":{"id":"abc1","exeStatus":"def1"},"abc2":{"id":"abc2",
+			 * "exeStatus":"def2"}},exeStatus="def1"<br/>
+			 * 则向jsonObject内put一组数据"exeStatus":"abc1"
+			 */
+			String exeStatusInDicts = CommonUtil.getValueFromJObjStr(dictIds.get(string), "code");
+			if (exeStatus.equals(exeStatusInDicts)) {
 				jsonObject.put("exeStatus", string);
 			}
 		}
@@ -1066,13 +1081,13 @@ public class CaseInfoService {
 
 		// 更新业务数据
 		JSONObject bizDataJObject = objs.getJSONObject("bizData");
-		
-		//查询数据库中的caseInfo,以确定与caseInfo相对应的登记表那条记录的ID
+
+		// 查询数据库中的caseInfo,以确定与caseInfo相对应的登记表那条记录的ID
 		CaseInfo caseInfoInDB = caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
-		
+
 		caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
 		caseInfo.setId(Integer.valueOf(bizDataJObject.getString("procBizId")));
-		caseInfo.setSourceType(bizDataJObject.getString("sourceType"));
+		caseInfo.setSourceType(caseInfoInDB.getSourceType());
 		caseInfo.setIsFinished("1");
 		caseInfo.setFinishTime(new Date());// 结案时间
 

@@ -12,7 +12,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.Result;
-import com.bjzhianjia.scp.cgp.exception.BizException;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.service.LeadershipAssignService;
 import com.bjzhianjia.scp.cgp.service.MayorHotlineService;
@@ -21,6 +20,7 @@ import com.bjzhianjia.scp.cgp.service.PublicOpinionService;
 import com.bjzhianjia.scp.cgp.vo.LeadershipAssignVo;
 import com.bjzhianjia.scp.cgp.vo.MayorHotlineVo;
 import com.bjzhianjia.scp.cgp.vo.PublicOpinionVo;
+import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.task.service.IWfProcTaskCallBackService;
 
 /**
