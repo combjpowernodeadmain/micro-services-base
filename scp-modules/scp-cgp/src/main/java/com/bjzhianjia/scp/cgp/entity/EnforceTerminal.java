@@ -84,7 +84,7 @@ public class EnforceTerminal implements Serializable {
     private String isDeleted;
     
     @Column(name = "is_enable")
-    @MergeField(key = "root_biz_enabled", feign = DictFeign.class, method = "getDictIds")
+    @MergeField(key = "root_biz_enabled", feign = DictFeign.class, method = "getByCode")
     @NotEmpty(message="是否可用不能为空")
     private String isEnable;
 

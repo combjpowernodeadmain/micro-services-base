@@ -83,11 +83,11 @@ public class VhclManagementService {
 
 		Map<String, String> departs = new HashMap<>();
 		Map<String, String> layerDepart = new HashMap<>();
-		
-		List<String> uniqueDeparts=new ArrayList<>();
-		for(VhclManagementVo vo:voList) {
-			if(StringUtils.isNotBlank(vo.getDepartment())) {
-				//车辆管理里部门为选填，所以可能为空，需做非空判断
+
+		List<String> uniqueDeparts = new ArrayList<>();
+		for (VhclManagementVo vo : voList) {
+			if (StringUtils.isNotBlank(vo.getDepartment())) {
+				// 车辆管理里部门为选填，所以可能为空，需做非空判断
 				uniqueDeparts.add(vo.getDepartment());
 			}
 		}
@@ -111,10 +111,10 @@ public class VhclManagementService {
 		// 聚和终端号码
 		List<String> terminalIdList = list.stream().map((o) -> o.getTernimalId() + "").distinct()
 				.collect(Collectors.toList());
-		List<EnforceTerminal> enforceTerminalList = terminalMapper.selectByIds(String.join(",", terminalIdList));
-		Map<Integer, String> collect = enforceTerminalList.stream()
-				.collect(Collectors.toMap(EnforceTerminal::getId, EnforceTerminal::getTerminalPhone));
-		if (enforceTerminalList != null && !enforceTerminalList.isEmpty()) {
+		if (terminalIdList != null && !terminalIdList.isEmpty()) {
+			List<EnforceTerminal> enforceTerminalList = terminalMapper.selectByIds(String.join(",", terminalIdList));
+			Map<Integer, String> collect = enforceTerminalList.stream()
+					.collect(Collectors.toMap(EnforceTerminal::getId, EnforceTerminal::getTerminalPhone));
 			for (VhclManagementVo tmp : voList) {
 				tmp.setTerminalPhone(collect.get(tmp.getTernimalId()));
 			}

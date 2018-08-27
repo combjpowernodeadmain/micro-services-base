@@ -176,7 +176,7 @@ public class RegulaObjectService {
 		// 验证业务 条线是否删除
 		String bizListJArrayStr = regulaObject.getBizList();
 		if (StringUtils.isNotBlank(bizListJArrayStr)) {
-			//字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
+			// 字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
 			Map<String, String> bizTypes = dictFeign.getByCode(Constances.ROOT_BIZ_TYPE);
 
 			String[] byzTypeIds = bizListJArrayStr.split(",");
@@ -193,7 +193,7 @@ public class RegulaObjectService {
 		// 验证企业类型是否已被删除
 		String typeCode = enterpriseInfo.getTypeCode();
 		if (StringUtils.isNotBlank(typeCode)) {
-			//字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
+			// 字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
 			Map<String, String> entTypes = dictFeign.getByCode(Constances.ROOT_BIZ_ENTTYPE);
 			if (!entTypes.containsKey(typeCode)) {
 				result.setMessage("所选企业类型不存在");
@@ -204,7 +204,7 @@ public class RegulaObjectService {
 //				验证证件类型是否删除
 		String certificateType = enterpriseInfo.getCertificateType();
 		if (StringUtils.isNotBlank(certificateType)) {
-			//字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
+			// 字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
 			Map<String, String> sertificateTypeMap = dictFeign.getByCode(Constances.ROOT_BIZ_CERT_T);
 			if (!sertificateTypeMap.containsKey(certificateType)) {
 				result.setMessage("所选证件类型不存在");
@@ -268,6 +268,14 @@ public class RegulaObjectService {
 					}
 				}
 			}
+		}
+		
+		//判断是否有地理信息
+		if(StringUtils.isNotBlank(regulaObject.getMapInfo())){
+			JSONObject jObj = JSONObject.parseObject(regulaObject.getMapInfo());
+			//{"lng":116.2993,"lat":40.060234}
+			regulaObject.setLatitude(jObj.getFloat("lat"));
+			regulaObject.setLongitude(jObj.getFloat("lng"));
 		}
 
 		result.setIsSuccess(true);
@@ -410,8 +418,8 @@ public class RegulaObjectService {
 						if (!string.equals("-")) {
 							bizResultJObject.put("code", string);
 							bizResultJObject.put("labelDefault", bizTypeMap.get(string));
-							String bizType = bizTypeMap.get(string);
-							bizResultJObject = JSONObject.parseObject(bizType);
+//							String bizType = bizTypeMap.get(string);
+//							bizResultJObject = JSONObject.parseObject(bizType);
 						}
 						bizResultJArray.add(bizResultJObject);
 					}
@@ -464,9 +472,6 @@ public class RegulaObjectService {
 		// 监管对象类别放弃使用字典值，类型使用监管对象类别表，数据类型为Integer
 		Integer objTypeId = regulaObject.getObjType();
 		RegulaObjectType regulaObjectType = regulaObjectTypeBiz.selectById(objTypeId);
-//		Map<String, String> objTypeMap = dictFeign.getDictValueByID(objTypeId);
-//		regulaObject.setObjType(objTypeMap.get(objTypeId));
-//		queryAssist(list);
 
 		/*
 		 * 聚和企业类型与证件类型
@@ -475,13 +480,13 @@ public class RegulaObjectService {
 		String certificateTypeId = enterpriseInfo.getCertificateType();
 
 		Map<String, String> map = dictFeign.getByCodeIn(typeCodeId + "," + certificateTypeId);
-		
-		JSONObject typeCodeJObject=new JSONObject();
+
+		JSONObject typeCodeJObject = new JSONObject();
 		typeCodeJObject.put("code", typeCodeId);
 		typeCodeJObject.put("labelDefault", map.get(typeCodeId));
 		enterpriseInfo.setTypeCode(typeCodeJObject.toJSONString());
-		
-		JSONObject certificateJObj=new JSONObject();
+
+		JSONObject certificateJObj = new JSONObject();
 		certificateJObj.put("code", certificateTypeId);
 		certificateJObj.put("labelDefault", map.get(certificateTypeId));
 		enterpriseInfo.setCertificateType(certificateJObj.toJSONString());
@@ -493,7 +498,11 @@ public class RegulaObjectService {
 				JSONObject.parseObject(enterpriseInfoJStr));
 
 		Regula_EnterPriseVo result = JSON.parseObject(other.toJSONString(), Regula_EnterPriseVo.class);
-		result.setObjType(JSON.toJSONString(regulaObjectType));
+		
+		JSONObject regulaObjTypeJObj=new JSONObject();
+		regulaObjTypeJObj.put("id", regulaObjectType.getId());
+		regulaObjTypeJObj.put("objectTypeName", regulaObjectType.getObjectTypeName());
+		result.setObjType(regulaObjTypeJObj.toJSONString());
 		return result;
 	}
 
@@ -592,8 +601,11 @@ public class RegulaObjectService {
 						distanceMap.put("objType", regulaObject.getObjType());
 						result.add(distanceMap);
 						// 缓存经纬度
-						connection.geoAdd(PatrolTask.REGULA_OBJECT_LOCATION.getBytes(),
-								new Point(regulaObject.getLongitude(), regulaObject.getLatitude()), objId.getBytes());
+						if (regulaObject.getLongitude() != null && regulaObject.getLatitude() != null) {
+							connection.geoAdd(PatrolTask.REGULA_OBJECT_LOCATION.getBytes(),
+									new Point(regulaObject.getLongitude(), regulaObject.getLatitude()),
+									objId.getBytes());
+						}
 					}
 					return true;
 				}

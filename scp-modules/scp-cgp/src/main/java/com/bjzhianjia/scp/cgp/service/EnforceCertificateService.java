@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.EnforceCertificateBiz;
 import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
 import com.bjzhianjia.scp.cgp.entity.Constances;
@@ -133,14 +134,19 @@ public class EnforceCertificateService {
 		// 获取执证人联系电话
 		List<String> userIds = list.stream().map((o) -> o.getUsrId()).distinct().collect(Collectors.toList());
 		if (userIds != null && userIds.size() > 0) {
-			Map<String, String> user = adminFeign.getUser(String.join(",", userIds));
-			if (user != null && user.size() > 0) {
+			Map<String, String> userMap = adminFeign.getUser(String.join(",", userIds));
+			if (userMap != null && userMap.size() > 0) {
 				for (EnforceCertificate enforceCertificate : list) {
 					if (StringUtils.isBlank(enforceCertificate.getUsrId())) {
 						continue;
 					}
-					String string = user.get(enforceCertificate.getUsrId());
-					enforceCertificate.setUsrId(string);
+					String string = userMap.get(enforceCertificate.getUsrId());
+					JSONObject userJObj = JSONObject.parseObject(string);
+					
+					JSONObject userJObjForRetrn=new JSONObject();
+					userJObjForRetrn.put("id", enforceCertificate.getUsrId());
+					userJObjForRetrn.put("telPhone", userJObj.getString("telPhone"));
+					enforceCertificate.setUsrId(userJObjForRetrn.toJSONString());
 				}
 			}
 		}
