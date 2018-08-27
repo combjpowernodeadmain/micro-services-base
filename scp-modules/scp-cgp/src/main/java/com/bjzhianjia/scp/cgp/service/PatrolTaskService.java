@@ -114,8 +114,8 @@ public class PatrolTaskService {
 	 * @return
 	 * @throws Exception
 	 */
-	public Result<Void> createPatrolTask(JSONObject json) throws Exception {
-		Result<Void> result = new Result<>();
+	public Result<CaseInfo> createPatrolTask(JSONObject json) throws Exception {
+		Result<CaseInfo> result = new Result<>();
 		result.setIsSuccess(false);
 
 		String concernedType = json.getString("concernedType"); // person 个人，org 单位)
@@ -127,16 +127,18 @@ public class PatrolTaskService {
 	    PatrolTask patrolTask = this.parseData(json, "patrolTask", PatrolTask.class);
 		
 	    Result<Void> checkPatrolTask = this.checkPatrolTask(patrolTask);
-		if(checkPatrolTask.getIsSuccess()) {
-			return checkPatrolTask;
+		if(!checkPatrolTask.getIsSuccess()) {
+			result.setMessage(checkPatrolTask.getMessage());
+			result.setIsSuccess(false);
+			return result;
 		}
 		
 		// 当事人（个人，单位）
 		if ("person".equals(concernedType)) {
 			ConcernedPerson concernedPerson = this.parseData(json, "concernedPerson", ConcernedPerson.class);
-			result = concernedPersonService.created(concernedPerson);
-			if (!result.getIsSuccess()) {
-				throw new Exception(result.getMessage());
+			Result<Void> createdResult = concernedPersonService.created(concernedPerson);
+			if (!createdResult.getIsSuccess()) {
+				throw new Exception(createdResult.getMessage());
 			}
 			concernedId = concernedPerson.getId();
 			_concernedType = CommonUtil.exeStatusUtil(dictFeign, Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON);
@@ -160,8 +162,8 @@ public class PatrolTaskService {
 				}
 			}
 			
-			result = concernedCompanyService.created(concernedCompany);
-			if (!result.getIsSuccess()) {
+			Result<Void> concernedCompanyResult = concernedCompanyService.created(concernedCompany);
+			if (!concernedCompanyResult.getIsSuccess()) {
 				throw new Exception(result.getMessage());
 			}
 			concernedId = concernedCompany.getId();
@@ -207,6 +209,7 @@ public class PatrolTaskService {
 			if (!caseInfoResult.getIsSuccess()) {
 				throw new Exception(caseInfoResult.getMessage());
 			}
+			result.setData(caseInfoResult.getData());
 		}
 
 		result.setIsSuccess(true);
@@ -231,6 +234,8 @@ public class PatrolTaskService {
 		caseInfo.setSourceCode(String.valueOf(patrolTask.getId()));
 
 		CaseInfo maxOne = caseInfoBiz.getMaxOne();
+		
+		int nextId=maxOne==null?1:(maxOne.getId()+1);
 		// 立案单事件编号
 		Result<String> caseCodeResult = CommonUtil.generateCaseCode(maxOne.getCaseCode());
 		if (!caseCodeResult.getIsSuccess()) {
@@ -239,6 +244,7 @@ public class PatrolTaskService {
 		}
 		caseInfo.setCaseCode(caseCodeResult.getData());
 		
+		caseInfo.setId(nextId);//By尚
 		caseInfo.setCaseTitle(patrolTask.getPatrolName());
 		caseInfo.setCaseDesc(patrolTask.getContent());
 		caseInfo.setRegulaObjList(String.valueOf(patrolTask.getRegulaObjectId()));
@@ -467,21 +473,25 @@ public class PatrolTaskService {
 		restResult.setIsSuccess(true);
 	
 		if (!StringUtils.isNotBlank(patrolTask.getPatrolName()) && patrolTask.getPatrolName().length() > 127) {
+			restResult.setIsSuccess(false);
 			restResult.setMessage("事件名称不能为空！");
 			return restResult;
 		}
 	
 		if (!StringUtils.isNotBlank(patrolTask.getPatrolLevel())) {
+			restResult.setIsSuccess(false);
 			restResult.setMessage("事件级别不能为空！");
 			return restResult;
 		}
 	
 		if (!StringUtils.isNotBlank(patrolTask.getAddress()) && !StringUtils.isNotBlank(patrolTask.getMapInfo())) {
+			restResult.setIsSuccess(false);
 			restResult.setMessage("当前位置不能为空！");
 			return restResult;
 		}
 	
 		if (!StringUtils.isNotBlank(patrolTask.getContent()) && patrolTask.getContent().length() > 1024) {
+			restResult.setIsSuccess(false);
 			restResult.setMessage("巡查事项内容不能为空！");
 			return restResult;
 		}

@@ -123,7 +123,6 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
 	public TableResultResponse<RegulaObjectVo> page_ObjType(@RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
 			@RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
 			@ModelAttribute @ApiParam(name = "接收查询条件的实例") RegulaObject regulaObject) {
-		//TODO 按二级类型查询监管对象
 		return regulaObjectService.getList(regulaObject, page, limit,true);
 	}
 

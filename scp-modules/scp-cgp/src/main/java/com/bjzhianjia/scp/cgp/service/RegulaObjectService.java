@@ -71,16 +71,16 @@ public class RegulaObjectService {
 	private RegulaObjectBiz regulaObjectBiz;
 	@Autowired
 	private EnterpriseInfoBiz enterpriseInfoBiz;
-	
+
 	@Autowired
 	private MergeCore mergeCore;
 	@Autowired
 	private RegulaObjectTypeBiz regulaObjectTypeBiz;
-	
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-    @Autowired
-    private RegTypeRelationBiz regTypeRelationBiz;
+
+	@Autowired
+	private RedisTemplate<String, Object> redisTemplate;
+	@Autowired
+	private RegTypeRelationBiz regTypeRelationBiz;
 
 	/**
 	 * 添加监管对象-经营单位
@@ -340,37 +340,44 @@ public class RegulaObjectService {
 	 * @param limit
 	 * @return
 	 */
-	public TableResultResponse<RegulaObjectVo> getList(RegulaObject regulaObject, int page, int limit,boolean isObjType) {
-		TableResultResponse<RegulaObject> tableResult=new TableResultResponse<>();
-		if(isObjType) {
-			List<Integer> secondCategoryId=new ArrayList<>();
-			if(regulaObject.getObjType()!=null) {
-				//进行了按二级类型查询监管对象
-				
-				//如果isObjType为true，则在regulaObject里封装的监管对象类型参数为二级类型，需要将对应的三级类型查出，再去查找相应的监管对象
+	public TableResultResponse<RegulaObjectVo> getList(RegulaObject regulaObject, int page, int limit,
+			boolean isObjType) {
+		TableResultResponse<RegulaObject> tableResult = new TableResultResponse<>();
+		if (isObjType) {
+			List<Integer> secondCategoryId = new ArrayList<>();
+			if (regulaObject.getObjType() != null) {
+				// 进行了按二级类型查询监管对象
+
+				// 如果isObjType为true，则在regulaObject里封装的监管对象类型参数为二级类型，需要将对应的三级类型查出，再去查找相应的监管对象
 				secondCategoryId.add(regulaObject.getObjType());
-			}else {
-				//根据`reg_type_relation`表的配置项进行查询
-				String regulaObjTypeIds="";
-				RegTypeRelation reTypeRelation=new RegTypeRelation(Constances.RegTypeRelation.CONCERNED_COMPANY, Constances.RegTypeRelation.Z_Z);
+				/*
+				 * 此时将objType设为null，因为按该分支的逻辑，在后续会执行obj_type in (... ...)<br/>
+				 * objType属性的作用只是将二级监管对象类型ID附着在其上
+				 */
+				regulaObject.setObjType(null);
+			} else {
+				// 根据`reg_type_relation`表的配置项进行查询
+				String regulaObjTypeIds = "";
+				RegTypeRelation reTypeRelation = new RegTypeRelation(Constances.RegTypeRelation.CONCERNED_COMPANY,
+						Constances.RegTypeRelation.Z_Z);
 				List<RegTypeRelation> list = regTypeRelationBiz.getList(reTypeRelation);
-				if(list!=null&&!list.isEmpty()) {
-					regulaObjTypeIds=list.get(0).getRegObjId();
+				if (list != null && !list.isEmpty()) {
+					regulaObjTypeIds = list.get(0).getRegObjId();
 				}
 				String[] split = regulaObjTypeIds.split(",");
 				for (String string : split) {
 					secondCategoryId.add(Integer.valueOf(string));
 				}
 			}
-			List<RegulaObjectType> third = regulaObjectTypeBiz.getBySecondCategory(secondCategoryId);//根据二级类型查出 的三级类型
-			List<Integer> collect = third.stream().map(o->o.getId()).distinct().collect(Collectors.toList());
-			
-			tableResult = regulaObjectBiz.getList(regulaObject, page, limit,collect);
-		}else {
-			tableResult = regulaObjectBiz.getList(regulaObject, page, limit,null);
+			List<RegulaObjectType> third = regulaObjectTypeBiz.getBySecondCategory(secondCategoryId);// 根据二级类型查出 的三级类型
+			List<Integer> collect = third.stream().map(o -> o.getId()).distinct().collect(Collectors.toList());
+
+			tableResult = regulaObjectBiz.getList(regulaObject, page, limit, collect);
+		} else {
+			tableResult = regulaObjectBiz.getList(regulaObject, page, limit, null);
 		}
 		List<RegulaObject> rows = tableResult.getData().getRows();
-		
+
 		try {
 			mergeCore.mergeResult(RegulaObject.class, rows);
 		} catch (NoSuchMethodException e) {
@@ -382,7 +389,7 @@ public class RegulaObjectService {
 		} catch (ExecutionException e) {
 			e.printStackTrace();
 		}
-		
+
 		/*
 		 * 进行业务条线聚和 业务条线存储结构[{"bizList","$业务条线ID"},{"bizList","$业务条线ID"}]
 		 */
@@ -394,10 +401,10 @@ public class RegulaObjectService {
 	private List<RegulaObjectVo> queryAssist(List<RegulaObject> rows) {
 		List<RegulaObjectVo> voList = BeanUtil.copyBeanList_New(rows, RegulaObjectVo.class);
 
-		if(voList!=null&&!voList.isEmpty()) {
+		if (voList != null && !voList.isEmpty()) {
 			Set<String> bizTypeIds = new HashSet<>();
 			Set<String> objTypeIdStrList = new HashSet<>();
-			
+
 			for (RegulaObjectVo tmp : voList) {
 				// 数据库记录中biz_list字段有可能 为空
 				String bizList = tmp.getBizList();
@@ -407,21 +414,21 @@ public class RegulaObjectService {
 						bizTypeIds.add(string);
 					}
 				}
-				
+
 				objTypeIdStrList.add(tmp.getObjType() + "");
 			}
-			
+
 			// 聚和业务条线及事件类别
 			if (bizTypeIds != null && !bizTypeIds.isEmpty()) {
 				Map<String, String> bizTypeMap = dictFeign.getDictValueByID(String.join(",", bizTypeIds));
-				
+
 				for (RegulaObjectVo tmp : voList) {
 					JSONArray bizResultJArray = new JSONArray();
-					
+
 					String bizList = tmp.getBizList();
 					boolean isBizListEmpty = (bizList == null || bizList.isEmpty());
 					String[] bizListSplit = isBizListEmpty ? new String[0] : bizList.split(",");
-					
+
 					for (int i = 0; i < bizListSplit.length; i++) {
 						String string = bizListSplit[i];
 						JSONObject bizResultJObject = new JSONObject();
@@ -431,14 +438,15 @@ public class RegulaObjectService {
 						}
 						bizResultJArray.add(bizResultJObject);
 					}
-					
+
 					tmp.setBizList(bizResultJArray.toJSONString());
 				}
 			}
-			
+
 			// 所属监管对象类型
-			if(objTypeIdStrList!=null && !objTypeIdStrList.isEmpty()) {
-				List<RegulaObjectType> regulaObjTypeList = regulaObjectTypeBiz.selectByIds(String.join(",", objTypeIdStrList));
+			if (objTypeIdStrList != null && !objTypeIdStrList.isEmpty()) {
+				List<RegulaObjectType> regulaObjTypeList = regulaObjectTypeBiz
+						.selectByIds(String.join(",", objTypeIdStrList));
 				Map<Integer, String> type_ID_NAME_Map = regulaObjTypeList.stream()
 						.collect(Collectors.toMap(RegulaObjectType::getId, RegulaObjectType::getObjectTypeName));
 				for (RegulaObjectVo tmp : voList) {
@@ -514,53 +522,56 @@ public class RegulaObjectService {
 		regulaObjectBiz.remove(ids);
 		this.initCacheData();
 	}
-	
+
 	/**
-	 *  通过指定范围，获取监管对象集
+	 * 通过指定范围，获取监管对象集
+	 * 
 	 * @param longitude 经度
-	 * @param latitude 纬度
-	 * @param objType 监管对象类型
-	 * @param size 范围（单位：米）
+	 * @param latitude  纬度
+	 * @param objType   监管对象类型
+	 * @param size      范围（单位：米）
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public List<Map<String ,Object>> getByDistance(double longitude,double latitude,Integer objType,Double size){
-		List<Map<String ,Object>> result = new ArrayList<>();
-		
-		//监管对象列表
-		List<Map<String ,Object>> objNameList = (List<Map<String, Object>>) redisTemplate.opsForValue().get(PatrolTask.REGULA_OBJECT_NAME);
-		if(objNameList == null) {
+	public List<Map<String, Object>> getByDistance(double longitude, double latitude, Integer objType, Double size) {
+		List<Map<String, Object>> result = new ArrayList<>();
+
+		// 监管对象列表
+		List<Map<String, Object>> objNameList = (List<Map<String, Object>>) redisTemplate.opsForValue()
+				.get(PatrolTask.REGULA_OBJECT_NAME);
+		if (objNameList == null) {
 			this.initCacheData();
 			objNameList = (List<Map<String, Object>>) redisTemplate.opsForValue().get(PatrolTask.REGULA_OBJECT_NAME);
 		}
-		
-		//获取指定范围的所有监管对象
-		Circle within = new Circle(new Point(longitude,latitude), new Distance(size,DistanceUnit.METERS));
-		GeoResults<GeoLocation<Object>>  geoResults = redisTemplate.opsForGeo().geoRadius(PatrolTask.REGULA_OBJECT_LOCATION, within);
-		//指定范围内的ids
+
+		// 获取指定范围的所有监管对象
+		Circle within = new Circle(new Point(longitude, latitude), new Distance(size, DistanceUnit.METERS));
+		GeoResults<GeoLocation<Object>> geoResults = redisTemplate.opsForGeo()
+				.geoRadius(PatrolTask.REGULA_OBJECT_LOCATION, within);
+		// 指定范围内的ids
 		List<Integer> ids = new ArrayList<>();
 		geoResults.forEach(geoLocation -> {
 			ids.add((Integer) geoLocation.getContent().getName());
 		});
-		
-		//筛选指定监控类型和指定范围内的数据
-		Map<String,Object> resultMap = null;
+
+		// 筛选指定监控类型和指定范围内的数据
+		Map<String, Object> resultMap = null;
 		RegulaObject regulaObject = null;
-		if(objNameList.size() > 0 && (ids != null && ids.size() > 0)) {
-			//数据筛选，匹配符合监管对象类型
-			Map<String,RegulaObject> objs = new HashMap<>();
-			for(Map<String ,Object> obj:objNameList) {
-				if(objType.equals(obj.get("objType"))) { //匹配类型
+		if (objNameList.size() > 0 && (ids != null && ids.size() > 0)) {
+			// 数据筛选，匹配符合监管对象类型
+			Map<String, RegulaObject> objs = new HashMap<>();
+			for (Map<String, Object> obj : objNameList) {
+				if (objType.equals(obj.get("objType"))) { // 匹配类型
 					regulaObject = new RegulaObject();
 					regulaObject.setId(new Integer(obj.get("id").toString()));
 					regulaObject.setObjName(String.valueOf(obj.get("objName")));
 					objs.put(String.valueOf(obj.get("id")), regulaObject);
 				}
 			}
-		
-			for(Integer id : ids) { //匹配范围内id
+
+			for (Integer id : ids) { // 匹配范围内id
 				regulaObject = objs.get(String.valueOf(id));
-				if(regulaObject != null) {
+				if (regulaObject != null) {
 					resultMap = new HashMap<>();
 					resultMap.put("id", regulaObject.getId());
 					resultMap.put("objName", regulaObject.getObjName());
@@ -568,11 +579,10 @@ public class RegulaObjectService {
 				}
 			}
 		}
-		
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * 初始化监管对象缓存数据
 	 * <p>
@@ -581,30 +591,31 @@ public class RegulaObjectService {
 	 * </p>
 	 */
 	private void initCacheData() {
-		List<Map<String ,Object>> result = new ArrayList<>();
-		
+		List<Map<String, Object>> result = new ArrayList<>();
+
 		List<RegulaObject> regulaObjects = regulaObjectBiz.selectDistanceAll();
-		if(regulaObjects != null && regulaObjects.size() > 0) {
-			redisTemplate.execute(new RedisCallback<Boolean>() { //批量提交
-	            public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
-	            	Map<String,Object> distanceMap = null;
-	            	for(RegulaObject regulaObject : regulaObjects) {
-	            		String objId = String.valueOf(regulaObject.getId());
-	    				//封装id和对象名
-	    				distanceMap = new HashMap<>();
-	    				distanceMap.put("id", objId);
-	    				distanceMap.put("objName", regulaObject.getObjName());
-	    				distanceMap.put("objType", regulaObject.getObjType());
-	    				result.add(distanceMap);
-	    				//缓存经纬度
-	    				connection.geoAdd(PatrolTask.REGULA_OBJECT_LOCATION.getBytes(), new Point(regulaObject.getLongitude(), regulaObject.getLatitude()),objId.getBytes());
-	    			}
-	                return true;
-	            }
-	        },false, true);
+		if (regulaObjects != null && regulaObjects.size() > 0) {
+			redisTemplate.execute(new RedisCallback<Boolean>() { // 批量提交
+				public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
+					Map<String, Object> distanceMap = null;
+					for (RegulaObject regulaObject : regulaObjects) {
+						String objId = String.valueOf(regulaObject.getId());
+						// 封装id和对象名
+						distanceMap = new HashMap<>();
+						distanceMap.put("id", objId);
+						distanceMap.put("objName", regulaObject.getObjName());
+						distanceMap.put("objType", regulaObject.getObjType());
+						result.add(distanceMap);
+						// 缓存经纬度
+						connection.geoAdd(PatrolTask.REGULA_OBJECT_LOCATION.getBytes(),
+								new Point(regulaObject.getLongitude(), regulaObject.getLatitude()), objId.getBytes());
+					}
+					return true;
+				}
+			}, false, true);
 		}
-		
-		//缓存监管对象名称
-		redisTemplate.opsForValue().set(PatrolTask.REGULA_OBJECT_NAME, result,24,TimeUnit.DAYS);
+
+		// 缓存监管对象名称
+		redisTemplate.opsForValue().set(PatrolTask.REGULA_OBJECT_NAME, result, 24, TimeUnit.DAYS);
 	}
 }
