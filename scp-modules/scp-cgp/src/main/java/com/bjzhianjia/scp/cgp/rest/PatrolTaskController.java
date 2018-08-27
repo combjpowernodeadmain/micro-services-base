@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiParam;
 
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.PatrolTaskBiz;
+import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.PatrolTask;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.service.PatrolTaskService;
@@ -61,7 +62,7 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
 		ObjectRestResponse<Void> restResult = new ObjectRestResponse<>();
 		restResult.setStatus(200);
 		//TODO 数据验证
-		Result<Void> result = null;
+		Result<CaseInfo> result = null;
 		try {
 			result = patrolTaskService.createPatrolTask(json);
 		} catch (Exception e) {
