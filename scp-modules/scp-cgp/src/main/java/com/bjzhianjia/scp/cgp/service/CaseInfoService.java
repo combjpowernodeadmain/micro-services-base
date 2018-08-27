@@ -12,8 +12,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.alibaba.fastjson.JSON;
@@ -66,7 +64,6 @@ import lombok.extern.slf4j.Slf4j;
  * @author 尚
  */
 @Service
-@Transactional(value = "cgpTransactionManager", rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
 @Slf4j
 public class CaseInfoService {
 	@Autowired
