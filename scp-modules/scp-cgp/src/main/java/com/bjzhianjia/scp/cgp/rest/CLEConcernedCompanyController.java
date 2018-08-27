@@ -9,7 +9,7 @@ import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 
 @RestController
-@RequestMapping("concernedCompany")
+@RequestMapping("cleconcernedCompany")
 @CheckClientToken
 @CheckUserToken
 public class CLEConcernedCompanyController extends BaseController<ConcernedCompanyBiz,ConcernedCompany,Integer> {
