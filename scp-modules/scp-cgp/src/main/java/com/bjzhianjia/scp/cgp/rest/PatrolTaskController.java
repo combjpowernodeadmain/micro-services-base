@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -47,6 +48,8 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
 
 	@Autowired
 	private PatrolTaskService patrolTaskService;
+	@Autowired
+	private PatrolTaskBiz patrolTaskBiz;
 	
 	/**
 	 * 创建巡查任务
@@ -105,7 +108,8 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
 		patrolTask.setPatrolName(patrolName);
 		patrolTask.setBizTypeId(bizTypeId);
 		patrolTask.setStatus(status);
-		return patrolTaskService.getList(patrolTask, speName, _startTime, _endTimeTmp, page, limit);
+		
+		return patrolTaskBiz.selectPatrolTaskList(patrolTask, speName, _startTime, DateUtils.addDays(_endTimeTmp, 1), page, limit);
 	}
 	
 	
