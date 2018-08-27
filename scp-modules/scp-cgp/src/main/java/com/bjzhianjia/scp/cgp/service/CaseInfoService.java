@@ -184,7 +184,41 @@ public class CaseInfoService {
 			return new TableResultResponse<>(0, jObjList);
 		}
 	}
+	
+	/**
+	 * 查询所有待办任务(工作流)
+	 * 
+	 * @author chenshuai
+	 * @param objs
+	 * @return
+	 */
+	public TableResultResponse<JSONObject> getAllToDoTasks(JSONObject objs) {
+		CaseInfo queryCaseInfo = new CaseInfo();
+		JSONObject queryData = objs.getJSONObject("queryData");
 
+		if ("true".equals(queryData.getString("isQuery"))) {
+			queryCaseInfo = JSONObject.parseObject(queryData.toJSONString(), CaseInfo.class);
+			if (StringUtils.isNotBlank(queryData.getString("procCtaskname"))) {
+				// 是否按进度进行查找(即任务表中·PROC_CTASKNAME·字段)
+				objs.getJSONObject("bizData").put("procCtaskname", queryData.getString("procCtaskname"));
+			}
+		}
+
+		List<JSONObject> jObjList = new ArrayList<>();
+
+		// 查询待办工作流任务
+		PageInfo<WfProcBackBean> pageInfo = wfMonitorService.getAllToDoTasks(objs);
+		List<WfProcBackBean> list = pageInfo.getList();
+
+		if (list != null && !list.isEmpty()) {
+			// 有待办任务
+			return queryAssist(queryCaseInfo, queryData, jObjList, pageInfo, objs);
+		} else {
+			// 无待办任务
+			return new TableResultResponse<>(0, jObjList);
+		}
+	}
+	
 	private TableResultResponse<JSONObject> queryAssist(CaseInfo queryCaseInfo, JSONObject queryData,
 			List<JSONObject> jObjList, PageInfo<WfProcBackBean> pageInfo, JSONObject objs) {
 		List<WfProcBackBean> procBackBeanList = pageInfo.getList();
