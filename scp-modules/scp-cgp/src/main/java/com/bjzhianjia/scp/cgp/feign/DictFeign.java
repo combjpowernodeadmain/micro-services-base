@@ -79,9 +79,10 @@ public interface DictFeign {
 	 * 查询语句为code in ('code1','code1','code1','code1')
 	 * 
 	 * @author 尚
-	 * @param codeList   查询 条件
+	 * @param codeList   查询 条件,字符串表示的code集合，多个code之间用逗号隔开<br/>
+	 * 					如："c1,c2,c3,c4",字符串中不要有重复的code值
 	 * @return "${code}":"${label_default}"健值对
 	 */
 	@RequestMapping(value = "/dictValue/feign/code/in/{codes}", method = RequestMethod.GET)
-	public Map<String, String> getByCodeIn(@PathVariable("codes") List<String> codeList) ;
+	public Map<String, String> getByCodeIn(@PathVariable("codes") String codeList) ;
 }
