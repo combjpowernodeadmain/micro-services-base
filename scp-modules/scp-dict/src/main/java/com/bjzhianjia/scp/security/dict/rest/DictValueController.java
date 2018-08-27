@@ -131,4 +131,24 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 		Map<String, String> result = this.baseBiz.getDictValues(code, isLike);
 		return result;
 	}
+	/**
+	 *   通过code查询
+	 * @param code
+	 * 		数据字典code
+	 * @return
+	 */
+	@IgnoreClientToken
+	@IgnoreUserToken
+	@RequestMapping(value = "/feign/code/{code}", method = RequestMethod.GET)
+	public Map<String, String> getByCode(@PathVariable("code") String code) {
+		Example example = new Example(DictValue.class);
+		example.createCriteria().andLike("code", code + "%");
+
+		example.setOrderByClause("order_num");
+
+		List<DictValue> dictValues = this.baseBiz.selectByExample(example);
+		Map<String, String> result = dictValues.stream()
+				.collect(Collectors.toMap(DictValue::getCode, DictValue::getLabelDefault));
+		return result;
+	}
 }

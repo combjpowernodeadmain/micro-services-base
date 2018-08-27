@@ -61,4 +61,15 @@ public interface DictFeign {
 	@RequestMapping(value = "/dictValue/feign/values/{code}", method = RequestMethod.GET)
 	public Map<String, String> getDictIdByCode(@PathVariable("code") String code,
 			@RequestParam(value = "isLike", defaultValue = "false") boolean isLike);
+	
+	/**
+	 * 按code进行查询<br/>
+	 * 
+	 * @author chenshuai
+	 * @param code   查询 条件
+	 * @param isLike 是否按模糊查询
+	 * @return "${code}":"${记录对应实体的JSON格式字符}"健值对
+	 */
+	@RequestMapping(value = "/dictValue/feign/code/{code}", method = RequestMethod.GET)
+	public Map<String, String> getByCode(@PathVariable("code") String code) ;
 }
