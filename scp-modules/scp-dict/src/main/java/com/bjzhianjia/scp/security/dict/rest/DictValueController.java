@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -159,11 +160,12 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 	 * 查询语句为code in ('code1','code1','code1','code1')
 	 * 
 	 * @author 尚
-	 * @param codeList   查询 条件
+	 * @param codeList   查询 条件,字符串表示的code集合，多个code之间用逗号隔开<br/>
+	 * 					如："c1,c2,c3,c4",字符串中不要有重复的code值
 	 * @return "${code}":"${label_default}"健值对
 	 */
 	@RequestMapping(value = "/feign/code/in/{codes}", method = RequestMethod.GET)
-	public Map<String, String> getByCodeIn(@PathVariable("codes") List<String> codeList){
+	public Map<String, String> getByCodeIn(@PathVariable("codes") String codeList){
 		if(codeList==null||codeList.isEmpty()) {
 			return null;
 		}
@@ -171,7 +173,7 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 		Example example=new Example(DictValue.class);
 		Criteria criteria = example.createCriteria();
 		
-		criteria.andIn("code", codeList);
+		criteria.andIn("code", Arrays.asList(codeList.split(",")));
 		
 		example.setOrderByClause("order_num");
 		List<DictValue> dictValues = this.baseBiz.selectByExample(example);
