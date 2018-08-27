@@ -3,6 +3,8 @@ package com.bjzhianjia.scp.cgp.rest;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
+
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
@@ -31,6 +33,7 @@ import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 @RequestMapping("urgeRecord")
 @CheckClientToken
 @CheckUserToken
+@Api(tags="催办")
 public class UrgeRecordController extends BaseController<UrgeRecordBiz,UrgeRecord,Integer> {
 	
 	@Autowired

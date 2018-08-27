@@ -4,6 +4,7 @@ import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
@@ -32,6 +33,7 @@ import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 @RequestMapping("superviseRecord")
 @CheckClientToken
 @CheckUserToken
+@Api(tags="督办")
 public class SuperviseRecordController extends BaseController<SuperviseRecordBiz,SuperviseRecord,Integer> {
 	@Autowired
 	private SuperviseRecordBiz superviseRecordBiz; 
