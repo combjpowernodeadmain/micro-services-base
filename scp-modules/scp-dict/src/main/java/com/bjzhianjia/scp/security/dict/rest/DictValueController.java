@@ -164,6 +164,8 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 	 * 					如："c1,c2,c3,c4",字符串中不要有重复的code值
 	 * @return "${code}":"${label_default}"健值对
 	 */
+	@IgnoreClientToken
+	@IgnoreUserToken
 	@RequestMapping(value = "/feign/code/in/{codes}", method = RequestMethod.GET)
 	public Map<String, String> getByCodeIn(@PathVariable("codes") String codeList){
 		if(codeList==null||codeList.isEmpty()) {
