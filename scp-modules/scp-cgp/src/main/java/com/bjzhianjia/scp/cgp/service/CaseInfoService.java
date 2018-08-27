@@ -206,8 +206,7 @@ public class CaseInfoService {
 		List<JSONObject> jObjList = new ArrayList<>();
 
 		// 查询待办工作流任务
-//		PageInfo<WfProcBackBean> pageInfo = wfMonitorService.getAllToDoTasks(objs);
-		PageInfo<WfProcBackBean> pageInfo = null;
+		PageInfo<WfProcBackBean> pageInfo = wfMonitorService.getAllToDoTasks(objs);
 		List<WfProcBackBean> list = pageInfo.getList();
 
 		if (list != null && !list.isEmpty()) {
