@@ -2,9 +2,11 @@ package com.bjzhianjia.scp.cgp.entity;
 
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.*;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
+
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotBlank;
@@ -24,6 +26,7 @@ public class UrgeRecord implements Serializable {
 	private Integer id;
 
 	// 立案单id
+	@NotNull
 	@Column(name = "case_info_id")
 	private Integer caseInfoId;
 
