@@ -129,7 +129,14 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper,CaseInfo> {
 		if(ids!=null&&!ids.isEmpty()) {
 			criteria.andIn("id", ids);
 		}
-		
+		//是否添加督办
+		if(StringUtils.isNotBlank(caseInfo.getIsSupervise())) {
+			criteria.andEqualTo("isSupervise", caseInfo.getIsSupervise());
+		}
+		//是否添加崔办
+		if(StringUtils.isNotBlank(caseInfo.getIsUrge())) {
+			criteria.andEqualTo("isUrge", caseInfo.getIsUrge());
+		}
 		Page<Object> pageInfo = PageHelper.startPage(page, limit);
 		List<CaseInfo> list = this.mapper.selectByExample(example);
 		
