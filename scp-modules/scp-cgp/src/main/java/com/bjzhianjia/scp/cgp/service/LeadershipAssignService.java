@@ -262,7 +262,8 @@ public class LeadershipAssignService {
 		List<LeadershipAssignVo> voList = BeanUtil.copyBeanList_New(rows, LeadershipAssignVo.class);
 
 		// 聚和领导交办处理状态
-		Map<String, String> dictIdMap = dictFeign.getDictIds(Constances.ROOT_BIZ_LDSTATE);
+		//字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
+		Map<String, String> dictIdMap = dictFeign.getByCode(Constances.ROOT_BIZ_LDSTATE);
 		if (dictIdMap != null && !dictIdMap.isEmpty()) {
 			for (LeadershipAssignVo vo : voList) {
 				vo.setExeStatusName(dictIdMap.get(vo.getExeStatus()));
@@ -345,17 +346,7 @@ public class LeadershipAssignService {
 			Example caseInfoExample = new Example(CaseInfo.class);
 			Example.Criteria criteria = caseInfoExample.createCriteria();
 
-			Map<String, String> dictValueMap = dictFeign
-					.getDictIdByCode(Constances.BizEventType.ROOT_BIZ_EVENTTYPE_LEADER, false);
-
-			String dictId = "";
-			if (dictValueMap != null && !dictValueMap.isEmpty()) {
-				List<String> aaList = new ArrayList<>(dictValueMap.keySet());
-				// dictValueMap按code等值查询，得到的结果集为唯一
-				dictId = aaList.get(0);
-			}
-
-			criteria.andEqualTo("sourceType", dictId);
+			criteria.andEqualTo("sourceType", Constances.BizEventType.ROOT_BIZ_EVENTTYPE_LEADER);
 			criteria.andIn("sourceCode", collect);
 			List<CaseInfo> caseInfoListInDB = caseInfoBiz.selectByExample(caseInfoExample);
 

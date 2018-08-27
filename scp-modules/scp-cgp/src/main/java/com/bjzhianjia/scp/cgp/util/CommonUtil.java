@@ -82,15 +82,15 @@ public class CommonUtil {
 	 * @return
 	 */
 	public static String exeStatusUtil(DictFeign dictFeign,String code) {
-		Map<String, String> dictValueMap = dictFeign.getDictIdByCode(code,
-				false);
+//		Map<String, String> dictValueMap = dictFeign.getDictIdByCode(code,
+//				false);
 
-		if (dictValueMap != null && !dictValueMap.isEmpty()) {
-			List<String> _idList = new ArrayList<>(dictValueMap.keySet());
-			// dictValueMap按code等值查询，得到的结果集为唯一
-			return _idList.get(0);
-		}
-		return null;
+//		if (dictValueMap != null && !dictValueMap.isEmpty()) {
+//			List<String> _idList = new ArrayList<>(dictValueMap.keySet());
+//			// dictValueMap按code等值查询，得到的结果集为唯一
+//			return _idList.get(0);
+//		}
+		return code;
 	}
 	
 	/**

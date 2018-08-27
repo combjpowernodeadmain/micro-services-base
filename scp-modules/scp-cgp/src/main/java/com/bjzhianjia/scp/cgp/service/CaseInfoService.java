@@ -3,6 +3,7 @@ package com.bjzhianjia.scp.cgp.service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,8 +12,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.alibaba.fastjson.JSON;
@@ -65,7 +64,6 @@ import lombok.extern.slf4j.Slf4j;
  * @author 尚
  */
 @Service
-@Transactional(value = "cgpTransactionManager", rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
 @Slf4j
 public class CaseInfoService {
 	@Autowired
@@ -185,7 +183,7 @@ public class CaseInfoService {
 			return new TableResultResponse<>(0, jObjList);
 		}
 	}
-	
+
 	/**
 	 * 查询所有待办任务(工作流)
 	 * 
@@ -208,7 +206,8 @@ public class CaseInfoService {
 		List<JSONObject> jObjList = new ArrayList<>();
 
 		// 查询待办工作流任务
-		PageInfo<WfProcBackBean> pageInfo = wfMonitorService.getAllToDoTasks(objs);
+//		PageInfo<WfProcBackBean> pageInfo = wfMonitorService.getAllToDoTasks(objs);
+		PageInfo<WfProcBackBean> pageInfo = null;
 		List<WfProcBackBean> list = pageInfo.getList();
 
 		if (list != null && !list.isEmpty()) {
@@ -219,7 +218,7 @@ public class CaseInfoService {
 			return new TableResultResponse<>(0, jObjList);
 		}
 	}
-	
+
 	private TableResultResponse<JSONObject> queryAssist(CaseInfo queryCaseInfo, JSONObject queryData,
 			List<JSONObject> jObjList, PageInfo<WfProcBackBean> pageInfo, JSONObject objs) {
 		List<WfProcBackBean> procBackBeanList = pageInfo.getList();
@@ -227,7 +226,7 @@ public class CaseInfoService {
 		List<Integer> bizIdStrList = new ArrayList<>();
 		List<String> eventTypeIdStrList = new ArrayList<>();
 
-		List<String> rootBizIdList = new ArrayList<>();
+		Set<String> rootBizIdSet = new HashSet<>();
 
 		if (procBackBeanList != null && !procBackBeanList.isEmpty()) {
 			for (int i = 0; i < procBackBeanList.size(); i++) {
@@ -253,9 +252,9 @@ public class CaseInfoService {
 		for (CaseInfo caseInfo : caseInfoList) {
 			caseInfo_ID_Entity_Map.put(caseInfo.getId(), caseInfo);
 
-			rootBizIdList.add(caseInfo.getBizList());
-			rootBizIdList.add(caseInfo.getSourceType());
-			rootBizIdList.add(caseInfo.getCaseLevel());
+			rootBizIdSet.add(caseInfo.getBizList());
+			rootBizIdSet.add(caseInfo.getSourceType());
+			rootBizIdSet.add(caseInfo.getCaseLevel());
 
 			eventTypeIdStrList.add(caseInfo.getEventTypeList());
 		}
@@ -264,8 +263,8 @@ public class CaseInfoService {
 		 * 查询业务条线，查询事件来源，查询事件级别
 		 */
 		Map<String, String> rootBizList = new HashMap<>();
-		if (rootBizIdList != null && !rootBizIdList.isEmpty()) {
-			rootBizList = dictFeign.getDictValueByID(String.join(",", rootBizIdList));
+		if (rootBizIdSet != null && !rootBizIdSet.isEmpty()) {
+			rootBizList = dictFeign.getByCodeIn(String.join(",", rootBizIdSet));
 		}
 
 		// 查询事件类别
@@ -316,21 +315,11 @@ public class CaseInfoService {
 	private void sourceTypeHistoryAssist(JSONObject wfJObject, CaseInfo caseInfo) {
 
 		// 查询登记历史
-		String sourceType = caseInfo.getSourceType();
-		Map<String, String> sourceTypeIdMap = dictFeign.getDictValueByID(sourceType);
-
-		String sourceTypeJsonStr_Dict = "";
-		Set<String> keySet = sourceTypeIdMap.keySet();
-		for (String string : keySet) {
-			sourceTypeJsonStr_Dict = sourceTypeIdMap.get(string);
-		}
-
-		JSONObject sourceTypeJObj = JSONObject.parseObject(sourceTypeJsonStr_Dict);
-		String key = sourceTypeJObj.getString("code");
+		// 业务数据库中字典数据用字典表的code去表示，因为caseInfo内保存的就是code，无需再进行id换code操作
+		String key = caseInfo.getSourceType();
 
 		JSONObject resultJObjct = new JSONObject();
 		List<String> zhaiyaoList = new ArrayList<>();
-//		StringBuffer buffer = new StringBuffer();
 		String reportPersonId = "";
 		switch (key) {
 		case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345:
@@ -362,13 +351,11 @@ public class CaseInfoService {
 			resultJObjct.put("eventSourceType", "舆情");
 			resultJObjct.put("sourceCode", poinion.getOpinCode());
 
-			Map<String, String> dictValueMap = dictFeign.getDictValueByID(String.join(",", dictIdList));
+			Map<String, String> dictValueMap = dictFeign.getByCodeIn(String.join(",", dictIdList));
 			if (dictValueMap != null && !dictValueMap.isEmpty()) {
-				zhaiyaoList
-						.add(CommonUtil.getValueFromJObjStr(dictValueMap.get(poinion.getOpinType()), "labelDefault"));
-				zhaiyaoList.add(dictValueMap
-						.get(CommonUtil.getValueFromJObjStr(dictValueMap.get(poinion.getOpinLevel()), "labelDefault")));
-				zhaiyaoList.add(dictValueMap.get(poinion.getOpinPort()));
+				zhaiyaoList.add(dictValueMap.get(poinion.getOpinType()));
+				zhaiyaoList.add(dictValueMap.get(poinion.getOpinLevel()));
+				zhaiyaoList.add(poinion.getOpinPort());
 			}
 			break;
 		case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_LEADER:
@@ -514,11 +501,8 @@ public class CaseInfoService {
 					ConcernedPerson.class);
 			concernedPersonBiz.insertSelective(concernedPerson);
 			caseInfo.setConcernedPerson(String.valueOf(concernedPerson.getId()));
-
-			Map<String, String> concernedStatusMap = dictFeign
-					.getDictIdByCode(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON, false);
-			List<String> concernedStatusStrList = new ArrayList<>(concernedStatusMap.values());
-			caseInfo.setConcernedType(CommonUtil.getValueFromJObjStr(concernedStatusStrList.get(0), "id"));//
+			//当事人类型为"root_biz_concernedT_person"
+			caseInfo.setConcernedType(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON);//
 		}
 
 		// 判断是否有当事人(单位)信息
@@ -527,11 +511,8 @@ public class CaseInfoService {
 					ConcernedCompany.class);
 			concernedCompanyService.created(concernedCompany);
 			caseInfo.setConcernedPerson(String.valueOf(concernedCompany.getId()));
-
-			Map<String, String> concernedStatusMap = dictFeign
-					.getDictIdByCode(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG, false);
-			List<String> concernedStatusStrList = new ArrayList<>(concernedStatusMap.values());
-			caseInfo.setConcernedType(CommonUtil.getValueFromJObjStr(concernedStatusStrList.get(0), "id"));//
+			//当事人类型为"root_biz_concernedT_org"
+			caseInfo.setConcernedType(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG);//
 		}
 
 		// 判断 是否有处理情况信息
@@ -553,17 +534,8 @@ public class CaseInfoService {
 	 * @param isTermination true:终止操作|false:正常结束操作
 	 */
 	private void gotoFinishSource(CaseInfo caseInfo, boolean isTermination) {
-		String sourceType = caseInfo.getSourceType();
-		Map<String, String> sourceTypeIdMap = dictFeign.getDictValueByID(sourceType);
-
-		String sourceTypeJsonStr = "";
-		Set<String> keySet = sourceTypeIdMap.keySet();
-		for (String string : keySet) {
-			sourceTypeJsonStr = sourceTypeIdMap.get(string);
-		}
-
-		JSONObject sourceTypeJObj = JSONObject.parseObject(sourceTypeJsonStr);
-		String key = sourceTypeJObj.getString("code");
+		// 业务数据库中字典数据用字典表的code去表示，因为caseInfo内保存的就是code，无需再进行id换code操作
+		String key = caseInfo.getSourceType();
 
 		JSONObject assist = new JSONObject();
 		switch (key) {
@@ -632,23 +604,24 @@ public class CaseInfoService {
 	private JSONObject assist(String sourceCode, String exeStatus) {
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.put("id", sourceCode);
+		jsonObject.put("exeStatus", exeStatus);
 
 		// 查询已完成状态的ID
-		Map<String, String> dictIds = dictFeign.getDictIdByCode(exeStatus, false);
+//		Map<String, String> dictIds = dictFeign.getDictIdByCod(exeStatus, false);
 //		Map<String, String> dictIds = dictFeign.getDictIds(exeStatus);
-		Set<String> keySet = dictIds.keySet();
-		for (String string : keySet) {
-			/*
-			 * 如果string所对应的记录内code字段值与传入的exeStatus值相同，说明该记录的ID即为与exeStatus状态所对应的记录ID<br/>
-			 * 如:dictIds={"abc1":{"id":"abc1","exeStatus":"def1"},"abc2":{"id":"abc2",
-			 * "exeStatus":"def2"}},exeStatus="def1"<br/>
-			 * 则向jsonObject内put一组数据"exeStatus":"abc1"
-			 */
-			String exeStatusInDicts = CommonUtil.getValueFromJObjStr(dictIds.get(string), "code");
-			if (exeStatus.equals(exeStatusInDicts)) {
-				jsonObject.put("exeStatus", string);
-			}
-		}
+//		Set<String> keySet = dictIds.keySet();
+//		for (String string : keySet) {
+		/*
+		 * 如果string所对应的记录内code字段值与传入的exeStatus值相同，说明该记录的ID即为与exeStatus状态所对应的记录ID<br/>
+		 * 如:dictIds={"abc1":{"id":"abc1","exeStatus":"def1"},"abc2":{"id":"abc2",
+		 * "exeStatus":"def2"}},exeStatus="def1"<br/>
+		 * 则向jsonObject内put一组数据"exeStatus":"abc1"
+		 */
+//			String exeStatusInDicts = CommonUtil.getValueFromJObjStr(dictIds.get(string), "code");
+//			if (exeStatus.equals(exeStatusInDicts)) {
+//				jsonObject.put("exeStatus", string);
+//			}
+//		}
 
 		return jsonObject;
 	}
@@ -742,7 +715,7 @@ public class CaseInfoService {
 		 * =================查询历史记录======附带来源信息=====结束==========
 		 */
 		// 通过root_biz进行模糊查询业务字典，这样查询数据量会稍大，但可以减少请求次数
-		Map<String, String> manyDictValuesMap = dictFeign.getDictIdByCode("root_biz", true);
+		Map<String, String> manyDictValuesMap = dictFeign.getByCode("root_biz");
 
 		List<String> adminIdList = new ArrayList<>();
 		if (caseInfo.getCheckPerson() != null) {
@@ -773,8 +746,7 @@ public class CaseInfoService {
 		if (caseInfo.getCaseLevel() != null) {
 //			Map<String, String> dictValueMap = dictFeign.getDictValueByID(caseInfo.getCaseLevel());//>>>>>>>>>>>>>>>查询了字典>>>>>>>>>>>>>>>>>>>>>>>>>
 			if (manyDictValuesMap != null && !manyDictValuesMap.isEmpty()) {
-				baseInfoJObj.put("caseLevelName", JSONObject.parseObject(manyDictValuesMap.get(caseInfo.getCaseLevel()))
-						.getString("labelDefault"));
+				baseInfoJObj.put("caseLevelName", manyDictValuesMap.get(caseInfo.getCaseLevel()));
 			}
 		}
 		baseInfoJObj.put("caseDesc", caseInfo.getCaseDesc());
@@ -793,7 +765,7 @@ public class CaseInfoService {
 		if (StringUtils.isNotBlank(caseInfo.getConcernedPerson())) {
 			String concernedTypeId = "";
 
-			// 从新开始查出的许多业务字典Map集合中遍历当事人类别
+			// 从刚开始查出的许多业务字典Map集合中遍历当事人类别
 			Set<String> concernedKeySet = manyDictValuesMap.keySet();
 			for (String string : concernedKeySet) {
 				// 找出字典中的code与常量类中的常量code对比

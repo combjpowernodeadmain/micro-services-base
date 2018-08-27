@@ -39,8 +39,10 @@ import tk.mybatis.mapper.entity.Example.Criteria;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -164,6 +166,8 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 	 * 					如："c1,c2,c3,c4",字符串中不要有重复的code值
 	 * @return "${code}":"${label_default}"健值对
 	 */
+	@IgnoreClientToken
+	@IgnoreUserToken
 	@RequestMapping(value = "/feign/code/in/{codes}", method = RequestMethod.GET)
 	public Map<String, String> getByCodeIn(@PathVariable("codes") String codeList){
 		if(codeList==null||codeList.isEmpty()) {
@@ -173,7 +177,13 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 		Example example=new Example(DictValue.class);
 		Criteria criteria = example.createCriteria();
 		
-		criteria.andIn("code", Arrays.asList(codeList.split(",")));
+		//避免因传重复的code造成查询时条件量较大
+		Set<String> codeSet=new HashSet<>();
+		String[] split = codeList.split(",");
+		for (String string : split) {
+			codeSet.add(string);
+		}
+		criteria.andIn("code", codeSet);
 		
 		example.setOrderByClause("order_num");
 		List<DictValue> dictValues = this.baseBiz.selectByExample(example);

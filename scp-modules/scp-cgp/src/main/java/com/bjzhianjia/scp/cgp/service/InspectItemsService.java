@@ -109,11 +109,11 @@ public class InspectItemsService {
 			result.setMessage("权利事项编号不存在");
 			return result;
 		}
-		
-		Map<String, String> bizType = dictFeign.getDictIds(Constances.ROOT_BIZ_TYPE);
+		//字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
+		Map<String, String> bizType = dictFeign.getByCode(Constances.ROOT_BIZ_TYPE);
 		
 		if(bizType == null || !bizType.containsKey(inspectItems.getBizType())) {
-			result.setMessage("事件线条不存在");
+			result.setMessage("业务条线不存在");
 			return result;
 		}
 		
@@ -158,11 +158,11 @@ public class InspectItemsService {
 			result.setMessage("权利事项编号不存在");
 			return result;
 		}
-		
-		Map<String, String> bizType = dictFeign.getDictIds(Constances.ROOT_BIZ_TYPE);
+		//字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
+		Map<String, String> bizType = dictFeign.getByCode(Constances.ROOT_BIZ_TYPE);
 		
 		if(bizType == null || !bizType.containsKey(inspectItems.getBizType())) {
-			result.setMessage("事件线条不存在");
+			result.setMessage("业务条线不存在");
 			return result;
 		}
 		

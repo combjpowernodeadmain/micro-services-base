@@ -27,6 +27,7 @@ public interface DictFeign {
 	 * @param code
 	 * @return "${value}":"${labelDefault}"健值对
 	 */
+	@Deprecated
 	@RequestMapping(value = "/dictValue/feign/{code}", method = RequestMethod.GET)
 	public Map<String, String> getDictValues(@PathVariable("code") String code);
 
@@ -37,6 +38,7 @@ public interface DictFeign {
 	 * @param code
 	 * @return "${id}":"${labelDefault}"健值对
 	 */
+	@Deprecated
 	@RequestMapping(value = "/dictValue/feign/ids/{code}", method = RequestMethod.GET)
 	public Map<String, String> getDictIds(@PathVariable("code") String code);
 
@@ -48,6 +50,7 @@ public interface DictFeign {
 	 * @param id
 	 * @return "${id}":"${记录对应实体的JSON格式字符}"健值对
 	 */
+	@Deprecated
 	@RequestMapping(value = "/dictValue/feign/id/{id}", method = RequestMethod.GET)
 	public Map<String, String> getDictValueByID(@PathVariable("id") String id);
 
@@ -59,6 +62,7 @@ public interface DictFeign {
 	 * @param isLike 是否按模糊查询
 	 * @return "${id}":"${记录对应实体的JSON格式字符}"健值对
 	 */
+	@Deprecated
 	@RequestMapping(value = "/dictValue/feign/values/{code}", method = RequestMethod.GET)
 	public Map<String, String> getDictIdByCode(@PathVariable("code") String code,
 			@RequestParam(value = "isLike", defaultValue = "false") boolean isLike);
@@ -80,7 +84,7 @@ public interface DictFeign {
 	 * 
 	 * @author 尚
 	 * @param codeList   查询 条件,字符串表示的code集合，多个code之间用逗号隔开<br/>
-	 * 					如："c1,c2,c3,c4",字符串中不要有重复的code值
+	 * 					如："c1,c2,c3,c4"
 	 * @return "${code}":"${label_default}"健值对
 	 */
 	@RequestMapping(value = "/dictValue/feign/code/in/{codes}", method = RequestMethod.GET)

@@ -56,18 +56,9 @@ public class MayorHotlineController extends BaseController<MayorHotlineBiz, Mayo
 			restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
 			return restResult;
 		}
-		
-		Map<String, String> dictValueMap = dictFeign.getDictIdByCode(Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_TODO,
-				false);
 
-		String dictId = "";
-		if (dictValueMap != null && !dictValueMap.isEmpty()) {
-			List<String> aaList = new ArrayList<>(dictValueMap.keySet());
-			// dictValueMap按code等值查询，得到的结果集为唯一
-			dictId = aaList.get(0);
-		}
-
-		Result<MayorHotline> result = mayorHotlineService.createdMayorHotlineCache(mayorHotline,dictId);
+		Result<MayorHotline> result = mayorHotlineService.createdMayorHotlineCache(mayorHotline,
+				Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_TODO);
 		if (!result.getIsSuccess()) {
 			restResult.setStatus(400);
 			restResult.setMessage(result.getMessage());
@@ -141,7 +132,7 @@ public class MayorHotlineController extends BaseController<MayorHotlineBiz, Mayo
 		Result<MayorHotline> result = new Result<>();
 		try {
 			result = mayorHotlineService.update(vo);
-			if(!result.getIsSuccess()) {
+			if (!result.getIsSuccess()) {
 				restResult.setStatus(400);
 				restResult.setMessage(result.getMessage());
 				return restResult;
@@ -152,7 +143,7 @@ public class MayorHotlineController extends BaseController<MayorHotlineBiz, Mayo
 			restResult.setMessage(StringUtils.isBlank(result.getMessage()) ? e.getMessage() : result.getMessage());
 			return restResult;
 		}
-		
+
 		restResult.setStatus(200);
 		restResult.setMessage("成功");
 		return restResult;
@@ -193,19 +184,9 @@ public class MayorHotlineController extends BaseController<MayorHotlineBiz, Mayo
 	public ObjectRestResponse<MayorHotlineVo> getToDo(
 			@PathVariable(value = "id") @ApiParam(name = "待查询对象ID") Integer id) {
 		ObjectRestResponse<MayorHotlineVo> result = mayorHotlineService.getOne(id);
-		
-		Map<String, String> dictValueMap = dictFeign.getDictIdByCode(Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_TODO,
-				false);
 
-		String dictId = "";
-		if (dictValueMap != null && !dictValueMap.isEmpty()) {
-			List<String> aaList = new ArrayList<>(dictValueMap.keySet());
-			// dictValueMap按code等值查询，得到的结果集为唯一
-			dictId = aaList.get(0);
-		}
-		
 		MayorHotlineVo data = result.getData();
-		if (!dictId.equals(data.getExeStatus())) {
+		if (!Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_TODO.equals(data.getExeStatus())) {
 			result.setStatus(400);
 			result.setMessage("当前记录不能修改，只有未发起的热线记录可修改！");
 			result.setData(null);

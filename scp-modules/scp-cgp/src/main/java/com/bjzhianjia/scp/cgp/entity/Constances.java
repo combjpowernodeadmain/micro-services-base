@@ -6,6 +6,10 @@ package com.bjzhianjia.scp.cgp.entity;
  *
  */
 public class Constances {
+	/**
+	 * 所有与业务相当的字典前缀
+	 */
+	public static final String ROOT_BIZ="root_biz";
 
 	public static final String ROOT_BIZ_ENABLED = "ROOT_BIZ_ENABLED";
 	
