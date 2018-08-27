@@ -106,4 +106,23 @@ public class CommonUtil {
 		}
 		return null;
 	}
+	
+	/**
+	 *  通过数据字典code查询
+	 * @author chenshuai
+	 * @param dictFeign
+	 * 		 数据字典接口
+	 * @param code
+	 * 		数据字典code
+	 * @return
+	 * 		数据字典标签名（label_default）
+	 */
+	public static String getByCode(DictFeign dictFeign,String code) {
+		Map<String, String> dictValueMap = dictFeign.getByCode(code);
+
+		if (dictValueMap != null && !dictValueMap.isEmpty()) {
+			return dictValueMap.get(code);
+		}
+		return null;
+	}
 }

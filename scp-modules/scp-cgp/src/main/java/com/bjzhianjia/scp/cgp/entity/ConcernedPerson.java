@@ -35,7 +35,7 @@ public class ConcernedPerson implements Serializable {
 	    //当事人证件类型(字典)
     @Column(name = "cred_type")
     private String credType;
-	
+    
 	    //当事人证件号码
     @Column(name = "cred_code")
     private String credCode;
@@ -51,7 +51,14 @@ public class ConcernedPerson implements Serializable {
     	//后加字段
     @Column(name="case_id")
     private Integer caseId;
-	
+    
+    //用户年龄
+    @Column(name = "age")
+    private Integer age;
+    
+    //用户年龄
+    @Column(name = "sex")
+    private String sex;
 
 	/**
 	 * 设置：主键
@@ -149,6 +156,29 @@ public class ConcernedPerson implements Serializable {
 	public void setCaseId(Integer caseId) {
 		this.caseId = caseId;
 	}
-	
+	/**
+	 *  获取：年龄
+	 */
+	public Integer getAge() {
+		return age;
+	}
+	/**
+	 * 设置：年龄
+	 */
+	public void setAge(Integer age) {
+		this.age = age;
+	}
+	/**
+	 *  获取：性别
+	 */
+	public String getSex() {
+		return sex;
+	}
+	/**
+	 * 设置：性别
+	 */
+	public void setSex(String sex) {
+		this.sex = sex;
+	}
 	
 }

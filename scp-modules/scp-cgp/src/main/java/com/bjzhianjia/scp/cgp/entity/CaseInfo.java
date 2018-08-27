@@ -245,6 +245,15 @@ public class CaseInfo implements Serializable {
     @Column(name="is_finished")
     private String isFinished;
     
+    //是否督办（0否| 1是）
+    @Column(name="is_supervise")
+    private String isSupervise;
+    
+    //是否催办（0否| 1是）
+    @Column(name="is_urge")
+    private String isUrge;
+    
+
 	public String getIsDuplicate() {
 		return isDuplicate;
 	}
@@ -835,5 +844,29 @@ public class CaseInfo implements Serializable {
 	}
 	public void setExecuteInfo(Integer executeInfo) {
 		this.executeInfo = executeInfo;
+	}
+	/**
+	 * 获取：是否督办（0否| 1是）
+	 */
+	public String getIsSupervise() {
+		return isSupervise;
+	}
+	/**
+	 * 设置获取：是否督办（0否| 1是）
+	 */
+	public void setIsSupervise(String isSupervise) {
+		this.isSupervise = isSupervise;
+	}
+	/**
+	 * 获取：是否催办（0否| 1是）
+	 */
+	public String getIsUrge() {
+		return isUrge;
+	}
+	/**
+	 * 设置获取：是否催办（0否| 1是）
+	 */
+	public void setIsUrge(String isUrge) {
+		this.isUrge = isUrge;
 	}
 }

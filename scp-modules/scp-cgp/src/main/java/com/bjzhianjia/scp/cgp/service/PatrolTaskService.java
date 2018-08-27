@@ -308,9 +308,11 @@ public class PatrolTaskService {
 	 */
 	public Map<String ,Object> getByIdInfo(Integer id){
 		Map<String ,Object> result = new HashMap<>();
-		String labelZhCh = "labelZhCh";//数据字典名称
 		
 		PatrolTask patrolTask = patrolTaskBiz.selectById(id);
+		if(patrolTask == null) {
+			return null;
+		}
 		
 		result.put("patrolCode", patrolTask.getPatrolCode());
 		result.put("patrolName", patrolTask.getPatrolName());
@@ -318,8 +320,7 @@ public class PatrolTaskService {
 		result.put("crtTime", patrolTask.getCrtTime());	//上报时间
 		
 		//判断任务来源类型
-		String sourceTypeSpecia = CommonUtil.exeStatusUtil(dictFeign, Constances.PartolTaskStatus.ROOT_BIZ_PATROLTYPE_SPECIAL);
-		if(patrolTask.getSourceType().equals(sourceTypeSpecia)) {//专项任务
+		if(Constances.PartolTaskStatus.ROOT_BIZ_PATROLTYPE_SPECIAL.equals(patrolTask.getSourceType())) {//专项任务
 			SpecialEvent specialEvent = specialEventBiz.selectById(patrolTask.getSourceTaskId());
 			if(specialEvent != null)
 			{
@@ -346,30 +347,21 @@ public class PatrolTaskService {
 		}
 		
 		//事件级别
-		Map<String, String> dictPatrolLevel = dictFeign.getDictValueByID(patrolTask.getPatrolLevel());
+		String dictPatrolLevel = CommonUtil.getByCode(dictFeign,patrolTask.getPatrolLevel());
 		if(dictPatrolLevel != null) {
-			JSONObject jsonPatrolLevel = JSONObject.parseObject(dictPatrolLevel.get(patrolTask.getPatrolLevel()));
-			if(jsonPatrolLevel != null) {
-				result.put("patrolLevel", jsonPatrolLevel.get(labelZhCh));
-			}
+				result.put("patrolLevel", dictPatrolLevel);
 		}
 		
 		//获取巡查任务状态
-		Map<String, String> dictStatus = dictFeign.getDictValueByID(patrolTask.getStatus());
+		String dictStatus = CommonUtil.getByCode(dictFeign,patrolTask.getStatus());
 		if(dictStatus != null) {
-			JSONObject jsonStatus = JSONObject.parseObject(dictStatus.get(patrolTask.getStatus()));
-			if(jsonStatus != null) {
-				result.put("status", jsonStatus.get(labelZhCh));
-			}
+			result.put("status", dictStatus);
 		}
 		
 		//业务条线
-		Map<String, String> dictBizType = dictFeign.getDictValueByID(patrolTask.getBizTypeId());
-		if(dictStatus != null) {
-			JSONObject jsonBizType = JSONObject.parseObject(dictBizType.get(patrolTask.getBizTypeId()));
-			if(jsonBizType != null) {
-				result.put("bizType", jsonBizType.get(labelZhCh));
-			}
+		String dictBizType = CommonUtil.getByCode(dictFeign,patrolTask.getBizTypeId());
+		if(dictBizType != null) {
+			result.put("bizType", dictBizType);
 		}
 		
 		//事件类别
@@ -386,7 +378,7 @@ public class PatrolTaskService {
 			for(InspectItems inspectItems : inspectItemsList) {
 				names.add(inspectItems.getName());
 			}
-			result.put("InspectItems",names);
+			result.put("inspectItems",names);
 		}
 		
 		result.put("content", patrolTask.getContent());
@@ -394,22 +386,22 @@ public class PatrolTaskService {
 		result.put("mapInfo", patrolTask.getMapInfo());
 		
 		//当事人
-		Map<String, String> dictConcernedType = dictFeign.getDictValueByID(patrolTask.getConcernedType());
+		String dictConcernedType = CommonUtil.getByCode(dictFeign,patrolTask.getConcernedType());
 		if(dictConcernedType != null) {
-			JSONObject jsonConcernedType = JSONObject.parseObject(dictConcernedType.get(patrolTask.getConcernedType()));
-			if(jsonConcernedType != null) {
-				result.put("concernedType", jsonConcernedType.get(labelZhCh));
-				String code = (String) jsonConcernedType.get("code");
-				//单位
-				if(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG.equals(code)) {
-					ConcernedCompany concernedCompany = concernedCompanyService.selectById(patrolTask.getConcernedId());
-					result.put("concernedData", concernedCompany);
-				}
-				//个人
-				if(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON.equals(code)){
-					ConcernedPerson concernedPerson = concernedPersonService.selectById(patrolTask.getConcernedId());
-					result.put("concernedData", concernedPerson);
-				}
+			result.put("concernedType", dictConcernedType);
+			//单位
+			if(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG.equals(patrolTask.getConcernedType())) {
+				ConcernedCompany concernedCompany = concernedCompanyService.selectById(patrolTask.getConcernedId());
+				result.put("concernedData", concernedCompany);
+				result.put("isCompany", true);//是否为单位
+			}
+			//个人
+			if(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON.equals(patrolTask.getConcernedType())){
+				ConcernedPerson concernedPerson = concernedPersonService.selectById(patrolTask.getConcernedId());
+				result.put("concernedData", concernedPerson);
+				//个人性别
+				concernedPerson.setSex(CommonUtil.getByCode(dictFeign,concernedPerson.getSex()));
+				result.put("isCompany", false);
 			}
 		}
 		//获取图片集
