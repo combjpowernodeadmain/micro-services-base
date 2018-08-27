@@ -2,7 +2,11 @@ package com.bjzhianjia.scp.cgp.entity;
 
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.*;
+
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotBlank;
@@ -23,7 +27,7 @@ public class SuperviseRecord implements Serializable {
 	private Integer id;
 
 	// 立案单id
-	@NotBlank(message = "参数异常错误")
+	@NotNull(message = "参数异常错误")
 	@Column(name = "case_info_id")
 	private Integer caseInfoId;
 
