@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.feign;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
@@ -67,9 +68,20 @@ public interface DictFeign {
 	 * 
 	 * @author chenshuai
 	 * @param code   查询 条件
-	 * @param isLike 是否按模糊查询
-	 * @return "${code}":"${记录对应实体的JSON格式字符}"健值对
+	 * @return "${code}":"${label_default}"健值对
 	 */
 	@RequestMapping(value = "/dictValue/feign/code/{code}", method = RequestMethod.GET)
 	public Map<String, String> getByCode(@PathVariable("code") String code) ;
+	
+	
+	/**
+	 * 按code进行查询<br/>
+	 * 查询语句为code in ('code1','code1','code1','code1')
+	 * 
+	 * @author 尚
+	 * @param codeList   查询 条件
+	 * @return "${code}":"${label_default}"健值对
+	 */
+	@RequestMapping(value = "/dictValue/feign/code/in/{codes}", method = RequestMethod.GET)
+	public Map<String, String> getByCodeIn(@PathVariable("codes") List<String> codeList) ;
 }

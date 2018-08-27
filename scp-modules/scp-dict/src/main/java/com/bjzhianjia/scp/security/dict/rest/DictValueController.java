@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.entity.Example.Criteria;
 
 import java.util.Comparator;
 import java.util.List;
@@ -149,6 +150,46 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 		List<DictValue> dictValues = this.baseBiz.selectByExample(example);
 		Map<String, String> result = dictValues.stream()
 				.collect(Collectors.toMap(DictValue::getCode, DictValue::getLabelDefault));
+		return result;
+	}
+	
+	
+	/**
+	 * 按code进行查询<br/>
+	 * 查询语句为code in ('code1','code1','code1','code1')
+	 * 
+	 * @author 尚
+	 * @param codeList   查询 条件
+	 * @return "${code}":"${label_default}"健值对
+	 */
+	@RequestMapping(value = "/feign/code/in/{codes}", method = RequestMethod.GET)
+	public Map<String, String> getByCodeIn(@PathVariable("codes") List<String> codeList){
+		if(codeList==null||codeList.isEmpty()) {
+			return null;
+		}
+		
+		Example example=new Example(DictValue.class);
+		Criteria criteria = example.createCriteria();
+		
+		criteria.andIn("code", codeList);
+		
+		example.setOrderByClause("order_num");
+		List<DictValue> dictValues = this.baseBiz.selectByExample(example);
+		
+		Map<String, String> result = dictValues.stream().collect(Collectors.toMap(DictValue::getCode, DictValue::getLabelDefault));
+		return result;
+	}
+	
+	/**
+	 * 按code查询字典值
+	 * 
+	 * @author 尚
+	 * @param code code 查询条件
+	 * @return {"id":"对应ID值","code":"对应code值","labelDefault":"对应labelDefault值"}
+	 */
+	@RequestMapping(value = "/list/{code}", method = RequestMethod.GET)
+	public Map<String, String> queryDictValueByCode(@PathVariable(value="code")String code) {
+		Map<String, String> result = this.baseBiz.getDictValueByCode(code);
 		return result;
 	}
 }
