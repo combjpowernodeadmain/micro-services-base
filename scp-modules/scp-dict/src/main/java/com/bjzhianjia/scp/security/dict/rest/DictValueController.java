@@ -188,8 +188,8 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 	 * @return {"id":"对应ID值","code":"对应code值","labelDefault":"对应labelDefault值"}
 	 */
 	@RequestMapping(value = "/list/{code}", method = RequestMethod.GET)
-	public Map<String, String> queryDictValueByCode(@PathVariable(value="code")String code) {
-		Map<String, String> result = this.baseBiz.getDictValueByCode(code);
+	public List<Map<String, String>> queryDictValueByCode(@PathVariable(value="code")String code) {
+		List<Map<String, String>> result = this.baseBiz.getDictValueByCode(code);
 		return result;
 	}
 }

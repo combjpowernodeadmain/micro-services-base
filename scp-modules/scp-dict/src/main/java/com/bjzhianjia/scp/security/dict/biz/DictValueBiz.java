@@ -111,22 +111,26 @@ public class DictValueBiz extends BusinessBiz<DictValueMapper, DictValue> {
 	 * @param code code 查询条件
 	 * @return {"id":"对应ID值","code":"对应code值","labelDefault":"对应labelDefault值"}
 	 */
-	public Map<String, String> getDictValueByCode(String code) {
+	public List<Map<String, String>> getDictValueByCode(String code) {
+		List<Map<String, String>> resultList=new ArrayList<>();
+		
 		Example example = new Example(DictValue.class);
 		Example.Criteria criteria = example.createCriteria();
 		criteria.andLike("code", "%" + code + "%");
 		example.setOrderByClause("order_num");// 按order_num升序排列
 
-		Map<String, String> result = new HashMap<>();
 		List<DictValue> dictValueList = mapper.selectByExample(example);
 		
 		if (dictValueList != null) {
 			for (DictValue dictValue : dictValueList) {
+				Map<String, String> result = new HashMap<>();
 				result.put("id", dictValue.getId());
 				result.put("code", dictValue.getCode());
 				result.put("labelDefault", dictValue.getLabelDefault());
+				
+				resultList.add(result);
 			}
-			return result;
+			return resultList;
 		}
 		return null;
 	}
