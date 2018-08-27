@@ -167,22 +167,6 @@ public class RegulaObjectService {
 					}
 				}
 			}
-
-//			JSONArray eventTypeJArray = JSONArray.parseArray(eventListLongStr);
-//			for (int i = 0; i < eventTypeJArray.size(); i++) {
-//				JSONObject eventTypeJObject = eventTypeJArray.getJSONObject(i);
-//				String eventTypeId = eventTypeJObject.getString("eventList");
-//
-//				String[] split = eventTypeId.split(",");
-//				List<String> eventTypeIds = Arrays.asList(split);
-//				List<EventType> eventTypeList = eventTypeBiz.getByIds(eventTypeIds);
-//				for (EventType eventType : eventTypeList) {
-//					if (eventType == null || eventType.getIsDeleted().equals("1")) {
-//						result.setMessage("所选事件类别已删除");
-//						return result;
-//					}
-//				}
-//			}
 		}
 
 		/*
@@ -192,7 +176,8 @@ public class RegulaObjectService {
 		// 验证业务 条线是否删除
 		String bizListJArrayStr = regulaObject.getBizList();
 		if (StringUtils.isNotBlank(bizListJArrayStr)) {
-			Map<String, String> bizTypes = dictFeign.getDictIds(Constances.ROOT_BIZ_TYPE);
+			//字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
+			Map<String, String> bizTypes = dictFeign.getByCode(Constances.ROOT_BIZ_TYPE);
 
 			String[] byzTypeIds = bizListJArrayStr.split(",");
 			for (String bizTypeId : byzTypeIds) {
@@ -203,24 +188,13 @@ public class RegulaObjectService {
 					}
 				}
 			}
-
-//			JSONArray bizTypeJArray = JSONArray.parseArray(bizListJArrayStr);
-//			for (int i = 0; i < bizTypeJArray.size(); i++) {
-//				JSONObject bizTypeJObject = bizTypeJArray.getJSONObject(i);
-//				String bizTypeId = bizTypeJObject.getString("bizList");
-//				if(StringUtils.isNotBlank(bizTypeId)) {
-//					if (!bizTypes.containsKey(bizTypeId)) {
-//						result.setMessage("所选业务条线不存在");
-//						return result;
-//					}
-//				}
-//			}
 		}
 
 		// 验证企业类型是否已被删除
 		String typeCode = enterpriseInfo.getTypeCode();
 		if (StringUtils.isNotBlank(typeCode)) {
-			Map<String, String> entTypes = dictFeign.getDictIds(Constances.ROOT_BIZ_ENTTYPE);
+			//字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
+			Map<String, String> entTypes = dictFeign.getByCode(Constances.ROOT_BIZ_ENTTYPE);
 			if (!entTypes.containsKey(typeCode)) {
 				result.setMessage("所选企业类型不存在");
 				return result;
@@ -230,7 +204,8 @@ public class RegulaObjectService {
 //				验证证件类型是否删除
 		String certificateType = enterpriseInfo.getCertificateType();
 		if (StringUtils.isNotBlank(certificateType)) {
-			Map<String, String> sertificateTypeMap = dictFeign.getDictIds(Constances.ROOT_BIZ_CERT_T);
+			//字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
+			Map<String, String> sertificateTypeMap = dictFeign.getByCode(Constances.ROOT_BIZ_CERT_T);
 			if (!sertificateTypeMap.containsKey(certificateType)) {
 				result.setMessage("所选证件类型不存在");
 				return result;
@@ -420,7 +395,7 @@ public class RegulaObjectService {
 
 			// 聚和业务条线及事件类别
 			if (bizTypeIds != null && !bizTypeIds.isEmpty()) {
-				Map<String, String> bizTypeMap = dictFeign.getDictValueByID(String.join(",", bizTypeIds));
+				Map<String, String> bizTypeMap = dictFeign.getByCodeIn(String.join(",", bizTypeIds));
 
 				for (RegulaObjectVo tmp : voList) {
 					JSONArray bizResultJArray = new JSONArray();
@@ -433,6 +408,8 @@ public class RegulaObjectService {
 						String string = bizListSplit[i];
 						JSONObject bizResultJObject = new JSONObject();
 						if (!string.equals("-")) {
+							bizResultJObject.put("code", string);
+							bizResultJObject.put("labelDefault", bizTypeMap.get(string));
 							String bizType = bizTypeMap.get(string);
 							bizResultJObject = JSONObject.parseObject(bizType);
 						}
@@ -497,9 +474,17 @@ public class RegulaObjectService {
 		String typeCodeId = enterpriseInfo.getTypeCode();
 		String certificateTypeId = enterpriseInfo.getCertificateType();
 
-		Map<String, String> map = dictFeign.getDictValueByID(typeCodeId + "," + certificateTypeId);
-		enterpriseInfo.setTypeCode(map.get(typeCodeId));
-		enterpriseInfo.setCertificateType(map.get(certificateTypeId));
+		Map<String, String> map = dictFeign.getByCodeIn(typeCodeId + "," + certificateTypeId);
+		
+		JSONObject typeCodeJObject=new JSONObject();
+		typeCodeJObject.put("code", typeCodeId);
+		typeCodeJObject.put("labelDefault", map.get(typeCodeId));
+		enterpriseInfo.setTypeCode(typeCodeJObject.toJSONString());
+		
+		JSONObject certificateJObj=new JSONObject();
+		certificateJObj.put("code", certificateTypeId);
+		certificateJObj.put("labelDefault", map.get(certificateTypeId));
+		enterpriseInfo.setCertificateType(certificateJObj.toJSONString());
 
 		String regulaObjectJStr = JSON.toJSONString(regulaObject);
 		String enterpriseInfoJStr = JSON.toJSONString(enterpriseInfo);

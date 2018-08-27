@@ -116,8 +116,9 @@ public class PublicOpinionService {
 		 */
 
 		Result<Void> result = new Result<>();
-		
-		String doingExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_DOING);
+
+		String doingExeStatus = CommonUtil.exeStatusUtil(dictFeign,
+				Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_DOING);
 
 		PublicOpinion selectById = publicOpinionBiz.selectById(vo.getId());
 		if (selectById == null) {
@@ -174,9 +175,9 @@ public class PublicOpinionService {
 		caseInfo.setSourceCode(vo.getId() + "");
 
 		CaseInfo maxOne = caseInfoBiz.getMaxOne();
-		
-		int nextId=maxOne.getId()==null?1:(maxOne.getId()+1);
-		
+
+		int nextId = maxOne.getId() == null ? 1 : (maxOne.getId() + 1);
+
 		// 立案单事件编号
 		Result<String> caseCodeResult = CommonUtil.generateCaseCode(maxOne.getCaseCode());
 		if (!caseCodeResult.getIsSuccess()) {
@@ -184,7 +185,7 @@ public class PublicOpinionService {
 			throw new Exception(caseCodeResult.getMessage());// 向外抛出异常，使事务回滚
 		}
 		caseInfo.setCaseCode(caseCodeResult.getData());
-		vo.setCaseId(nextId+"");//将生成的立案单ID也放入到vo中一份，带出到工作流回调方法中
+		vo.setCaseId(nextId + "");// 将生成的立案单ID也放入到vo中一份，带出到工作流回调方法中
 
 		caseInfo.setCaseTitle(vo.getOpinTitle());//  立案单.事件标题
 		caseInfo.setCaseDesc(vo.getOpinDesc());//  立案单.事件描述
@@ -229,14 +230,15 @@ public class PublicOpinionService {
 		if (!result.getIsSuccess()) {
 			return result;
 		}
-		
 
 		// 判断舆情是否已启动
 		PublicOpinion publicOpinion = publicOpinionBiz.selectById(vo.getId());
-		
-		String toExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_TODO);
-		String doingExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_DOING);
-		
+
+		String toExeStatus = CommonUtil.exeStatusUtil(dictFeign,
+				Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_TODO);
+		String doingExeStatus = CommonUtil.exeStatusUtil(dictFeign,
+				Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_DOING);
+
 		if (!publicOpinion.getExeStatus().equals(toExeStatus)) {
 			result.setIsSuccess(false);
 			result.setMessage("当前记录不能修改，只有【未发起】的热线记录可修改！");
@@ -287,27 +289,39 @@ public class PublicOpinionService {
 	private List<PublicOpinionVo> queryAssist(List<PublicOpinion> rows) {
 		List<PublicOpinionVo> voList = BeanUtil.copyBeanList_New(rows, PublicOpinionVo.class);
 
+		//收集需要进行查询字典的code
+		List<String> codeList=new ArrayList<>();
+		for (PublicOpinionVo publicOpinionVo : voList) {
+			codeList.add(publicOpinionVo.getExeStatus());
+			codeList.add(publicOpinionVo.getOpinLevel());
+			codeList.add(publicOpinionVo.getOpinType());
+		}
+		Map<String, String> dictValuesMap= dictFeign.getByCodeIn(String.join(",", codeList));
+		
 		// 聚和舆情处理状态
-		Map<String, String> dictStatusMap = dictFeign.getDictIds(Constances.ROOT_BIZ_CONSTATE);
-		if (dictStatusMap != null && !dictStatusMap.isEmpty()) {
+		// 字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
+//		Map<String, String> dictStatusMap = dictFeign.getByCode(Constances.ROOT_BIZ_CONSTATE);
+		if (dictValuesMap != null && !dictValuesMap.isEmpty()) {
 			for (PublicOpinionVo vo : voList) {
-				vo.setExeStatusName(dictStatusMap.get(vo.getExeStatus()));
+				vo.setExeStatusName(dictValuesMap.get(vo.getExeStatus()));
 			}
 		}
 
 		// 聚和舆情来源类型
-		Map<String, String> dictConSourceTMap = dictFeign.getDictIds(Constances.ROOT_BIZ_CONSOURCET);
-		if (dictConSourceTMap != null && !dictConSourceTMap.isEmpty()) {
+		// 字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
+//		Map<String, String> dictConSourceTMap = dictFeign.getByCode(Constances.ROOT_BIZ_CONSOURCET);
+		if (dictValuesMap != null && !dictValuesMap.isEmpty()) {
 			for (PublicOpinionVo vo : voList) {
-				vo.setOpinTypeName(dictConSourceTMap.get(vo.getOpinType()));
+				vo.setOpinTypeName(dictValuesMap.get(vo.getOpinType()));
 			}
 		}
 
 		// 聚和舆情舆情等级
-		Map<String, String> dictConLevelMap = dictFeign.getDictIds(Constances.ROOT_BIZ_CONLEVEL);
-		if (dictConLevelMap != null && !dictConLevelMap.isEmpty()) {
+		// 字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
+//		Map<String, String> dictConLevelMap = dictFeign.getByCode(Constances.ROOT_BIZ_CONLEVEL);
+		if (dictValuesMap != null && !dictValuesMap.isEmpty()) {
 			for (PublicOpinionVo vo : voList) {
-				vo.setOpinLevelName(dictConLevelMap.get(vo.getOpinLevel()));
+				vo.setOpinLevelName(dictValuesMap.get(vo.getOpinLevel()));
 			}
 		}
 

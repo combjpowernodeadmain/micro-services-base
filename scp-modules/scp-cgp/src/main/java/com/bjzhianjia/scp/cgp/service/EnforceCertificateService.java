@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.cgp.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -9,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSON;
 import com.bjzhianjia.scp.cgp.biz.EnforceCertificateBiz;
 import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
 import com.bjzhianjia.scp.cgp.entity.Constances;
@@ -82,25 +84,27 @@ public class EnforceCertificateService {
 			/*
 			 * 数据库表中biz_lists字段存放的是业务条线ID集合，用“，”隔开 在此通过Feign联查到业务条线内容
 			 */
-			Map<String, String> bizTypeMap = dictFeign.getDictValueByID(String.join(",", bizTypes));
+			Map<String, String> bizTypeMap = dictFeign.getByCodeIn(String.join(",", bizTypes));
 			// 在rightsIssues对象中，有可能bizLists有可能是两个业务条线ID
 			if (bizTypeMap != null && bizTypeMap.size() > 0) {
 				for (EnforceCertificate tmp : list) {
 					String bizLists = tmp.getBizLists();
-					if(StringUtils.isBlank(bizLists)) {
+					if (StringUtils.isBlank(bizLists)) {
 						continue;
 					}
 					String[] split = bizLists.split(",");
 					List<String> bizListsTmp = new ArrayList<>();
 					for (String string : split) {
-						String bizTypeJsonStr = bizTypeMap.get(string);
-						bizListsTmp.add(bizTypeJsonStr);
+						Map<String, String> mapTmp=new HashMap<>();
+						mapTmp.put("id", string);
+						mapTmp.put("labelDefault", bizTypeMap.get(string));
+						bizListsTmp.add(JSON.toJSONString(mapTmp));
+						
 					}
-//					tmp.setBizLists(String.join(",", bizListsTmp));
 					tmp.setBizLists(bizListsTmp.toString());
 				}
 			}
-			
+
 			/*
 			 * -------------------By尚------------------结束----------------
 			 */
@@ -125,13 +129,13 @@ public class EnforceCertificateService {
 			 * -------------------原代码-------------------结束---------------
 			 */
 		}
-		
-		//获取执证人联系电话
+
+		// 获取执证人联系电话
 		List<String> userIds = list.stream().map((o) -> o.getUsrId()).distinct().collect(Collectors.toList());
-		if(userIds!=null&&userIds.size()>0) {
+		if (userIds != null && userIds.size() > 0) {
 			Map<String, String> user = adminFeign.getUser(String.join(",", userIds));
-			if(user!=null&&user.size()>0) {
-				for(EnforceCertificate enforceCertificate:list) {
+			if (user != null && user.size() > 0) {
+				for (EnforceCertificate enforceCertificate : list) {
 					if (StringUtils.isBlank(enforceCertificate.getUsrId())) {
 						continue;
 					}
@@ -174,10 +178,10 @@ public class EnforceCertificateService {
 		}
 
 		if (!StringUtil.isEmpty(enforceCertificate.getBizLists())) {
-
-			Map<String, String> bizType = dictFeign.getDictIds(Constances.ROOT_BIZ_TYPE);
+			// 字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
+			Map<String, String> bizType = dictFeign.getByCode(Constances.ROOT_BIZ_TYPE);
 			if (bizType == null || bizType.size() == 0) {
-				result.setMessage("事件线条不存在");
+				result.setMessage("业务线条不存在");
 				return result;
 			}
 			String[] bizCodes = enforceCertificate.getBizLists().split(",");
@@ -185,7 +189,7 @@ public class EnforceCertificateService {
 			for (String bizCode : bizCodes) {
 
 				if (!bizType.containsKey(bizCode)) {
-					result.setMessage("事件线条不存在");
+					result.setMessage("业务线条不存在");
 					return result;
 				}
 			}
@@ -228,10 +232,10 @@ public class EnforceCertificateService {
 		}
 
 		if (!StringUtil.isEmpty(enforceCertificate.getBizLists())) {
-
-			Map<String, String> bizType = dictFeign.getDictIds(Constances.ROOT_BIZ_TYPE);
+			// 字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
+			Map<String, String> bizType = dictFeign.getByCode(Constances.ROOT_BIZ_TYPE);
 			if (bizType == null || bizType.size() == 0) {
-				result.setMessage("事件线条不存在");
+				result.setMessage("业务条线不存在");
 				return result;
 			}
 			String[] bizCodes = enforceCertificate.getBizLists().split(",");
@@ -239,7 +243,7 @@ public class EnforceCertificateService {
 			for (String bizCode : bizCodes) {
 
 				if (!bizType.containsKey(bizCode)) {
-					result.setMessage("事件线条不存在");
+					result.setMessage("业务条线不存在");
 					return result;
 				}
 			}

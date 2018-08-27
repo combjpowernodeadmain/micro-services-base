@@ -59,19 +59,7 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService {
 			throw new BizException("请指定事件来源");
 		}
 
-		/*
-		 * 查询字典里的事件来源，将字典里的code与前端传code对比，确定ID 将确定后的ID保存到数据库中
-		 */
-		String _key = "";
-		Map<String, String> dictValueByID = dictFeign.getDictValueByID(key);
-		if (dictValueByID != null && !dictValueByID.isEmpty()) {
-			JSONObject jObject = JSONObject.parseObject(dictValueByID.get(key));
-			_key = jObject.getString("code");
-		} else {
-			throw new BizException("未找到与事件来源类型对应的编号");
-		}
-
-		switch (_key) {
+		switch (key) {
 		case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345:
 			// 市长热线
 			addMayorLine(procBizData);

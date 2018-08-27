@@ -235,11 +235,10 @@ public class AreaGridService {
 					areaGridMemberIdList.add(string);
 				}
 			}
-			
-			Map<String, String> dictValueByID = dictFeign.getDictValueByID(String.join(",",areaGridMemberIdList));
-			Set<String> keySet = dictValueByID.keySet();
+
+			Map<String, String> userMap = adminFeign.getUser(String.join(",",areaGridMemberIdList));
 			for(String memberId:areaGridMemberIdList) {
-				if(!keySet.contains(memberId)) {
+				if(!userMap.containsKey(memberId)) {
 					//如果从数据库中查询到的人物集合不包括前端传入的某个ID，说明该风格员不存在
 					result.setIsSuccess(false);
 					result.setMessage("网格管理人员不存在");
@@ -450,7 +449,9 @@ public class AreaGridService {
 			List<String> collect = areaGridMemberList.stream().map((o) -> o.getGridMember()).distinct()
 					.collect(Collectors.toList());
 			Map<String, String> userMap = adminFeign.getUser(String.join(",", collect));
-			Map<String, String> gridMemberMap = dictFeign.getDictIds(Constances.ROOT_BIZ_GRID_ROLE);
+			
+			//字典在业务库里存在形式(ID-->code)，代码需要进行相应修改
+			Map<String, String> gridMemberMap = dictFeign.getByCode(Constances.ROOT_BIZ_GRID_ROLE);
 
 			JSONArray memberJArray = new JSONArray();
 			Set<String> keySet = positionUserMap.keySet();

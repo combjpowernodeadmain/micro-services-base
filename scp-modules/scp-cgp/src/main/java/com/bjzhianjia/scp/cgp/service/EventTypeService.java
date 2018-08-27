@@ -1,9 +1,10 @@
 package com.bjzhianjia.scp.cgp.service;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,6 @@ import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.EventType;
 import com.bjzhianjia.scp.cgp.entity.Result;
-import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
@@ -52,41 +52,39 @@ public class EventTypeService {
 		
 		List<EventType> list = tableResult.getData().getRows();
 		
+		//收集需要进行查询的字典code
+		
+		Set<String> codeSet=new HashSet<>();
+		for (EventType eventType2 : list) {
+			codeSet.add(eventType2.getIsEnable());
+			codeSet.add(eventType2.getBizType());
+		}
+		
 		//进行是否可用(isEnable)字段数据聚积
 		Map<String,String> eventTypeMap = new HashMap<>();
-		List<String> uniqueEvenTypes = list.stream().map((o)->o.getIsEnable()).distinct().collect(Collectors.toList());
-		if(uniqueEvenTypes != null && !uniqueEvenTypes.isEmpty()) {
-			eventTypeMap = dictFeign.getDictValueByID(String.join(",", uniqueEvenTypes));
+		
+		if(codeSet != null && !codeSet.isEmpty()) {
+			eventTypeMap=dictFeign.getByCodeIn(String.join(",", codeSet));
 		}
+		
+//		List<String> uniqueEvenTypes = list.stream().map((o)->o.getIsEnable()).distinct().collect(Collectors.toList());
 		
 		if(eventTypeMap!=null&&eventTypeMap.size()>0) {
 			for(EventType eventType2:list) {
-				String string = eventTypeMap.get(eventType2.getIsEnable());
-				//向前台传送ID+文本
-				JSONObject parseObject = JSONObject.parseObject(string);
+				//向前台传送code+文本
 				JSONObject jsonObject=new JSONObject();
-				jsonObject.put("id", parseObject.getString("id"));
-				jsonObject.put("labelDefault", parseObject.getString("labelDefault"));
+				jsonObject.put("code", eventType2.getIsEnable());
+				jsonObject.put("labelDefault", eventTypeMap.get(eventType2.getIsEnable()));
 				eventType2.setIsEnable(jsonObject.toJSONString());
 			}
 		}
 		
-		
-		eventTypeMap.clear();
-		uniqueEvenTypes.clear();
-		uniqueEvenTypes = list.stream().map((o)->o.getBizType()).distinct().collect(Collectors.toList());
-		if(uniqueEvenTypes != null && !uniqueEvenTypes.isEmpty()) {
-			eventTypeMap = dictFeign.getDictValueByID(String.join(",", uniqueEvenTypes));
-		}
-		
 		if(eventTypeMap!=null&&eventTypeMap.size()>0) {
 			for(EventType eventType2:list) {
-				String string = eventTypeMap.get(eventType2.getBizType());
-				//向前台传送ID+文本
-				JSONObject parseObject = JSONObject.parseObject(string);
+				//向前台传送code+文本
 				JSONObject jsonObject=new JSONObject();
-				jsonObject.put("id", parseObject.getString("id"));
-				jsonObject.put("labelDefault", parseObject.getString("labelDefault"));
+				jsonObject.put("code", eventType2.getBizType());
+				jsonObject.put("labelDefault", eventTypeMap.get(eventType2.getBizType()));
 				eventType2.setBizType(jsonObject.toJSONString());
 			}
 		}
@@ -122,11 +120,11 @@ public class EventTypeService {
 		}
 		
 		if(!StringUtil.isEmpty(eventType.getBizType())) {
-			
-			Map<String, String> bizType = dictFeign.getDictIds(Constances.ROOT_BIZ_TYPE);
+			//字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
+			Map<String, String> bizType = dictFeign.getByCode(Constances.ROOT_BIZ_TYPE);
 			
 			if(bizType == null || !bizType.containsKey(eventType.getBizType())) {
-				result.setMessage("事件线条不存在");
+				result.setMessage("业务线条不存在");
 				return result;
 			}
 		}
@@ -160,11 +158,11 @@ public class EventTypeService {
 		}
 		
 		if(!StringUtil.isEmpty(eventType.getBizType())) {
-			
-			Map<String, String> bizType = dictFeign.getDictIds(Constances.ROOT_BIZ_TYPE);
+			//字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
+			Map<String, String> bizType = dictFeign.getByCode(Constances.ROOT_BIZ_TYPE);
 			
 			if(bizType == null || !bizType.containsKey(eventType.getBizType())) {
-				result.setMessage("事件线条不存在");
+				result.setMessage("业务线条不存在");
 				return result;
 			}
 		}

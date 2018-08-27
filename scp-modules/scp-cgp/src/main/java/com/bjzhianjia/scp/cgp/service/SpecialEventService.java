@@ -88,7 +88,7 @@ public class SpecialEventService {
 				}
 			}
 
-			Map<String, String> bizTypeMapInDB = dictFeign.getDictValueByID(String.join(",", bizTypeIdList));
+			Map<String, String> bizTypeMapInDB = dictFeign.getByCodeIn(String.join(",", bizTypeIdList));
 			for (String bizTypeId : bizTypeIdList) {
 				if (!bizTypeMapInDB.containsKey(bizTypeId)) {
 					result.setMessage("业务条线不存在或已删除");
@@ -204,8 +204,8 @@ public class SpecialEventService {
 
 	public List<SpecialEventVo> queryAssist(List<SpecialEvent> rows) {
 		List<SpecialEventVo> voList = BeanUtil.copyBeanList_New(rows, SpecialEventVo.class);
-
-		Map<String, String> bizTypeMap = dictFeign.getDictIds(Constances.ROOT_BIZ_TYPE);
+		//字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
+		Map<String, String> bizTypeMap = dictFeign.getByCode(Constances.ROOT_BIZ_TYPE);
 		for (SpecialEventVo voTmp : voList) {
 			// 聚和业务条线
 			if (StringUtils.isNotBlank(voTmp.getBizList())) {

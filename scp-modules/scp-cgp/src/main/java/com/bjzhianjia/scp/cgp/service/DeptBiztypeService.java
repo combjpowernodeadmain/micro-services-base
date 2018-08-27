@@ -73,91 +73,47 @@ public class DeptBiztypeService {
 
 	private void queryAssist(List<DeptBizTypeVo> list) {
 		Map<String, String> departs = new HashMap<>();
-		Map<String, String> layerDepart=new HashMap<>();
+		Map<String, String> layerDepart = new HashMap<>();
 		List<String> uniqueDeparts = list.stream().map((o) -> o.getDepartment()).distinct()
 				.collect(Collectors.toList());
-		
-		//部门存在多级情况，采用getLayerDepart方法进行聚和，弃用下面大段注释
-		if(uniqueDeparts!=null&&!uniqueDeparts.isEmpty()) {
+
+		// 部门存在多级情况，采用getLayerDepart方法进行聚和，弃用下面大段注释
+		if (uniqueDeparts != null && !uniqueDeparts.isEmpty()) {
 			layerDepart = adminFeign.getLayerDepart(String.join(",", uniqueDeparts));
 		}
-		
-		if(!layerDepart.isEmpty()) {
-			for(DeptBizTypeVo tmpVo:list) {
+
+		if (!layerDepart.isEmpty()) {
+			for (DeptBizTypeVo tmpVo : list) {
 				String layerDeptInfo = layerDepart.get(tmpVo.getDepartment());
-				if(StringUtils.isNotBlank(layerDeptInfo)) {
+				if (StringUtils.isNotBlank(layerDeptInfo)) {
 					JSONObject layerDeptJObject = JSONObject.parseObject(layerDeptInfo);
 					tmpVo.setDepartment(layerDeptJObject.getString("name"));
 				}
 			}
 		}
-		
-//		if (uniqueDeparts != null && !uniqueDeparts.isEmpty()) {
-//			departs = adminFeign.getDepart(String.join(",", uniqueDeparts));
-//		}
-//
-//		List<Depart> deptList = new ArrayList<>();
-//		List<String> deptParentIds = new ArrayList<>();
-//		Map<String, String> deptParentMap = new HashMap<>();
-//		Set<String> keySet = departs.keySet();
-//		for (String string : keySet) {
-//			String deptStr = departs.get(string);
-//			Depart dept = JSON.parseObject(deptStr, Depart.class);
-//			deptList.add(dept);
-//			deptParentIds.add(dept.getParentId());
-//		}
-//		// 查询父部门对象
-//		if (deptParentIds != null && !deptParentIds.isEmpty()) {
-//			deptParentMap = adminFeign.getDepart(String.join(",", deptParentIds));
-//		}
-//
-//		if (!departs.isEmpty()) {
-//			for (DeptBizTypeVo tmpVo : list) {
-//				// 子部门JSON串
-//				String departName = departs.get(tmpVo.getDepartment());
-//				if (departName != null) {
-//					// 子部门对象
-//					Depart dept = JSON.parseObject(departName, Depart.class);
-//					if (!dept.getParentId().equals("-1")) {
-//						// w父部门JSON串
-//						String parentDeptStr = deptParentMap.get(dept.getParentId());
-//						// 父部门对象
-//						Depart deptParent = JSON.parseObject(parentDeptStr, Depart.class);
-//						tmpVo.setDepartment(deptParent.getName() + "-" + dept.getName());
-//					} else {
-//						tmpVo.setDepartment(dept.getName());
-//					}
-//				}
-//			}
-//		}
 
 		// 业务条线数据聚和
-		for (DeptBizTypeVo tmpDeptBiztype : list) {
-			String[] split = tmpDeptBiztype.getBizType().split(",");
+		List<String> collect = list.stream().map(o -> o.getBizType()).distinct().collect(Collectors.toList());
+		Map<String, String> byCodeIn = dictFeign.getByCodeIn(String.join(",", collect));
+		if (byCodeIn != null && !byCodeIn.isEmpty()) {
+			for (DeptBizTypeVo tmpDeptBiztype : list) {
+				String[] split = tmpDeptBiztype.getBizType().split(",");
 
-			for (String string : split) {
-				Map<String, String> deptBizTypeMap = dictFeign.getDictValueByID(string);
-				JSONObject jsonObject = JSONObject.parseObject(deptBizTypeMap.get(string));
-				String labelDefault = jsonObject.getString("labelDefault"); 
-				if (StringUtils.isNotBlank(tmpDeptBiztype.getBizTypeName())) {
-					tmpDeptBiztype.setBizTypeName(tmpDeptBiztype.getBizTypeName() + "," + labelDefault);
-				} else {
-					tmpDeptBiztype.setBizTypeName(labelDefault);
+				for (String string : split) {
+					if (StringUtils.isNotBlank(tmpDeptBiztype.getBizTypeName())) {
+						tmpDeptBiztype.setBizTypeName(tmpDeptBiztype.getBizTypeName() + "," + byCodeIn.get(string));
+					} else {
+						tmpDeptBiztype.setBizTypeName(byCodeIn.get(string));
+					}
 				}
 			}
 		}
-
-//		Set<String> bizTypeSet = new HashSet<>();
-//		for (DeptBizTypeVo tmpDeptBiztype : list) {
-//			String[] split = tmpDeptBiztype.getBizType().split(",");
-//		}
-
 	}
 
 	public TableResultResponse<DeptBizTypeVo> get(String id) {
 		DeptBiztype deptBiztype = deptBiztypeBiz.selectById(Integer.valueOf(id));
-		
-		if(deptBiztype==null||deptBiztype.getIsDeleted().equals("1")) {
+
+		if (deptBiztype == null || deptBiztype.getIsDeleted().equals("1")) {
 			return null;
 		}
 
@@ -195,11 +151,10 @@ public class DeptBiztypeService {
 
 		// 验证业务条线是否存在
 		if (StringUtils.isNotBlank(deptBiztype.getBizType())) {
-			String[] split = deptBiztype.getBizType().split(",");
-			for (String string : split) {
-				Map<String, String> dictValues = dictFeign.getDictValueByID(string);
+			Map<String, String> dictValues = dictFeign.getByCodeIn(deptBiztype.getBizType());
+			for (String string : dictValues.keySet()) {
 				if (dictValues == null || dictValues.isEmpty()) {
-					result.setMessage("业务条线【" + string + "】不存在");
+					result.setMessage("业务条线不存在");
 					LOGGER.info("业务条线【" + string + "】不存在,不能进行新增操作");
 					return result;
 				}
@@ -252,16 +207,17 @@ public class DeptBiztypeService {
 
 		// 验证业务条线是否存在
 		if (StringUtils.isNotBlank(deptBiztype.getBizType())) {
+			Map<String, String> dictValues = dictFeign.getByCodeIn(deptBiztype.getBizType());
 			String[] split = deptBiztype.getBizType().split(",");
-			for (String string : split) {
-				Map<String, String> dictValues = dictFeign.getDictValueByID(string);
-				if (dictValues == null || dictValues.isEmpty()) {
-					result.setMessage("业务条线【" + string + "】不存在");
+			if (dictValues == null || dictValues.isEmpty()) {
+				for (String string : split) {
+					result.setMessage("业务条线不存在");
 					LOGGER.info("业务条线【" + string + "】不存在,不能进行更新操作");
 					return result;
 				}
 			}
 		} else {
+			//防止前台传入了空字符串或空格
 			deptBiztype.setBizType(null);
 		}
 
