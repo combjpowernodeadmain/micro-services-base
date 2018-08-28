@@ -329,11 +329,22 @@ public class CaseInfoService {
 				
 				wfJObject.put("isUrge", "0".equals(caseInfo.getIsUrge())?false:true);
 				wfJObject.put("isSupervise", "0".equals(caseInfo.getIsSupervise())? false:true);
-				Date deadLine = caseInfo.getDeadLine();
-				boolean isOvertime = deadLine == null ? false : (deadLine.compareTo(new Date())>0? true:false);
-				wfJObject.put("isOvertime",isOvertime);
-				wfJObject.put("caseInfoId",caseInfo.getId());
 				
+				
+				Date deadLine = caseInfo.getDeadLine();
+				Date finishTime = caseInfo.getFinishTime();
+				boolean isOvertime = false;
+				if(CaseInfo.FINISHED_STATE_TODO.equals(caseInfo.getIsFinished())) {
+					//任务未完成判断是否超时
+					isOvertime = deadLine == null ? false : (deadLine.compareTo(new Date())>0? true:false);
+				}else { 
+					//完成任务判断是否超时
+					isOvertime = deadLine == null ? false : (deadLine.compareTo(finishTime)>0? true:false);
+				}
+				//是否超时
+				wfJObject.put("isOvertime",isOvertime);
+				
+				wfJObject.put("caseInfoId",caseInfo.getId());
 				if(CaseInfo.FINISHED_STATE_FINISH.equals(caseInfo.getIsFinished())) {
 					wfJObject.put("procCtaskname", "已结案");
 				}
@@ -511,7 +522,7 @@ public class CaseInfoService {
 			CaseInfo caseInfoInDB = caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
 
 			caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
-			caseInfo.setIsFinished(CaseInfo.FINISHED_STATE_TODO);
+			caseInfo.setIsFinished(CaseInfo.FINISHED_STATE_FINISH);
 			caseInfo.setFinishTime(new Date());// 结案时间
 			gotoFinishSource(caseInfo, false);// 去更新事件来源的状态
 		} else if (Constances.ProcFlowWork.TOFINISHWORKFLOW_DUP.equals(flowDirection)) {
@@ -523,6 +534,7 @@ public class CaseInfoService {
 			caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
 			caseInfo.setIsFinished(CaseInfo.FINISHED_STATE_FINISH);
 			caseInfo.setIsDuplicate("1");
+			caseInfo.setFinishTime(new Date());// 结案时间
 //			caseInfo.setDuplicateWith(Integer.valueOf(bizDataJObject.getString("duplicateWith")));
 			gotoFinishSource(caseInfo, false);// 去更新事件来源的状态
 		}
