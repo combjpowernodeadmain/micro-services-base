@@ -293,7 +293,9 @@ public class CaseInfoService {
 				
 				wfJObject.put("isUrge", "0".equals(caseInfo.getIsUrge())?false:true);
 				wfJObject.put("isSupervise", "0".equals(caseInfo.getIsSupervise())? false:true);
-				wfJObject.put("isOvertime",caseInfo.getDeadLine().compareTo(new Date())>0? true:false);
+				Date deadLine = caseInfo.getDeadLine();
+				boolean isOvertime = deadLine == null ? false : (deadLine.compareTo(new Date())>0? true:false);
+				wfJObject.put("isOvertime",isOvertime);
 				wfJObject.put("caseInfoId",caseInfo.getId());
 				jObjList.add(wfJObject);
 			}
