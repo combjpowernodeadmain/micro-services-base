@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.mapper.CaseInfoMapper;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
@@ -96,9 +97,19 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper,CaseInfo> {
 	 * @param limit
 	 * @return
 	 */
-	public TableResultResponse<CaseInfo> getList(CaseInfo caseInfo,List<Integer> ids,int page,int limit,String startQueryTime,String endQueryTime){
-		Example example =new Example(CaseInfo.class);
+	public TableResultResponse<CaseInfo> getList(CaseInfo caseInfo,List<Integer> ids,JSONObject queryData){
+		//查询参数
+		int page = StringUtils.isBlank(queryData.getString("page")) ? 1 : Integer.valueOf(queryData.getString("page"));
+		int limit = StringUtils.isBlank(queryData.getString("limit")) ? 10
+				: Integer.valueOf(queryData.getString("limit"));
+		String startQueryTime = queryData.getString("startQueryTime");
+		String endQueryTime =  queryData.getString("endQueryTime");
 		
+		boolean isSupervise = queryData.getBoolean("isSupervise");
+		boolean isUrge = queryData.getBoolean("isUrge");
+		boolean isOverTime = queryData.getBoolean("isOverTime");
+		
+		Example example =new Example(CaseInfo.class);
 		Criteria criteria = example.createCriteria();
 		
 		criteria.andEqualTo("isDeleted", "0");
@@ -129,12 +140,16 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper,CaseInfo> {
 			criteria.andIn("id", ids);
 		}
 		//是否添加督办
-		if(StringUtils.isNotBlank(caseInfo.getIsSupervise())) {
+		if(isSupervise) {
 			criteria.andEqualTo("isSupervise", caseInfo.getIsSupervise());
 		}
 		//是否添加崔办
-		if(StringUtils.isNotBlank(caseInfo.getIsUrge())) {
+		if(isUrge) {
 			criteria.andEqualTo("isUrge", caseInfo.getIsUrge());
+		}
+		//超时时间
+		if(isOverTime) {
+			criteria.andGreaterThan("occurTime", new Date());
 		}
 		Page<Object> pageInfo = PageHelper.startPage(page, limit);
 		List<CaseInfo> list = this.mapper.selectByExample(example);

@@ -239,11 +239,7 @@ public class CaseInfoService {
 		}
 
 		// 查询与工作流任务对应的业务
-		int page = StringUtils.isBlank(queryData.getString("page")) ? 1 : Integer.valueOf(queryData.getString("page"));
-		int limit = StringUtils.isBlank(queryData.getString("limit")) ? 10
-				: Integer.valueOf(queryData.getString("limit"));
-		TableResultResponse<CaseInfo> tableResult = caseInfoBiz.getList(queryCaseInfo, bizIdStrList, page, limit,
-				queryData.getString("startQueryTime"), queryData.getString("endQueryTime"));
+		TableResultResponse<CaseInfo> tableResult = caseInfoBiz.getList(queryCaseInfo, bizIdStrList,queryData);
 
 		List<CaseInfo> caseInfoList = tableResult.getData().getRows();
 
@@ -282,8 +278,6 @@ public class CaseInfoService {
 			eventTypeName = String.join(",", eventTypeNameList);
 		}
 
-//		List<String> pricInstIdList = procBackBeanList.stream().map(o->o.getProcInstId()).distinct().collect(Collectors.toList());
-
 		for (WfProcBackBean tmp : procBackBeanList) {
 			JSONObject wfJObject = JSONObject.parseObject(JSON.toJSONString(tmp));
 
@@ -297,6 +291,11 @@ public class CaseInfoService {
 				wfJObject.put("eventTypeListName", eventTypeName);
 				wfJObject.put("sourceTypeName", getRootBizTypeName(caseInfo.getSourceType(), rootBizList));
 				wfJObject.put("caseLevelName", getRootBizTypeName(caseInfo.getCaseLevel(), rootBizList));
+				
+				wfJObject.put("isUrge", "0".equals(caseInfo.getIsUrge())?false:true);
+				wfJObject.put("isSupervise", "0".equals(caseInfo.getIsSupervise())? false:true);
+				wfJObject.put("isOvertime",caseInfo.getDeadLine().compareTo(new Date())>0? true:false);
+				
 				jObjList.add(wfJObject);
 			}
 		}
