@@ -108,6 +108,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper,CaseInfo> {
 		String isSupervise = queryData.getString("isSupervise");
 		String isUrge = queryData.getString("isUrge");
 		String isOverTime = queryData.getString("isOverTime");
+		String isFinished = queryData.getString("procCtaskname");//1:已结案2:已终止
 		
 		Example example =new Example(CaseInfo.class);
 		Criteria criteria = example.createCriteria();
@@ -139,17 +140,21 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper,CaseInfo> {
 		if(ids!=null&&!ids.isEmpty()) {
 			criteria.andIn("id", ids);
 		}
-		//是否添加督办
+		//是否添加督办 (1:是|0:否)
 		if(StringUtils.isNotBlank(isSupervise) && "1".equals(isSupervise)) {
 			criteria.andEqualTo("isSupervise", caseInfo.getIsSupervise());
 		}
-		//是否添加崔办
+		//是否添加崔办(1:是|0:否)
 		if(StringUtils.isNotBlank(isUrge) && "1".equals(isUrge)) {
 			criteria.andEqualTo("isUrge", caseInfo.getIsUrge());
 		}
-		//超时时间
+		//超时时间 (1:是|0:否)
 		if(StringUtils.isNotBlank(isOverTime) && "1".equals(isOverTime)) {
 			criteria.andGreaterThan("occurTime", new Date());
+		}
+		//处理状态：已结案(0:未完成|1:已结案2:已终止)
+		if(StringUtils.isNotBlank(isFinished) && !CaseInfo.FINISHED_STATE_TODO.equals(isFinished)) {
+			criteria.andEqualTo("isFinished", isFinished);
 		}
 		Page<Object> pageInfo = PageHelper.startPage(page, limit);
 		List<CaseInfo> list = this.mapper.selectByExample(example);

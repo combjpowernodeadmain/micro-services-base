@@ -235,6 +235,8 @@ public class CaseInfoService {
 			if (StringUtils.isNotBlank(queryData.getString("procCtaskname"))) {
 				// 是否按进度进行查找(即任务表中·PROC_CTASKNAME·字段)
 				objs.getJSONObject("bizData").put("procCtaskname", queryData.getString("procCtaskname"));
+				//procTaskStatus 流程任务状态：4（已终止）
+				objs.getJSONObject("bizData").put("procTaskStatus", queryData.getString("procTaskStatus"));
 			}
 		}
 
@@ -331,6 +333,15 @@ public class CaseInfoService {
 				boolean isOvertime = deadLine == null ? false : (deadLine.compareTo(new Date())>0? true:false);
 				wfJObject.put("isOvertime",isOvertime);
 				wfJObject.put("caseInfoId",caseInfo.getId());
+				
+				if(CaseInfo.FINISHED_STATE_FINISH.equals(caseInfo.getIsFinished())) {
+					wfJObject.put("procCtaskname", "已结案");
+				}
+				
+				if(CaseInfo.FINISHED_STATE_STOP.equals(caseInfo.getIsFinished())) {
+					wfJObject.put("procCtaskname", "已终止");
+				}
+				
 				jObjList.add(wfJObject);
 			}
 		}
@@ -500,7 +511,7 @@ public class CaseInfoService {
 			CaseInfo caseInfoInDB = caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
 
 			caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
-			caseInfo.setIsFinished("1");
+			caseInfo.setIsFinished(CaseInfo.FINISHED_STATE_TODO);
 			caseInfo.setFinishTime(new Date());// 结案时间
 			gotoFinishSource(caseInfo, false);// 去更新事件来源的状态
 		} else if (Constances.ProcFlowWork.TOFINISHWORKFLOW_DUP.equals(flowDirection)) {
@@ -510,7 +521,7 @@ public class CaseInfoService {
 			CaseInfo caseInfoInDB = caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
 
 			caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
-			caseInfo.setIsFinished("1");
+			caseInfo.setIsFinished(CaseInfo.FINISHED_STATE_FINISH);
 			caseInfo.setIsDuplicate("1");
 //			caseInfo.setDuplicateWith(Integer.valueOf(bizDataJObject.getString("duplicateWith")));
 			gotoFinishSource(caseInfo, false);// 去更新事件来源的状态
@@ -1065,7 +1076,7 @@ public class CaseInfoService {
 		caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
 		caseInfo.setId(Integer.valueOf(bizDataJObject.getString("procBizId")));
 		caseInfo.setSourceType(caseInfoInDB.getSourceType());
-		caseInfo.setIsFinished("1");
+		caseInfo.setIsFinished(CaseInfo.FINISHED_STATE_STOP);
 		caseInfo.setFinishTime(new Date());// 结案时间
 
 		gotoFinishSource(caseInfo, true);// 去更新事件来源的状态
