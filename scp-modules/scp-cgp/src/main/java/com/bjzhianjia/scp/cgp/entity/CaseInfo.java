@@ -20,6 +20,19 @@ import com.alibaba.fastjson.annotation.JSONField;
 public class CaseInfo implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
+	/**
+	 * 未结案
+	 */
+	public static final String FINISHED_STATE_TODO = "0";
+	
+	/**
+	 * 已结案
+	 */
+	public static final String FINISHED_STATE_FINISH = "1";
+	/**
+	 * 已终止
+	 */
+	public static final String FINISHED_STATE_STOP = "2";
 	    //主键
     @Id
     private Integer id;
@@ -241,7 +254,7 @@ public class CaseInfo implements Serializable {
 	@Column(name = "concerned_type")
 	private String concernedType;
 	
-    	//案件是否完成(后加字段)
+    	//案件是否完成(后加字段) 该案件状态(0:未结案|1:已结案2:已终止)
     @Column(name="is_finished")
     private String isFinished;
     
@@ -833,9 +846,15 @@ public class CaseInfo implements Serializable {
 	public void setConcernedType(String concernedType) {
 		this.concernedType = concernedType;
 	}
+	/**
+	 * 设置获取：该案件状态(0:未结案|1:已结案2:已终止)
+	 */
 	public String getIsFinished() {
 		return isFinished;
 	}
+	/**
+	 * 设置获取：该案件状态(0:未结案|1:已结案2:已终止)
+	 */
 	public void setIsFinished(String isFinished) {
 		this.isFinished = isFinished;
 	}
