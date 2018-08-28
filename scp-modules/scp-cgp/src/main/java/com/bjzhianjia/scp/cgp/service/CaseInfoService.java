@@ -165,7 +165,9 @@ public class CaseInfoService {
 			queryCaseInfo = JSONObject.parseObject(queryData.toJSONString(), CaseInfo.class);
 			if (StringUtils.isNotBlank(queryData.getString("procCtaskname"))) {
 				// 是否按进度进行查找(即任务表中·PROC_CTASKNAME·字段)
-				objs.getJSONObject("bizData").put("procCtaskname", queryData.getString("procCtaskname"));
+				JSONObject bizData = objs.getJSONObject("bizData");
+				bizData.put("procCtaskname", queryData.getString("procCtaskname"));
+				objs.put("bizData", bizData);
 			}
 		}
 
@@ -360,14 +362,6 @@ public class CaseInfoService {
 
 			reportPersonId = leadershipAssign.getCrtUserId();
 
-			// 查询数据库中交办领导,领导可能有多《数据库中直接保存的是领导的人名》
-//			List<String> leaderNameList = new ArrayList<>();
-//			Map<String, String> leaderMap = adminFeign.getUser(leadershipAssign.getTaskLeader());
-//			Set<String> keySet2 = leaderMap.keySet();
-//			for (String string : keySet2) {
-//				JSONObject leaderJObj = JSONObject.parseObject(leaderMap.get(string));
-//				leaderNameList.add(leaderJObj.getString("name"));
-//			}
 			// 涉及监管对象名称
 			String regulaObjList = leadershipAssign.getRegulaObjList();
 			List<RegulaObject> regulaObjectList = new ArrayList<>();
@@ -388,7 +382,9 @@ public class CaseInfoService {
 			// 巡查上报
 			ObjectRestResponse<PatrolTask> patrolTaskResult = patreolTaskService
 					.get(Integer.valueOf(caseInfo.getSourceCode()));
-			PatrolTask patrolTask = patrolTaskResult.getData();
+			
+			//By尚
+			PatrolTask patrolTask =patrolTaskResult==null?new PatrolTask():patrolTaskResult.getData();
 
 			resultJObjct = JSONObject.parseObject(JSON.toJSONString(patrolTask));
 			resultJObjct.put("eventSourceType", "巡查上报");
@@ -599,23 +595,6 @@ public class CaseInfoService {
 		jsonObject.put("id", sourceCode);
 		jsonObject.put("exeStatus", exeStatus);
 
-		// 查询已完成状态的ID
-//		Map<String, String> dictIds = dictFeign.getDictIdByCod(exeStatus, false);
-//		Map<String, String> dictIds = dictFeign.getDictIds(exeStatus);
-//		Set<String> keySet = dictIds.keySet();
-//		for (String string : keySet) {
-		/*
-		 * 如果string所对应的记录内code字段值与传入的exeStatus值相同，说明该记录的ID即为与exeStatus状态所对应的记录ID<br/>
-		 * 如:dictIds={"abc1":{"id":"abc1","exeStatus":"def1"},"abc2":{"id":"abc2",
-		 * "exeStatus":"def2"}},exeStatus="def1"<br/>
-		 * 则向jsonObject内put一组数据"exeStatus":"abc1"
-		 */
-//			String exeStatusInDicts = CommonUtil.getValueFromJObjStr(dictIds.get(string), "code");
-//			if (exeStatus.equals(exeStatusInDicts)) {
-//				jsonObject.put("exeStatus", string);
-//			}
-//		}
-
 		return jsonObject;
 	}
 
@@ -708,7 +687,7 @@ public class CaseInfoService {
 		 * =================查询历史记录======附带来源信息=====结束==========
 		 */
 		// 通过root_biz进行模糊查询业务字典，这样查询数据量会稍大，但可以减少请求次数
-		Map<String, String> manyDictValuesMap = dictFeign.getByCode("root_biz");
+		Map<String, String> manyDictValuesMap = dictFeign.getByCode(Constances.ROOT_BIZ);
 
 		List<String> adminIdList = new ArrayList<>();
 		if (caseInfo.getCheckPerson() != null) {
@@ -756,26 +735,11 @@ public class CaseInfoService {
 		JSONObject concernedPersonJObj = new JSONObject();
 		JSONObject concernedCompanyJObj = new JSONObject();
 		if (StringUtils.isNotBlank(caseInfo.getConcernedPerson())) {
-			String concernedTypeId = "";
-
-			// 从刚开始查出的许多业务字典Map集合中遍历当事人类别
-			Set<String> concernedKeySet = manyDictValuesMap.keySet();
-			for (String string : concernedKeySet) {
-				// 找出字典中的code与常量类中的常量code对比
-				String concernedCode = manyDictValuesMap.get(string);
-				if (Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG.equals(concernedCode)
-						|| Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON.equals(concernedCode)) {
-					// 当发现有匹配的code时，将其取出，并跳出
-					concernedTypeId = string;
-					break;
-				}
-			}
-			if (concernedTypeId.equals(caseInfo.getConcernedType())) {
+			if (Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON.equals(caseInfo.getConcernedType())) {
+				//当事人以个人形式存在
 				concernedPerson = concernedPersonBiz.selectById(Integer.valueOf(caseInfo.getConcernedPerson()));
 				if (concernedPerson != null) {
 					concernedPersonJObj = JSONObject.parseObject(JSON.toJSONString(concernedPerson));
-					// 证件类型
-//			Map<String, String> credTypeMap = dictFeign.getDictValueByID(concernedPerson.getCredType());//>>>>>>>>>>>>>>>查询了字典>>>>>>>>>>>>>>>>>>>>>>>>>
 					if (manyDictValuesMap != null && !manyDictValuesMap.isEmpty()) {
 						if (StringUtils.isNotBlank(concernedPerson.getCredType())) {
 							concernedPersonJObj.put("credTypeName",
@@ -784,7 +748,8 @@ public class CaseInfoService {
 						}
 					}
 				}
-			} else if (concernedTypeId.equals(caseInfo.getConcernedType())) {
+			} else if (Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG.equals(caseInfo.getConcernedType())) {
+				//当事人以单位形式存在
 				concernedCompany = concernedCompanyBiz.selectById(Integer.valueOf(caseInfo.getConcernedPerson()));
 				if (concernedCompany != null) {
 					concernedCompanyJObj = JSONObject.parseObject(JSON.toJSONString(concernedCompany));
@@ -846,7 +811,6 @@ public class CaseInfoService {
 				regulaObjectNameList.add(regulaObject.getObjName());
 			}
 		}
-//		RegulaObject regulaObject = regulaObjectBiz.selectById(Integer.valueOf(caseInfo.getRegulaObjList()));
 		eventTypeJObj.put("regulaObjList", caseInfo.getRegulaObjList());
 		eventTypeJObj.put("regulaObjListName", String.join(",", regulaObjectNameList));
 		/*
@@ -881,7 +845,6 @@ public class CaseInfoService {
 		checkJObj.put("checkOpinion", caseInfo.getCheckOpinion());
 		if (caseInfo.getCheckPerson() != null) {
 			checkJObj.put("checkPerson", caseInfo.getCheckPerson());
-//			Map<String, String> checkPerson = adminFeign.getUser(caseInfo.getCheckPerson());//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>查询了admin》》》》》》》》》》》》》》》》》》》》》》》》》
 			if (manyUsersMap != null && !manyUsersMap.isEmpty()) {
 				JSONObject checkPersonJObj = JSONObject.parseObject(manyUsersMap.get(caseInfo.getCheckPerson()));
 				checkJObj.put("checkPersonName", checkPersonJObj.getString("name"));
@@ -952,27 +915,11 @@ public class CaseInfoService {
 		 * 在ExecuteInfo对应的数据库 表中保存的是人名，不是ID<br/>
 		 */
 		if (executeInfoList != null && !executeInfoList.isEmpty()) {
-//			List<String> exePersonIdList = new ArrayList<>();
-//			for (ExecuteInfo executeInfo : executeInfoList) {
-//				if (StringUtils.isNotBlank(executeInfo.getExePerson())) {
-//					exePersonIdList.add(executeInfo.getExePerson());
-//				}
-//			}
-
-//			Map<String, String> exePersonMap = null;
-//			if (exePersonIdList != null && !executeInfoList.isEmpty()) {
-//				exePersonMap = adminFeign.getUser(String.join(",", exePersonIdList));// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>查询了admin》》》》》》》》》》》》》》》》》》》》》》》》》
-//			}
 
 			for (ExecuteInfo executeInfo : executeInfoList) {
 				JSONObject executeInfoJObj = new JSONObject();
 				executeInfoJObj = JSONObject.parseObject(JSON.toJSONString(executeInfo));
 				if (executeInfo != null) {
-//					if (exePersonMap != null && !exePersonMap.isEmpty()) {
-//						JSONObject exeInfoTmp = JSONObject.parseObject(exePersonMap.get(executeInfo.getExePerson()));
-//						if (exeInfoTmp != null) {
-//						}
-//					}
 					executeInfoJObj.put("exePersonName", executeInfo.getExePerson());// 办理人
 //					executeInfoJObj.put("exePsersonTel", executeInfo.get);// 办理人联系方式
 					executeInfoJObj.put("finishTime", executeInfo.getFinishTime());// 办结时间
@@ -1014,7 +961,6 @@ public class CaseInfoService {
 		finishCheckJObj.put("finishCheckTime", caseInfo.getFinishCheckTime());
 		finishCheckJObj.put("finishCheckPic", caseInfo.getFinishCheckPic());
 		if (StringUtils.isNotBlank(caseInfo.getFinishCheckPerson())) {
-//			Map<String, String> finishCheckPersonMap = adminFeign.getUser(caseInfo.getFinishCheckPerson());//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>查询了admin》》》》》》》》》》》》》》》》》》》》》》》》》
 			if (manyUsersMap != null && !manyUsersMap.isEmpty()) {
 				finishCheckJObj.put("finishCheckPerson", caseInfo.getFinishCheckPerson());
 
