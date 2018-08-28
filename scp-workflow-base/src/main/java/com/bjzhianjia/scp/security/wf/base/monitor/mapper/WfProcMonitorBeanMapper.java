@@ -26,6 +26,12 @@ public interface WfProcMonitorBeanMapper {
      */
     List<WfProcBackBean> getAllToDoTasks(JSONObject objs);
     
+    /**
+     *  查询流程任务列表
+     * @param objs
+     * @return
+     */
+    List<WfProcBackBean> getAllTasks(JSONObject objs);
     
     /**
      * 查询用户待办流程任务数量
