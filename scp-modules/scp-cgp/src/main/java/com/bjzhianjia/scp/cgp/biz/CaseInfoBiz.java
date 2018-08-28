@@ -97,7 +97,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper,CaseInfo> {
 	 * @param limit
 	 * @return
 	 */
-	public TableResultResponse<CaseInfo> getList(CaseInfo caseInfo,List<Integer> ids,JSONObject queryData){
+	public TableResultResponse<CaseInfo> getList(CaseInfo caseInfo,Set<Integer> ids,JSONObject queryData){
 		//查询参数
 		int page = StringUtils.isBlank(queryData.getString("page")) ? 1 : Integer.valueOf(queryData.getString("page"));
 		int limit = StringUtils.isBlank(queryData.getString("limit")) ? 10
