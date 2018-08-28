@@ -105,9 +105,9 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper,CaseInfo> {
 		String startQueryTime = queryData.getString("startQueryTime");
 		String endQueryTime =  queryData.getString("endQueryTime");
 		
-		boolean isSupervise = queryData.getBoolean("isSupervise");
-		boolean isUrge = queryData.getBoolean("isUrge");
-		boolean isOverTime = queryData.getBoolean("isOverTime");
+		String isSupervise = queryData.getString("isSupervise");
+		String isUrge = queryData.getString("isUrge");
+		String isOverTime = queryData.getString("isOverTime");
 		
 		Example example =new Example(CaseInfo.class);
 		Criteria criteria = example.createCriteria();
@@ -140,15 +140,15 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper,CaseInfo> {
 			criteria.andIn("id", ids);
 		}
 		//是否添加督办
-		if(isSupervise) {
+		if(StringUtils.isNotBlank(isSupervise) && "1".equals(isSupervise)) {
 			criteria.andEqualTo("isSupervise", caseInfo.getIsSupervise());
 		}
 		//是否添加崔办
-		if(isUrge) {
+		if(StringUtils.isNotBlank(isUrge) && "1".equals(isUrge)) {
 			criteria.andEqualTo("isUrge", caseInfo.getIsUrge());
 		}
 		//超时时间
-		if(isOverTime) {
+		if(StringUtils.isNotBlank(isOverTime) && "1".equals(isOverTime)) {
 			criteria.andGreaterThan("occurTime", new Date());
 		}
 		Page<Object> pageInfo = PageHelper.startPage(page, limit);

@@ -283,7 +283,6 @@ public class CaseInfoService {
 
 			CaseInfo caseInfo = caseInfo_ID_Entity_Map.get(Integer.valueOf(tmp.getProcBizid()));
 			if (caseInfo != null) {
-				caseInfo.setId(null);// 防止caseInfo的ID覆盖工作流任务的ID
 				JSONObject parse = JSONObject.parseObject(JSON.toJSONString(caseInfo));
 				wfJObject.putAll(parse);
 
@@ -295,7 +294,7 @@ public class CaseInfoService {
 				wfJObject.put("isUrge", "0".equals(caseInfo.getIsUrge())?false:true);
 				wfJObject.put("isSupervise", "0".equals(caseInfo.getIsSupervise())? false:true);
 				wfJObject.put("isOvertime",caseInfo.getDeadLine().compareTo(new Date())>0? true:false);
-				
+				wfJObject.put("caseInfoId",caseInfo.getId());
 				jObjList.add(wfJObject);
 			}
 		}
