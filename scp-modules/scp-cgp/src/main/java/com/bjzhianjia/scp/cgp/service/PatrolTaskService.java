@@ -1,7 +1,6 @@
 package com.bjzhianjia.scp.cgp.service;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +21,6 @@ import com.bjzhianjia.scp.cgp.biz.PatrolTaskBiz;
 import com.bjzhianjia.scp.cgp.biz.RegulaObjectBiz;
 import com.bjzhianjia.scp.cgp.biz.RegulaObjectTypeBiz;
 import com.bjzhianjia.scp.cgp.biz.SpecialEventBiz;
-import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.ConcernedCompany;
 import com.bjzhianjia.scp.cgp.entity.ConcernedPerson;
@@ -39,7 +37,6 @@ import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
-import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.PageHelper;
 
 import tk.mybatis.mapper.entity.Example;
@@ -141,7 +138,7 @@ public class PatrolTaskService {
 				throw new Exception(createdResult.getMessage());
 			}
 			concernedId = concernedPerson.getId();
-			_concernedType = CommonUtil.exeStatusUtil(dictFeign, Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON);
+			_concernedType =Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON;
 		} else if ("org".equals(concernedType)) {
 			ConcernedCompany concernedCompany = this.parseData(json, "concernedCompany", ConcernedCompany.class);
 			
@@ -152,13 +149,6 @@ public class PatrolTaskService {
 				RegulaObject regulaObject = regulaObjects.get(0);
 				if(regulaObject.getObjName().equals(concernedCompany.getName())) {
 					concernedCompany.setRegulaObjectId(patrolTask.getRegulaObjectId());
-					
-					//获取网格code和id
-					 AreaGrid areaGrid = areaGridBiz.selectById(regulaObject.getGriId());
-					 if(areaGrid != null) {
-						 patrolTask.setAreaGridCode(areaGrid.getGridCode());
-						 patrolTask.setAreaGridId(areaGrid.getId());
-					 }
 				}
 			}
 			
@@ -167,16 +157,15 @@ public class PatrolTaskService {
 				throw new Exception(result.getMessage());
 			}
 			concernedId = concernedCompany.getId();
-			_concernedType = CommonUtil.exeStatusUtil(dictFeign, Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG);
+			_concernedType = Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG;
 		}
 
 		// 获取数据字典id
 		
 		// 获取处理状态
-		String toExeStatus = CommonUtil.exeStatusUtil(dictFeign,
-				Constances.PartolTaskStatus.ROOT_BIZ_PARTOLTASKT_DOING);
+		String toExeStatus = Constances.PartolTaskStatus.ROOT_BIZ_PARTOLTASKT_DOING;
 		if ("finish".equals(handleStatus)) {
-			toExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.PartolTaskStatus.ROOT_BIZ_PARTOLTASKT_FINISH);
+			toExeStatus =Constances.PartolTaskStatus.ROOT_BIZ_PARTOLTASKT_FINISH;
 		}
 		
 		patrolTask.setStatus(toExeStatus);
@@ -229,8 +218,7 @@ public class PatrolTaskService {
 
 		// 创建预立案单
 		CaseInfo caseInfo = new CaseInfo();
-		caseInfo.setSourceType(
-				CommonUtil.exeStatusUtil(dictFeign, Constances.PartolTaskStatus.ROOT_BIZ_PATROLTYPE_SPECIAL));
+		caseInfo.setSourceType(Constances.PartolTaskStatus.ROOT_BIZ_PATROLTYPE_SPECIAL);
 		caseInfo.setSourceCode(String.valueOf(patrolTask.getId()));
 
 		CaseInfo maxOne = caseInfoBiz.getMaxOne();
@@ -263,30 +251,6 @@ public class PatrolTaskService {
 	}
 
 	/**
-	 * 根据查询条件搜索
-	 * 
-	 * @param patrolTask 巡查任务记录
-	 * @param speName    专项任务名称
-	 * @param startTime  开始时间
-	 * @param endTime    结束时间
-	 * @param page       页码
-	 * @param limit      页容量
-	 * @return
-	 */
-	public TableResultResponse<Map<String, Object>> getList(PatrolTask patrolTask, String speName,
-			Date startTime, Date endTime,int page,int limit) {
-
-		TableResultResponse<Map<String, Object>> tableResult = patrolTaskBiz.selectPatrolTaskList(patrolTask, speName,
-				startTime, endTime, page, limit);
-
-		List<Map<String, Object>> list = tableResult.getData().getRows();
-		if (list.size() == 0) {
-			return tableResult;
-		}
-		return tableResult;
-	}
-
-	/**
 	 * 获取单个对象
 	 * 
 	 * @param id 待获取对象ID
@@ -316,7 +280,7 @@ public class PatrolTaskService {
 		
 		result.put("patrolCode", patrolTask.getPatrolCode());
 		result.put("patrolName", patrolTask.getPatrolName());
-		result.put("releaseUserName", patrolTask.getCrtUserName());
+		result.put("crtUserName", patrolTask.getCrtUserName());
 		result.put("crtTime", patrolTask.getCrtTime());	//上报时间
 		
 		//判断任务来源类型
@@ -349,7 +313,7 @@ public class PatrolTaskService {
 		//事件级别
 		String dictPatrolLevel = CommonUtil.getByCode(dictFeign,patrolTask.getPatrolLevel());
 		if(dictPatrolLevel != null) {
-				result.put("patrolLevel", dictPatrolLevel);
+		   result.put("patrolLevel", dictPatrolLevel);
 		}
 		
 		//获取巡查任务状态

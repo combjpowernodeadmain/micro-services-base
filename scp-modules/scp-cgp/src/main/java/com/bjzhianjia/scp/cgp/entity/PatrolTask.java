@@ -34,10 +34,6 @@ public class PatrolTask implements Serializable {
 	// 网格id
 	@Column(name = "area_grid_id")
 	private Integer areaGridId;
-
-	// 网格编号
-	@Column(name = "area_grid_code")
-	private String areaGridCode;
 	
 	// 来源任务id
 	@Column(name = "source_task_id")
@@ -397,19 +393,6 @@ public class PatrolTask implements Serializable {
 	 */
 	public Date getCrtTime() {
 		return crtTime;
-	}
-	/**
-	 * 获取：网格编号
-	 * @return
-	 */
-	public String getAreaGridCode() {
-		return areaGridCode;
-	}
-	/**
-	 * 设置：网格编号
-	 */
-	public void setAreaGridCode(String areaGridCode) {
-		this.areaGridCode = areaGridCode;
 	}
 	
 	/**

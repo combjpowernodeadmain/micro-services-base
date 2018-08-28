@@ -206,8 +206,7 @@ public class CaseInfoService {
 		List<JSONObject> jObjList = new ArrayList<>();
 
 		// 查询待办工作流任务
-//		PageInfo<WfProcBackBean> pageInfo = wfMonitorService.getAllToDoTasks(objs);
-		PageInfo<WfProcBackBean> pageInfo = null;
+		PageInfo<WfProcBackBean> pageInfo = wfMonitorService.getAllToDoTasks(objs);
 		List<WfProcBackBean> list = pageInfo.getList();
 
 		if (list != null && !list.isEmpty()) {
@@ -294,16 +293,9 @@ public class CaseInfoService {
 				JSONObject parse = JSONObject.parseObject(JSON.toJSONString(caseInfo));
 				wfJObject.putAll(parse);
 
-//				wfJObject.put("caseCode", caseInfo.getCaseCode());
-//				wfJObject.put("caseTitle", caseInfo.getCaseTitle());
-//				wfJObject.put("occurTime", caseInfo.getOccurTime());
-//				wfJObject.put("bizList", caseInfo.getBizList());
 				wfJObject.put("bizListName", getRootBizTypeName(caseInfo.getBizList(), rootBizList));
-//				wfJObject.put("eventTypeList", caseInfo.getEventTypeList());
 				wfJObject.put("eventTypeListName", eventTypeName);
-//				wfJObject.put("sourceType", caseInfo.getSourceType());
 				wfJObject.put("sourceTypeName", getRootBizTypeName(caseInfo.getSourceType(), rootBizList));
-//				wfJObject.put("caseLevel", caseInfo.getCaseLevel());
 				wfJObject.put("caseLevelName", getRootBizTypeName(caseInfo.getCaseLevel(), rootBizList));
 				jObjList.add(wfJObject);
 			}
@@ -433,8 +425,9 @@ public class CaseInfoService {
 			String[] split = ids.split(",");
 			List<String> nameList = new ArrayList<>();
 			for (String string : split) {
-				JSONObject obj = JSONObject.parseObject(rootBizList.get(string));
-				nameList.add(obj.getString("labelDefault"));
+//				JSONObject obj = JSONObject.parseObject(rootBizList.get(string));
+				nameList.add(rootBizList.get(string));
+//				nameList.add(obj.getString("labelDefault"));
 			}
 
 			return String.join(",", nameList);

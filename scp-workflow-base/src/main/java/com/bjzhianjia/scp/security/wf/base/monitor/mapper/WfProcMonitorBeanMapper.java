@@ -19,6 +19,15 @@ public interface WfProcMonitorBeanMapper {
     List<WfProcBackBean> getUserToDoTasks(JSONObject objs);
     
     /**
+     *  查询所有待办流程任务列表
+     * 排除 “已终止”、“已结案”、“事件重复”
+     * @param objs
+     * @return
+     */
+    List<WfProcBackBean> getAllToDoTasks(JSONObject objs);
+    
+    
+    /**
      * 查询用户待办流程任务数量
      * 
      * @param objs

@@ -115,6 +115,22 @@ public class WfMonitorBiz extends WfBaseBiz {
     }
     
     /**
+     * 查询所有待办流程任务列表
+     * @param objs
+     * @return
+     */
+    public List<WfProcBackBean> getAllToDoTasks(JSONObject objs) throws WorkflowException {
+        logger.info("用户待办任务查询--开始查询用户待办任务...");
+
+        try {
+            PageHelper.startPage(getPagePara(objs));
+            return iqbWfMyProcBeanMapper.getAllToDoTasks(objs);
+        } finally {
+            logger.info("用户待办任务查询--查询用户待办任务完成.");
+        }
+    }
+    
+    /**
      * 查询用户待办流程任务数量
      * @param objs
      * @return

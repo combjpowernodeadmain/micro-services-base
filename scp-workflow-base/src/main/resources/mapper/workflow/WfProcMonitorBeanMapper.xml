@@ -134,6 +134,19 @@
 		ORDER BY task.PROC_TASK_COMMITTIME ASC
 	</select>
 	
+	<select id="getAllToDoTasks" resultType="com.bjzhianjia.scp.security.wf.base.monitor.entity.WfProcBackBean">
+		SELECT
+			task.PROC_CTASKNAME procCtaskname,
+			task.PROC_INST_ID procInstId, 
+			task.PROC_CTASKID procCtaskId,
+			task.PROC_BIZID procBizid
+   		FROM
+	    	SCP_WF_PROC_TASK task 
+		WHERE
+			task.PROC_TASK_STATUS IN ('1', '2')
+		ORDER BY task.PROC_TASK_COMMITTIME ASC
+	</select>
+	
 	<select id="getUserToDoTaskCount" resultType="int">
 		SELECT count(task.PROC_CTASKID)
 		FROM SCP_WF_PROC proc
