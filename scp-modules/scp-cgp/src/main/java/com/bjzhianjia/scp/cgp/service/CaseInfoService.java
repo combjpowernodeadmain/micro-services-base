@@ -342,11 +342,11 @@ public class CaseInfoService {
 					wfJObject.put("procCtaskname", "已终止");
 				}
 				
-				jObjList.add(wfJObject);
 			}
+			jObjList.add(wfJObject);
 		}
 
-		return new TableResultResponse<>(tableResult.getData().getTotal(), jObjList);
+		return new TableResultResponse<>(pageInfo.getTotal(), jObjList);
 	}
 
 	private void sourceTypeHistoryAssist(JSONObject wfJObject, CaseInfo caseInfo) {
