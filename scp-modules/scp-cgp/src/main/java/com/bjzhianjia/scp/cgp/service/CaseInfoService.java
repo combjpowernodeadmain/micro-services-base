@@ -774,9 +774,7 @@ public class CaseInfoService {
 					concernedPersonJObj = JSONObject.parseObject(JSON.toJSONString(concernedPerson));
 					if (manyDictValuesMap != null && !manyDictValuesMap.isEmpty()) {
 						if (StringUtils.isNotBlank(concernedPerson.getCredType())) {
-							concernedPersonJObj.put("credTypeName",
-									JSONObject.parseObject(manyDictValuesMap.get(concernedPerson.getCredType()))
-											.getString("labelDefault"));
+							concernedPersonJObj.put("credTypeName",manyDictValuesMap.get(concernedPerson.getCredType()));
 						}
 					}
 				}
@@ -822,8 +820,7 @@ public class CaseInfoService {
 		if (caseInfo.getBizList() != null) {
 //			Map<String, String> bizListMap = dictFeign.getDictValueByID(caseInfo.getBizList());//>>>>>>>>>>>>>>>查询了字典>>>>>>>>>>>>>>>>>>>>>>>>>
 			if (manyDictValuesMap != null && !manyDictValuesMap.isEmpty()) {
-				eventTypeJObj.put("bizListName",
-						JSONObject.parseObject(manyDictValuesMap.get(caseInfo.getBizList())).getString("labelDefault"));
+				eventTypeJObj.put("bizListName",manyDictValuesMap.get(caseInfo.getBizList()));
 			}
 		}
 		// 事件类别（单选）
