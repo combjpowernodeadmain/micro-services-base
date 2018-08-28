@@ -102,8 +102,12 @@ public class EnforceTerminalService {
 
 				String jsonUser = users.get(tmpTerminal.getRetrievalUser());
 				JSONObject jsonUserObj = JSONObject.parseObject(jsonUser);
+				
+				JSONObject userJobjForReturn=new JSONObject();
+				userJobjForReturn.put("id", jsonUserObj.getString("id"));
+				userJobjForReturn.put("name", jsonUserObj.getString("name"));
 				if (jsonUserObj != null) {
-					tmpTerminal.setRetrievalUser(jsonUser);
+					tmpTerminal.setRetrievalUser(userJobjForReturn.toJSONString());
 				}
 			}
 		}

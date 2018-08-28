@@ -270,37 +270,6 @@ public class LeadershipAssignService {
 			}
 		}
 
-		// 聚和交办领导《数据库中直接保存的是领导人的人名》
-		// 交办领导为选填，所以交办领导项有可能为空
-
-		/*
-		 * 以下注释代码不要删
-		 */
-//		Set<String> leaderIdListStr = new HashSet<>();
-//		for(LeadershipAssignVo vo:voList) {
-//			if(vo.getTaskLeader()!=null) {
-//				leaderIdListStr.add(vo.getTaskLeader());
-//			}
-//		}
-//		Map<String, String> leaderMap = adminFeign.getUser(String.join(",", leaderIdListStr));
-//		if(leaderMap!=null&&!leaderMap.isEmpty()) {
-//			for(LeadershipAssignVo vo:voList) {
-//				List<String> leaderNameList=new ArrayList<>();
-//				String taskLeaders = vo.getTaskLeader();
-//				
-//				if(StringUtils.isNotBlank(taskLeaders)) {
-//					String[] split = taskLeaders.split(",");
-//					for(String taskLeaderId:split) {
-//						String leaderName = leaderMap.get(taskLeaderId);
-//						if(null!=leaderName) {
-//							JSONObject leaderNameJObject = JSONObject.parseObject(leaderName);
-//							leaderNameList.add(leaderNameJObject.getString("name"));
-//						}
-//					}
-//				}
-//				vo.setLeaderNames(String.join(",", leaderNameList));
-//			}
-//		}
 		/*
 		 * 以上注释代码不要删
 		 */

@@ -101,6 +101,7 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
 		if(StringUtils.isNoneBlank(startTime) && StringUtils.isNoneBlank(endTime)) {
 			_startTime = DateUtil.dateFromStrToDate(startTime, "yyyy-MM-dd HH:mm:ss");
 			_endTimeTmp = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
+			_endTimeTmp = DateUtils.addDays(_endTimeTmp, 1);
 		}
 		
 		PatrolTask patrolTask = new PatrolTask();
@@ -109,7 +110,7 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
 		patrolTask.setBizTypeId(bizTypeId);
 		patrolTask.setStatus(status);
 		
-		return patrolTaskBiz.selectPatrolTaskList(patrolTask, speName, _startTime, DateUtils.addDays(_endTimeTmp, 1), page, limit);
+		return patrolTaskBiz.selectPatrolTaskList(patrolTask, speName, _startTime, _endTimeTmp, page, limit);
 	}
 	
 	

@@ -190,17 +190,6 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService {
 			}
 			procBizData.put("procBizId", String.valueOf(vo.getCaseId()));
 
-			// 添加缓存到Redis
-//			String redisField="caseInfo_"+vo.getId();
-//			
-//			stringRedisTemplate.opsForHash().put(redisKey, "caseCode", vo.getCaseCode());
-//			stringRedisTemplate.opsForHash().put(redisKey, "caseTitle", vo.getCaseCode());
-//			stringRedisTemplate.opsForHash().put(redisKey, "occurTime", vo.getAppealDatetime());
-//			stringRedisTemplate.opsForHash().put(redisKey, "bizList", "");//热线不涉及业务条线
-//			stringRedisTemplate.opsForHash().put(redisKey, "eventTypeList", "");//热线也不涉及事件类别
-//			stringRedisTemplate.opsForHash().put(redisKey, "sourceCode", vo.getCaseSource());
-//			stringRedisTemplate.opsForHash().put(redisKey, "caseLevel", "");
-
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new BizException(StringUtils.isBlank(result.getMessage()) ? e.getMessage() : result.getMessage());

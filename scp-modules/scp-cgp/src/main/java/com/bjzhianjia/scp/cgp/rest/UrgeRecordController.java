@@ -33,7 +33,7 @@ import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 @RequestMapping("urgeRecord")
 @CheckClientToken
 @CheckUserToken
-@Api(tags="催办")
+@Api(tags="催办管理")
 public class UrgeRecordController extends BaseController<UrgeRecordBiz,UrgeRecord,Integer> {
 	
 	@Autowired

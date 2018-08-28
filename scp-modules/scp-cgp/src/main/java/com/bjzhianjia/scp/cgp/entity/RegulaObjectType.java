@@ -38,7 +38,7 @@ public class RegulaObjectType implements Serializable {
 	
 	    //是否可用；关联数据字典
     @Column(name = "is_enable")
-    @MergeField(key="root_biz_enabled",feign=DictFeign.class,method="getDictIds")
+    @MergeField(key="root_biz_enabled",feign=DictFeign.class,method="getByCode")
     private String isEnable;
 	
 	    //是否删除；1：是；0: 否

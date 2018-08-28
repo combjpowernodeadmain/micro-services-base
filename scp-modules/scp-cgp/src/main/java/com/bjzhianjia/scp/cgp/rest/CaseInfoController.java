@@ -116,12 +116,27 @@ public class CaseInfoController extends BaseController<CaseInfoBiz,CaseInfo,Inte
     @ResponseBody
     @RequestMapping(value = { "/allToDoTasks" }, method = RequestMethod.POST)
     public TableResultResponse<JSONObject> getAllToDoTasks(@RequestBody JSONObject objs, HttpServletRequest request) {
-        log.debug("SCP信息---开始查询所有用户待办任务列表...");
+        log.debug("SCP信息---开始查询所有待办任务列表...");
         
         TableResultResponse<JSONObject> userToDoTasks = caserInfoService.getAllToDoTasks(objs);
         return userToDoTasks;
     }
     
+	/**
+     * 查询流程任务列表
+     * @param objs
+     * @param request
+     * @return
+     */
+    @ApiOperation("综合查询列表")
+    @ResponseBody
+    @RequestMapping(value = { "/allTasks" }, method = RequestMethod.POST)
+    public TableResultResponse<JSONObject> getAllTasks(@RequestBody JSONObject objs, HttpServletRequest request) {
+        log.debug("SCP信息---开始查询所有任务列表...");
+        
+        TableResultResponse<JSONObject> tasks = caserInfoService.getAllTasks(objs);
+        return tasks;
+    }
     
     @ApiOperation("完成任务")
     @ResponseBody

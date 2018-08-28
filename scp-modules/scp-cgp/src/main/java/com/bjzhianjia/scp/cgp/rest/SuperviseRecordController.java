@@ -33,7 +33,7 @@ import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 @RequestMapping("superviseRecord")
 @CheckClientToken
 @CheckUserToken
-@Api(tags="督办")
+@Api(tags="督办管理")
 public class SuperviseRecordController extends BaseController<SuperviseRecordBiz,SuperviseRecord,Integer> {
 	@Autowired
 	private SuperviseRecordBiz superviseRecordBiz; 

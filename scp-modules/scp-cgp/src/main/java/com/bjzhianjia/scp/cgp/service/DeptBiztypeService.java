@@ -87,7 +87,7 @@ public class DeptBiztypeService {
 				String layerDeptInfo = layerDepart.get(tmpVo.getDepartment());
 				if (StringUtils.isNotBlank(layerDeptInfo)) {
 					JSONObject layerDeptJObject = JSONObject.parseObject(layerDeptInfo);
-					tmpVo.setDepartment(layerDeptJObject.getString("name"));
+					tmpVo.setDepartmentName(layerDeptJObject.getString("name"));
 				}
 			}
 		}

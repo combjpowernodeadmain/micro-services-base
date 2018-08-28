@@ -294,6 +294,10 @@ public class MayorHotlineService {
 
 	private List<MayorHotlineVo> queryAssist(List<MayorHotline> rows) {
 		List<MayorHotlineVo> voList = BeanUtil.copyBeanList_New(rows, MayorHotlineVo.class);
+		
+		if(voList==null||voList.isEmpty()) {
+			return voList;
+		}
 
 		// 聚和处理状态
 		//字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
