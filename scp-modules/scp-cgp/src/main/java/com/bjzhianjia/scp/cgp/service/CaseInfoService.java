@@ -217,12 +217,44 @@ public class CaseInfoService {
 			return new TableResultResponse<>(0, jObjList);
 		}
 	}
+	/**
+	 * 查询所有任务
+	 * 
+	 * @author chenshuai
+	 * @param objs
+	 * @return
+	 */
+	public TableResultResponse<JSONObject> getAllTasks(JSONObject objs) {
+		CaseInfo queryCaseInfo = new CaseInfo();
+		JSONObject queryData = objs.getJSONObject("queryData");
 
+		if ("true".equals(queryData.getString("isQuery"))) {
+			queryCaseInfo = JSONObject.parseObject(queryData.toJSONString(), CaseInfo.class);
+			if (StringUtils.isNotBlank(queryData.getString("procCtaskname"))) {
+				// 是否按进度进行查找(即任务表中·PROC_CTASKNAME·字段)
+				objs.getJSONObject("bizData").put("procCtaskname", queryData.getString("procCtaskname"));
+			}
+		}
+
+		List<JSONObject> jObjList = new ArrayList<>();
+
+		// 查询待办工作流任务
+		PageInfo<WfProcBackBean> pageInfo = wfMonitorService.getAllTasks(objs);
+		List<WfProcBackBean> list = pageInfo.getList();
+
+		if (list != null && !list.isEmpty()) {
+			// 有待办任务
+			return queryAssist(queryCaseInfo, queryData, jObjList, pageInfo, objs);
+		} else {
+			// 无待办任务
+			return new TableResultResponse<>(0, jObjList);
+		}
+	}
 	private TableResultResponse<JSONObject> queryAssist(CaseInfo queryCaseInfo, JSONObject queryData,
 			List<JSONObject> jObjList, PageInfo<WfProcBackBean> pageInfo, JSONObject objs) {
 		List<WfProcBackBean> procBackBeanList = pageInfo.getList();
 
-		List<Integer> bizIdStrList = new ArrayList<>();
+		Set<Integer> bizIds = new HashSet<>();
 		List<String> eventTypeIdStrList = new ArrayList<>();
 
 		Set<String> rootBizIdSet = new HashSet<>();
@@ -231,7 +263,7 @@ public class CaseInfoService {
 			for (int i = 0; i < procBackBeanList.size(); i++) {
 				WfProcBackBean wfProcBackBean = procBackBeanList.get(i);
 				try {
-					bizIdStrList.add(Integer.valueOf(wfProcBackBean.getProcBizid()));
+					bizIds.add(Integer.valueOf(wfProcBackBean.getProcBizid()));
 				} catch (NumberFormatException e) {
 					continue;
 				}
@@ -239,7 +271,7 @@ public class CaseInfoService {
 		}
 
 		// 查询与工作流任务对应的业务
-		TableResultResponse<CaseInfo> tableResult = caseInfoBiz.getList(queryCaseInfo, bizIdStrList,queryData);
+		TableResultResponse<CaseInfo> tableResult = caseInfoBiz.getList(queryCaseInfo, bizIds,queryData);
 
 		List<CaseInfo> caseInfoList = tableResult.getData().getRows();
 
