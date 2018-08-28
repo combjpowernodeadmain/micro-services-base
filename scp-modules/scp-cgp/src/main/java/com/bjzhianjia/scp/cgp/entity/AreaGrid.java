@@ -33,7 +33,7 @@ public class AreaGrid implements Serializable {
 	// 网格等级
 	//原数据库中为tinyint类型
 	@Column(name = "grid_level")
-	@MergeField(key = "root_biz_grid_level", feign = DictFeign.class, method = "getDictIds")
+	@MergeField(key = "root_biz_grid_level", feign = DictFeign.class, method = "getByCode")
 	private String gridLevel;
 
 	// 上级网格

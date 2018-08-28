@@ -47,7 +47,7 @@ public class EnforceTerminal implements Serializable {
 	
 	    //属配类型
     @Column(name = "terminal_type")
-    @MergeField(key = "root_biz_trml_t", feign = DictFeign.class, method = "getDictIds")
+    @MergeField(key = "root_biz_trml_t", feign = DictFeign.class, method = "getByCode")
     @NotEmpty(message="属配类型不能为空")
     private String terminalType;
 	
