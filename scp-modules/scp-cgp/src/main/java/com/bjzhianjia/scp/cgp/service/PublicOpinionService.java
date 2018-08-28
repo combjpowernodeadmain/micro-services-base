@@ -288,6 +288,10 @@ public class PublicOpinionService {
 
 	private List<PublicOpinionVo> queryAssist(List<PublicOpinion> rows) {
 		List<PublicOpinionVo> voList = BeanUtil.copyBeanList_New(rows, PublicOpinionVo.class);
+		
+		if(voList==null||voList.isEmpty()) {
+			return voList;
+		}
 
 		//收集需要进行查询字典的code
 		List<String> codeList=new ArrayList<>();
@@ -296,7 +300,11 @@ public class PublicOpinionService {
 			codeList.add(publicOpinionVo.getOpinLevel());
 			codeList.add(publicOpinionVo.getOpinType());
 		}
-		Map<String, String> dictValuesMap= dictFeign.getByCodeIn(String.join(",", codeList));
+		
+		Map<String, String> dictValuesMap= null;
+		if(codeList!=null&&!codeList.isEmpty()) {
+			dictValuesMap= dictFeign.getByCodeIn(String.join(",", codeList));
+		}
 		
 		// 聚和舆情处理状态
 		// 字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode

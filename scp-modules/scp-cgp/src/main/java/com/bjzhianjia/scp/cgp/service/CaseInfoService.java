@@ -762,7 +762,7 @@ public class CaseInfoService {
 			Set<String> concernedKeySet = manyDictValuesMap.keySet();
 			for (String string : concernedKeySet) {
 				// 找出字典中的code与常量类中的常量code对比
-				String concernedCode = CommonUtil.getValueFromJObjStr(manyDictValuesMap.get(string), "code");
+				String concernedCode = manyDictValuesMap.get(string);
 				if (Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG.equals(concernedCode)
 						|| Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON.equals(concernedCode)) {
 					// 当发现有匹配的code时，将其取出，并跳出
