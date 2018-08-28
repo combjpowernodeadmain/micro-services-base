@@ -144,19 +144,30 @@
 	    	SCP_WF_PROC_TASK task 
 		WHERE
 			task.PROC_TASK_STATUS IN ('1', '2')
-		ORDER BY task.PROC_TASK_COMMITTIME ASC
+			<if test="procCtaskname != null and procCtaskname != ''">
+				and task.PROC_CTASKNAME LIKE "%"#{procCtaskname}"%"
+			</if>
 	</select>
 	<select id="getAllTasks" resultType="com.bjzhianjia.scp.security.wf.base.monitor.entity.WfProcBackBean">
-	SELECT
-		task.PROC_CTASKNAME procCtaskname,
-		task.PROC_INST_ID procInstId, 
-		task.PROC_CTASKID procCtaskId,
-		task.PROC_BIZID procBizid
-  		FROM
-    	SCP_WF_PROC_TASK task 
-	WHERE
-		task.PROC_TASK_STATUS IN ('1', '2','3')
-	ORDER BY task.PROC_TASK_COMMITTIME ASC
+		SELECT
+			task.PROC_CTASKNAME procCtaskname,
+			task.PROC_INST_ID procInstId,
+			task.PROC_CTASKID procCtaskId,
+			task.PROC_BIZID procBizid
+		FROM
+			SCP_WF_PROC_TASK task
+		WHERE
+			task.ID IN (
+				SELECT
+					MAX(task.id)
+				FROM
+					SCP_WF_PROC_TASK task
+				GROUP BY
+					task.PROC_INST_ID
+			)
+		<if test="procCtaskname != null and procCtaskname != ''  ">
+			and task.PROC_CTASKNAME LIKE "%"#{procCtaskname}"%"
+		</if>
 	</select>
 	
 	<select id="getUserToDoTaskCount" resultType="int">
