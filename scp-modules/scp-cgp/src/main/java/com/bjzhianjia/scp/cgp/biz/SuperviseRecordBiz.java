@@ -42,7 +42,7 @@ public class SuperviseRecordBiz extends BusinessBiz<SuperviseRecordMapper,Superv
 	public TableResultResponse<SuperviseRecord> getList(Integer page, Integer limit, Integer caseInfoId) {
 		Example example = new Example(SuperviseRecord.class);
 		Example.Criteria criteria = example.createCriteria();
-		example.setOrderByClause("'crt_time' DESC");
+		example.setOrderByClause("id DESC");
 	
 		criteria.andEqualTo("caseInfoId", caseInfoId);
 

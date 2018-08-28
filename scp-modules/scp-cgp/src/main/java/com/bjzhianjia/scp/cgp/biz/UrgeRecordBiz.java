@@ -43,7 +43,7 @@ public class UrgeRecordBiz extends BusinessBiz<UrgeRecordMapper, UrgeRecord> {
 	public TableResultResponse<UrgeRecord> getList(Integer page, Integer limit, Integer caseInfoId) {
 		Example example = new Example(UrgeRecord.class);
 		Example.Criteria criteria = example.createCriteria();
-		example.setOrderByClause("'crt_time' DESC");
+		example.setOrderByClause("id DESC");
 	
 		criteria.andEqualTo("caseInfoId", caseInfoId);
 
