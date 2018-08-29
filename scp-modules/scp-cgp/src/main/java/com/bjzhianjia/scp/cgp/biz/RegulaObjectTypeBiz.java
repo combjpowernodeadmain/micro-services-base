@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.biz;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -8,8 +9,6 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import com.bjzhianjia.scp.cgp.entity.Constances;
-import com.bjzhianjia.scp.cgp.entity.RegTypeRelation;
 import com.bjzhianjia.scp.cgp.entity.RegulaObjectType;
 import com.bjzhianjia.scp.cgp.mapper.RegulaObjectTypeMapper;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
@@ -17,7 +16,6 @@ import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-import com.vaadin.event.ListenerMethod;
 
 import tk.mybatis.mapper.entity.Example;
 
@@ -81,6 +79,7 @@ public class RegulaObjectTypeBiz extends BusinessBiz<RegulaObjectTypeMapper, Reg
 	 */
 	public TableResultResponse<RegulaObjectType> getList(int page,int limit,RegulaObjectType regulaObjectType){
 		Example example=new Example(RegulaObjectType.class);
+		example.setOrderByClause("order_num desc");
 		Example.Criteria criteria=example.createCriteria();
 		
 		criteria.andEqualTo("isDeleted","0");
@@ -93,8 +92,6 @@ public class RegulaObjectTypeBiz extends BusinessBiz<RegulaObjectTypeMapper, Reg
 		if(StringUtils.isNotBlank(regulaObjectType.getIsEnable())) {
 			criteria.andEqualTo("isEnable", regulaObjectType.getIsEnable());
 		}
-		
-		example.setOrderByClause("id desc");
 		
 		Page<Object> result = PageHelper.startPage(page, limit);
 		List<RegulaObjectType> list = this.mapper.selectByExample(example);
@@ -130,8 +127,14 @@ public class RegulaObjectTypeBiz extends BusinessBiz<RegulaObjectTypeMapper, Reg
 	 */
 	public TableResultResponse<RegulaObjectType> getByRelation(String ids,int page,int limit){
 		if(StringUtils.isNotBlank(ids)) {
+			Example example=new Example(RegulaObjectType.class);
+			example.setOrderByClause("order_num desc");
+			Example.Criteria criteria = example.createCriteria();
+			criteria.andIn("id", Arrays.asList(ids.split(",")));
+			
+			List<RegulaObjectType> list = this.mapper.selectByExample(example);
+			
 			Page<Object> pageInfo = PageHelper.startPage(page,limit);
-			List<RegulaObjectType> list = this.mapper.selectByIds(ids);
 			return new TableResultResponse<>(pageInfo.getTotal(), list);
 		}
 		return null;
@@ -147,6 +150,7 @@ public class RegulaObjectTypeBiz extends BusinessBiz<RegulaObjectTypeMapper, Reg
 	 */
 	public List<RegulaObjectType> getBySecondCategory(List<Integer> secondCategoryId ){
 		Example example=new Example(RegulaObjectType.class);
+		example.setOrderByClause("order_num desc");
 		Example.Criteria criteria=example.createCriteria();
 		
 		criteria.andEqualTo("isDeleted","0");
