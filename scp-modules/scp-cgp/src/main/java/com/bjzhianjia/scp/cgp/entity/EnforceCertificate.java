@@ -35,7 +35,7 @@ public class EnforceCertificate implements Serializable {
 	    //证件类型
     @Column(name = "cert_type")
     @NotEmpty(message="证件类型不能为空")
-    @MergeField(key = "root_biz_zfzType", feign = DictFeign.class, method = "getDictIds")
+    @MergeField(key = "root_biz_zfzType", feign = DictFeign.class, method = "getByCode")
     private String certType;
 	
 	    //证件编号

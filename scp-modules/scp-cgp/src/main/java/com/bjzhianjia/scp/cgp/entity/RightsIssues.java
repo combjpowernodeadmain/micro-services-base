@@ -70,7 +70,7 @@ public class RightsIssues implements Serializable {
 	//是否可用
 	@Column(name = "is_enable")
     @NotEmpty(message="是否可用不能为空")
-	@MergeField(key = "root_biz_enabled", feign = DictFeign.class, method = "getDictIds")
+	@MergeField(key = "root_biz_enabled", feign = DictFeign.class, method = "getByCode")
     private String isEnable;
 	
 	//是否删除；1：是；0: 否
@@ -104,7 +104,7 @@ public class RightsIssues implements Serializable {
 	    //租户ID
     @Column(name = "tenant_id")
     private String tenantId;
-    @MergeField(key = "root_biz_type", feign = DictFeign.class, method = "getDictIds")
+    @MergeField(key = "root_biz_type", feign = DictFeign.class, method = "getByCode")
     private String bizType;
 	
 	/**

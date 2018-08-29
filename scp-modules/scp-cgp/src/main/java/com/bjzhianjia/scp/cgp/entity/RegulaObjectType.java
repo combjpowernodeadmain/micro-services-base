@@ -33,7 +33,7 @@ public class RegulaObjectType implements Serializable {
 	
 	    //所属监管对象类型
     @Column(name = "parent_object_type_id")
-    @MergeField(key="root_biz_objType",feign=DictFeign.class,method="getDictIds")
+    @MergeField(key="root_biz_objType",feign=DictFeign.class,method="getByCode")
     private Integer parentObjectTypeId;
 	
 	    //是否可用；关联数据字典

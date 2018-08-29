@@ -70,7 +70,7 @@ public class InspectItems implements Serializable {
 	    //是否可用
     @Column(name = "is_enable")
     @NotEmpty(message="是否可用不能为空")
-    @MergeField(key = "root_biz_enabled", feign = DictFeign.class, method = "getDictIds")
+    @MergeField(key = "root_biz_enabled", feign = DictFeign.class, method = "getByCode")
     private String isEnable;
 	
 	    //是否删除；1：是；0: 否
