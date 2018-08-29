@@ -22,22 +22,27 @@ import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreUserToken;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
 import com.bjzhianjia.scp.security.dict.biz.DictValueBiz;
 import com.bjzhianjia.scp.security.dict.entity.DictValue;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
 
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -51,6 +56,11 @@ import java.util.stream.Collectors;
 @CheckUserToken
 @Api(tags = "字典值服务", description = "字典值服务")
 public class DictValueController extends BaseController<DictValueBiz, DictValue, String> {
+	
+	@Autowired
+	private DictValueBiz dictValueBiz;
+	
+	
 	@IgnoreClientToken
 	@IgnoreUserToken
 	@RequestMapping(value = "/type/{code}", method = RequestMethod.GET)
@@ -204,4 +214,64 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 		List<Map<String, String>> result = this.baseBiz.getDictValueByCode(code);
 		return result;
 	}
+	
+	@RequestMapping(value = "update",method = RequestMethod.PUT)
+    @ResponseBody
+    @ApiOperation("更新单个对象")
+    public ObjectRestResponse<DictValue> update(@RequestBody DictValue entity){
+    	ObjectRestResponse<DictValue> result =  new ObjectRestResponse<>();
+    	if(entity != null && entity.getId() != null) {
+    		//code不进行修改
+    		String code = entity.getCode();
+        	entity.setCode(null);
+        	dictValueBiz.updata(entity);
+        	
+        	//修改完成返回code
+        	entity.setCode(code);
+        	result.data(entity);
+    	}else {
+    		result.setStatus(400);
+    	}
+        return result;
+    }
+    
+    @RequestMapping(value = "add",method = RequestMethod.POST)
+    @ResponseBody
+    @ApiOperation("新增单个对象")
+    public ObjectRestResponse<DictValue> add(@RequestBody DictValue entity){
+    	ObjectRestResponse<DictValue> result =  new ObjectRestResponse<>();
+    	if(entity != null) {
+    		entity.setValue(entity.getValue().trim());
+    		entity.setCode(entity.getCode().trim());
+    		//code唯一
+    		int count = dictValueBiz.selByCode(entity.getCode());
+    		if(count == 0) {
+    			dictValueBiz.insertSelective(entity);
+    			result.setData(entity);
+    		}else {
+    			result.setStatus(400);
+    			result.setMessage("code已存在！");
+    		}
+    	}
+        return result;
+    }
+    
+    @RequestMapping(value = "delete/{id}",method = RequestMethod.DELETE)
+    @ResponseBody
+    @ApiOperation("删除单个对象")
+    public ObjectRestResponse<DictValue> del(@PathVariable("id") String id){
+    	ObjectRestResponse<DictValue> result =  new ObjectRestResponse<>();
+    	if(StringUtils.isNotBlank(id)) {
+    		DictValue dictValue = dictValueBiz.selectById(id);
+    		if(dictValue != null){
+    			dictValue.setIsDeleted("1");
+            	dictValueBiz.delete(dictValue);
+    		}else {
+    			result.setStatus(400);
+    		}
+    	}else {
+    		result.setStatus(400);
+    	}
+        return result;
+    }
 }
