@@ -21,16 +21,19 @@ package com.bjzhianjia.scp.security.dict.biz;
 import com.alibaba.fastjson.JSON;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.util.UUIDUtils;
+import com.bjzhianjia.scp.security.dict.entity.DictType;
 import com.bjzhianjia.scp.security.dict.entity.DictValue;
 import com.bjzhianjia.scp.security.dict.mapper.DictValueMapper;
 
 import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.entity.Example.Criteria;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -42,6 +45,11 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class DictValueBiz extends BusinessBiz<DictValueMapper, DictValue> {
+	
+	@Autowired
+	private DictValueMapper dictValueMapper;
+	
+	
 	@Override
 	public void insertSelective(DictValue entity) {
 		entity.setId(UUIDUtils.generateUuid());
@@ -134,4 +142,32 @@ public class DictValueBiz extends BusinessBiz<DictValueMapper, DictValue> {
 		}
 		return null;
 	}
+	
+	  /**
+     * 根据主键更新属性不为null的值
+     * @param entity
+     */
+    public void updata(DictValue entity) {
+    	dictValueMapper.updateByPrimaryKeySelective(entity);
+    }
+    /**
+     * 根据code条件进行查询总数
+     * @param code
+     * 		  编码
+     * @return
+     */
+    public int selByCode(String code) {
+    	Example example = new Example(DictType.class);
+    	Criteria criteria = example.createCriteria();
+    	criteria.andEqualTo("code",code);
+    	return dictValueMapper.selectCountByExample(example);
+    }
+    
+    /**
+     * 根据主键更新属性不为null的值
+     * @param entity
+     */
+    public void delete(DictValue entity) {
+    	dictValueMapper.updateByPrimaryKeySelective(entity);
+    }
 }
