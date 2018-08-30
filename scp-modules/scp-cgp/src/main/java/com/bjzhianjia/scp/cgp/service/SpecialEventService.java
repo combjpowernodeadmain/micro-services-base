@@ -1,9 +1,11 @@
 package com.bjzhianjia.scp.cgp.service;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +24,7 @@ import com.bjzhianjia.scp.cgp.mapper.EventTypeMapper;
 import com.bjzhianjia.scp.cgp.mapper.RegulaObjectTypeMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.vo.SpecialEventVo;
+import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 
@@ -42,6 +45,8 @@ public class SpecialEventService {
 	private RegulaObjectTypeMapper regulaObjectTypeMapper;
 	@Autowired
 	private SpecialEventBiz specialEventBiz;
+	@Autowired
+	private MergeCore mergeCore;
 
 	/**
 	 * 添加专项管理记录
@@ -81,9 +86,9 @@ public class SpecialEventService {
 		String bizListStr = specialEventVo.getBizList();
 		if (StringUtils.isNotBlank(bizListStr) && !bizListStr.equals("-")) {
 			String[] bizTypeIds = bizListStr.split(",");
-			List<String> bizTypeIdList=new ArrayList<>();
+			List<String> bizTypeIdList = new ArrayList<>();
 			for (String string : bizTypeIds) {
-				if(!string.equals("-")) {
+				if (!string.equals("-")) {
 					bizTypeIdList.add(string);
 				}
 			}
@@ -95,22 +100,21 @@ public class SpecialEventService {
 					return result;
 				}
 			}
-			
+
 		}
 
 		// iii. 验证涵盖事件类别是否已被删除
 		String eventTypeListStr = specialEventVo.getEventTypeList();
 		if (StringUtils.isNotBlank(eventTypeListStr) && !eventTypeListStr.equals("-")) {
-			List<String> eventTypeIdList=new ArrayList<>();
+			List<String> eventTypeIdList = new ArrayList<>();
 			String[] eventTypeIds = eventTypeListStr.split(";|\\,");
 			for (String string : eventTypeIds) {
-				if(!string.equals("-")) {
+				if (!string.equals("-")) {
 					eventTypeIdList.add(string);
 				}
 			}
 
-			List<EventType> eventTypeListInDB = eventTypeMapper
-					.selectByIds(String.join(",", eventTypeIdList));
+			List<EventType> eventTypeListInDB = eventTypeMapper.selectByIds(String.join(",", eventTypeIdList));
 			Map<Integer, String> eventTypeMapInDB = eventTypeListInDB.stream()
 					.collect(Collectors.toMap(EventType::getId, EventType::getIsDeleted));
 			for (String eventTypeId : eventTypeIdList) {
@@ -120,7 +124,7 @@ public class SpecialEventService {
 					return result;
 				}
 			}
-			
+
 		}
 
 		// iv. 验证涉及监管对象（类型）是否已被删除
@@ -136,7 +140,9 @@ public class SpecialEventService {
 		}
 
 		// v. 验证各数据字典所选值是否已被删除
-		// 专项状态原为数据字典，现改为0 1 2 3表示
+		// 专项状态原为数据字典
+		
+		
 		if (StringUtils.isNotBlank(specialEventVo.getSpeCode())) {
 			Map<String, Object> conditions = new HashMap<>();
 			conditions.put("speCode", specialEventVo.getSpeCode());
@@ -197,6 +203,19 @@ public class SpecialEventService {
 	public TableResultResponse<SpecialEventVo> getList(SpecialEventVo vo, int page, int limit) {
 		TableResultResponse<SpecialEvent> restResult = specialEventBiz.getList(vo, page, limit);
 		List<SpecialEvent> rows = restResult.getData().getRows();
+
+		try {
+			mergeCore.mergeResult(SpecialEvent.class, rows);
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
+
 		List<SpecialEventVo> voList = queryAssist(rows);
 
 		return new TableResultResponse<SpecialEventVo>(restResult.getData().getTotal(), voList);
@@ -204,7 +223,7 @@ public class SpecialEventService {
 
 	public List<SpecialEventVo> queryAssist(List<SpecialEvent> rows) {
 		List<SpecialEventVo> voList = BeanUtil.copyBeanList_New(rows, SpecialEventVo.class);
-		//字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
+		// 字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
 		Map<String, String> bizTypeMap = dictFeign.getByCode(Constances.ROOT_BIZ_TYPE);
 		for (SpecialEventVo voTmp : voList) {
 			// 聚和业务条线
@@ -218,42 +237,59 @@ public class SpecialEventService {
 			}
 
 			// 解析专项状态
-			String key = voTmp.getSpeStatus();
-			
-			voTmp.setSpeStatusId(voTmp.getSpeStatus());
-			switch (key) {
-			case "0":
-				voTmp.setSpeStatus("未启动");
-				break;
-			case "1":
-				voTmp.setSpeStatus("进行中");
-				break;
-			case "2":
-				voTmp.setSpeStatus("已终止");
-				break;
-			case "3":
-				voTmp.setSpeStatus("已完成");
-				break;
-			}
-			
-			//解析监管对象
+//			String key = voTmp.getSpeStatus();
+//			
+//			voTmp.setSpeStatusId(voTmp.getSpeStatus());
+//			switch (key) {
+//			case "0":
+//				voTmp.setSpeStatus("未启动");
+//				break;
+//			case "1":
+//				voTmp.setSpeStatus("进行中");
+//				break;
+//			case "2":
+//				voTmp.setSpeStatus("已终止");
+//				break;
+//			case "3":
+//				voTmp.setSpeStatus("已完成");
+//				break;
+//			}
+
+			// 解析监管对象
 			String regObjListStr = voTmp.getRegObjList();
-			List<RegulaObjectType> regObjList = regulaObjectTypeMapper.selectByIds(regObjListStr);
-			List<String> regObjTypeNameList = regObjList.stream().map(o->o.getObjectTypeName()).distinct().collect(Collectors.toList());
-			voTmp.setRegObjTypeName(String.join(",", regObjTypeNameList));
+			if(StringUtils.isNotBlank(regObjListStr)) {
+				List<RegulaObjectType> regObjList = regulaObjectTypeMapper.selectByIds(regObjListStr);
+				List<String> regObjTypeNameList = regObjList.stream().map(o -> o.getObjectTypeName()).distinct()
+						.collect(Collectors.toList());
+				voTmp.setRegObjTypeName(String.join(",", regObjTypeNameList));
+			}
 		}
 		return voList;
 	}
-	
+
 	/**
 	 * 获取单个对象
+	 * 
 	 * @author 尚
 	 * @param id
 	 * @return
 	 */
 	public SpecialEventVo getOne(Integer id) {
 		SpecialEvent one = specialEventBiz.selectById(id);
-		List<SpecialEvent> rows=new ArrayList<>();
+		List<SpecialEvent> rows = new ArrayList<>();
+		
+		try {
+			mergeCore.mergeResult(SpecialEvent.class, rows);
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
+		
 		rows.add(one);
 		List<SpecialEventVo> result = queryAssist(rows);
 		return result.get(0);

@@ -54,6 +54,10 @@ public class AttendanceInfo implements Serializable {
 	    //部门ID
     @Column(name = "depart_id")
     private String departId;
+    
+    	//account（后加字段）
+    @Column(name="crt_username")
+    private String crtUsername;
 	
 
 	/**
@@ -163,5 +167,17 @@ public class AttendanceInfo implements Serializable {
 	 */
 	public String getDepartId() {
 		return departId;
+	}
+	/**
+	 * 获取：account
+	 */
+	public String getCrtUsername() {
+		return crtUsername;
+	}
+	/**
+	 * 设置：account
+	 */
+	public void setCrtUsername(String crtUsername) {
+		this.crtUsername = crtUsername;
 	}
 }

@@ -91,16 +91,16 @@ public class RegulaObjectService {
 	 * @return
 	 */
 	public Result<Void> createRegulaObject(RegulaObject regulaObject, EnterpriseInfo enterpriseInfo) {
-		RegulaObject theMaxRegulaObject = regulaObjectBiz.getTheMaxOne();
+//		RegulaObject theMaxRegulaObject = regulaObjectBiz.getTheMaxOne();
 
-		int maxRegulaObjectId = -1;
-		if (theMaxRegulaObject == null) {
-			maxRegulaObjectId = 1;
-		} else {
-			maxRegulaObjectId = theMaxRegulaObject.getId() + 1;
-		}
-		regulaObject.setId(maxRegulaObjectId);// 指定监管对象记录ID
-		enterpriseInfo.setRegulaObjId(maxRegulaObjectId);// 指定企业信息的外键
+//		int maxRegulaObjectId = -1;
+//		if (theMaxRegulaObject == null) {
+//			maxRegulaObjectId = 1;
+//		} else {
+//			maxRegulaObjectId = theMaxRegulaObject.getId() + 1;
+//		}
+//		regulaObject.setId(maxRegulaObjectId);// 指定监管对象记录ID
+//		enterpriseInfo.setRegulaObjId(maxRegulaObjectId);// 指定企业信息的外键
 
 		Result<Void> result = new Result<>();
 
@@ -110,6 +110,7 @@ public class RegulaObjectService {
 		}
 
 		regulaObjectBiz.insertSelective(regulaObject);
+		enterpriseInfo.setRegulaObjId(regulaObject.getId());// 指定企业信息的外键
 		enterpriseInfoBiz.insertSelective(enterpriseInfo);
 		this.initCacheData();
 		return result;
@@ -502,6 +503,7 @@ public class RegulaObjectService {
 		JSONObject regulaObjTypeJObj=new JSONObject();
 		regulaObjTypeJObj.put("id", regulaObjectType.getId());
 		regulaObjTypeJObj.put("objectTypeName", regulaObjectType.getObjectTypeName());
+		regulaObjTypeJObj.put("templetType", regulaObjectType.getTempletType());
 		result.setObjType(regulaObjTypeJObj.toJSONString());
 		return result;
 	}

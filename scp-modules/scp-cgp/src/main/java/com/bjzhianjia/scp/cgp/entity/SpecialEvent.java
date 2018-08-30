@@ -6,6 +6,9 @@ import javax.persistence.*;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.bjzhianjia.scp.cgp.feign.DictFeign;
+import com.bjzhianjia.scp.merge.annonation.MergeField;
+
 /**
  * 专项管理
  * 
@@ -43,8 +46,9 @@ public class SpecialEvent implements Serializable {
 	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	private Date speEndDate;
 
-	// 专项状态(0:未启动|1:进行中|2:已终止|3:已完成|)
+	// 专项状态
 	@Column(name = "spe_status")
+	@MergeField(key="root_biz_specialType",feign=DictFeign.class,method="getByCode")
 	private String speStatus;
 
 	// 专项说明
