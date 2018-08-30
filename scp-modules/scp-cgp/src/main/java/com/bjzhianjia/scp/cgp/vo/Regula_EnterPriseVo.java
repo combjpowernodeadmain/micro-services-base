@@ -26,12 +26,15 @@ public class Regula_EnterPriseVo implements Serializable{
     private String picBefore;
     private Float longitude;
     private Integer griId;
+    private String gridName;
     private Float latitude;
     private String gatherer;
     @DateTimeFormat(pattern="yyyy-MM-dd")
     private Date gatherTime;
     private String bizList;
+    private String bizListName;
     private String eventList;
+    private String eventListName;
     private String mapInfo;
     
     //企业信息ID
@@ -340,5 +343,23 @@ public class Regula_EnterPriseVo implements Serializable{
 	}
 	public void setSocialInsuranceCount(Float socialInsuranceCount) {
 		this.socialInsuranceCount = socialInsuranceCount;
+	}
+	public String getBizListName() {
+		return bizListName;
+	}
+	public void setBizListName(String bizListName) {
+		this.bizListName = bizListName;
+	}
+	public String getEventListName() {
+		return eventListName;
+	}
+	public void setEventListName(String eventListName) {
+		this.eventListName = eventListName;
+	}
+	public String getGridName() {
+		return gridName;
+	}
+	public void setGridName(String gridName) {
+		this.gridName = gridName;
 	}
 }

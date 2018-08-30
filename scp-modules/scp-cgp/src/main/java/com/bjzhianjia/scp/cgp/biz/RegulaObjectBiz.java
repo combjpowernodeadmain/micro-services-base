@@ -83,8 +83,8 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 		if (StringUtils.isNotBlank(regulaObject.getBizList())) {
 			criteria.andLike("bizList", "%" + regulaObject.getBizList() + "%");
 		}
-		
-		if(objTypeIdList!=null&&!objTypeIdList.isEmpty()) {
+
+		if (objTypeIdList != null && !objTypeIdList.isEmpty()) {
 			criteria.andIn("objType", objTypeIdList);
 		}
 
