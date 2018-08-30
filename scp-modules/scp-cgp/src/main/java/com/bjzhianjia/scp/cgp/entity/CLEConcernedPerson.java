@@ -18,6 +18,7 @@ public class CLEConcernedPerson implements Serializable {
 	
 	    //主键
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 	
 	    //当事人姓名

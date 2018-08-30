@@ -2,8 +2,8 @@ package com.bjzhianjia.scp.cgp.biz;
 
 import org.springframework.stereotype.Service;
 
-import com.bjzhianjia.scp.cgp.entity.ConcernedPerson;
-import com.bjzhianjia.scp.cgp.mapper.ConcernedPersonMapper;
+import com.bjzhianjia.scp.cgp.entity.CLEConcernedPerson;
+import com.bjzhianjia.scp.cgp.mapper.CLEConcernedPersonMapper;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 
 /**
@@ -14,5 +14,5 @@ import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
  * @version 2018-08-26 20:07:07
  */
 @Service
-public class CLEConcernedPersonBiz extends BusinessBiz<ConcernedPersonMapper,ConcernedPerson> {
+public class CLEConcernedPersonBiz extends BusinessBiz<CLEConcernedPersonMapper,CLEConcernedPerson> {
 }

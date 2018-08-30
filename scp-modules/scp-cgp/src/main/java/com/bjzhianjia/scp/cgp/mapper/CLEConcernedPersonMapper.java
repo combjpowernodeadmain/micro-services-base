@@ -1,6 +1,6 @@
 package com.bjzhianjia.scp.cgp.mapper;
 
-import com.bjzhianjia.scp.cgp.entity.ConcernedPerson;
+import com.bjzhianjia.scp.cgp.entity.CLEConcernedPerson;
 import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 
 /**
@@ -10,6 +10,6 @@ import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
  * @email 576866311@qq.com
  * @version 2018-08-26 20:07:07
  */
-public interface CLEConcernedPersonMapper extends CommonMapper<ConcernedPerson> {
+public interface CLEConcernedPersonMapper extends CommonMapper<CLEConcernedPerson> {
 	
 }

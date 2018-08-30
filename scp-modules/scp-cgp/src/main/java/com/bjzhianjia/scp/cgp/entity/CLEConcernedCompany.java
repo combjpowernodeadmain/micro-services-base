@@ -18,6 +18,7 @@ public class CLEConcernedCompany implements Serializable {
 	
 	    //
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 	
 	    //单位名称

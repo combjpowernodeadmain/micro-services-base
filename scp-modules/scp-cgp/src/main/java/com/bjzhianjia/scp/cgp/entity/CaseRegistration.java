@@ -4,6 +4,9 @@ import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.*;
 
+import com.bjzhianjia.scp.cgp.feign.DictFeign;
+import com.bjzhianjia.scp.merge.annonation.MergeField;
+
 
 /**
  * 综合执法 - 案件登记
@@ -30,6 +33,7 @@ public class CaseRegistration implements Serializable {
 	
 	    //所属业务线条
     @Column(name = "biz_type")
+    @MergeField(key=Constances.ROOT_BIZ_TYPE,method="getByCode",feign=DictFeign.class)
     private String bizType;
 	
 	    //事件类型

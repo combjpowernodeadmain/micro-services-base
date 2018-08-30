@@ -1,17 +1,27 @@
 package com.bjzhianjia.scp.cgp.biz;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.constances.WorkFlowConstances;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.WritsProcessBind;
+import com.bjzhianjia.scp.cgp.entity.WritsTemplates;
 import com.bjzhianjia.scp.cgp.mapper.WritsProcessBindMapper;
+import com.bjzhianjia.scp.cgp.mapper.WritsTemplatesMapper;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
+import com.bjzhianjia.scp.cgp.vo.WritsProcessBindVo;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -28,6 +38,8 @@ import tk.mybatis.mapper.entity.Example.Criteria;
  */
 @Service
 public class WritsProcessBindBiz extends BusinessBiz<WritsProcessBindMapper,WritsProcessBind> {
+	@Autowired
+	private WritsTemplatesMapper writsTemplatesMapper;
 	
 	/**
 	 * 按分布查询记录
@@ -37,7 +49,7 @@ public class WritsProcessBindBiz extends BusinessBiz<WritsProcessBindMapper,Writ
 	 * @param limit
 	 * @return
 	 */
-	public TableResultResponse<WritsProcessBind> getList(WritsProcessBind writsProcessBind,int page,int limit){
+	public TableResultResponse<WritsProcessBindVo> getList(WritsProcessBind writsProcessBind,int page,int limit){
 		Example example=new Example(WritsProcessBind.class);
 		Criteria criteria = example.createCriteria();
 		
@@ -52,7 +64,41 @@ public class WritsProcessBindBiz extends BusinessBiz<WritsProcessBindMapper,Writ
 		Page<Object> pageInfo = PageHelper.startPage(page, limit);
 		List<WritsProcessBind> list = this.selectByExample(example);
 		
-		return new TableResultResponse<>(pageInfo.getTotal(), list);
+		List<String> writsIdList = list.stream().map(o->String.valueOf(o.getWritsId())).distinct().collect(Collectors.toList());
+		List<WritsProcessBindVo> voList = BeanUtil.copyBeanList_New(list, WritsProcessBindVo.class);
+		
+		List<WritsTemplates> writsTemplageList = writsTemplatesMapper.selectByIds(String.join(",", writsIdList));
+		Map<Integer, String> writsTemplateMap = writsTemplageList.stream().collect(Collectors.toMap(WritsTemplates::getId, WritsTemplates::getName));
+		
+		for(WritsProcessBindVo tmp:voList) {
+			tmp.setWritsName(writsTemplateMap.get(tmp.getWritsId()));
+		}
+		return new TableResultResponse<>(pageInfo.getTotal(), voList);
+	}
+	
+	/**
+	 * 分页获取记录列表<br/>
+	 * 部分字段数据
+	 * @author 尚
+	 * @param writsProcessBind
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	public TableResultResponse<WritsProcessBindVo> getListOfCurrentNode(WritsProcessBind writsProcessBind,int page,int limit){
+		TableResultResponse<WritsProcessBindVo> restResult = getList(writsProcessBind, page, limit);
+		List<WritsProcessBindVo> voRows = restResult.getData().getRows();
+		
+		List<WritsProcessBindVo> resultList=new ArrayList<>();
+		for(WritsProcessBindVo vo:voRows) {
+			WritsProcessBindVo resultVo=new WritsProcessBindVo();
+			resultVo.setId(vo.getId());
+			resultVo.setWritsId(vo.getWritsId());
+			resultVo.setWritsName(vo.getWritsName());
+			resultVo.setIsDefault(vo.getIsDefault());
+		}
+		
+		return new TableResultResponse<WritsProcessBindVo>(restResult.getData().getTotal(), resultList);
 	}
 	
 	/**

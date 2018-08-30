@@ -18,6 +18,7 @@ public class WritsTemplates implements Serializable {
 	
 	    //主键
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 	
 	    //模板名称
