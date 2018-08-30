@@ -121,7 +121,18 @@ public class DictValue implements Serializable {
 
 	@Column(name="type_id")
 	private String typeId;
+	
+	//是否删除(1:删除|0:未删除)
+	@Column(name = "is_deleted")
+	private String isDeleted;
+	
+	public String getIsDeleted() {
+		return isDeleted;
+	}
 
+	public void setIsDeleted(String isDeleted) {
+		this.isDeleted = isDeleted;
+	}
 	/**
 	 * 设置：主键
 	 */

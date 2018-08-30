@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiParam;
 
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.PatrolTaskBiz;
+import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.PatrolTask;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.service.PatrolTaskService;
@@ -21,6 +22,7 @@ import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -46,6 +48,8 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
 
 	@Autowired
 	private PatrolTaskService patrolTaskService;
+	@Autowired
+	private PatrolTaskBiz patrolTaskBiz;
 	
 	/**
 	 * 创建巡查任务
@@ -61,7 +65,7 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
 		ObjectRestResponse<Void> restResult = new ObjectRestResponse<>();
 		restResult.setStatus(200);
 		//TODO 数据验证
-		Result<Void> result = null;
+		Result<CaseInfo> result = null;
 		try {
 			result = patrolTaskService.createPatrolTask(json);
 		} catch (Exception e) {
@@ -97,6 +101,7 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
 		if(StringUtils.isNoneBlank(startTime) && StringUtils.isNoneBlank(endTime)) {
 			_startTime = DateUtil.dateFromStrToDate(startTime, "yyyy-MM-dd HH:mm:ss");
 			_endTimeTmp = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
+			_endTimeTmp = DateUtils.addDays(_endTimeTmp, 1);
 		}
 		
 		PatrolTask patrolTask = new PatrolTask();
@@ -104,7 +109,8 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
 		patrolTask.setPatrolName(patrolName);
 		patrolTask.setBizTypeId(bizTypeId);
 		patrolTask.setStatus(status);
-		return patrolTaskService.getList(patrolTask, speName, _startTime, _endTimeTmp, page, limit);
+		
+		return patrolTaskBiz.selectPatrolTaskList(patrolTask, speName, _startTime, _endTimeTmp, page, limit);
 	}
 	
 	

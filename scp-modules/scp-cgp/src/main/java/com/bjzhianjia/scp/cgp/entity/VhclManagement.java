@@ -39,7 +39,7 @@ public class VhclManagement implements Serializable {
 	
 	    //车辆类型
     @Column(name = "vehicle_type")
-    @MergeField(key = "root_biz_vhcl_t", feign = DictFeign.class, method = "getDictIds")
+    @MergeField(key = "root_biz_vhcl_t", feign = DictFeign.class, method = "getByCode")
     private String vehicleType;
 	
 	    //所属部门

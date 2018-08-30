@@ -120,30 +120,20 @@ public class MayorHotlineService {
 		 */
 		MayorHotline selectById = mayorHotlineBiz.selectById(vo.getId());
 		
-		Map<String, String> dictValueMap = dictFeign.getDictIdByCode(Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_DOING,
-				false);
-
-		String dictId = "";
-		if (dictValueMap != null && !dictValueMap.isEmpty()) {
-			List<String> aaList = new ArrayList<>(dictValueMap.keySet());
-			// dictValueMap按code等值查询，得到的结果集为唯一
-			dictId = aaList.get(0);
-		}
-		
 		if (selectById == null) {
 			// 用户未进行暂存，直接点击了【预立案】按钮
 			// 1.2->否：同时创建热线记录与预立案记录
 
 			// 创建热线记录
 			Result<MayorHotline> cHotlineResult = this.createdMayorHotlineCache(vo,
-					dictId);
+					Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_DOING);
 			if (!cHotlineResult.getIsSuccess()) {
 				result.setMessage(cHotlineResult.getMessage());
 				throw new Exception(cHotlineResult.getMessage());
 			}
 		} else {
 			// 1.1->是：将该暂存记录与当前要进行存储的预立案记录关联，并更新热线记录处理状态为【处理中】
-			vo.setExeStatus(dictId);// 处理状态改为【处理中】
+			vo.setExeStatus(Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_DOING);// 处理状态改为【处理中】
 			Result<MayorHotline> update = updateCache(vo);
 			if (!update.getIsSuccess()) {
 				result.setMessage(update.getMessage());
@@ -261,29 +251,13 @@ public class MayorHotlineService {
 		
 
 		// 判断热线是否已启动
-		Map<String, String> toDoMap = dictFeign.getDictIdByCode(Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_TODO,
-				false);
-		Map<String, String> doingMap = dictFeign.getDictIdByCode(Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_DOING,
-				false);
-		String todoId = "";
-		if (toDoMap != null && !toDoMap.isEmpty()) {
-			List<String> idList = new ArrayList<>(toDoMap.keySet());
-			// dictValueMap按code等值查询，得到的结果集为唯一
-			todoId = idList.get(0);
-		}
 		MayorHotline mayorHotline = mayorHotlineBiz.selectById(vo.getId());
-		if (!todoId.equals(mayorHotline.getExeStatus())) {
+		if (!Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_TODO.equals(mayorHotline.getExeStatus())) {
 			throw new Exception("当前记录不能修改，只有【未发起】的热线记录可修改！");
-		}
-		String doingId = "";
-		if (doingMap != null && !doingMap.isEmpty()) {
-			List<String> idList = new ArrayList<>(doingMap.keySet());
-			// dictValueMap按code等值查询，得到的结果集为唯一
-			doingId = idList.get(0);
 		}
 
 		// 更新热线记录
-		vo.setExeStatus(doingId);// 设置其状态为“处理中”
+		vo.setExeStatus(Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_DOING);// 设置其状态为“处理中”
 		mayorHotlineBiz.updateSelectiveById(vo);
 
 		// 创建预立案单记录
@@ -320,9 +294,14 @@ public class MayorHotlineService {
 
 	private List<MayorHotlineVo> queryAssist(List<MayorHotline> rows) {
 		List<MayorHotlineVo> voList = BeanUtil.copyBeanList_New(rows, MayorHotlineVo.class);
+		
+		if(voList==null||voList.isEmpty()) {
+			return voList;
+		}
 
 		// 聚和处理状态
-		Map<String, String> dictIdMap = dictFeign.getDictIds(Constances.ROOT_BIZ_12345STATE);
+		//字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
+		Map<String, String> dictIdMap = dictFeign.getByCode(Constances.ROOT_BIZ_12345STATE);
 		if (dictIdMap != null && !dictIdMap.isEmpty()) {
 			for (MayorHotlineVo vo : voList) {
 				vo.setExeStatusName(dictIdMap.get(vo.getExeStatus()));
@@ -334,17 +313,7 @@ public class MayorHotlineService {
 		Example caseInfoExample = new Example(CaseInfo.class);
 		Example.Criteria criteria = caseInfoExample.createCriteria();
 
-		Map<String, String> dictValueMap = dictFeign.getDictIdByCode(Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345,
-				false);
-
-		String dictId = "";
-		if (dictValueMap != null && !dictValueMap.isEmpty()) {
-			List<String> aaList = new ArrayList<>(dictValueMap.keySet());
-			// dictValueMap按code等值查询，得到的结果集为唯一
-			dictId = aaList.get(0);
-		}
-
-		criteria.andEqualTo("sourceType", dictId);
+		criteria.andEqualTo("sourceType", Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345);
 		criteria.andIn("sourceCode", collect);
 		List<CaseInfo> caseInfoListInDB = caseInfoBiz.selectByExample(caseInfoExample);
 		

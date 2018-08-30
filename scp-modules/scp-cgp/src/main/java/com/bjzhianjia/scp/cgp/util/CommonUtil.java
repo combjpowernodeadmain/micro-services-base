@@ -82,27 +82,46 @@ public class CommonUtil {
 	 * @return
 	 */
 	public static String exeStatusUtil(DictFeign dictFeign,String code) {
-		Map<String, String> dictValueMap = dictFeign.getDictIdByCode(code,
-				false);
+//		Map<String, String> dictValueMap = dictFeign.getDictIdByCode(code,
+//				false);
 
-		if (dictValueMap != null && !dictValueMap.isEmpty()) {
-			List<String> _idList = new ArrayList<>(dictValueMap.keySet());
-			// dictValueMap按code等值查询，得到的结果集为唯一
-			return _idList.get(0);
+//		if (dictValueMap != null && !dictValueMap.isEmpty()) {
+//			List<String> _idList = new ArrayList<>(dictValueMap.keySet());
+//			// dictValueMap按code等值查询，得到的结果集为唯一
+//			return _idList.get(0);
+//		}
+		return code;
+	}
+	
+	/**
+	 * 从一个json格式字符串中获取key所对应的value<br/>
+	 * 如key为“name” 则从{"name":"尚","id":"123"}中获取到尚<br/>
+	 * @author 尚
+	 * @return
+	 */
+	public static String getValueFromJObjStr(String jObjStr,String key) {
+		if(StringUtils.isNotBlank(jObjStr)) {
+			JSONObject jobj = JSONObject.parseObject(jObjStr);
+			return jobj.getString(key)==null?null:jobj.getString(key);
 		}
 		return null;
 	}
 	
 	/**
-	 * 从一个json格式字符串中获取key所对应的value<br/>
-	 * 如key为“key” 则从{"name":"尚","id":"123"}中获取到尚<br/>
-	 * @author 尚
+	 *  通过数据字典code查询
+	 * @author chenshuai
+	 * @param dictFeign
+	 * 		 数据字典接口
+	 * @param code
+	 * 		数据字典code
 	 * @return
+	 * 		数据字典标签名（label_default）
 	 */
-	public static String getNameFromJObjStr(String jObjStr,String key) {
-		if(StringUtils.isNotBlank(jObjStr)) {
-			JSONObject jobj = JSONObject.parseObject(jObjStr);
-			return jobj.getString(key)==null?null:jobj.getString(key);
+	public static String getByCode(DictFeign dictFeign,String code) {
+		Map<String, String> dictValueMap = dictFeign.getByCode(code);
+
+		if (dictValueMap != null && !dictValueMap.isEmpty()) {
+			return dictValueMap.get(code);
 		}
 		return null;
 	}

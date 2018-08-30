@@ -17,15 +17,20 @@
 
 package com.bjzhianjia.scp.oss.controller;
 
-import com.bjzhianjia.scp.oss.cloud.OSSFactory;
-import com.bjzhianjia.scp.security.common.exception.base.BusinessException;
-import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.bjzhianjia.scp.oss.cloud.CloudStorageService;
+import com.bjzhianjia.scp.oss.cloud.LocalStorageService;
+import com.bjzhianjia.scp.oss.cloud.OSSFactory;
+import com.bjzhianjia.scp.security.common.exception.base.BusinessException;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 
 
 /**
@@ -48,10 +53,37 @@ public class OssController{
 		}
 		//上传文件
 		String suffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
-		String url = ossFactory.build().uploadSuffix(file.getBytes(), suffix);
+		String url = "";
+		CloudStorageService storageService = ossFactory.build();
+		if(storageService instanceof LocalStorageService) {
+			url = ""; //TODO 添加本地文件存储
+		}else {
+			url = storageService.uploadSuffix(file.getBytes(), suffix);
+			
+		}
 		return new ObjectRestResponse<String>().data(url);
 	}
 
+	/**
+	 * 多文件上传
+	 */
+	@RequestMapping("/uploads")
+	public ObjectRestResponse<String> uploads(@RequestParam("files") MultipartFile[] files) throws Exception {
+		if (files == null || files.length < 0) {
+			throw new BusinessException("上传文件不能为空");
+		}
+		//上传文件
+		CloudStorageService storageService = ossFactory.build();
+		List<String>  urls = new ArrayList<>() ;
+		for (int i = 0; i < files.length; i++) {
+			MultipartFile file = files[i];
+			String suffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+			String url = storageService.uploadSuffix(file.getBytes(), suffix);
+			urls.add(url);
+		}
+			
+		return new ObjectRestResponse<String>().data(urls.toString());
+	}
 
 
 }

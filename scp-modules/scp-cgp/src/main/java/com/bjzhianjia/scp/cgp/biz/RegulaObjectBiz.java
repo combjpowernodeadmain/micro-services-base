@@ -62,28 +62,30 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 	 * @param limit
 	 * @return
 	 */
-	public TableResultResponse<RegulaObject> getList(RegulaObject regulaObject, int page, int limit,boolean isObjType) {
+	public TableResultResponse<RegulaObject> getList(RegulaObject regulaObject, int page, int limit,
+			List<Integer> objTypeIdList) {
 		Example example = new Example(RegulaObject.class);
 		Example.Criteria criteria = example.createCriteria();
-		
+
 		criteria.andEqualTo("isDeleted", "0");
 
-		//是否输入了按监管对象名称查询
+		// 是否输入了按监管对象名称查询
 		if (StringUtils.isNotBlank(regulaObject.getObjName())) {
-			criteria.andLike("objName", "%" + regulaObject.getObjName()+"%");
+			criteria.andLike("objName", "%" + regulaObject.getObjName() + "%");
 		}
 
-		//是否输入了按监管对象类型查询
-		if (regulaObject.getObjType()!=null) {
-			if(isObjType) {
-				regulaObject.getObjType();
-			}
+		// 是否输入了按监管对象类型查询
+		if (regulaObject.getObjType() != null) {
 			criteria.andEqualTo("objType", regulaObject.getObjType());
 		}
 
-		//是否输入了按监管对象所属业务条线查询
+		// 是否输入了按监管对象所属业务条线查询
 		if (StringUtils.isNotBlank(regulaObject.getBizList())) {
-			criteria.andLike("bizList", "%"+regulaObject.getBizList()+"%");
+			criteria.andLike("bizList", "%" + regulaObject.getBizList() + "%");
+		}
+		
+		if(objTypeIdList!=null) {
+			criteria.andIn("objType", objTypeIdList);
 		}
 
 		example.setOrderByClause("crt_time desc");
@@ -95,53 +97,54 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 
 	public void remove(Integer[] ids) {
 		Date date = new Date();
-		
+
 		regulaObjectMapper.deleteByIds(ids, BaseContextHandler.getUserID(), BaseContextHandler.getUsername(), date);
 
 		enterpriseInfoMapper.deleteByRegulaObjIds(ids, BaseContextHandler.getUserID(), BaseContextHandler.getUsername(),
 				date);
 	}
-	
+
 	/**
 	 * 按条件查询
+	 * 
 	 * @author 尚
 	 * @param condition 封装条件的MAP集合，key:条件名，value:条件值
 	 * @return
 	 */
-	public TableResultResponse<RegulaObject> getByMap(Map<String, Object> condition){
-		Example example=new Example(RegulaObject.class);
-		Example.Criteria criteria=example.createCriteria();
-		
+	public TableResultResponse<RegulaObject> getByMap(Map<String, Object> condition) {
+		Example example = new Example(RegulaObject.class);
+		Example.Criteria criteria = example.createCriteria();
+
 		Set<String> keySet = condition.keySet();
 		for (String string : keySet) {
-			criteria.andEqualTo(string,condition.get(string));
+			criteria.andEqualTo(string, condition.get(string));
 		}
-		
+
 		List<RegulaObject> rows = regulaObjectMapper.selectByExample(example);
 		return new TableResultResponse<>(-1, rows);
 	}
-	
+
 	/**
 	 * 按Id查询记录
+	 * 
 	 * @author 尚
 	 * @param ids 多个id集合，逗号隔开，如"1,2,3,4"
 	 * @return
 	 */
-	public List<RegulaObject> selectByIds(String ids){
+	public List<RegulaObject> selectByIds(String ids) {
 		return this.mapper.selectByIds(ids);
 	}
-	
-	
-	public List<Map<String, String>> selectRegulaObjCountByType(){
+
+	public List<Map<String, String>> selectRegulaObjCountByType() {
 		return this.mapper.selectRegulaObjCountByType();
 	}
-	
+
 	/**
-	 *   监管对象列表  
-	 * @return
-	 * 		集合中只有 id,obj_name,obj_type,longitude,latitude 属性
+	 * 监管对象列表
+	 * 
+	 * @return 集合中只有 id,obj_name,obj_type,longitude,latitude 属性
 	 */
-	public List<RegulaObject> selectDistanceAll(){
+	public List<RegulaObject> selectDistanceAll() {
 		return mapper.selectDistanceAll();
 	}
 }

@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.biz;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +79,7 @@ public class RegulaObjectTypeBiz extends BusinessBiz<RegulaObjectTypeMapper, Reg
 	 */
 	public TableResultResponse<RegulaObjectType> getList(int page,int limit,RegulaObjectType regulaObjectType){
 		Example example=new Example(RegulaObjectType.class);
+		example.setOrderByClause("order_num desc");
 		Example.Criteria criteria=example.createCriteria();
 		
 		criteria.andEqualTo("isDeleted","0");
@@ -90,8 +92,6 @@ public class RegulaObjectTypeBiz extends BusinessBiz<RegulaObjectTypeMapper, Reg
 		if(StringUtils.isNotBlank(regulaObjectType.getIsEnable())) {
 			criteria.andEqualTo("isEnable", regulaObjectType.getIsEnable());
 		}
-		
-		example.setOrderByClause("id desc");
 		
 		Page<Object> result = PageHelper.startPage(page, limit);
 		List<RegulaObjectType> list = this.mapper.selectByExample(example);
@@ -115,5 +115,50 @@ public class RegulaObjectTypeBiz extends BusinessBiz<RegulaObjectTypeMapper, Reg
 	 */
 	public List<RegulaObjectType> selectByIds(String ids){
 		return this.mapper.selectByIds(ids);
+	}
+	
+	/**
+	 * 按ID集合分页查询记录
+	 * @author 尚
+	 * @param ids
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	public TableResultResponse<RegulaObjectType> getByRelation(String ids,int page,int limit){
+		if(StringUtils.isNotBlank(ids)) {
+			Example example=new Example(RegulaObjectType.class);
+			example.setOrderByClause("order_num desc");
+			Example.Criteria criteria = example.createCriteria();
+			criteria.andIn("id", Arrays.asList(ids.split(",")));
+			
+			List<RegulaObjectType> list = this.mapper.selectByExample(example);
+			
+			Page<Object> pageInfo = PageHelper.startPage(page,limit);
+			return new TableResultResponse<>(pageInfo.getTotal(), list);
+		}
+		return null;
+	}
+	
+	/**
+	 * 分页查询记录
+	 * @author 尚
+	 * @param page
+	 * @param limit
+	 * @param regulaObjectType
+	 * @return
+	 */
+	public List<RegulaObjectType> getBySecondCategory(List<Integer> secondCategoryId ){
+		Example example=new Example(RegulaObjectType.class);
+		example.setOrderByClause("order_num desc");
+		Example.Criteria criteria=example.createCriteria();
+		
+		criteria.andEqualTo("isDeleted","0");
+		if(secondCategoryId!=null) {
+			criteria.andIn("parentObjectTypeId", secondCategoryId);
+		}
+		
+		List<RegulaObjectType> list = this.mapper.selectByExample(example);
+		return list;
 	}
 }

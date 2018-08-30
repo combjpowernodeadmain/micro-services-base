@@ -66,7 +66,19 @@ public class CaseInfoController extends BaseController<CaseInfoBiz,CaseInfo,Inte
 			@RequestParam(value="limit",defaultValue="10") @ApiParam(name="页容量") Integer limit){
 		CaseInfo caseInfo=new CaseInfo();
 		
-		TableResultResponse<CaseInfo> restResult = caserInfoService.getList(caseInfo, page, limit);
+		TableResultResponse<CaseInfo> restResult = caserInfoService.getList(caseInfo, page, limit,false);
+		
+		return restResult;
+	}
+	
+	@RequestMapping(value="/list/unFinish/{id}",method=RequestMethod.GET)
+	@ApiOperation("分页获取对象")
+	public TableResultResponse<CaseInfo> pageNoFinish(@PathVariable("id") Integer id,@RequestParam(value="page",defaultValue="1") @ApiParam(name="当前页")Integer page,
+			@RequestParam(value="limit",defaultValue="10") @ApiParam(name="页容量") Integer limit){
+		CaseInfo caseInfo=new CaseInfo();
+		caseInfo.setId(id);
+		
+		TableResultResponse<CaseInfo> restResult = caserInfoService.getList(caseInfo, page, limit,true);
 		
 		return restResult;
 	}
@@ -94,6 +106,37 @@ public class CaseInfoController extends BaseController<CaseInfoBiz,CaseInfo,Inte
         return userToDoTasks;
     }
     
+	/**
+     * 查询用户待办流程任务列表
+     * @param objs
+     * @param request
+     * @return
+     */
+    @ApiOperation("查询所有待办")
+    @ResponseBody
+    @RequestMapping(value = { "/allToDoTasks" }, method = RequestMethod.POST)
+    public TableResultResponse<JSONObject> getAllToDoTasks(@RequestBody JSONObject objs, HttpServletRequest request) {
+        log.debug("SCP信息---开始查询所有待办任务列表...");
+        
+        TableResultResponse<JSONObject> userToDoTasks = caserInfoService.getAllToDoTasks(objs);
+        return userToDoTasks;
+    }
+    
+	/**
+     * 查询流程任务列表
+     * @param objs
+     * @param request
+     * @return
+     */
+    @ApiOperation("综合查询列表")
+    @ResponseBody
+    @RequestMapping(value = { "/allTasks" }, method = RequestMethod.POST)
+    public TableResultResponse<JSONObject> getAllTasks(@RequestBody JSONObject objs, HttpServletRequest request) {
+        log.debug("SCP信息---开始查询所有任务列表...");
+        
+        TableResultResponse<JSONObject> tasks = caserInfoService.getAllTasks(objs);
+        return tasks;
+    }
     
     @ApiOperation("完成任务")
     @ResponseBody

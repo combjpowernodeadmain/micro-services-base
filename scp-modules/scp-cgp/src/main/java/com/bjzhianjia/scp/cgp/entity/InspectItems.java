@@ -46,7 +46,7 @@ public class InspectItems implements Serializable {
 	    //业务条线
     @Column(name = "biz_type")
     @NotEmpty(message="业务条线不能为空")
-    @MergeField(key = "root_biz_type", feign = DictFeign.class, method = "getDictIds")
+    @MergeField(key = "root_biz_type", feign = DictFeign.class, method = "getByCode")
     private String bizType;
 	
 	    //巡查方式

@@ -9,13 +9,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
-import com.bjzhianjia.scp.cgp.exception.BizException;
 import com.bjzhianjia.scp.cgp.mapper.CaseInfoMapper;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
-import com.bjzhianjia.scp.security.wf.base.utils.StringUtil;
+import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
@@ -74,8 +74,15 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper,CaseInfo> {
 	 * @param limit
 	 * @return
 	 */
-	public TableResultResponse<CaseInfo> getList(CaseInfo caseInfo,int page,int limit){
+	public TableResultResponse<CaseInfo> getList(CaseInfo caseInfo,int page,int limit,boolean isNoFinish){
 		Example example =new Example(CaseInfo.class);
+		
+		Criteria criteria = example.createCriteria();
+		criteria.andEqualTo("isDeleted","0");
+		if(isNoFinish) {
+			criteria.andEqualTo("isFinished", "0");
+			criteria.andNotEqualTo("id", caseInfo.getId());
+		}
 		
 		Page<Object> pageInfo = PageHelper.startPage(page, limit);
 		List<CaseInfo> list = this.mapper.selectByExample(example);
@@ -90,9 +97,20 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper,CaseInfo> {
 	 * @param limit
 	 * @return
 	 */
-	public TableResultResponse<CaseInfo> getList(CaseInfo caseInfo,List<Integer> ids,int page,int limit,String startQueryTime,String endQueryTime){
-		Example example =new Example(CaseInfo.class);
+	public TableResultResponse<CaseInfo> getList(CaseInfo caseInfo,Set<Integer> ids,JSONObject queryData){
+		//查询参数
+		int page = StringUtils.isBlank(queryData.getString("page")) ? 1 : Integer.valueOf(queryData.getString("page"));
+		int limit = StringUtils.isBlank(queryData.getString("limit")) ? 10
+				: Integer.valueOf(queryData.getString("limit"));
+		String startQueryTime = queryData.getString("startQueryTime");
+		String endQueryTime =  queryData.getString("endQueryTime");
 		
+		String isSupervise = queryData.getString("isSupervise");
+		String isUrge = queryData.getString("isUrge");
+		String isOverTime = queryData.getString("isOverTime");
+		String isFinished = queryData.getString("procCtaskname");//1:已结案2:已终止
+		
+		Example example =new Example(CaseInfo.class);
 		Criteria criteria = example.createCriteria();
 		
 		criteria.andEqualTo("isDeleted", "0");
@@ -122,7 +140,24 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper,CaseInfo> {
 		if(ids!=null&&!ids.isEmpty()) {
 			criteria.andIn("id", ids);
 		}
-		
+		//是否添加督办 (1:是|0:否)
+		if(StringUtils.isNotBlank(isSupervise) && "1".equals(isSupervise)) {
+			criteria.andEqualTo("isSupervise", caseInfo.getIsSupervise());
+		}
+		//是否添加崔办(1:是|0:否)
+		if(StringUtils.isNotBlank(isUrge) && "1".equals(isUrge)) {
+			criteria.andEqualTo("isUrge", caseInfo.getIsUrge());
+		}
+		//超时时间 (1:是|0:否)
+		if(StringUtils.isNotBlank(isOverTime) && "1".equals(isOverTime)) {
+			//任务没有结束，当前日期和期限日期进行判断，任务结束，则判断完成日期和期限日期
+			String date = DateUtil.dateFromDateToStr(new Date(),"yyyy-MM-dd HH:mm:ss");
+			criteria.andCondition("(dead_line > '"+date+"' or dead_line > finish_time)");
+		}
+		//处理状态：已结案(0:未完成|1:已结案2:已终止)
+		if(StringUtils.isNotBlank(isFinished) && !CaseInfo.FINISHED_STATE_TODO.equals(isFinished)) {
+			criteria.andEqualTo("isFinished", isFinished);
+		}
 		Page<Object> pageInfo = PageHelper.startPage(page, limit);
 		List<CaseInfo> list = this.mapper.selectByExample(example);
 		

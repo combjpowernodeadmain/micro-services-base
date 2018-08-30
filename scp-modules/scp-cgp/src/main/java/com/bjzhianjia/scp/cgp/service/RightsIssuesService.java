@@ -148,13 +148,11 @@ public class RightsIssuesService {
 		}
 		
 		//进行业务条线数据聚和
-		Map<String, String> bizTypeMap = dictFeign.getDictValueByID(rightsIssues.getBizType());
+		Map<String, String> bizTypeMap = dictFeign.getByCodeIn(rightsIssues.getBizType());
 		if(bizTypeMap!=null&&bizTypeMap.size()>0) {
-			String string = bizTypeMap.get(rightsIssues.getBizType());
-			JSONObject parseObject = JSONObject.parseObject(string);
 			JSONObject jsonObject=new JSONObject();
-			jsonObject.put("id", parseObject.getString("id"));
-			jsonObject.put("labelDefault", parseObject.getString("labelDefault"));
+			jsonObject.put("code", rightsIssues.getBizType());
+			jsonObject.put("labelDefault", bizTypeMap.get(rightsIssues.getBizType()));
 			rightsIssues.setBizType(jsonObject.toJSONString());
 		}
 		

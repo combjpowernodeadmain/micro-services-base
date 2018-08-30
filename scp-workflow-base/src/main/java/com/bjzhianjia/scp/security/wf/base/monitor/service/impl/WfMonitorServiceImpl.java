@@ -145,6 +145,46 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
         
         return wfMonitorBiz.getUserToDoTaskCount(queryObj);
     }
+    /**
+     * 查询所有待办流程任务列表
+     * @param objs
+     * @return
+     * @throws WorkflowException
+     */
+    public PageInfo<WfProcBackBean> getAllToDoTasks(JSONObject objs) throws WorkflowException {
+    	WfProcAuthDataBean authData = parseAuthData(objs);
+    	WfProcBizDataBean bizData = parseBizData(objs);
+    	wfProcUserAuthBiz.userAuthenticate(authData, false, false, true);
+    	JSONObject queryObj = parseQueryData(authData, bizData);
+
+    	parseAndUpdateDate(queryObj, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        parseAndUpdateDate(queryObj, "procTaskCommitTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procTaskCommitTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        
+        List<WfProcBackBean> list = wfMonitorBiz.getAllToDoTasks(queryObj);
+        return new PageInfo<WfProcBackBean>(list);
+    }
+    /**
+     * 查询流程任务列表
+     * @param objs
+     * @return
+     * @throws WorkflowException
+     */
+    public PageInfo<WfProcBackBean> getAllTasks(JSONObject objs) throws WorkflowException {
+    	WfProcAuthDataBean authData = parseAuthData(objs);
+    	WfProcBizDataBean bizData = parseBizData(objs);
+    	wfProcUserAuthBiz.userAuthenticate(authData, false, false, true);
+    	JSONObject queryObj = parseQueryData(authData, bizData);
+
+    	parseAndUpdateDate(queryObj, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        parseAndUpdateDate(queryObj, "procTaskCommitTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procTaskCommitTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        
+        List<WfProcBackBean> list = wfMonitorBiz.getAllTasks(queryObj);
+        return new PageInfo<WfProcBackBean>(list);
+    }
     
     /**
      * 流程监控查询

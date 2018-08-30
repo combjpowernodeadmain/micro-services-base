@@ -38,7 +38,7 @@ public class RegulaObjectType implements Serializable {
 	
 	    //是否可用；关联数据字典
     @Column(name = "is_enable")
-    @MergeField(key="root_biz_enabled",feign=DictFeign.class,method="getDictIds")
+    @MergeField(key="root_biz_enabled",feign=DictFeign.class,method="getByCode")
     private String isEnable;
 	
 	    //是否删除；1：是；0: 否
@@ -81,7 +81,16 @@ public class RegulaObjectType implements Serializable {
     @Column(name="templet_type")
     private String templetType;
 	
-
+    //排序
+    @Column(name="order_num")
+    private String orderNum;
+    
+	public String getOrderNum() {
+		return orderNum;
+	}
+	public void setOrderNum(String orderNum) {
+		this.orderNum = orderNum;
+	}
 	/**
 	 * 设置：主键
 	 */
