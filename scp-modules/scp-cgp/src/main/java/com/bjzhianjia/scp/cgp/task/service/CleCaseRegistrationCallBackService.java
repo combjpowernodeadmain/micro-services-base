@@ -5,6 +5,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.WritsInstancesBiz;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
@@ -21,9 +22,21 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
 
 	@Override
 	public void before(String dealType, Map<String, Object> procBizData) throws BizException {
-		JSONObject bizData = JSONObject.parseObject(String.valueOf(procBizData.get("bizData")));
 		
-		writsInstanceBiz.updateOrInsert(bizData);
+		String bizType = String.valueOf(procBizData.get(PROC_BIZTYPE));
+		
+		switch (bizType) {
+		case PROC_APPROVE:
+			//审批操作
+			writsInstanceBiz.updateOrInsert(JSONObject.parseObject(JSON.toJSONString(procBizData)));
+			break;
+		case PROC_END:
+			//流程走向终止
+			break;
+		default:
+			break;
+		}
+		
 	}
 
 	@Override

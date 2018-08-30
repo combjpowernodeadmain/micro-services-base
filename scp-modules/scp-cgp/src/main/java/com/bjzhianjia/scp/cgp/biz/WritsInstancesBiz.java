@@ -71,13 +71,14 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 		Result<Void> result=new Result<>();
 		
 		WritsInstances writsInstances = JSON.parseObject(bizData.toJSONString(), WritsInstances.class);
-		String procNode=bizData.getString("processNode");
+		
 		//判断当前处于哪个节点上(中队，法治科，镇局)
+		String procNode=bizData.getString("processNode");
+		
 		String fillContext=writsInstances.getFillContext();
 
 		if(writsInstances.getId()==null) {
 			JSONObject jObjInDB = mergeFillContext(procNode, fillContext, null);
-			writsInstances.setFillContext(jObjInDB.toJSONString());
 			
 			//把处理后的文书内容(fillContext)放回，进行更新操作
 			writsInstances.setFillContext(jObjInDB.toJSONString());
