@@ -81,7 +81,16 @@ public class RegulaObjectType implements Serializable {
     @Column(name="templet_type")
     private String templetType;
 	
-
+    //排序
+    @Column(name="order_num")
+    private String orderNum;
+    
+	public String getOrderNum() {
+		return orderNum;
+	}
+	public void setOrderNum(String orderNum) {
+		this.orderNum = orderNum;
+	}
 	/**
 	 * 设置：主键
 	 */

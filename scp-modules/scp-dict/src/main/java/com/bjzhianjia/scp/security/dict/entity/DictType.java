@@ -98,6 +98,18 @@ public class DictType implements Serializable {
 
 	@Column(name = "tenant_id")
 	private String tenantId;
+	
+	//是否删除(1:删除|0:未删除)
+	@Column(name = "is_deleted")
+	private String isDeleted;
+	
+	public String getIsDeleted() {
+		return isDeleted;
+	}
+
+	public void setIsDeleted(String isDeleted) {
+		this.isDeleted = isDeleted;
+	}
 
 	public String getTenantId() {
 		return tenantId;
