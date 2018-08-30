@@ -29,11 +29,11 @@ pipeline {
             }
         }
 
-        stage ('Stop Services in Xiashu') {
+        stage ('Stop Services in aliyun') {
             steps {
                 sshPublisher(publishers: [
                     sshPublisherDesc(
-                        configName: 'XiashuIntranetServer', 
+                        configName: 'AliyunServerZZ001', 
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
@@ -58,11 +58,11 @@ pipeline {
             }
         }
 
-        stage ('Rename Files in Xiashu') {
+        stage ('Rename Files in aliyun') {
             steps {
                 sshPublisher(publishers: [
                     sshPublisherDesc(
-                        configName: 'XiashuIntranetServer', 
+                        configName: 'AliyunServerZZ001', 
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
@@ -86,12 +86,12 @@ pipeline {
 
             }
         }
-        stage ('Copy Files To Xiashu') {
+        stage ('Copy Files To aliyun') {
             steps {
-                sh 'echo Deploy to Xiashu'
+                sh 'echo Deploy to aliyun'
                 sshPublisher(publishers: [
                     sshPublisherDesc(
-                        configName: 'XiashuIntranetServer', 
+                        configName: 'AliyunServerZZ001', 
                         transfers: [
                             
                             sshTransfer(excludes: '', 
@@ -186,11 +186,11 @@ pipeline {
         }
 
 
-        stage ('Start Services in Xiashu') {
+        stage ('Start Services in aliyun') {
             steps {
                 sshPublisher(publishers: [
                     sshPublisherDesc(
-                        configName: 'XiashuIntranetServer', 
+                        configName: 'AliyunServerZZ001', 
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
