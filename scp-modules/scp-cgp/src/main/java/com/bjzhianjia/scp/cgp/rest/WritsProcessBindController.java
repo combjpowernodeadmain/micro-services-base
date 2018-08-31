@@ -3,6 +3,7 @@ package com.bjzhianjia.scp.cgp.rest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -52,6 +53,30 @@ public class WritsProcessBindController extends BaseController<WritsProcessBindB
 			return restResult;
 		}
 
+		restResult.setMessage("成功");
+		return restResult;
+	}
+	@RequestMapping(value = "/add/name", method = RequestMethod.POST)
+	@ApiOperation("添加单个对象")
+	public ObjectRestResponse<WritsProcessBind> addByTemplateName(
+			@RequestParam("writsTemplateName") @ApiParam(name="模板名称") String writsTemplateName,
+			@ModelAttribute @ApiParam(name = "待添加对象实例") @Validated WritsProcessBind writsProcessBind,
+			BindingResult bindingResult) {
+		ObjectRestResponse<WritsProcessBind> restResult = new ObjectRestResponse<>();
+		
+		if (bindingResult.hasErrors()) {
+			restResult.setStatus(400);
+			restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
+			return restResult;
+		}
+		
+		Result<Void> result = writsProcessBindBiz.createWritsProcessBind(writsProcessBind,writsTemplateName);
+		if (!result.getIsSuccess()) {
+			restResult.setStatus(400);
+			restResult.setMessage(result.getMessage());
+			return restResult;
+		}
+		
 		restResult.setMessage("成功");
 		return restResult;
 	}

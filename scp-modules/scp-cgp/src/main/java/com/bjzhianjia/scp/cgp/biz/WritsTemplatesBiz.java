@@ -46,7 +46,7 @@ public class WritsTemplatesBiz extends BusinessBiz<WritsTemplatesMapper,WritsTem
 		
 		Example example=new Example(WritsTemplates.class);
 		Criteria criteria = example.createCriteria();
-		
+		criteria.andEqualTo("isDeleted", "0");
 		//验证名称是否重复
 		if(StringUtils.isNotBlank(writsTemplates.getName())) {
 			criteria.andEqualTo("name",writsTemplates.getName());

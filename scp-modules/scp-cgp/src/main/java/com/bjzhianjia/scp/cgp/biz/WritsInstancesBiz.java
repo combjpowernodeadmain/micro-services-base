@@ -72,6 +72,11 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 		
 		WritsInstances writsInstances = JSON.parseObject(bizData.toJSONString(), WritsInstances.class);
 		
+		if(!"-1".equals(bizData.getString("procBizId"))&&StringUtils.isBlank(writsInstances.getCaseId())){
+			//procBizId即为案件ID，将该值赋给文书里的案件ID
+			writsInstances.setCaseId(bizData.getString("procBizId"));
+		}
+		
 		//判断当前处于哪个节点上(中队，法治科，镇局)
 		String procNode=bizData.getString("processNode");
 		
@@ -118,9 +123,11 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 		}else if(procNode.endsWith(WorkFlowConstances.ProcessNode.LEGAL_SUFFIX)) {
 			//法治科
 			jObjInDB.put("Legal", fillContext);
-		}else {
+		}else if(procNode.endsWith(WorkFlowConstances.ProcessNode.TOWNLEADER_SUFFIX)){
 			//镇局
 			jObjInDB.put("TownLeader", fillContext);
+		}else if(procNode.endsWith(WorkFlowConstances.ProcessNode.LAWMEMBER_SUFFIX)) {
+			//执法队员
 		}
 		return jObjInDB;
 	}

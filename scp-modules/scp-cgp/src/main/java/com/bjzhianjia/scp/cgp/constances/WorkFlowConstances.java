@@ -19,5 +19,9 @@ public class WorkFlowConstances {
 		 * 与法制科相关的节点ID后缀
 		 */
 		public static final String LEGAL_SUFFIX="Legal";
+		/**
+		 * 与执法队员相关的节点ID后缀
+		 */
+		public static final String LAWMEMBER_SUFFIX="LawMember";
 	}
 }

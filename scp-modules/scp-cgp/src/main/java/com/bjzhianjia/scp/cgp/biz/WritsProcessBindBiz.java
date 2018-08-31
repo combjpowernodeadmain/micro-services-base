@@ -96,6 +96,7 @@ public class WritsProcessBindBiz extends BusinessBiz<WritsProcessBindMapper,Writ
 			resultVo.setWritsId(vo.getWritsId());
 			resultVo.setWritsName(vo.getWritsName());
 			resultVo.setIsDefault(vo.getIsDefault());
+			resultList.add(resultVo);
 		}
 		
 		return new TableResultResponse<WritsProcessBindVo>(restResult.getData().getTotal(), resultList);
@@ -128,6 +129,57 @@ public class WritsProcessBindBiz extends BusinessBiz<WritsProcessBindMapper,Writ
 		check(writsProcessBind);
 		
 		this.insertSelective(writsProcessBind);
+		
+		result.setIsSuccess(true);
+		return result;
+	}
+	/**
+	 * 添加单个对象<br/>
+	 * 文书模板以名称形式传入
+	 * @author 尚
+	 * @param writsProcessBind
+	 * @return
+	 */
+	public Result<Void> createWritsProcessBind(WritsProcessBind writsProcessBind,String writsTemplateName){
+		Result<Void> result=new Result<>();
+		
+		if(StringUtils.isBlank(writsTemplateName)) {
+			result.setIsSuccess(false);
+			result.setMessage("请指定文书模板名称");
+			return result;
+		}
+		Result<Void> setResult = setWritsTemplateId(writsProcessBind,writsTemplateName);
+		if(!setResult.getIsSuccess()) {
+			result.setIsSuccess(false);
+			result.setMessage(setResult.getMessage());
+			return result;
+		}
+		
+		check(writsProcessBind);
+		
+		this.insertSelective(writsProcessBind);
+		
+		result.setIsSuccess(true);
+		return result;
+	}
+
+	private Result<Void> setWritsTemplateId(WritsProcessBind writsProcessBind,String writsTemplateName) {
+		Result<Void> result=new Result<>();
+		
+		Example example=new Example(WritsTemplates.class);
+		Criteria criteria = example.createCriteria();
+		criteria.andEqualTo("isDeleted", "0");
+		criteria.andEqualTo("name", writsTemplateName);
+		
+		List<WritsTemplates> writsTemplaeList = writsTemplatesMapper.selectByExample(example);
+		if(writsTemplaeList!=null&&!writsTemplaeList.isEmpty()) {
+			//文书模板名称唯一，如果有返回结果 ，则结果 集只有一个
+			writsProcessBind.setWritsId(writsTemplaeList.get(0).getId());
+		}else {
+			result.setIsSuccess(false);
+			result.setMessage("该文书模板不存在");
+			return result;
+		}
 		
 		result.setIsSuccess(true);
 		return result;
