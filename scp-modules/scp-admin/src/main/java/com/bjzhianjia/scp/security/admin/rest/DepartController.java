@@ -2,6 +2,7 @@ package com.bjzhianjia.scp.security.admin.rest;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.admin.biz.DepartBiz;
 import com.bjzhianjia.scp.security.admin.entity.Depart;
 import com.bjzhianjia.scp.security.admin.entity.User;
@@ -93,5 +94,10 @@ public class DepartController extends BaseController<DepartBiz, Depart, String> 
 	public JSONArray getDeptByParent(@PathVariable(value = "parentId") String parentId) {
 		List<Depart> deptList = departBiz.getDeptByParent(parentId);
 		return JSONArray.parseArray(JSON.toJSONString(deptList));
+	}
+	@ApiOperation("通过部门id获取")
+	@RequestMapping(value = "/id/{parentId}", method = RequestMethod.GET)
+	public JSONObject getByDeptId(@PathVariable(value = "parentId") String parentId) {
+		return  JSONObject.parseObject(JSON.toJSONString(this.baseBiz.selectById(parentId)));
 	}
 }
