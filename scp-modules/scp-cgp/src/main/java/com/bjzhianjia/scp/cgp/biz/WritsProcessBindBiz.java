@@ -10,7 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.constances.WorkFlowConstances;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.WritsProcessBind;
@@ -21,7 +20,6 @@ import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.vo.WritsProcessBindVo;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
-import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -155,7 +153,12 @@ public class WritsProcessBindBiz extends BusinessBiz<WritsProcessBindMapper,Writ
 			return result;
 		}
 		
-		check(writsProcessBind);
+		Result<Void> check = check(writsProcessBind);
+		if(!check.getIsSuccess()) {
+			result.setIsSuccess(false);
+			result.setMessage(check.getMessage());
+			return result;
+		}
 		
 		this.insertSelective(writsProcessBind);
 		
@@ -185,7 +188,25 @@ public class WritsProcessBindBiz extends BusinessBiz<WritsProcessBindMapper,Writ
 		return result;
 	}
 
-	private void check(WritsProcessBind writsProcessBind) {
+	private Result<Void> check(WritsProcessBind writsProcessBind) {
+		Result<Void> result =new Result<>();
+		
+		//process_def_id，process_node_id，writs_id三者联合唯一
+		Example example=new Example(WritsProcessBind.class);
+		Criteria criteria = example.createCriteria();
+		
+		criteria.andEqualTo("isDeleted","0");
+		criteria.andEqualTo("processDefId", writsProcessBind.getProcessDefId());
+		criteria.andEqualTo("processNodeId", writsProcessBind.getProcessNodeId());
+		criteria.andEqualTo("writsId", writsProcessBind.getWritsId());
+		
+		List<WritsProcessBind> bindInDB = this.selectByExample(example);
+		if(bindInDB!=null&&!bindInDB.isEmpty()) {
+			result.setIsSuccess(false);
+			result.setMessage("该节点下已存在相应文书模板");
+			return result;
+		}
+		
 		//判断当前审批是几级
 		if(writsProcessBind.getProcessNodeId().endsWith(WorkFlowConstances.ProcessNode.SQUADRONLEADER_SUFFIX)) {
 			//中队领导
@@ -196,6 +217,9 @@ public class WritsProcessBindBiz extends BusinessBiz<WritsProcessBindMapper,Writ
 		}else {
 			writsProcessBind.setApprovalRating(3);
 		}
+		
+		result.setIsSuccess(true);
+		return result;
 	}
 	
 	/**
