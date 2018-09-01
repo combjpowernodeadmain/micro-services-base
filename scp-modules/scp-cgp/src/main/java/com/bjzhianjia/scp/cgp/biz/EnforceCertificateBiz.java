@@ -131,4 +131,12 @@ public class EnforceCertificateBiz extends BusinessBiz<EnforceCertificateMapper,
 	public void deleteByIds(Integer[] ids) {
 		enforceCertificateMapper.deleteByIds(ids, BaseContextHandler.getUserID(),BaseContextHandler.getName(),new Date());
 	}
+	/**
+	 * 获取所有执法者用户
+	 * @return
+	 */
+	public List<EnforceCertificate> getEnforceCertificateList(){
+		  List<EnforceCertificate> list = enforceCertificateMapper.selectAll();
+		  return list;
+	}
 }
