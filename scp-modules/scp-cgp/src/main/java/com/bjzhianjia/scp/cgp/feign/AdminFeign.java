@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.auth.client.config.FeignApplyConfiguration;
 
 /**
@@ -42,4 +43,7 @@ public interface AdminFeign {
 	
 	@RequestMapping(value="/depart/getDepartByParent/{parentId}",method = RequestMethod.GET)
 	public JSONArray getDepartByParent(@PathVariable(value="parentId")String parentId);
+	
+	@RequestMapping(value = "/depart/id/{parentId}", method = RequestMethod.GET)
+	public JSONObject getByDeptId(@PathVariable(value="parentId") String parentId);
 }

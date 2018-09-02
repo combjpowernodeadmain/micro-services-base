@@ -1,5 +1,7 @@
 package com.bjzhianjia.scp.cgp.util;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
 
 import com.alibaba.fastjson.JSON;
@@ -50,4 +52,81 @@ public class BeanUtil {
 		j=j.replace("}{", ",");
 		return JSONObject.parseObject(j);
 	}
+
+	/**
+	 * 去掉bean中所有属性为字符串的前后空格
+	 * 
+	 * @param bean
+	 * 		  实体类
+	 * @throws Exception
+	 */
+	public static void beanAttributeValueTrim(Object bean) {
+		if (bean != null) {
+			// 获取所有的字段包括public,private,protected,private
+			Field[] fields = bean.getClass().getDeclaredFields();
+			for (int i = 0; i < fields.length; i++) {
+				Field f = fields[i];
+				if (f.getType().getName().equals("java.lang.String")) {
+					String key = f.getName();// 获取字段名
+					Object value = getFieldValue(bean, key);
+					if (value == null)
+						continue;
+					setFieldValue(bean, key, value.toString().trim());
+				}
+			}
+		}
+	}
+
+	/**
+	 * 利用反射通过get方法获取bean中字段fieldName的值
+	 * 
+	 * @param bean
+	 * @param fieldName
+	 * @return
+	 * @throws Exception
+	 */
+	@SuppressWarnings("rawtypes")
+	private static Object getFieldValue(Object bean, String fieldName)  {
+		StringBuffer result = new StringBuffer();
+		String methodName = result.append("get").append(fieldName.substring(0, 1).toUpperCase())
+				.append(fieldName.substring(1)).toString();
+
+		Object rObject = null;
+		Method method = null;
+
+		Class[] classArr = new Class[0];
+		try {
+			method = bean.getClass().getMethod(methodName, classArr);
+			rObject = method.invoke(bean, new Object[0]);
+		}catch (Exception e) {
+		}
+		return rObject;
+	}
+
+	/**
+	 * 利用发射调用bean.set方法将value设置到字段
+	 * 
+	 * @param bean
+	 * @param fieldName
+	 * @param value
+	 * @throws Exception
+	 */
+	@SuppressWarnings("rawtypes")
+	private static void setFieldValue(Object bean, String fieldName, Object value)  {
+		StringBuffer result = new StringBuffer();
+		String methodName = result.append("set").append(fieldName.substring(0, 1).toUpperCase())
+				.append(fieldName.substring(1)).toString();
+
+		/**
+		 * 利用发射调用bean.set方法将value设置到字段
+		 */
+		Class[] classArr = new Class[1];
+		classArr[0] = "java.lang.String".getClass();
+		try {
+			Method method = bean.getClass().getMethod(methodName, classArr);
+			method.invoke(bean, value);
+		}catch (Exception e) {
+		}
+	}
+
 }
