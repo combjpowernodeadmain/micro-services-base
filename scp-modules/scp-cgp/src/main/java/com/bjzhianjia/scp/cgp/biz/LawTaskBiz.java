@@ -270,7 +270,7 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 	 * @throws Exception
 	 */
 	public void randomLawTask(String objType, String griIds, int peopleNumber, int regulaObjNumber, Date startTime,
-			Date endTime, String info,String bizTypeCode,int eventTypeId) throws Exception {
+			Date endTime, String info,String bizTypeCode,String eventTypeId) throws Exception {
 
 		// 执法者列表
 		List<EnforceCertificate> userList = enforceCertificateBiz.getEnforceCertificateList();
