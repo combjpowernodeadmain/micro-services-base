@@ -41,7 +41,7 @@ public class EventType implements Serializable {
 	
 	    //所属业务条线
     @Column(name = "biz_type")
-    @MergeField(key = "root_biz_type", feign = DictFeign.class, method = "getDictIds")
+    @MergeField(key = "root_biz_type", feign = DictFeign.class, method = "getByCode")
     private String bizType;
 	
 	    //使用字典里的是否可用标识

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -22,6 +23,7 @@ public class RegulaObject implements Serializable {
 	
 	    //主键
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 	
 	    //监管对象编码

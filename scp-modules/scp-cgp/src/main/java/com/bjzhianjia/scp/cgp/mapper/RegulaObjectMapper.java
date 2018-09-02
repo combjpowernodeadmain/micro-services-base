@@ -7,7 +7,6 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import com.bjzhianjia.scp.cgp.entity.RegulaObject;
-import com.bjzhianjia.scp.security.common.data.Tenant;
 import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 
 /**
@@ -34,4 +33,14 @@ public interface RegulaObjectMapper extends CommonMapper<RegulaObject> {
 	 * 		集合中只有 id,obj_name,obj_type,longitude,latitude 属性
 	 */
 	public List<RegulaObject> selectDistanceAll();
+	/**
+	 * 通过监管对象类型和网格源查询
+	 * @param objType
+	 * 		监管对象类型 ids
+	 * @param griIds
+	 * 		网格源 ids
+	 * @return
+	 */
+	public List<RegulaObject> selectByTypeAndGri(@Param("objType")String objType,
+			@Param("griIds")String griIds);
 }

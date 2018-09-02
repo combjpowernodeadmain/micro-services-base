@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,8 +84,8 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 		if (StringUtils.isNotBlank(regulaObject.getBizList())) {
 			criteria.andLike("bizList", "%" + regulaObject.getBizList() + "%");
 		}
-		
-		if(objTypeIdList!=null) {
+
+		if (objTypeIdList != null && !objTypeIdList.isEmpty()) {
 			criteria.andIn("objType", objTypeIdList);
 		}
 
@@ -146,5 +147,18 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 	 */
 	public List<RegulaObject> selectDistanceAll() {
 		return mapper.selectDistanceAll();
+	}
+	/**
+	 * 通过监管对象类型和网格源查询监管对象
+	 * @param objType
+	 * 		监管对象类型 ids
+	 * @param griIds
+	 * 		网格源 ids
+	 * @return
+	 * 		监管对象列表（id，name）
+	 */
+	public List<RegulaObject> selectByTypeAndGri(String objType,String griIds){
+		return mapper.selectByTypeAndGri(objType, griIds);
+		
 	}
 }

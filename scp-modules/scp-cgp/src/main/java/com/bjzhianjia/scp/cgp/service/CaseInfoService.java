@@ -160,7 +160,7 @@ public class CaseInfoService {
 	public TableResultResponse<JSONObject> getUserToDoTasks(JSONObject objs) {
 		CaseInfo queryCaseInfo = new CaseInfo();
 		JSONObject queryData = objs.getJSONObject("queryData");
-
+		
 		if ("true".equals(queryData.getString("isQuery"))) {
 			queryCaseInfo = JSONObject.parseObject(queryData.toJSONString(), CaseInfo.class);
 			if (StringUtils.isNotBlank(queryData.getString("procCtaskname"))) {
@@ -187,21 +187,30 @@ public class CaseInfoService {
 	}
 
 	/**
-	 * 查询所有待办任务(工作流)
+	 *  查询所有待办任务(工作流)
 	 * 
 	 * @author chenshuai
 	 * @param objs
 	 * @return
 	 */
 	public TableResultResponse<JSONObject> getAllToDoTasks(JSONObject objs) {
-		CaseInfo queryCaseInfo = new CaseInfo();
-		JSONObject queryData = objs.getJSONObject("queryData");
 
+		CaseInfo queryCaseInfo = new CaseInfo();
+		
+		JSONObject queryData = objs.getJSONObject("queryData");
+		
+		JSONObject bizData = objs.getJSONObject("bizData");
+		//事件工作流的定义代码
+		bizData.put("prockey", "comprehensiveManage");
+		objs.put("bizData", bizData);
+		
 		if ("true".equals(queryData.getString("isQuery"))) {
 			queryCaseInfo = JSONObject.parseObject(queryData.toJSONString(), CaseInfo.class);
 			if (StringUtils.isNotBlank(queryData.getString("procCtaskname"))) {
 				// 是否按进度进行查找(即任务表中·PROC_CTASKNAME·字段)
-				objs.getJSONObject("bizData").put("procCtaskname", queryData.getString("procCtaskname"));
+				bizData = objs.getJSONObject("bizData");
+				bizData.put("procCtaskname", queryData.getString("procCtaskname"));
+				objs.put("bizData", bizData);
 			}
 		}
 
@@ -229,14 +238,19 @@ public class CaseInfoService {
 	public TableResultResponse<JSONObject> getAllTasks(JSONObject objs) {
 		CaseInfo queryCaseInfo = new CaseInfo();
 		JSONObject queryData = objs.getJSONObject("queryData");
-
+		
+		JSONObject bizData = objs.getJSONObject("bizData");
+		//事件工作流的定义代码
+		bizData.put("prockey", "comprehensiveManage");
+		objs.put("bizData", bizData);
+		
 		if ("true".equals(queryData.getString("isQuery"))) {
 			queryCaseInfo = JSONObject.parseObject(queryData.toJSONString(), CaseInfo.class);
 			if (StringUtils.isNotBlank(queryData.getString("procCtaskname"))) {
 				// 是否按进度进行查找(即任务表中·PROC_CTASKNAME·字段)
-				objs.getJSONObject("bizData").put("procCtaskname", queryData.getString("procCtaskname"));
-				//procTaskStatus 流程任务状态：4（已终止）
-				objs.getJSONObject("bizData").put("procTaskStatus", queryData.getString("procTaskStatus"));
+				bizData = objs.getJSONObject("bizData");
+				bizData.put("procCtaskname", queryData.getString("procCtaskname"));
+				objs.put("bizData", bizData);
 			}
 		}
 
@@ -317,6 +331,7 @@ public class CaseInfoService {
 		for (WfProcBackBean tmp : procBackBeanList) {
 			JSONObject wfJObject = JSONObject.parseObject(JSON.toJSONString(tmp));
 
+			@SuppressWarnings("unlikely-arg-type")
 			CaseInfo caseInfo = caseInfo_ID_Entity_Map.get(Integer.valueOf(tmp.getProcBizid()));
 			if (caseInfo != null) {
 				JSONObject parse = JSONObject.parseObject(JSON.toJSONString(caseInfo));
@@ -352,12 +367,12 @@ public class CaseInfoService {
 				if(CaseInfo.FINISHED_STATE_STOP.equals(caseInfo.getIsFinished())) {
 					wfJObject.put("procCtaskname", "已终止");
 				}
-				
+				jObjList.add(wfJObject);
 			}
-			jObjList.add(wfJObject);
+			
 		}
 
-		return new TableResultResponse<>(pageInfo.getTotal(), jObjList);
+		return new TableResultResponse<>(tableResult.getData().getTotal(), jObjList);
 	}
 
 	private void sourceTypeHistoryAssist(JSONObject wfJObject, CaseInfo caseInfo) {

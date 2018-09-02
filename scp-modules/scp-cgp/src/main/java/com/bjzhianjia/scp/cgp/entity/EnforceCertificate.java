@@ -35,7 +35,7 @@ public class EnforceCertificate implements Serializable {
 	    //证件类型
     @Column(name = "cert_type")
     @NotEmpty(message="证件类型不能为空")
-    @MergeField(key = "root_biz_zfzType", feign = DictFeign.class, method = "getDictIds")
+    @MergeField(key = "root_biz_zfzType", feign = DictFeign.class, method = "getByCode")
     private String certType;
 	
 	    //证件编号
@@ -97,7 +97,10 @@ public class EnforceCertificate implements Serializable {
 	    //涵盖业务线
     @Column(name = "biz_lists")
     private String bizLists;
-	
+    
+    //部门id
+	@Column(name = "depart_id")
+	private String departId;
 
 	/**
 	 * 设置：主键
@@ -302,5 +305,17 @@ public class EnforceCertificate implements Serializable {
 	 */
 	public String getBizLists() {
 		return bizLists;
+	}
+	/**
+	 * 获取：部门id
+	 */
+	public String getDepartId() {
+		return departId;
+	}
+	/**
+	 * 设置：部门id
+	 */
+	public void setDepartId(String departId) {
+		this.departId = departId;
 	}
 }

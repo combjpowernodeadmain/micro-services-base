@@ -44,6 +44,7 @@ import com.bjzhianjia.scp.cgp.entity.RegulaObject;
 import com.bjzhianjia.scp.cgp.entity.RegulaObjectType;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
+import com.bjzhianjia.scp.cgp.mapper.EventTypeMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.vo.RegulaObjectVo;
 import com.bjzhianjia.scp.cgp.vo.Regula_EnterPriseVo;
@@ -81,6 +82,8 @@ public class RegulaObjectService {
 	private RedisTemplate<String, Object> redisTemplate;
 	@Autowired
 	private RegTypeRelationBiz regTypeRelationBiz;
+	@Autowired
+	private EventTypeMapper eventTypeMapper;
 
 	/**
 	 * 添加监管对象-经营单位
@@ -91,16 +94,16 @@ public class RegulaObjectService {
 	 * @return
 	 */
 	public Result<Void> createRegulaObject(RegulaObject regulaObject, EnterpriseInfo enterpriseInfo) {
-		RegulaObject theMaxRegulaObject = regulaObjectBiz.getTheMaxOne();
+//		RegulaObject theMaxRegulaObject = regulaObjectBiz.getTheMaxOne();
 
-		int maxRegulaObjectId = -1;
-		if (theMaxRegulaObject == null) {
-			maxRegulaObjectId = 1;
-		} else {
-			maxRegulaObjectId = theMaxRegulaObject.getId() + 1;
-		}
-		regulaObject.setId(maxRegulaObjectId);// 指定监管对象记录ID
-		enterpriseInfo.setRegulaObjId(maxRegulaObjectId);// 指定企业信息的外键
+//		int maxRegulaObjectId = -1;
+//		if (theMaxRegulaObject == null) {
+//			maxRegulaObjectId = 1;
+//		} else {
+//			maxRegulaObjectId = theMaxRegulaObject.getId() + 1;
+//		}
+//		regulaObject.setId(maxRegulaObjectId);// 指定监管对象记录ID
+//		enterpriseInfo.setRegulaObjId(maxRegulaObjectId);// 指定企业信息的外键
 
 		Result<Void> result = new Result<>();
 
@@ -110,6 +113,7 @@ public class RegulaObjectService {
 		}
 
 		regulaObjectBiz.insertSelective(regulaObject);
+		enterpriseInfo.setRegulaObjId(regulaObject.getId());// 指定企业信息的外键
 		enterpriseInfoBiz.insertSelective(enterpriseInfo);
 		this.initCacheData();
 		return result;
@@ -269,11 +273,11 @@ public class RegulaObjectService {
 				}
 			}
 		}
-		
-		//判断是否有地理信息
-		if(StringUtils.isNotBlank(regulaObject.getMapInfo())){
+
+		// 判断是否有地理信息
+		if (StringUtils.isNotBlank(regulaObject.getMapInfo())) {
 			JSONObject jObj = JSONObject.parseObject(regulaObject.getMapInfo());
-			//{"lng":116.2993,"lat":40.060234}
+			// {"lng":116.2993,"lat":40.060234}
 			regulaObject.setLatitude(jObj.getFloat("lat"));
 			regulaObject.setLongitude(jObj.getFloat("lng"));
 		}
@@ -455,7 +459,7 @@ public class RegulaObjectService {
 
 		if (regulaObject == null) {
 			return null;
-		} else if (regulaObject.getIsDeleted().equals("1")) {
+		} else if ("1".equals(regulaObject.getIsDeleted())) {
 			return null;
 		}
 
@@ -478,14 +482,79 @@ public class RegulaObjectService {
 		 */
 		String typeCodeId = enterpriseInfo.getTypeCode();
 		String certificateTypeId = enterpriseInfo.getCertificateType();
+		String bizTypeId = regulaObject.getBizList();
 
-		Map<String, String> map = dictFeign.getByCodeIn(typeCodeId + "," + certificateTypeId);
+		Set<String> dictIds = new HashSet<>();
+		dictIds.add(typeCodeId);
+		dictIds.add(certificateTypeId);
+		String[] split = bizTypeId.split(",");
+		for (String string : split) {
+			if (!"-".equals(string)) {
+				dictIds.add(string);
+			}
+		}
 
+		Map<String, String> map = new HashMap<>();
+		if (dictIds != null && !dictIds.isEmpty()) {
+			map = dictFeign.getByCodeIn(String.join(",", dictIds));
+		}
+		
+		//所属网格
+		Integer griId = regulaObject.getGriId();
+		AreaGrid gridInDB=new AreaGrid();
+		if(griId!=null) {
+			gridInDB = areaGridBiz.selectById(griId);
+		}
+
+		// 业务条线
+		List<String> bizListNameList = new ArrayList<>();
+		for (String string : split) {
+			if (!"-".equals(string)) {
+				bizListNameList.add(map.get(string));
+			}
+		}
+		
+		/*
+		 * 事件类别
+		 */
+		String eventList = regulaObject.getEventList();
+		//解析事件类别ID
+		Set<String> eventListId=new HashSet<>();
+		String[] eventSplit1 = eventList.split(";");
+		for (String string : eventSplit1) {
+			if(!"-".equals(string)) {
+				String[] eventSplit2 = string.split(",");
+				for (String string2 : eventSplit2) {
+					eventListId.add(string2);
+				}
+			}
+		}
+		List<EventType> eventTypeList=new ArrayList<>();
+		if(eventListId!=null&&!eventListId.isEmpty()) {
+			eventTypeList=eventTypeMapper.selectByIds(String.join(",", eventListId));
+		}
+		Map<Integer, String> collect = eventTypeList.stream().collect(Collectors.toMap(EventType::getId, EventType::getTypeName));
+		List<String> eventTypeName1=new ArrayList<>();
+		for (String string : eventSplit1) {
+			if(!"-".equals(string)) {
+				String[] eventSplit2 = string.split(",");
+				List<String> eventTypeName2=new ArrayList<>();
+				for (String string2 : eventSplit2) {
+					eventTypeName2.add(collect.get(Integer.valueOf(string2)));
+				}
+				eventTypeName1.add(String.join(",", eventTypeName2));
+			}else {
+				eventTypeName1.add("-");
+			}
+		}
+
+		// 企业类型
 		JSONObject typeCodeJObject = new JSONObject();
 		typeCodeJObject.put("code", typeCodeId);
 		typeCodeJObject.put("labelDefault", map.get(typeCodeId));
 		enterpriseInfo.setTypeCode(typeCodeJObject.toJSONString());
 
+		// 证件类型
 		JSONObject certificateJObj = new JSONObject();
 		certificateJObj.put("code", certificateTypeId);
 		certificateJObj.put("labelDefault", map.get(certificateTypeId));
@@ -498,11 +567,15 @@ public class RegulaObjectService {
 				JSONObject.parseObject(enterpriseInfoJStr));
 
 		Regula_EnterPriseVo result = JSON.parseObject(other.toJSONString(), Regula_EnterPriseVo.class);
-		
-		JSONObject regulaObjTypeJObj=new JSONObject();
+
+		JSONObject regulaObjTypeJObj = new JSONObject();
 		regulaObjTypeJObj.put("id", regulaObjectType.getId());
 		regulaObjTypeJObj.put("objectTypeName", regulaObjectType.getObjectTypeName());
+		regulaObjTypeJObj.put("templetType", regulaObjectType.getTempletType());
 		result.setObjType(regulaObjTypeJObj.toJSONString());
+		result.setBizListName(String.join(",", bizListNameList));
+		result.setEventListName(String.join(";", eventTypeName1));
+		result.setGridName(gridInDB.getGridName());
 		return result;
 	}
 

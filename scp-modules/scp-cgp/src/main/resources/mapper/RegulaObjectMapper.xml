@@ -65,5 +65,25 @@
 		FROM
 			regula_object
     </select>
-
+	
+	<select id="selectByTypeAndGri" resultMap="regulaObjectMap">
+		SELECT
+			ro.id as id,
+			ro.obj_name as obj_name
+		FROM
+			regula_object AS ro
+		LEFT JOIN regula_object_type AS rot ON ro.obj_type = rot.id
+		LEFT JOIN area_grid AS rg ON ro.gri_id = rg.id
+		WHERE
+			ro.obj_type IN (
+			<if test="objType != null and objType != ''">
+				#{objType}
+			</if>
+			)
+		AND ro.gri_id IN (
+			<if test="griIds != null and griIds != ''">
+				#{griIds}
+			</if>
+		)
+	</select>
 </mapper>
