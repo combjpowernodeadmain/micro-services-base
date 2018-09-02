@@ -265,10 +265,12 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 	 * @param startTime       开始日期
 	 * @param endTime         结束日期
 	 * @param info            任务要求
+	 * @param bizTypeCode     业务条线
+	 * @param eventTypeId     事件类别id
 	 * @throws Exception
 	 */
 	public void randomLawTask(String objType, String griIds, int peopleNumber, int regulaObjNumber, Date startTime,
-			Date endTime, String info) throws Exception {
+			Date endTime, String info,String bizTypeCode,int eventTypeId) throws Exception {
 
 		// 执法者列表
 		List<EnforceCertificate> userList = enforceCertificateBiz.getEnforceCertificateList();
@@ -293,6 +295,8 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 				lawTask.setEndTime(endTime);
 				lawTask.setState(LawTask.ROOT_BIZ_LAWTASKS_TODO);
 				lawTask.setInfo(info);
+				lawTask.setBizTypeCode(bizTypeCode);
+				lawTask.setEventTypeId(eventTypeId);
 				this.createLawTask(lawTask);
 
 				if (_userList.size() - 1 == i || _regulaObjects.size() - 1 == i) {

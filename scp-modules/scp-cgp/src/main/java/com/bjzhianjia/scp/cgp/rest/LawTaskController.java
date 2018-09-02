@@ -143,7 +143,9 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
 			@RequestParam(defaultValue = "") @ApiParam(name="监管对象类型ids") String objType,
 			@RequestParam(defaultValue = "") @ApiParam(name="开始时间") String startTime,
 			@RequestParam(defaultValue = "") @ApiParam(name="结束时间") String endTime,
-			@RequestParam(defaultValue = "") @ApiParam(name="任务要求") String info){
+			@RequestParam(defaultValue = "") @ApiParam(name="任务要求") String info,
+			@RequestParam(defaultValue = "") @ApiParam(name="业务条线") String bizTypeCode,
+			@RequestParam(defaultValue = "") @ApiParam(name="事件类别id") Integer eventTypeId){
 		
 		ObjectRestResponse<Void> result = new ObjectRestResponse<Void>();
 		Date _startTime =null;
@@ -153,7 +155,7 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
 			_endTimeTmp = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
 		}
 		try {
-			lawTaskBiz.randomLawTask(objType,griIds,peopleNumber,regulaObjNumber,_startTime,_endTimeTmp,info);
+			lawTaskBiz.randomLawTask(objType,griIds,peopleNumber,regulaObjNumber,_startTime,_endTimeTmp,info,bizTypeCode,eventTypeId);
 		}catch (Exception e) {
 			result.setStatus(400);
 		}
