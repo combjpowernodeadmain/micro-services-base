@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
+import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.mapper.CaseInfoMapper;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
@@ -109,6 +110,8 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper,CaseInfo> {
 		String isUrge = queryData.getString("isUrge");
 		String isOverTime = queryData.getString("isOverTime");
 		String isFinished = queryData.getString("procCtaskname");//1:已结案2:已终止
+		String sourceType = queryData.getString("sourceType");//来源类型
+		String sourceCode = queryData.getString("sourceCode");//来源id
 		
 		Example example =new Example(CaseInfo.class);
 		Criteria criteria = example.createCriteria();
@@ -158,6 +161,12 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper,CaseInfo> {
 		if(StringUtils.isNotBlank(isFinished) && !CaseInfo.FINISHED_STATE_TODO.equals(isFinished)) {
 			criteria.andEqualTo("isFinished", isFinished);
 		}
+		if(StringUtils.isNotBlank(sourceType) && StringUtils.isNotBlank(sourceCode) 
+				&& Constances.PartolTaskStatus.ROOT_BIZ_PATROLTYPE_SPECIAL.equals(sourceType)) {
+			criteria.andEqualTo("sourceType", sourceType);
+			criteria.andEqualTo("sourceCode", sourceCode);
+		}
+		
 		Page<Object> pageInfo = PageHelper.startPage(page, limit);
 		List<CaseInfo> list = this.mapper.selectByExample(example);
 		
