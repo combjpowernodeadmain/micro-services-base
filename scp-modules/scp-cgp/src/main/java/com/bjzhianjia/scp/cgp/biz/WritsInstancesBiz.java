@@ -117,16 +117,16 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 			jObjInDB=new JSONObject();
 		}
 		
-		if(procNode.endsWith(WorkFlowConstances.ProcessNode.SQUADRONLEADER_SUFFIX)) {
+		if(procNode.endsWith(WorkFlowConstances.ProcessNodeSuffix.SQUADRONLEADER_SUFFIX)) {
 			//中队领导
 			jObjInDB.put("SquadronLeader", fillContext);
-		}else if(procNode.endsWith(WorkFlowConstances.ProcessNode.LEGAL_SUFFIX)) {
+		}else if(procNode.endsWith(WorkFlowConstances.ProcessNodeSuffix.LEGAL_SUFFIX)) {
 			//法治科
 			jObjInDB.put("Legal", fillContext);
-		}else if(procNode.endsWith(WorkFlowConstances.ProcessNode.TOWNLEADER_SUFFIX)){
+		}else if(procNode.endsWith(WorkFlowConstances.ProcessNodeSuffix.TOWNLEADER_SUFFIX)){
 			//镇局
 			jObjInDB.put("TownLeader", fillContext);
-		}else if(procNode.endsWith(WorkFlowConstances.ProcessNode.LAWMEMBER_SUFFIX)) {
+		}else if(procNode.endsWith(WorkFlowConstances.ProcessNodeSuffix.LAWMEMBER_SUFFIX)) {
 			//执法队员
 		}
 		return jObjInDB;

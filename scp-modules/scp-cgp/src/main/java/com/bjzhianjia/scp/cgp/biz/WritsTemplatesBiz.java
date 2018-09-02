@@ -5,10 +5,14 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import com.bjzhianjia.scp.cgp.constances.WorkFlowConstances;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.WritsTemplates;
 import com.bjzhianjia.scp.cgp.mapper.WritsTemplatesMapper;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
+import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
@@ -60,5 +64,53 @@ public class WritsTemplatesBiz extends BusinessBiz<WritsTemplatesMapper,WritsTem
 		
 		result.setIsSuccess(true);
 		return result;
+	}
+	
+	/**
+	 * 按ID集合获取对象记录
+	 * @author 尚
+	 * @param ids
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	public TableResultResponse<WritsTemplates> getListByNode(String node,int page,int limit){
+		String ids="";
+		
+		ids = getWritsTemplateIds(node, ids);
+		
+		TableResultResponse<WritsTemplates> restResult=new TableResultResponse<>();
+		
+		if(StringUtils.isBlank(ids)) {
+			restResult.setStatus(400);
+			restResult.setMessage("请指定待查询节点");
+			return restResult;
+		}
+		
+		Page<Object> pageInfo = PageHelper.startPage(page, limit);
+		List<WritsTemplates> list = this.mapper.selectByIds(ids);
+		
+		restResult.getData().setTotal(pageInfo.getTotal());
+		restResult.getData().setRows(list);
+		
+		return restResult;
+	}
+
+	private String getWritsTemplateIds(String node, String ids) {
+		switch(node) {
+		case WorkFlowConstances.WritsTemplateIdsInNode.SPOT_CHECK:
+			ids=WorkFlowConstances.WritsTemplateIdsInNode.SPOT_CHECK_IDS;
+			break;
+		case WorkFlowConstances.WritsTemplateIdsInNode.SPOT_PUNISHMENT:
+			ids=WorkFlowConstances.WritsTemplateIdsInNode.SPOT_PUNISHMENT_IDS;
+			break;
+		case WorkFlowConstances.WritsTemplateIdsInNode.RECTIFICATION:
+			ids=WorkFlowConstances.WritsTemplateIdsInNode.RECTIFICATION_IDS;
+			break;
+		case WorkFlowConstances.WritsTemplateIdsInNode.INFORM:
+			ids=WorkFlowConstances.WritsTemplateIdsInNode.INFORM_IDS;
+			break;
+		}
+		return ids;
 	}
 }

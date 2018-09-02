@@ -124,4 +124,19 @@ public class WritsProcessBindController extends BaseController<WritsProcessBindB
 
 		return list;
 	}
+	@RequestMapping(value = "/list/currentNode", method = RequestMethod.GET)
+	@ApiOperation("分页查询列表")
+	public TableResultResponse<WritsProcessBindVo> getListOfCurrentNode(
+			@RequestParam(value = "page", defaultValue = "1") @ApiParam(name = "当前页") Integer page,
+			@RequestParam(value = "limit", defaultValue = "10") @ApiParam("页容量") Integer limit,
+			@RequestParam(value="processDefId",defaultValue="") @ApiParam(name="流程定义主键")String processDefId,
+			@RequestParam(value="processNodeId",defaultValue="") @ApiParam(name="流程定义主键")String processNodeId) {
+		WritsProcessBind writsProcessBind=new WritsProcessBind();
+		writsProcessBind.setProcessDefId(processDefId);
+		writsProcessBind.setProcessNodeId(processNodeId);
+		
+		TableResultResponse<WritsProcessBindVo> list = writsProcessBindBiz.getListOfCurrentNode(writsProcessBind, page, limit);
+		
+		return list;
+	}
 }

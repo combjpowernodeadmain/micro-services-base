@@ -5,6 +5,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bjzhianjia.scp.cgp.biz.WritsTemplatesBiz;
@@ -13,6 +14,7 @@ import com.bjzhianjia.scp.cgp.entity.WritsTemplates;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
+import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
 
 import io.swagger.annotations.Api;
@@ -46,5 +48,14 @@ public class WritsTemplatesController extends BaseController<WritsTemplatesBiz,W
 		
 		restResult.setMessage("成功");
 		return restResult;
+	}
+	
+	@RequestMapping(value="/list/node",method=RequestMethod.GET)
+	@ApiOperation("按ID集合获取记录")
+	public TableResultResponse<WritsTemplates> getList(@RequestParam(value="node",defaultValue="") @ApiParam(name="待查询结点")String node,
+			@RequestParam(value="page",defaultValue="1") @ApiParam("当前页")Integer page,
+			@RequestParam(value="limit",defaultValue="10") @ApiParam("頁容量")Integer limit){
+		TableResultResponse<WritsTemplates> list = this.baseBiz.getListByNode(node, page, limit);
+		return list;
 	}
 }

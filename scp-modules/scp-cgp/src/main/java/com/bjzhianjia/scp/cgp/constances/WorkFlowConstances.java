@@ -5,8 +5,12 @@ package com.bjzhianjia.scp.cgp.constances;
  * @author 尚
  */
 public class WorkFlowConstances {
-
-	public static class ProcessNode{
+	/**
+	 * 节点后缀名
+	 * @author 尚
+	 *
+	 */
+	public static class ProcessNodeSuffix{
 		/**
 		 * 与中队领导相关的结节ID后缀
 		 */
@@ -23,5 +27,46 @@ public class WorkFlowConstances {
 		 * 与执法队员相关的节点ID后缀
 		 */
 		public static final String LAWMEMBER_SUFFIX="LawMember";
+	}
+	
+	/**
+	 * 未在工作流中进行配置的文书模板<br/>
+	 * 该常量类用于指导某一个不在工作流中的节点使用什么样的文书模板
+	 * @author 尚
+	 *
+	 */
+	public static class WritsTemplateIdsInNode{
+		/**
+		 * 现场检查
+		 */
+		public static final String SPOT_CHECK="spotCheck";
+		/**
+		 * 现场检查
+		 */
+		public static final String SPOT_CHECK_IDS="2,11,12,13";
+		/**
+		 * 现场处罚
+		 */
+		public static final String SPOT_PUNISHMENT="spotPunishment";
+		/**
+		 * 现场处罚
+		 */
+		public static final String SPOT_PUNISHMENT_IDS="14";
+		/**
+		 * 责令改正处理
+		 */
+		public static final String RECTIFICATION="rectification";
+		/**
+		 * 责令改正处理
+		 */
+		public static final String RECTIFICATION_IDS="3,15,16";
+		/**
+		 * 责令改正处理
+		 */
+		public static final String INFORM="inform";
+		/**
+		 * 责令改正处理
+		 */
+		public static final String INFORM_IDS="5,22";
 	}
 }

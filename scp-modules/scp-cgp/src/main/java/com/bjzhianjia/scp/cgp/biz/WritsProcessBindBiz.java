@@ -208,14 +208,16 @@ public class WritsProcessBindBiz extends BusinessBiz<WritsProcessBindMapper,Writ
 		}
 		
 		//判断当前审批是几级
-		if(writsProcessBind.getProcessNodeId().endsWith(WorkFlowConstances.ProcessNode.SQUADRONLEADER_SUFFIX)) {
+		if(writsProcessBind.getProcessNodeId().endsWith(WorkFlowConstances.ProcessNodeSuffix.SQUADRONLEADER_SUFFIX)) {
 			//中队领导
 			writsProcessBind.setApprovalRating(1);
-		}else if(writsProcessBind.getProcessNodeId().endsWith(WorkFlowConstances.ProcessNode.LEGAL_SUFFIX)) {
+		}else if(writsProcessBind.getProcessNodeId().endsWith(WorkFlowConstances.ProcessNodeSuffix.LEGAL_SUFFIX)) {
 			//法治科
 			writsProcessBind.setApprovalRating(2);
-		}else {
+		}else if(writsProcessBind.getProcessNodeId().endsWith(WorkFlowConstances.ProcessNodeSuffix.TOWNLEADER_SUFFIX)){
 			writsProcessBind.setApprovalRating(3);
+		}else {
+			writsProcessBind.setApprovalRating(1);
 		}
 		
 		result.setIsSuccess(true);
