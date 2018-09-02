@@ -144,8 +144,9 @@
 	    	SCP_WF_PROC_TASK task 
 		WHERE
 			task.PROC_TASK_STATUS IN ('1', '2')
+			AND task.PROC_KEY=#{prockey}
 			<if test="procCtaskname != null and procCtaskname != ''">
-				and task.PROC_CTASKNAME LIKE "%"#{procCtaskname}"%"
+				AND task.PROC_CTASKNAME LIKE "%"#{procCtaskname}"%"
 			</if>
 	</select>
 	<select id="getAllTasks" resultType="com.bjzhianjia.scp.security.wf.base.monitor.entity.WfProcBackBean">
@@ -159,11 +160,13 @@
 		WHERE
 			task.ID IN (
 				SELECT
-					MAX(task.id)
+					MAX(swpt.id)
 				FROM
-					SCP_WF_PROC_TASK task
+					SCP_WF_PROC_TASK swpt
+				WHERE
+					swpt.PROC_KEY=#{prockey}
 				GROUP BY
-					task.PROC_INST_ID
+					swpt.PROC_INST_ID
 			)
 		<if test="procCtaskname != null and procCtaskname != ''  ">
 			and task.PROC_CTASKNAME LIKE "%"#{procCtaskname}"%"
