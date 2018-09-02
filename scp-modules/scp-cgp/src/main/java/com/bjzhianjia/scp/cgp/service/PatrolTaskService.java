@@ -218,7 +218,7 @@ public class PatrolTaskService {
 
 		// 创建预立案单
 		CaseInfo caseInfo = new CaseInfo();
-		caseInfo.setSourceType(Constances.PartolTaskStatus.ROOT_BIZ_PATROLTYPE_SPECIAL);
+		caseInfo.setSourceType(Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CHECK);
 		caseInfo.setSourceCode(String.valueOf(patrolTask.getId()));
 
 		CaseInfo maxOne = caseInfoBiz.getMaxOne();
