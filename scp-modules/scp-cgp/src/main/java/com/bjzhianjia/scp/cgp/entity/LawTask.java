@@ -74,7 +74,7 @@ public class LawTask implements Serializable {
 	// 事件类别
 	@NotNull
 	@Column(name = "event_type_id")
-	private Integer eventTypeId;
+	private String eventTypeId;
 
 	// 创建时间
 	@Column(name = "crt_time")
@@ -242,14 +242,14 @@ public class LawTask implements Serializable {
 	/**
 	 * 设置：事件类别
 	 */
-	public void setEventTypeId(Integer eventTypeId) {
+	public void setEventTypeId(String eventTypeId) {
 		this.eventTypeId = eventTypeId;
 	}
 
 	/**
 	 * 获取：事件类别
 	 */
-	public Integer getEventTypeId() {
+	public String getEventTypeId() {
 		return eventTypeId;
 	}
 
