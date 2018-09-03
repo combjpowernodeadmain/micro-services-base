@@ -110,16 +110,15 @@ public class WritsProcessBindController extends BaseController<WritsProcessBindB
 	public TableResultResponse<WritsProcessBindVo> getList(
 			@RequestParam(value = "page", defaultValue = "1") @ApiParam(name = "当前页") Integer page,
 			@RequestParam(value = "limit", defaultValue = "10") @ApiParam("页容量") Integer limit,
-			@RequestBody @ApiParam(name = "封装有查询条件的实体类") @Validated WritsProcessBind writsProcessBind,
+			@RequestParam(value = "processDefId", defaultValue = "10") @ApiParam("流程定义主键") String processDefId,
+			@RequestParam(value = "processNodeId", defaultValue = "10") @ApiParam("流程节点id") String processNodeId,
+			@RequestParam(value = "writsId", defaultValue = "10") @ApiParam("文书ID") Integer writsId,
 			BindingResult bindingResult) {
-		TableResultResponse<WritsProcessBindVo> restResult = new TableResultResponse<>();
-
-		if (bindingResult.hasErrors()) {
-			restResult.setStatus(400);
-			restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
-			return restResult;
-		}
-
+		WritsProcessBind writsProcessBind=new WritsProcessBind();
+		writsProcessBind.setProcessDefId(processDefId);
+		writsProcessBind.setProcessNodeId(processNodeId);
+		writsProcessBind.setWritsId(writsId);
+		
 		TableResultResponse<WritsProcessBindVo> list = writsProcessBindBiz.getList(writsProcessBind, page, limit);
 
 		return list;
@@ -130,7 +129,7 @@ public class WritsProcessBindController extends BaseController<WritsProcessBindB
 			@RequestParam(value = "page", defaultValue = "1") @ApiParam(name = "当前页") Integer page,
 			@RequestParam(value = "limit", defaultValue = "10") @ApiParam("页容量") Integer limit,
 			@RequestParam(value="processDefId",defaultValue="") @ApiParam(name="流程定义主键")String processDefId,
-			@RequestParam(value="processNodeId",defaultValue="") @ApiParam(name="流程定义主键")String processNodeId) {
+			@RequestParam(value="processNodeId",defaultValue="") @ApiParam(name="流程节点id")String processNodeId) {
 		WritsProcessBind writsProcessBind=new WritsProcessBind();
 		writsProcessBind.setProcessDefId(processDefId);
 		writsProcessBind.setProcessNodeId(processNodeId);

@@ -30,92 +30,99 @@ import com.github.pagehelper.PageHelper;
  * @version 2018-08-26 20:07:08
  */
 @Service
-public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper,CaseRegistration> {
+public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, CaseRegistration> {
 	@Autowired
 	private CLEConcernedCompanyBiz cLEConcernedCompanyBiz;
 	@Autowired
 	private CLEConcernedPersonBiz cLEConcernedPersonBiz;
-	
+
 	/**
 	 * 添加立案记录，如果有当事人，则一并添加当事人
+	 * 
 	 * @author 尚
 	 * @param procBizData
 	 */
 	public Result<Void> addCase(JSONObject caseRegJObj) {
-		Result<Void> result=new Result<>();
-		
-		//添加当事人
+		Result<Void> result = new Result<>();
+
+		// 添加当事人
 		int concernedId = addConcerned(caseRegJObj);
-		
-		//添加立案单
-		CaseRegistration caseRegistration=JSON.parseObject(caseRegJObj.toJSONString(), CaseRegistration.class);
-		//生成caseRegistration主键
-		String id=UUIDUtils.generateUuid();
+
+		// 添加立案单
+		CaseRegistration caseRegistration = JSON.parseObject(caseRegJObj.toJSONString(), CaseRegistration.class);
+		// 生成caseRegistration主键
+		String id = UUIDUtils.generateUuid();
 		caseRegistration.setId(id);
-		//当事人主键
-		caseRegistration.setConcernedId(concernedId);
-		
+		// 当事人主键
+		if (concernedId != -1) {
+			caseRegistration.setConcernedId(concernedId);
+		}
+
 		this.insertSelective(caseRegistration);
-		//将生成的立案ID装入procBizData带回工作流，在工作流中会对procBizId属性进行是否为“-1”的判断，如果是“-1”，将用该ID替换“-1”
+		// 将生成的立案ID装入procBizData带回工作流，在工作流中会对procBizId属性进行是否为“-1”的判断，如果是“-1”，将用该ID替换“-1”
 		caseRegJObj.put("procBizId", id);
-		
+
 		result.setIsSuccess(true);
 		return result;
 	}
-	
+
 	/**
 	 * 添加当事人记录
+	 * 
 	 * @author 尚
 	 * @param caseRegJObj
 	 * @return
 	 */
 	private int addConcerned(JSONObject caseRegJObj) {
-		int resultId=-1;
-		
-		//判断是否传入当事人信息
+		int resultId = -1;
+
+		// 判断是否传入当事人信息
 		JSONObject concernedJObj = caseRegJObj.getJSONObject("concerned");
-		if(concernedJObj!=null) {
-			//有当事人信息
+		if (concernedJObj != null) {
+			// 有当事人信息
 			String concernedType = caseRegJObj.getString("concernedType");
-			
+
 			switch (concernedType) {
 			case Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG:
-				//当事人以单位形式存在
-				CLEConcernedCompany concernedCompany = JSON.parseObject(concernedJObj.toJSONString(), CLEConcernedCompany.class);
+				// 当事人以单位形式存在
+				CLEConcernedCompany concernedCompany = JSON.parseObject(concernedJObj.toJSONString(),
+						CLEConcernedCompany.class);
 				cLEConcernedCompanyBiz.insertSelective(concernedCompany);
-				resultId=concernedCompany.getId();
+				resultId = concernedCompany.getId();
 				break;
 			case Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON:
-				//当事人以人个形式存在
-				CLEConcernedPerson concernedPerson = JSON.parseObject(concernedJObj.toJSONString(), CLEConcernedPerson.class);
+				// 当事人以人个形式存在
+				CLEConcernedPerson concernedPerson = JSON.parseObject(concernedJObj.toJSONString(),
+						CLEConcernedPerson.class);
 				cLEConcernedPersonBiz.insertSelective(concernedPerson);
-				resultId=concernedPerson.getId();
+				resultId = concernedPerson.getId();
 				break;
 			}
 		}
-		
+
 		return resultId;
 	}
-	
+
 	/**
 	 * 分页获取列表
+	 * 
 	 * @author 尚
 	 * @param ids
 	 * @param page
 	 * @param limit
 	 * @return
 	 */
-	public TableResultResponse<CaseRegistrationVo> getListByIds(String ids,int page,int limit){
-		Set<String> idSet=new HashSet<>();
-		
+	public TableResultResponse<CaseRegistrationVo> getListByIds(String ids, int page, int limit) {
+		Set<String> idSet = new HashSet<>();
+
 		String[] split = ids.split(",");
 		for (String string : split) {
 			idSet.add(string);
 		}
-		
+
 		Page<Object> pageInfo = PageHelper.startPage(page, limit);
 		List<CaseRegistrationVo> list = this.mapper.getListByIds(idSet, page, limit);
-		
+
 		return new TableResultResponse<CaseRegistrationVo>(pageInfo.getTotal(), list);
 	}
 }

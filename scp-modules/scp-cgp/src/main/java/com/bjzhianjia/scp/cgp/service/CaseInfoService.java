@@ -331,7 +331,6 @@ public class CaseInfoService {
 		for (WfProcBackBean tmp : procBackBeanList) {
 			JSONObject wfJObject = JSONObject.parseObject(JSON.toJSONString(tmp));
 
-			@SuppressWarnings("unlikely-arg-type")
 			CaseInfo caseInfo = caseInfo_ID_Entity_Map.get(Integer.valueOf(tmp.getProcBizid()));
 			if (caseInfo != null) {
 				JSONObject parse = JSONObject.parseObject(JSON.toJSONString(caseInfo));

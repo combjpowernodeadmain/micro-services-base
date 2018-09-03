@@ -62,72 +62,86 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 
 	/**
 	 * 更新或插入对象
+	 * 
 	 * @author 尚
 	 * @param bizData
 	 * @return
 	 */
 	@Transactional
 	public Result<Void> updateOrInsert(JSONObject bizData) {
-		Result<Void> result=new Result<>();
-		
+		Result<Void> result = new Result<>();
+
 		WritsInstances writsInstances = JSON.parseObject(bizData.toJSONString(), WritsInstances.class);
-		
-		if(!"-1".equals(bizData.getString("procBizId"))&&StringUtils.isBlank(writsInstances.getCaseId())){
-			//procBizId即为案件ID，将该值赋给文书里的案件ID
+		/*
+		 * 文书ID用writsId作为变量名传入，以增强可读性<br/>
+		 * 文书ID用writsId作为变量名，因为不能直接parseObject给WritsInstances中的ID的属性，需要手动指定
+		 */
+		writsInstances.setId(bizData.getInteger("writsId"));
+
+		if (!"-1".equals(bizData.getString("procBizId")) && StringUtils.isBlank(writsInstances.getCaseId())) {
+			// procBizId即为案件ID，将该值赋给文书里的案件ID
 			writsInstances.setCaseId(bizData.getString("procBizId"));
 		}
-		
-		//判断当前处于哪个节点上(中队，法治科，镇局)
-		String procNode=bizData.getString("processNode");
-		
-		String fillContext=writsInstances.getFillContext();
 
-		if(writsInstances.getId()==null) {
+		// 判断当前处于哪个节点上(中队，法治科，镇局)
+		String procNode = bizData.getString("processNode");
+
+		String fillContext = writsInstances.getFillContext();
+
+		if (writsInstances.getId() == null) {
 			JSONObject jObjInDB = mergeFillContext(procNode, fillContext, null);
-			
-			//把处理后的文书内容(fillContext)放回，进行更新操作
+
+			// 把处理后的文书内容(fillContext)放回，进行更新操作
 			writsInstances.setFillContext(jObjInDB.toJSONString());
-			
-			//还没有插入过对象
+
+			// 还没有插入过对象
 			this.insertSelective(writsInstances);
-		}else {
+		} else {
 			/*
-			 * 处理逻辑<br/>
-			 * 判断当前是谁在审批——从已存在的记录中将审批记录(fill_context)取出，对json字符串进行处理
+			 * 处理逻辑<br/> 判断当前是谁在审批——从已存在的记录中将审批记录(fill_context)取出，对json字符串进行处理
 			 */
 			WritsInstances writsInstancesInDB = this.selectById(writsInstances.getId());
-			
-			String fillContextInDB=writsInstancesInDB.getFillContext();
-			
+
+			String fillContextInDB = writsInstancesInDB.getFillContext();
+
 			JSONObject jObjInDB = JSONObject.parseObject(fillContextInDB);
 			jObjInDB = mergeFillContext(procNode, fillContext, jObjInDB);
-			
-			//把处理后的文书内容(fillContext)放回，进行更新操作
+
+			// 把处理后的文书内容(fillContext)放回，进行更新操作
 			writsInstances.setFillContext(jObjInDB.toJSONString());
-			
+
 			this.updateSelectiveById(writsInstances);
 		}
-		
+
 		result.setIsSuccess(true);
 		return result;
 	}
 
+	/**
+	 * 根据当前工作的节点(procNode)，处理案件的文书信息(fillContext)，并将该信息存入jObjInDB中返回
+	 * 
+	 * @author 尚
+	 * @param procNode
+	 * @param fillContext
+	 * @param jObjInDB
+	 * @return
+	 */
 	private JSONObject mergeFillContext(String procNode, String fillContext, JSONObject jObjInDB) {
-		if(jObjInDB==null) {
-			jObjInDB=new JSONObject();
+		if (jObjInDB == null) {
+			jObjInDB = new JSONObject();
 		}
-		
-		if(procNode.endsWith(WorkFlowConstances.ProcessNodeSuffix.SQUADRONLEADER_SUFFIX)) {
-			//中队领导
+
+		if (procNode.endsWith(WorkFlowConstances.ProcessNodeSuffix.SQUADRONLEADER_SUFFIX)) {
+			// 中队领导
 			jObjInDB.put("SquadronLeader", fillContext);
-		}else if(procNode.endsWith(WorkFlowConstances.ProcessNodeSuffix.LEGAL_SUFFIX)) {
-			//法治科
+		} else if (procNode.endsWith(WorkFlowConstances.ProcessNodeSuffix.LEGAL_SUFFIX)) {
+			// 法治科
 			jObjInDB.put("Legal", fillContext);
-		}else if(procNode.endsWith(WorkFlowConstances.ProcessNodeSuffix.TOWNLEADER_SUFFIX)){
-			//镇局
+		} else if (procNode.endsWith(WorkFlowConstances.ProcessNodeSuffix.TOWNLEADER_SUFFIX)) {
+			// 镇局
 			jObjInDB.put("TownLeader", fillContext);
-		}else if(procNode.endsWith(WorkFlowConstances.ProcessNodeSuffix.LAWMEMBER_SUFFIX)) {
-			//执法队员
+		} else if (procNode.endsWith(WorkFlowConstances.ProcessNodeSuffix.LAWMEMBER_SUFFIX)) {
+			// 执法队员
 		}
 		return jObjInDB;
 	}
