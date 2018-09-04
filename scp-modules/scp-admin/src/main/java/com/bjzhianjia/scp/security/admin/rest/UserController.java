@@ -182,6 +182,7 @@ public class UserController extends BaseController<UserBiz, User, String> {
 	 */
 	@ApiOperation("获取用户详情，包括部门及岗位")
 	@RequestMapping(value="/get/user/detail",method=RequestMethod.GET)
+	@IgnoreClientToken
 	public JSONArray getUserDetail(@RequestParam(value="userId") @ApiParam("待查询人员ID") String userId) {
         return this.baseBiz.getUserDetail(userId);
 	}
