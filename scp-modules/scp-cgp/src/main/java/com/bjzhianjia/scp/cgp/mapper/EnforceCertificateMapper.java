@@ -1,11 +1,11 @@
 package com.bjzhianjia.scp.cgp.mapper;
 
 import java.util.Date;
+import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
 import com.bjzhianjia.scp.cgp.entity.EnforceCertificate;
-import com.bjzhianjia.scp.security.common.data.Tenant;
 import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 
 /**
@@ -25,4 +25,12 @@ public interface EnforceCertificateMapper extends CommonMapper<EnforceCertificat
 	 */
 	public void deleteByIds(@Param("ids") Integer[] ids, @Param("updUserId") String updUserId,
 			@Param("updUserName") String updUserName, @Param("updTime") Date updTime);
+	
+	/**
+	 * 查询全部用户信息
+	 * 
+	 * @return
+	 *        usr_id,holder_name,depart_id
+	 */
+	public List<EnforceCertificate> selectAllUserInfo();
 }
