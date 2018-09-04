@@ -136,7 +136,7 @@ public class EnforceCertificateBiz extends BusinessBiz<EnforceCertificateMapper,
 	 * @return
 	 */
 	public List<EnforceCertificate> getEnforceCertificateList(){
-		  List<EnforceCertificate> list = enforceCertificateMapper.selectAll();
+		  List<EnforceCertificate> list = enforceCertificateMapper.selectAllUserInfo();
 		  return list;
 	}
 }

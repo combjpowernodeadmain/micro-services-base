@@ -22,6 +22,7 @@
         <result property="updTime" column="upd_time"/>
         <result property="tenantId" column="tenant_id"/>
         <result property="bizLists" column="biz_lists"/>
+        <result property="departId" column="depart_id"/>
     </resultMap>
 
 	<update id="deleteByIds">
@@ -30,4 +31,11 @@
     		#{id}
     	</foreach>
     </update>
+    
+    <select id="selectAllUserInfo" resultMap="enforceCertificateMap">
+    	SELECT DISTINCT 
+    		usr_id,holder_name,depart_id  
+    	FROM 
+    		enforce_certificate
+    </select>
 </mapper>
