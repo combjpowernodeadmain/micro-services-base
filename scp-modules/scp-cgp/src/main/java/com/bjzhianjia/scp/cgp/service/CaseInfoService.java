@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.transaction.Transactional;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -161,11 +163,17 @@ public class CaseInfoService {
 		CaseInfo queryCaseInfo = new CaseInfo();
 		JSONObject queryData = objs.getJSONObject("queryData");
 		
+		  
+        JSONObject bizData = objs.getJSONObject("bizData");
+        //事件工作流的定义代码
+        bizData.put("prockey", "comprehensiveManage");
+        objs.put("bizData", bizData);
+		
 		if ("true".equals(queryData.getString("isQuery"))) {
 			queryCaseInfo = JSONObject.parseObject(queryData.toJSONString(), CaseInfo.class);
 			if (StringUtils.isNotBlank(queryData.getString("procCtaskname"))) {
 				// 是否按进度进行查找(即任务表中·PROC_CTASKNAME·字段)
-				JSONObject bizData = objs.getJSONObject("bizData");
+			    bizData = objs.getJSONObject("bizData");
 				bizData.put("procCtaskname", queryData.getString("procCtaskname"));
 				objs.put("bizData", bizData);
 			}
@@ -505,6 +513,7 @@ public class CaseInfoService {
 	 * @author 尚
 	 * @param objs
 	 */
+	@Transactional
 	public void completeProcess(@RequestBody JSONObject objs) {
 		// 完成已签收的任务，将工作流向下推进
 		wfProcTaskService.completeProcessInstance(objs);
