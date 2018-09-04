@@ -269,15 +269,28 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 	 * @param eventTypeId     事件类别id
 	 * @throws Exception
 	 */
-	public void randomLawTask(String objType, String griIds, int peopleNumber, int regulaObjNumber, Date startTime,
+	public Result<Void> randomLawTask(String objType, String griIds, int peopleNumber, int regulaObjNumber, Date startTime,
 			Date endTime, String info,String bizTypeCode,String eventTypeId) throws Exception {
-
+	    
+	    Result<Void> result = new Result<>();
 		// 执法者列表
 		List<EnforceCertificate> userList = enforceCertificateBiz.getEnforceCertificateList();
+		
+		if(userList == null || userList.isEmpty()) {
+		    result.setIsSuccess(false);
+		    result.setMessage("执法者为空！");
+		    return result;
+        }
 		List<JSONArray> _userList = this.getUserList(peopleNumber, userList);
-
+		
 		// 监管对象列表
 		List<RegulaObject> regulaObjects = regulaObjectBiz.selectByTypeAndGri(objType, griIds);
+	    if(regulaObjects == null || regulaObjects.isEmpty()) {
+            result.setIsSuccess(false);
+            result.setMessage("当前网格没有监管对象！");
+            return result;
+        }
+		
 		List<JSONObject> _regulaObjects = this.getRegulaObject(regulaObjNumber, regulaObjects);
 
 		if (_userList != null && _regulaObjects != null) {
@@ -298,13 +311,15 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 				lawTask.setBizTypeCode(bizTypeCode);
 				lawTask.setEventTypeId(eventTypeId);
 				this.createLawTask(lawTask);
-
+				
+				//执法者没有了，则停止分配，或者监管对象没有了，则停止分配
 				if (_userList.size() - 1 == i || _regulaObjects.size() - 1 == i) {
 					break;
 				}
 			}
 		}
-
+		
+		return result;
 	}
 
 	/**
@@ -328,16 +343,18 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 			}
 			// 封装执法者json信息串
 			StringBuilder userJson = new StringBuilder();
-			userJson.append("{\"userName\":\"").append(enforceCertificate.getCrtUserName()).append("\",")
+			userJson.append("{\"userName\":\"").append(enforceCertificate.getHolderName()).append("\",")
 					.append("\"deptId\":\"").append(enforceCertificate.getDepartId()).append("\"}");
 
 			json = new JSONObject();
 			json.put(enforceCertificate.getUsrId(), JSONObject.parseObject(userJson.toString()));
 			array.add(json);
 			count++;
-			if (count > peopleNumber) {
+			if (count > peopleNumber) { //每 peopleNumber 个为一组
 				list.add(array);
 				count = 1;
+			}else if(count >  userList.size()) { //最后一个直接添加
+			    list.add(array);
 			}
 		}
 		return list;
@@ -364,9 +381,11 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 			}
 			json.put(regulaObject.getId().toString(), regulaObject.getObjName());
 			count++;
-			if (count > regulaObjNumber) {
+			if (count > regulaObjNumber) { //每 regulaObjNumber 个为一组
 				list.add(json);
 				count = 1;
+			}else if(count > regulaObjects.size()) { //最后一个直接添加
+			    list.add(json);
 			}
 		}
 		return list;
