@@ -736,9 +736,6 @@ public class CaseInfoService {
 						procHistoryJObj.put("procTaskAssigneeName", nameJObj.getString("name"));
 						procHistoryJObj.put("procTaskAssigneeTel", nameJObj.getString("mobilePhone"));
 					}
-//					procHistoryJObj.put("procTaskCommitterName",
-//							JSONObject.parseObject(assignMap.get(procHistoryJObj.getString("procTaskCommitter")))
-//									.getString("name"));
 				}
 			}
 		}

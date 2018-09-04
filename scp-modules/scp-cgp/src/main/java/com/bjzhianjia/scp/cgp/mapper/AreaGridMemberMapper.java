@@ -8,26 +8,39 @@ import org.apache.ibatis.annotations.Param;
 import com.bjzhianjia.scp.cgp.entity.AreaGridMember;
 import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 
+// @Tenant
 /**
- * 网格成员
+ * AreaGridMemberMapper 类描述.
+ *
+ *
+ * <pre>
+ * Modification History: 
+ * Date             Author      Version         Description 
+ * ------------------------------------------------------------------
+ * 2018-07-04 00:41:37          bo      1.0            ADD
+ * </pre>
  * 
+ *
+ * @version 1.0 
  * @author bo
- * @email 576866311@qq.com
- * @version 2018-07-04 00:41:37
+ *
  */
-//@Tenant
 public interface AreaGridMemberMapper extends CommonMapper<AreaGridMember> {
-	/**
-	 * 批量插入网格成员
-	 * @author 尚
-	 * @param areaGridMembers
-	 */
-	void insertAreaGridMemberList(@Param("areaGridMembers") List<AreaGridMember> areaGridMembers);
-	
-	
-	/**
-	 * 按gridId删除网格成员
-	 * @param gridId id列表
-	 */
-	void deleteByGridId(@Param("id")Integer gridId, @Param("updUserId")String updUserId, @Param("updUserName")String updUserName, @Param("updTime")Date updTime);
+
+    /**
+     * 批量插入网格成员
+     * 
+     * @author 尚
+     * @param areaGridMembers
+     */
+    void insertAreaGridMemberList(@Param("areaGridMembers") List<AreaGridMember> areaGridMembers);
+
+    /**
+     * 按gridId删除网格成员
+     * 
+     * @param gridId
+     *            id列表
+     */
+    void deleteByGridId(@Param("id") Integer gridId, @Param("updUserId") String updUserId,
+        @Param("updUserName") String updUserName, @Param("updTime") Date updTime);
 }
