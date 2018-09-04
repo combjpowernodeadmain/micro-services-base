@@ -6,6 +6,7 @@ import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -46,4 +47,12 @@ public interface AdminFeign {
 	
 	@RequestMapping(value = "/depart/id/{parentId}", method = RequestMethod.GET)
 	public JSONObject getByDeptId(@PathVariable(value="parentId") String parentId);
+	
+	/**
+     * 
+     * @param userId 用户Id集合，多个id间用逗号隔开
+     * @return
+     */
+	@RequestMapping(value="/user/get/user/detail")
+	public JSONArray getUserDetail(@RequestParam("userId") String userId);
 }
