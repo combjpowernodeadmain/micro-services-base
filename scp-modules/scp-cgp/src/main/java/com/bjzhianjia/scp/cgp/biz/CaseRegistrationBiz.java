@@ -22,6 +22,9 @@ import com.bjzhianjia.scp.security.common.util.UUIDUtils;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
+import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.entity.Example.Criteria;
+
 /**
  * 综合执法 - 案件登记
  *
@@ -124,5 +127,31 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 		List<CaseRegistrationVo> list = this.mapper.getListByIds(idSet, page, limit);
 
 		return new TableResultResponse<CaseRegistrationVo>(pageInfo.getTotal(), list);
+	}
+	
+	/**
+	 * 按执法人分页查询对象
+	 * @param userId
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	public TableResultResponse<CaseRegistration> getListByExecutePerson(String userId,int page,int limit){
+	    //enforcers
+	    TableResultResponse<CaseRegistration> restResult=new TableResultResponse<>();
+	    
+	    Example example=new Example(CaseRegistration.class);
+	    Criteria criteria = example.createCriteria();
+	    
+	    criteria.andEqualTo("isDeleted", "0");
+	    criteria.andEqualTo("enforcers", userId);
+	    
+	    Page<Object> pageInfo = PageHelper.startPage(page, limit);
+	    List<CaseRegistration> rows=this.selectByExample(example);
+	    
+	    restResult.getData().setTotal(pageInfo.getTotal());
+	    restResult.getData().setRows(rows);
+	    restResult.setStatus(200);
+	    return restResult;
 	}
 }

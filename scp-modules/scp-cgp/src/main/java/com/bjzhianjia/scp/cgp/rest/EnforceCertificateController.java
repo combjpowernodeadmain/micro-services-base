@@ -7,6 +7,7 @@ import com.bjzhianjia.scp.security.common.rest.BaseController;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.EnforceCertificateBiz;
 import com.bjzhianjia.scp.cgp.entity.EnforceCertificate;
 import com.bjzhianjia.scp.cgp.entity.Result;
@@ -126,4 +127,10 @@ public class EnforceCertificateController extends BaseController<EnforceCertific
 		enforceCertificateBiz.deleteByIds(ids);
         return result;
     }
+	
+	@RequestMapping(value="/get/certificater")
+	@ApiOperation("获取执法人员详情")
+	public ObjectRestResponse<JSONObject> getDetailOfCertificater(@RequestParam(value="userId",defaultValue="")String userId){
+        return enforceCertificateService.getDetailOfCertificater(userId);
+	}
 }
