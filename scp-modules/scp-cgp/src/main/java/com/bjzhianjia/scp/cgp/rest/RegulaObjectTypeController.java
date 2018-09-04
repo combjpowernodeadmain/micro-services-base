@@ -174,7 +174,7 @@ public class RegulaObjectTypeController
     @ApiOperation("获取监管对象类型树")
     @RequestMapping(value = "/tree", method = RequestMethod.GET)
     public List<RegulaObjTypeTree> getTree() {
-        List<RegulaObjectType> all = regulaObjectTypeBiz.selectListAll();
+        List<RegulaObjectType> all = regulaObjectTypeBiz.getValidateList();
 
         List<Map<String, String>> regulaObjCountByTypeMap =
             regulaObjectBiz.selectRegulaObjCountByType();
