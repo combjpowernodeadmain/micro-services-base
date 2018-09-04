@@ -1,7 +1,6 @@
 package com.bjzhianjia.scp.cgp.service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +17,7 @@ import com.bjzhianjia.scp.cgp.biz.AreaGridBiz;
 import com.bjzhianjia.scp.cgp.biz.AreaGridMemberBiz;
 import com.bjzhianjia.scp.cgp.biz.EnforceCertificateBiz;
 import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
+import com.bjzhianjia.scp.cgp.biz.LawEnforcePathBiz;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.AreaGridMember;
 import com.bjzhianjia.scp.cgp.entity.Constances;
@@ -25,6 +25,7 @@ import com.bjzhianjia.scp.cgp.entity.EnforceCertificate;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
+import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
@@ -62,6 +63,8 @@ public class EnforceCertificateService {
 
     @Autowired
     private AreaGridBiz areaGridBiz;
+    @Autowired
+    private LawEnforcePathBiz lawEnforcePathBiz;
 
     /**
      * 分页查询
@@ -356,8 +359,16 @@ public class EnforceCertificateService {
          * 人员所属网格及角色===============结束======================
          */
         
+      //执法人员定位
+        JSONObject mapInfo = lawEnforcePathBiz.getMapInfoByUserId(userId);
+        String positionTime="";
+        if(mapInfo.getDate("time")!=null) {
+            positionTime=DateUtil.dateFromDateToStr(mapInfo.getDate("time"), "yyyy-MM-dd HH:mm:ss");
+        }
+        
         jsonObject.put("gridName", String.join(",", gridNameList));
         jsonObject.put("gridRoleName", String.join(",", roleNameList));
+        jsonObject.put("positionTime", positionTime);
         
         restResult.setStatus(200);
         restResult.setData(jsonObject);
