@@ -53,13 +53,13 @@ mapper:
   mappers: com.bjzhianjia.scp.security.common.mapper.CommonMapper
 
 # 具体看类:CloudStorageConfig
-oss:
-  type: 8 # 类型 1：七牛  2：阿里云  3：腾讯云
-  qiniuDomain: http://xxxxx
-  qiniuPrefix: xxx
-  qiniuAccessKey: xxxxx
-  qiniuSecretKey: xxxxx
-  qiniuBucketName: xxxx
+#oss:
+#  type: 8 # 类型 1：七牛  2：阿里云  3：腾讯云
+#  qiniuDomain: http://xxxxx
+#  qiniuPrefix: xxx
+#  qiniuAccessKey: xxxxx
+#  qiniuSecretKey: xxxxx
+#  qiniuBucketName: xxxx
 
 search:
   lucence:
