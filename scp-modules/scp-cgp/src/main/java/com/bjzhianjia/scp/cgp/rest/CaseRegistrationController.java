@@ -71,14 +71,4 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
 	    @RequestParam(value="limit",defaultValue="10") @ApiParam("页容量")Integer limit){
 	    return this.baseBiz.getListByExecutePerson(userId, page, limit);
 	}
-	
-	
-	
-	
-	
-	public ObjectRestResponse<Void> addEnforcePath(
-	    @RequestParam(value="enforcePoint",defaultValue="")String enforcePoint
-	    ){
-            return null;
-	}
 }

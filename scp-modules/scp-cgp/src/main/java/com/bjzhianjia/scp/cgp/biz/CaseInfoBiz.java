@@ -1,12 +1,15 @@
 package com.bjzhianjia.scp.cgp.biz;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
@@ -14,6 +17,7 @@ import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.mapper.CaseInfoMapper;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
+import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
@@ -32,6 +36,9 @@ import tk.mybatis.mapper.entity.Example.Criteria;
  */
 @Service
 public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper,CaseInfo> {
+    @Autowired
+    private MergeCore mergeCore;
+    
 	/**
 	 * 查询ID最大的那条记录
 	 * @author 尚
@@ -87,6 +94,18 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper,CaseInfo> {
 		
 		Page<Object> pageInfo = PageHelper.startPage(page, limit);
 		List<CaseInfo> list = this.mapper.selectByExample(example);
+		
+		try {
+            mergeCore.mergeResult(CaseInfo.class, list);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
 		
 		return new TableResultResponse<CaseInfo>(pageInfo.getTotal(), list);
 	}

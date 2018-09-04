@@ -36,164 +36,187 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
 /**
- * Created by mengfanguang on 2018-07-31 14:19:12
+ * 
+ * RegulaObjectTypeController 类描述.
+ *
+ *
+ * <pre>
+ * Modification History: 
+ * Date             Author      Version         Description 
+ * ------------------------------------------------------------------
+ * 2018年9月4日          can      1.0            ADD
+ * </pre>
+ * 
+ *
+ * @version 1.0
+ * @author can
+ *
  */
 @RestController
 @RequestMapping("/regulaObjectType")
 @CheckClientToken
 @CheckUserToken
 @Api(tags = "监管对象类型表")
-public class RegulaObjectTypeController extends BaseController<RegulaObjectTypeBiz, RegulaObjectType, Integer> {
+public class RegulaObjectTypeController
+    extends BaseController<RegulaObjectTypeBiz, RegulaObjectType, Integer> {
 
-	@Autowired
-	private RegulaObjectTypeService regulaObjectTypeService;
-	@Autowired
-	private RegulaObjectTypeBiz regulaObjectTypeBiz;
-	@Autowired
-	private RegulaObjectBiz regulaObjectBiz;
+    @Autowired
+    private RegulaObjectTypeService regulaObjectTypeService;
 
-	@RequestMapping(value = "/add", method = RequestMethod.POST)
-	@ResponseBody
-	@ApiOperation("新增单个监测对象类别")
-	public ObjectRestResponse<RegulaObjectType> add(@RequestBody @Validated RegulaObjectType regulaObjectType,
-			BindingResult bindingResult) {
+    @Autowired
+    private RegulaObjectTypeBiz regulaObjectTypeBiz;
 
-		ObjectRestResponse<RegulaObjectType> restResult = new ObjectRestResponse<>();
+    @Autowired
+    private RegulaObjectBiz regulaObjectBiz;
 
-		if (bindingResult.hasErrors()) {
-			restResult.setStatus(400);
-			restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
-			return restResult;
-		}
-		Result<Void> result = regulaObjectTypeService.createRegulaObjectType(regulaObjectType);
-		if (!result.getIsSuccess()) {
-			restResult.setStatus(400);
-			restResult.setMessage(result.getMessage());
-			return restResult;
-		}
-		return restResult.data(regulaObjectType);
-	}
+    @RequestMapping(value = "/add", method = RequestMethod.POST)
+    @ResponseBody
+    @ApiOperation("新增单个监测对象类别")
+    public ObjectRestResponse<RegulaObjectType> add(
+        @RequestBody @Validated RegulaObjectType regulaObjectType, BindingResult bindingResult) {
 
-	@RequestMapping(value = "/update", method = RequestMethod.PUT)
-	@ResponseBody
-	@ApiOperation("修改单监测个对象类别")
-	public ObjectRestResponse<RegulaObjectType> update(@RequestBody @Validated RegulaObjectType regulaObjectType,
-			BindingResult bindingResult) {
+        ObjectRestResponse<RegulaObjectType> restResult = new ObjectRestResponse<>();
 
-		ObjectRestResponse<RegulaObjectType> restResult = new ObjectRestResponse<>();
+        if (bindingResult.hasErrors()) {
+            restResult.setStatus(400);
+            restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            return restResult;
+        }
+        Result<Void> result = regulaObjectTypeService.createRegulaObjectType(regulaObjectType);
+        if (!result.getIsSuccess()) {
+            restResult.setStatus(400);
+            restResult.setMessage(result.getMessage());
+            return restResult;
+        }
+        return restResult.data(regulaObjectType);
+    }
 
-		if (bindingResult.hasErrors()) {
-			restResult.setStatus(400);
-			restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
-			return restResult;
-		}
+    @RequestMapping(value = "/update", method = RequestMethod.PUT)
+    @ResponseBody
+    @ApiOperation("修改单监测个对象类别")
+    public ObjectRestResponse<RegulaObjectType> update(
+        @RequestBody @Validated RegulaObjectType regulaObjectType, BindingResult bindingResult) {
 
-		Result<Void> result = regulaObjectTypeService.updateRegulaObject(regulaObjectType);
+        ObjectRestResponse<RegulaObjectType> restResult = new ObjectRestResponse<>();
 
-		if (!result.getIsSuccess()) {
-			restResult.setStatus(400);
-			restResult.setMessage(result.getMessage());
-			return restResult;
-		}
+        if (bindingResult.hasErrors()) {
+            restResult.setStatus(400);
+            restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            return restResult;
+        }
 
-		return restResult.data(regulaObjectType);
-	}
+        Result<Void> result = regulaObjectTypeService.updateRegulaObject(regulaObjectType);
 
-	@RequestMapping(value = "/list", method = RequestMethod.GET)
-	@ApiOperation("按分页查询对象")
-	public TableResultResponse<RegulaObjectTypeVo> list(
-			@RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
-			@RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
-			@RequestParam(defaultValue = "") @ApiParam(name = "监管对象类别编号") String objectTypeCode,
-			@RequestParam(defaultValue = "") @ApiParam(name = "监管对象类型名称") String objectTypeName,
-			@RequestParam(defaultValue = "") @ApiParam(name = "是否可用") String isEnable) {
+        if (!result.getIsSuccess()) {
+            restResult.setStatus(400);
+            restResult.setMessage(result.getMessage());
+            return restResult;
+        }
 
-		RegulaObjectType regulaObjectType = new RegulaObjectType();
-		regulaObjectType.setObjectTypeCode(objectTypeCode);
-		regulaObjectType.setObjectTypeName(objectTypeName);
-		regulaObjectType.setIsEnable(isEnable);
+        return restResult.data(regulaObjectType);
+    }
 
-		TableResultResponse<RegulaObjectTypeVo> list = regulaObjectTypeService.getList(page, limit, regulaObjectType);
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @ApiOperation("按分页查询对象")
+    public TableResultResponse<RegulaObjectTypeVo> list(
+        @RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
+        @RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
+        @RequestParam(defaultValue = "") @ApiParam(name = "监管对象类别编号") String objectTypeCode,
+        @RequestParam(defaultValue = "") @ApiParam(name = "监管对象类型名称") String objectTypeName,
+        @RequestParam(defaultValue = "") @ApiParam(name = "是否可用") String isEnable) {
 
-		return list;
-	}
+        RegulaObjectType regulaObjectType = new RegulaObjectType();
+        regulaObjectType.setObjectTypeCode(objectTypeCode);
+        regulaObjectType.setObjectTypeName(objectTypeName);
+        regulaObjectType.setIsEnable(isEnable);
 
-	@RequestMapping(value = "/remove/{ids}", method = RequestMethod.DELETE)
-	@ApiOperation("批量删除对象")
-	public ObjectRestResponse<RegulaObjectType> remove(
-			@PathVariable @ApiParam(name = "待删除对象ID集合，多个ID用“，”隔开") Integer[] ids) {
-		ObjectRestResponse<RegulaObjectType> result = new ObjectRestResponse<>();
+        TableResultResponse<RegulaObjectTypeVo> list =
+            regulaObjectTypeService.getList(page, limit, regulaObjectType);
 
-		if (ids == null || ids.length == 0) {
-			result.setStatus(400);
-			result.setMessage("请选择要删除的项");
-			return result;
-		}
+        return list;
+    }
 
-		regulaObjectTypeBiz.remove(ids);
-		return result;
-	}
+    @RequestMapping(value = "/remove/{ids}", method = RequestMethod.DELETE)
+    @ApiOperation("批量删除对象")
+    public ObjectRestResponse<RegulaObjectType> remove(
+        @PathVariable @ApiParam(name = "待删除对象ID集合，多个ID用“，”隔开") Integer[] ids) {
+        ObjectRestResponse<RegulaObjectType> result = new ObjectRestResponse<>();
 
-	@RequestMapping(value = "/remove/one/{id}", method = RequestMethod.DELETE)
-	@ApiOperation("删除单个对象")
-	public ObjectRestResponse<RegulaObjectType> removeOne(
-			@PathVariable @ApiParam(name = "待删除对象ID集合，多个ID用“，”隔开") Integer id) {
-		ObjectRestResponse<RegulaObjectType> result = new ObjectRestResponse<>();
+        if (ids == null || ids.length == 0) {
+            result.setStatus(400);
+            result.setMessage("请选择要删除的项");
+            return result;
+        }
 
-		if (id == null) {
-			result.setStatus(400);
-			result.setMessage("请选择要删除的项");
-			return result;
-		}
+        regulaObjectTypeBiz.remove(ids);
+        return result;
+    }
 
-		Integer[] ids = new Integer[1];
-		ids[0] = id;
+    @RequestMapping(value = "/remove/one/{id}", method = RequestMethod.DELETE)
+    @ApiOperation("删除单个对象")
+    public ObjectRestResponse<RegulaObjectType> removeOne(
+        @PathVariable @ApiParam(name = "待删除对象ID集合，多个ID用“，”隔开") Integer id) {
+        ObjectRestResponse<RegulaObjectType> result = new ObjectRestResponse<>();
 
-		regulaObjectTypeBiz.remove(ids);
-		return result;
-	}
+        if (id == null) {
+            result.setStatus(400);
+            result.setMessage("请选择要删除的项");
+            return result;
+        }
 
-	@ApiOperation("获取监管对象类型树")
-	@RequestMapping(value = "/tree", method = RequestMethod.GET)
-	public List<RegulaObjTypeTree> getTree() {
-		TableResultResponse<RegulaObjectType> list = regulaObjectTypeBiz.getList(1, 2147483647, new RegulaObjectType());
-		List<RegulaObjectType> all = list.getData().getRows();
+        Integer[] ids = new Integer[1];
+        ids[0] = id;
 
-		List<Map<String, String>> regulaObjCountByTypeMap = regulaObjectBiz.selectRegulaObjCountByType();
-		
-		Map<Object, Object> mapTmp = new HashMap<>();
-		if(regulaObjCountByTypeMap!=null) {
-			for (Map<String, String> map : regulaObjCountByTypeMap) {
-				mapTmp.put(map.get("objType"), map.get("regulaCount"));
-			}
-		}
+        regulaObjectTypeBiz.remove(ids);
+        return result;
+    }
 
-		List<RegulaObjTypeTree> trees = new ArrayList<>();
-		all.forEach(o -> {
-			trees.add(new RegulaObjTypeTree(o.getId() + "", o.getParentObjectTypeId() + "", o.getObjectTypeName(),
-					o.getObjectTypeCode(), o.getTempletType(), mapTmp.get(o.getId())));
-		});
+    @ApiOperation("获取监管对象类型树")
+    @RequestMapping(value = "/tree", method = RequestMethod.GET)
+    public List<RegulaObjTypeTree> getTree() {
+        List<RegulaObjectType> all = regulaObjectTypeBiz.selectListAll();
 
-		return TreeUtil.bulid(trees, "-1", null);
-	}
+        List<Map<String, String>> regulaObjCountByTypeMap =
+            regulaObjectBiz.selectRegulaObjCountByType();
 
-	@RequestMapping(value = "/get/{id}", method = RequestMethod.GET)
-	@ApiOperation("获取单个对象")
-	public ObjectRestResponse<JSONObject> getOne(@PathVariable @ApiParam(name = "待查询对象ID") Integer id) {
-		ObjectRestResponse<JSONObject> result = regulaObjectTypeService.get(id);
-		return result;
-	}
-	
-	/**
-	 * 根据`reg_type_relation`表中配置的信息查询监管对象类型
-	 * @author 尚
-	 * @return
-	 */
-	@RequestMapping(value="/list/relagtion",method=RequestMethod.GET)
-	@ApiOperation("根据`reg_type_relation`表中配置的信息查询监管对象类型")
-	public TableResultResponse<RegulaObjectType> getByRelation(@RequestParam(value="page",defaultValue="1")Integer page,
-			@RequestParam(value="limit",defaultValue="10")Integer limit){
-		TableResultResponse<RegulaObjectType> restResult = regulaObjectTypeService.getByRelation(page, limit);
-		return restResult;
-	}
+        Map<Object, Object> mapTmp = new HashMap<>();
+        if (regulaObjCountByTypeMap != null) {
+            for (Map<String, String> map : regulaObjCountByTypeMap) {
+                mapTmp.put(map.get("objType"), map.get("regulaCount"));
+            }
+        }
+
+        List<RegulaObjTypeTree> trees = new ArrayList<>();
+        all.forEach(o -> {
+            trees.add(new RegulaObjTypeTree(o.getId() + "", o.getParentObjectTypeId() + "",
+                o.getObjectTypeName(), o.getObjectTypeCode(), o.getTempletType(),
+                mapTmp.get(o.getId())));
+        });
+
+        return TreeUtil.bulid(trees, "-1", null);
+    }
+
+    @RequestMapping(value = "/get/{id}", method = RequestMethod.GET)
+    @ApiOperation("获取单个对象")
+    public ObjectRestResponse<JSONObject> getOne(
+        @PathVariable @ApiParam(name = "待查询对象ID") Integer id) {
+        ObjectRestResponse<JSONObject> result = regulaObjectTypeService.get(id);
+        return result;
+    }
+
+    /**
+     * 根据`reg_type_relation`表中配置的信息查询监管对象类型
+     * 
+     * @author 尚
+     * @return
+     */
+    @RequestMapping(value = "/list/relagtion", method = RequestMethod.GET)
+    @ApiOperation("根据`reg_type_relation`表中配置的信息查询监管对象类型")
+    public TableResultResponse<RegulaObjectType> getByRelation(
+        @RequestParam(value = "page", defaultValue = "1") Integer page,
+        @RequestParam(value = "limit", defaultValue = "10") Integer limit) {
+        TableResultResponse<RegulaObjectType> restResult =
+            regulaObjectTypeService.getByRelation(page, limit);
+        return restResult;
+    }
 }
