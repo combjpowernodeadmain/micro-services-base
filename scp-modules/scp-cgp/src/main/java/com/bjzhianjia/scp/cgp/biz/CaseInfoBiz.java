@@ -75,7 +75,8 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper,CaseInfo> {
 	}
 	
 	/**
-	 * 按分布获取对象
+	 * 按分布获取对象<br/>
+	 * 按发生时间(occur_time)降序排列
 	 * @author 尚
 	 * @param caseInfo
 	 * @param page
@@ -92,6 +93,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper,CaseInfo> {
 			criteria.andNotEqualTo("id", caseInfo.getId());
 		}
 		
+		example.setOrderByClause("occur_time desc");
 		Page<Object> pageInfo = PageHelper.startPage(page, limit);
 		List<CaseInfo> list = this.mapper.selectByExample(example);
 		
