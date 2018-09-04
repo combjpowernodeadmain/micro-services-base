@@ -7,6 +7,8 @@ import javax.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.bjzhianjia.scp.cgp.feign.DictFeign;
+import com.bjzhianjia.scp.merge.annonation.MergeField;
 
 
 /**
@@ -59,6 +61,7 @@ public class CaseInfo implements Serializable {
     	
     	//事件级别（后加字段）
     @Column(name="case_level")
+    @MergeField(key="root_biz_eventLevel",feign=DictFeign.class,method="getByCode")
     private String caseLevel;
 	
 	    //涉及监管对象（ID集合，逗号隔开）
