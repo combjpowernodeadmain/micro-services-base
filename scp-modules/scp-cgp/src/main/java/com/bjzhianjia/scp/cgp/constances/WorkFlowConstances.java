@@ -35,6 +35,7 @@ public class WorkFlowConstances {
 	 * @author 尚
 	 *
 	 */
+	@Deprecated
 	public static class WritsTemplateIdsInNode{
 		/**
 		 * 现场检查

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -148,12 +149,17 @@ public class RightsIssuesService {
 		}
 		
 		//进行业务条线数据聚和
-		Map<String, String> bizTypeMap = dictFeign.getByCodeIn(rightsIssues.getBizType());
-		if(bizTypeMap!=null&&bizTypeMap.size()>0) {
-			JSONObject jsonObject=new JSONObject();
-			jsonObject.put("code", rightsIssues.getBizType());
-			jsonObject.put("labelDefault", bizTypeMap.get(rightsIssues.getBizType()));
-			rightsIssues.setBizType(jsonObject.toJSONString());
+		//业务条线为非必填项，有可能为空，须做非空判断，避免dictFeign.getByCodeIn()方法调用失败
+		if(StringUtils.isBlank(rightsIssues.getBizType())) {
+		    log.debug("该权力事项业务条线为空");
+		}else {
+		    Map<String, String> bizTypeMap = dictFeign.getByCodeIn(rightsIssues.getBizType());
+		    if(bizTypeMap!=null&&bizTypeMap.size()>0) {
+		        JSONObject jsonObject=new JSONObject();
+		        jsonObject.put("code", rightsIssues.getBizType());
+		        jsonObject.put("labelDefault", bizTypeMap.get(rightsIssues.getBizType()));
+		        rightsIssues.setBizType(jsonObject.toJSONString());
+		    }
 		}
 		
 		return rightsIssues;

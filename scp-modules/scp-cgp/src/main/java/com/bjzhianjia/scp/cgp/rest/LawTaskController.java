@@ -78,7 +78,7 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
 		return result;
 	}
 	
-	@RequestMapping(value = "update", method = RequestMethod.POST)
+	@RequestMapping(value = "update", method = RequestMethod.PUT)
 	@ApiOperation("更新执法任务")
 	public ObjectRestResponse<LawTask> update(@RequestBody @Validated @ApiParam("执法任务实例") LawTask lawTask,
 			BindingResult bindingResult) {
@@ -136,16 +136,17 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
 	}
 	
 	@RequestMapping(value="randomLawTask",method=RequestMethod.GET)
+	@ApiOperation("双随机分配执法任务")
 	public ObjectRestResponse<Void> randomLawTask(
-			@RequestParam(defaultValue = "") @ApiParam(name="每组队员数 ") Integer peopleNumber,
-			@RequestParam(defaultValue = "") @ApiParam(name="巡查对象数") Integer regulaObjNumber,
-			@RequestParam(defaultValue = "") @ApiParam(name="网格ids") String griIds,
-			@RequestParam(defaultValue = "") @ApiParam(name="监管对象类型ids") String objType,
-			@RequestParam(defaultValue = "") @ApiParam(name="开始时间") String startTime,
-			@RequestParam(defaultValue = "") @ApiParam(name="结束时间") String endTime,
-			@RequestParam(defaultValue = "") @ApiParam(name="任务要求") String info,
-			@RequestParam(defaultValue = "") @ApiParam(name="业务条线") String bizTypeCode,
-			@RequestParam(defaultValue = "") @ApiParam(name="事件类别id") Integer eventTypeId){
+			@RequestParam(defaultValue = "") @ApiParam("每组队员数 ") Integer peopleNumber,
+			@RequestParam(defaultValue = "") @ApiParam("巡查对象数") Integer regulaObjNumber,
+			@RequestParam(defaultValue = "") @ApiParam("网格ids") String griIds,
+			@RequestParam(defaultValue = "") @ApiParam("监管对象类型ids") String objType,
+			@RequestParam(defaultValue = "") @ApiParam("开始时间") String startTime,
+			@RequestParam(defaultValue = "") @ApiParam("结束时间") String endTime,
+			@RequestParam(defaultValue = "") @ApiParam("任务要求") String info,
+			@RequestParam(defaultValue = "") @ApiParam("业务条线") String bizTypeCode,
+			@RequestParam(defaultValue = "") @ApiParam("事件类别ids") String eventTypeId){
 		
 		ObjectRestResponse<Void> result = new ObjectRestResponse<Void>();
 		Date _startTime =null;

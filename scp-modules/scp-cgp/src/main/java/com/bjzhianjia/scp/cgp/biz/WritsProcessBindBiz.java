@@ -65,11 +65,13 @@ public class WritsProcessBindBiz extends BusinessBiz<WritsProcessBindMapper,Writ
 		List<String> writsIdList = list.stream().map(o->String.valueOf(o.getWritsId())).distinct().collect(Collectors.toList());
 		List<WritsProcessBindVo> voList = BeanUtil.copyBeanList_New(list, WritsProcessBindVo.class);
 		
-		List<WritsTemplates> writsTemplageList = writsTemplatesMapper.selectByIds(String.join(",", writsIdList));
-		Map<Integer, String> writsTemplateMap = writsTemplageList.stream().collect(Collectors.toMap(WritsTemplates::getId, WritsTemplates::getName));
-		
-		for(WritsProcessBindVo tmp:voList) {
-			tmp.setWritsName(writsTemplateMap.get(tmp.getWritsId()));
+		if(writsIdList!=null&&!writsIdList.isEmpty()) {
+			List<WritsTemplates> writsTemplageList = writsTemplatesMapper.selectByIds(String.join(",", writsIdList));
+			Map<Integer, String> writsTemplateMap = writsTemplageList.stream().collect(Collectors.toMap(WritsTemplates::getId, WritsTemplates::getName));
+			
+			for(WritsProcessBindVo tmp:voList) {
+				tmp.setWritsName(writsTemplateMap.get(tmp.getWritsId()));
+			}
 		}
 		return new TableResultResponse<>(pageInfo.getTotal(), voList);
 	}
@@ -188,6 +190,13 @@ public class WritsProcessBindBiz extends BusinessBiz<WritsProcessBindMapper,Writ
 		return result;
 	}
 
+	/**
+	 * 文书模板process_def_id，process_node_id，writs_id三者联合唯一<br/>
+	 * 在此方法中对该逻辑进行验证
+	 * @author 尚
+	 * @param writsProcessBind
+	 * @return
+	 */
 	private Result<Void> check(WritsProcessBind writsProcessBind) {
 		Result<Void> result =new Result<>();
 		

@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.transaction.Transactional;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -161,11 +163,17 @@ public class CaseInfoService {
 		CaseInfo queryCaseInfo = new CaseInfo();
 		JSONObject queryData = objs.getJSONObject("queryData");
 		
+		  
+        JSONObject bizData = objs.getJSONObject("bizData");
+        //事件工作流的定义代码
+        bizData.put("prockey", "comprehensiveManage");
+        objs.put("bizData", bizData);
+		
 		if ("true".equals(queryData.getString("isQuery"))) {
 			queryCaseInfo = JSONObject.parseObject(queryData.toJSONString(), CaseInfo.class);
 			if (StringUtils.isNotBlank(queryData.getString("procCtaskname"))) {
 				// 是否按进度进行查找(即任务表中·PROC_CTASKNAME·字段)
-				JSONObject bizData = objs.getJSONObject("bizData");
+			    bizData = objs.getJSONObject("bizData");
 				bizData.put("procCtaskname", queryData.getString("procCtaskname"));
 				objs.put("bizData", bizData);
 			}
@@ -177,7 +185,7 @@ public class CaseInfoService {
 		PageInfo<WfProcBackBean> pageInfo = wfMonitorService.getUserToDoTasks(objs);
 		List<WfProcBackBean> list = pageInfo.getList();
 
-		if (list != null && !list.isEmpty()) {
+        if (list != null && !list.isEmpty()) {
 			// 有待办任务
 			return queryAssist(queryCaseInfo, queryData, jObjList, pageInfo, objs);
 		} else {
@@ -331,7 +339,6 @@ public class CaseInfoService {
 		for (WfProcBackBean tmp : procBackBeanList) {
 			JSONObject wfJObject = JSONObject.parseObject(JSON.toJSONString(tmp));
 
-			@SuppressWarnings("unlikely-arg-type")
 			CaseInfo caseInfo = caseInfo_ID_Entity_Map.get(Integer.valueOf(tmp.getProcBizid()));
 			if (caseInfo != null) {
 				JSONObject parse = JSONObject.parseObject(JSON.toJSONString(caseInfo));
@@ -478,7 +485,7 @@ public class CaseInfoService {
 		Set<String> userMapKeySet = userMap.keySet();
 		for (String string : userMapKeySet) {
 			JSONObject userJObj = JSONObject.parseObject(userMap.get(string));
-			resultJObjct.put("crtUserTel", userJObj.getString("telPhone"));
+			resultJObjct.put("crtUserTel", userJObj.getString("mobilePhone"));
 		}
 
 //		JSONObject sourceTypeJsonStr = JSONObject.parseObject(resultJObjct.toJSONString());
@@ -505,6 +512,7 @@ public class CaseInfoService {
 	 * @author 尚
 	 * @param objs
 	 */
+	@Transactional
 	public void completeProcess(@RequestBody JSONObject objs) {
 		// 完成已签收的任务，将工作流向下推进
 		wfProcTaskService.completeProcessInstance(objs);
@@ -726,7 +734,7 @@ public class CaseInfoService {
 
 					if (nameJObj != null) {
 						procHistoryJObj.put("procTaskAssigneeName", nameJObj.getString("name"));
-						procHistoryJObj.put("procTaskAssigneeTel", nameJObj.getString("telPhone"));
+						procHistoryJObj.put("procTaskAssigneeTel", nameJObj.getString("mobilePhone"));
 					}
 //					procHistoryJObj.put("procTaskCommitterName",
 //							JSONObject.parseObject(assignMap.get(procHistoryJObj.getString("procTaskCommitter")))
@@ -915,7 +923,7 @@ public class CaseInfoService {
 			if (manyUsersMap != null && !manyUsersMap.isEmpty()) {
 				JSONObject checkPersonJObj = JSONObject.parseObject(manyUsersMap.get(caseInfo.getCheckPerson()));
 				checkJObj.put("checkPersonName", checkPersonJObj.getString("name"));
-				checkJObj.put("checkPersonTel", checkPersonJObj.getString("telPhone"));
+				checkJObj.put("checkPersonTel", checkPersonJObj.getString("mobilePhone"));
 			}
 		}
 		if (caseInfo.getCheckTime() != null) {
@@ -961,7 +969,7 @@ public class CaseInfoService {
 								.parseObject(manyUsersMap.get(wfProcTaskHistoryBean.getProcTaskCommitter()));
 						commanderApproveJObj.put("procTaskCommitter", wfProcTaskHistoryBean.getProcTaskCommitter());// 审批人ID
 						commanderApproveJObj.put("procTaskCommitterName", jObjTmp.getString("name"));// 审批人姓名
-						commanderApproveJObj.put("commanderTel", jObjTmp.getString("telPhone"));// 审批人联系方法
+						commanderApproveJObj.put("commanderTel", jObjTmp.getString("mobilePhone"));// 审批人联系方法
 						commanderApproveJObj.put("procTaskCommittime", wfProcTaskHistoryBean.getProcTaskCommittime());// 审批时间
 						commanderApproveJObj.put("procTaskApprOpinion", wfProcTaskHistoryBean.getProcTaskApprOpinion());// 审批意见
 						commanderApproveJArray.add(commanderApproveJObj);
@@ -1001,7 +1009,7 @@ public class CaseInfoService {
 					if (StringUtils.isNotBlank(sourceType.getString("crtUserId"))) {
 						Map<String, String> recordUser = adminFeign.getUser(sourceType.getString("crtUserId"));// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>查询了admin》》》》》》》》》》》》》》》》》》》》》》》》》
 						recordPersonTel = CommonUtil
-								.getValueFromJObjStr(recordUser.get(sourceType.getString("crtUserId")), "telPhone");
+								.getValueFromJObjStr(recordUser.get(sourceType.getString("crtUserId")), "mobilePhone");
 					}
 					executeInfoJObj.put("recordPersonTel", recordPersonTel);
 					executeInfoJObj.put("recordTime", sourceType.getDate("crtTime"));// 登记时间
@@ -1034,7 +1042,7 @@ public class CaseInfoService {
 				JSONObject finishCheckPersonJObj = JSONObject
 						.parseObject(manyUsersMap.get(caseInfo.getFinishCheckPerson()));
 				finishCheckJObj.put("finishCheckPersonName", finishCheckPersonJObj.getString("name"));
-				finishCheckJObj.put("finishCheckPersonTel", finishCheckPersonJObj.getString("telPhone"));
+				finishCheckJObj.put("finishCheckPersonTel", finishCheckPersonJObj.getString("mobilePhone"));
 			}
 		}
 		/*
@@ -1054,7 +1062,7 @@ public class CaseInfoService {
 
 				JSONObject finishPersonJObj = JSONObject.parseObject(manyUsersMap.get(caseInfo.getFinishPerson()));
 				finishJObj.put("finishPersonName", finishPersonJObj.getString("name"));
-				finishJObj.put("finishPersonTel", finishPersonJObj.getString("telPhone"));
+				finishJObj.put("finishPersonTel", finishPersonJObj.getString("mobilePhone"));
 			}
 		}
 
