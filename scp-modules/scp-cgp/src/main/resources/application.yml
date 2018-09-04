@@ -58,13 +58,13 @@ spring:
         check-process-definitions: false  # 校验流程文件 :true-开启（默认）、false-关闭
 
 #atomikos（ JTA事务管理器 ）
-jta: 
+jta:
+    enable-logging: false  # 指定是否启动磁盘日志，默认为true。在生产环境下一定要保证为true，否则数据的完整性无法保证 
     atomikos:
       properties:
         max-actives: 50
         max-timeout: 300000
         default-jta-timeout: 10000
-        enable-logging: false  # 指定是否启动磁盘日志，默认为true。在生产环境下一定要保证为true，否则数据的完整性无法保证
 
 # 配置数据库
 mybatis:
