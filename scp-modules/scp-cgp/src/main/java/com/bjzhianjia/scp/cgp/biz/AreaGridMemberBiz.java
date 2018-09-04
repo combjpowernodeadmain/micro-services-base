@@ -18,10 +18,14 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.AreaGridMember;
+import com.bjzhianjia.scp.cgp.feign.AdminFeign;
+import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.mapper.AreaGridMapper;
 import com.bjzhianjia.scp.cgp.mapper.AreaGridMemberMapper;
+import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -54,7 +58,17 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
 
     @Autowired
     private AreaGridMapper areaGridMapper;
-
+    @Autowired
+    private AdminFeign adminFeign;
+    @Autowired
+    private AreaGridMemberBiz areaGridMemberBiz;
+    @Autowired
+    private AreaGridBiz areaGridBiz;
+    @Autowired
+    private DictFeign dictFeign;
+    @Autowired
+    private PatrolTaskPathBiz patrolTaskPathBiz;
+    
     /**
      * 按条件获取网格成员对象集合
      * 
@@ -153,7 +167,7 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
         Example example = new Example(AreaGridMember.class);
         Criteria criteria = example.createCriteria();
 
-        criteria.andEqualTo("idDeleted", "0");
+        criteria.andEqualTo("isDeleted", "0");
         if (StringUtils.isNotBlank(areaGridMember.getGridMember())) {
             criteria.andEqualTo("gridMember", areaGridMember.getGridMember());
         }
@@ -207,9 +221,94 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
 
         for (int i = 0; i < jArray.size(); i++) {
             JSONObject jsonObject = jArray.getJSONObject(i);
-            jsonObject.put("gridName", areaGrid_ID_NAME_Map.get(jsonObject.getInteger("id")));
+            jsonObject.put("gridName", areaGrid_ID_NAME_Map.get(jsonObject.getInteger("gridId")));
             jListResult.add(jsonObject);
         }
         return jListResult;
+    }
+    
+    /**
+     * 获取网格员详细信息
+     * @param memId
+     * @return
+     */
+    public ObjectRestResponse<JSONObject> getDetailOfAeraMem(String memId){
+        ObjectRestResponse<JSONObject> restResult=new ObjectRestResponse<>();
+        if(StringUtils.isBlank(memId)) {
+            restResult.setStatus(400);
+            restResult.setMessage("请指定网格员ID");
+            return restResult;
+        }
+        
+        JSONObject jsonObject = new JSONObject();
+        
+     // 查询执法人员
+
+        /*
+         * userDetail内信息
+         * SELECT bu.`name` userName,bu.`id` userId,bu.`sex`,bu.`mobile_phone`
+         * mobilePhone,
+         * bd.`name` deptName,bd.`id` deptId,
+         * bp.`name` positionName,bp.`id` positionId
+         */
+        JSONArray userDetail = adminFeign.getUserDetail(memId);
+        if (userDetail != null && !userDetail.isEmpty()) {
+            // 按ID进行查询，如果有返回值 ，则返回值必定唯一
+            jsonObject = userDetail.getJSONObject(0);
+        }
+        
+        /*
+         * 人员所属网格及角色===============开始======================
+         */
+        Map<String, Object> conditions = new HashMap<>();
+        conditions.put("gridMember", memId);
+        List<AreaGridMember> gridMemList = areaGridMemberBiz.getByMap(conditions);
+        List<Integer> gridIdList = new ArrayList<>();
+        List<String> roleList = new ArrayList<>();
+
+        if (gridMemList != null && !gridMemList.isEmpty()) {
+            gridIdList =
+                gridMemList.stream().map(o -> o.getGridId()).distinct()
+                    .collect(Collectors.toList());
+            roleList =
+                gridMemList.stream().map(o -> o.getGridRole()).distinct()
+                    .collect(Collectors.toList());
+        }
+
+        // 所属网格
+        List<String> gridNameList = new ArrayList<>();
+        if (gridIdList != null && !gridIdList.isEmpty()) {
+            List<AreaGrid> gridList = areaGridBiz.getByIds(gridIdList);
+            if (gridList != null && !gridList.isEmpty()) {
+                gridNameList =
+                    gridList.stream().map(o -> o.getGridName()).distinct()
+                        .collect(Collectors.toList());
+            }
+        }
+
+        // 所属角色
+        List<String> roleNameList=new ArrayList<>();
+        if(roleList!=null&&!roleList.isEmpty()) {
+            Map<String, String> roleMap = dictFeign.getByCodeIn(String.join(",", roleList));
+            roleNameList=new ArrayList<>(roleMap.values());
+        }
+        /*
+         * 人员所属网格及角色===============结束======================
+         */
+        
+        //网格人员定位
+        JSONObject mapInfo = patrolTaskPathBiz.getMapInfoByUserId(memId);
+        String positionTime="";
+        if(mapInfo!=null) {
+            positionTime=DateUtil.dateFromDateToStr(mapInfo.getDate("time"), "yyyy-MM-dd HH:mm:ss");
+        }
+        
+        jsonObject.put("gridName", String.join(",", gridNameList));
+        jsonObject.put("gridRoleName", String.join(",", roleNameList));
+        jsonObject.put("positionTime", positionTime);
+        
+        restResult.setStatus(200);
+        restResult.setData(jsonObject);
+        return restResult;
     }
 }
