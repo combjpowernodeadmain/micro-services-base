@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * 执法案件审批处理类
+ * 
  * @author 尚
  */
 @Service
@@ -27,22 +28,22 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
 	public void before(String dealType, Map<String, Object> procBizData) throws BizException {
 		String bizType = String.valueOf(procBizData.get(PROC_BIZTYPE));
 		log.debug("*********************************enter into call_back program*************************************");
-		log.debug("*********************************bizType:"+bizType+"*************************************");
-		
+		log.debug("*********************************bizType:" + bizType + "*************************************");
+
 		switch (bizType) {
 		case PROC_APPROVE:
-			//审批操作
+			// 审批操作
 			writsInstanceBiz.updateOrInsert(JSONObject.parseObject(JSON.toJSONString(procBizData)));
 			break;
 		case PROC_END:
-			//流程走向结束
+			// 流程走向结束
 		case "termination":
-			//流程走向中止(非正常中止流程)
+			// 流程走向中止(非正常中止流程)
 			break;
 		default:
 			break;
 		}
-		
+
 	}
 
 	@Override

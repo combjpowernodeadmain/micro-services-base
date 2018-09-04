@@ -23,6 +23,7 @@ import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 @Tenant()
 public interface UserMapper extends CommonMapper<User> {
     public List<User> selectMemberByGroupId(@Param("groupId") String groupId);
@@ -56,4 +57,10 @@ public interface UserMapper extends CommonMapper<User> {
      */
     public List<String> selectLearderGroupCodesByUserId(@Param("userid") String userid);
     public List<String> selectMemberGroupCodesByUserId(@Param("userid") String userid);
+    /**
+     * 获取用户详情，包括部门及岗位
+     * @param userId
+     * @return
+     */
+    public List<Map<String, String>> getUserDetail(@Param("userId")List<String> userId);
 }

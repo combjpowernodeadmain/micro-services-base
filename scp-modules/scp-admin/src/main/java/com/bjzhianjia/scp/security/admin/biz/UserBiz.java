@@ -16,6 +16,7 @@
 
 package com.bjzhianjia.scp.security.admin.biz;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.merge.core.MergeCore;
@@ -259,4 +262,14 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
         return leaderGroupCodes;
     }
 
+
+    /**
+     * 获取用户详情，包括部门及岗位
+     * @param userId
+     * @return
+     */
+    public JSONArray getUserDetail(String userId) {
+        List<Map<String, String>> userDetail = mapper.getUserDetail(Arrays.asList(userId.split(",")));
+        return JSONArray.parseArray(JSON.toJSONString(userDetail));
+    }
 }

@@ -52,7 +52,7 @@
     </update>
     
     <select id="selectRegulaObjCountByType" resultType="java.util.Map">
-    	SELECT COUNT(*) AS regulaCount,obj_type AS objType FROM regula_object GROUP BY obj_type
+    	SELECT COUNT(*) AS regulaCount,obj_type AS objType WHERE is_deleted='0' FROM regula_object GROUP BY obj_type
     </select>
 
     <select id="selectDistanceAll" resultMap="regulaObjDistance">

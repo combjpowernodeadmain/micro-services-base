@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.admin.biz.MenuBiz;
@@ -47,12 +48,14 @@ import com.bjzhianjia.scp.security.admin.vo.MenuTree;
 import com.bjzhianjia.scp.security.api.vo.user.UserInfo;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
+import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 /**
  * ${DESCRIPTION}
@@ -172,4 +175,14 @@ public class UserController extends BaseController<UserBiz, User, String> {
 		return userService.getUsersByName(name, page, limit);
 	}
 	
+	/**
+	 * 
+	 * @param userId 用户Id集合，多个id间用逗号隔开
+	 * @return
+	 */
+	@ApiOperation("获取用户详情，包括部门及岗位")
+	@RequestMapping(value="/get/user/detail")
+	public JSONArray getUserDetail(@RequestParam(value="userId") @ApiParam("待查询人员ID") String userId) {
+        return this.baseBiz.getUserDetail(userId);
+	}
 }

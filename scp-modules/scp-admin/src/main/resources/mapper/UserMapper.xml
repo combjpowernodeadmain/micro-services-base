@@ -81,4 +81,21 @@
     SELECT gm.group_id FROM base_group_member gm
     WHERE gm.user_id = #{userid}
   </select>
+  
+  <!-- 获取用户详情，包括部门及岗位 -->
+  <select id="getUserDetail" resultType="java.util.Map">
+	SELECT bu.`name` userName,bu.`id` userId,bu.`sex`,bu.`mobile_phone` mobilePhone,
+	bd.`name` deptName,bd.`id` deptId,
+	bp.`name` positionName,bp.`id` positionId
+	FROM base_user bu
+	JOIN base_depart_user dbu ON dbu.`user_id`=bu.`id`
+	JOIN base_depart bd ON bd.`id`=dbu.`depart_id`
+	JOIN base_position_user bpu ON bpu.`user_id`=bu.`id`
+	JOIN base_position bp ON bp.`id`=bpu.`position_id`
+	WHERE bu.`id` in
+	<foreach collection="concernedPersonList" index="index" item="item"
+			separator=",">
+			#{id}
+			</foreach>
+  </select>
 </mapper>
