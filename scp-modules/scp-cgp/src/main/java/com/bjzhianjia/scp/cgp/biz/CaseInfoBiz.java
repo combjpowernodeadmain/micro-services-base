@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.cgp.biz;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -105,6 +106,14 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             criteria.andEqualTo("isFinished", "0");
             criteria.andNotEqualTo("id", caseInfo.getId());
         }
+        
+        if (caseInfo.getGrid()!=null) {
+            criteria.andEqualTo("grid", caseInfo.getGrid());
+        }
+        if(StringUtils.isNotBlank(caseInfo.getRegulaObjList())) {
+            criteria.andIn("regulaObjList", Arrays.asList(caseInfo.getRegulaObjList().split(",")));
+        }
+        example.setOrderByClause("id desc");
 
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<CaseInfo> list = this.mapper.selectByExample(example);
@@ -214,7 +223,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
 
         return new TableResultResponse<CaseInfo>(pageInfo.getTotal(), list);
     }
-
+    
     /**
      * 按ID集合查询对象集合
      * 
