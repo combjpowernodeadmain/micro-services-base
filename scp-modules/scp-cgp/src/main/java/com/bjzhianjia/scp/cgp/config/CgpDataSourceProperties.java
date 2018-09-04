@@ -1,4 +1,16 @@
-package com.bjzhianjia.scp.security.wf.base.config;
+/*
+ *
+ * Copyright 2018 by lutuo.com
+ * All rights reserved.
+ *
+ * This software is the confidential and proprietary information of
+ * lutuo ("Confidential Information").  You shall not disclose such 
+ * Confidential Information and shall use it only in accordance with
+ * the terms of the license agreement you entered into with lutuo.
+ *
+ */
+
+package com.bjzhianjia.scp.cgp.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -6,16 +18,16 @@ import org.springframework.stereotype.Component;
 import lombok.Data;
 
 
-
 /**
- * ActivitiDataSourceProperties 工作流数据源属性.
+ * 
+ * CgpDataSourceProperties cgp数据源属性
  *
  *
  * <pre>
  * Modification History: 
  * Date             Author      Version         Description 
  * ------------------------------------------------------------------
- * 2018年9月4日          chenshuai      1.0            ADD
+ * 2018年9月3日        chenshuai      1.0            ADD
  * </pre>
  * 
  *
@@ -23,10 +35,10 @@ import lombok.Data;
  * @author chenshuai
  *
  */
-@ConfigurationProperties(prefix = "workflow.datasource")
+@ConfigurationProperties(prefix = "spring.datasource")
 @Data
 @Component
-public class ActivitiDataSourceProperties {
+public class CgpDataSourceProperties {
 
     private String url;
 
@@ -34,6 +46,23 @@ public class ActivitiDataSourceProperties {
 
     private String password;
 
+//    private String driverClassName;
+//
+//    private Integer maxActive;
+//
+//    private Integer initialSize;
+//
+//    private Integer minIdle;
+//
+//    private Integer maxWait;
+//
+//    private Integer maxPoolPreparedStatementPerConnectionSize;
+//
+//    private Integer timeBetweenEvictionRunsMillis;
+//
+//    private Integer minEvictableIdleTimeMillis;
+
+    private Boolean poolPreparedStatements;
 
     /** min-pool-size 最小连接数 **/
     private Integer minPoolSize;
@@ -55,4 +84,5 @@ public class ActivitiDataSourceProperties {
 
     /** max-idle-time 最大闲置时间，超过最小连接池连接的连接将将关闭 **/
     private Integer maxIdleTime;
+
 }
