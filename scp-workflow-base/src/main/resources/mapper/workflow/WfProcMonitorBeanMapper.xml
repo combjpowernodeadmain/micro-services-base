@@ -100,6 +100,7 @@
 			AND (task.PROC_SELFPERMISSION3 = '0' OR task.PROC_SELFPERMISSION3 = '1' and task.PROC_SELFDATA3 = #{procSelfPermissionData3})
 			AND (task.PROC_SELFPERMISSION4 = '0' OR task.PROC_SELFPERMISSION4 = '1' and task.PROC_SELFDATA4 = #{procSelfPermissionData4})
 			AND (task.PROC_SELFPERMISSION5 = '0' OR task.PROC_SELFPERMISSION5 = '1' and task.PROC_SELFDATA5 = #{procSelfPermissionData5})
+			AND task.PROC_KEY=#{prockey}
 			<if test="procName != '' and procName != null">
 				and proc.PROC_NAME LIKE "%"#{procName}"%"
 			</if>
