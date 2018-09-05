@@ -47,7 +47,7 @@ public class CaseRegistrationController
         return restResult;
     }
 
-    @RequestMapping(value = "/get")
+    @RequestMapping(value = "/get",method=RequestMethod.GET)
     @ApiOperation("查询 单条记录")
     public ObjectRestResponse<JSONObject> getUserTaskDetail(
         @RequestBody @ApiParam("封装查询条件的对象") @Validated JSONObject jobs,

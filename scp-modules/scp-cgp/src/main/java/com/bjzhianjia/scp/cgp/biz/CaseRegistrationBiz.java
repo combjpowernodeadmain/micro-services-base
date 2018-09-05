@@ -209,6 +209,6 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<CaseRegistration> rows=this.selectByExample(example);
         
-        return new TableResultResponse<>(pageInfo.getTotal(), rows);
+        return new TableResultResponse<CaseRegistration>(pageInfo.getTotal(), rows);
     }
 }
