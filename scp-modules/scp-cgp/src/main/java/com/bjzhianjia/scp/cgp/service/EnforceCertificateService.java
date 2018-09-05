@@ -173,7 +173,9 @@ public class EnforceCertificateService {
             for (int i=0;i<resultJArray.size();i++) {
                 JSONObject jsonObject = resultJArray.getJSONObject(i);
                 JSONObject uTmpJObj = JSONObject.parseObject(jsonObject.getString("usrId"));
-                jsonObject.put("mapInfo", lawMap.get(uTmpJObj.getString("id")));
+                if(uTmpJObj!=null) {
+                    jsonObject.put("mapInfo", lawMap.get(uTmpJObj.getString("id")));
+                }
                 resultJObjList.add(jsonObject);
             }
         }
@@ -360,7 +362,7 @@ public class EnforceCertificateService {
 
         jsonObject.put("gridName", String.join(",", gridNameList));
         jsonObject.put("gridRoleName", String.join(",", roleNameList));
-        jsonObject.put("mapInfoAndTime", mapInfoAndTime);
+        jsonObject.put("mapInfo", mapInfoAndTime.isEmpty()?null:mapInfoAndTime);
 
         restResult.setStatus(200);
         restResult.setData(jsonObject);
