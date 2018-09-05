@@ -3,7 +3,9 @@ package com.bjzhianjia.scp.cgp.biz;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -148,5 +150,31 @@ public class LawEnforcePathBiz extends BusinessBiz<LawEnforcePathMapper,LawEnfor
             return null;
         }
         return list.get(0);
+    }
+    
+    /**
+     * 按用户ID查询记录，多个ID之间用逗号隔开
+     * @param userIds
+     * @return
+     */
+    public Map<String, JSONObject> getByUserIds(String userIds){
+        userIds="'"+userIds.replaceAll(",", "','")+"'";
+        List<LawEnforcePath> list = this.mapper.getByUserIds(userIds);
+        
+        if (list == null || list.isEmpty()) {
+            return new HashMap<String,JSONObject>();
+        }
+        
+        Map<String, JSONObject> result=new HashMap<>();
+        for(LawEnforcePath lawEnforcePath:list) {
+            JSONObject obj = new JSONObject();
+            if(lawEnforcePath != null) {
+                obj.put("mapInfo", "{\"lng\":\""+lawEnforcePath.getLng()+"\",\"lat\":\""+lawEnforcePath.getLat()+"\"}");
+                obj.put("time", lawEnforcePath.getCrtTime());
+            }
+            
+            result.put(lawEnforcePath.getCrtUserId(), obj);
+        }
+        return result;
     }
 }
