@@ -1,7 +1,6 @@
 package com.bjzhianjia.scp.cgp.service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +17,7 @@ import com.bjzhianjia.scp.cgp.biz.AreaGridBiz;
 import com.bjzhianjia.scp.cgp.biz.AreaGridMemberBiz;
 import com.bjzhianjia.scp.cgp.biz.EnforceCertificateBiz;
 import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
+import com.bjzhianjia.scp.cgp.biz.LawEnforcePathBiz;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.AreaGridMember;
 import com.bjzhianjia.scp.cgp.entity.Constances;
@@ -63,6 +63,9 @@ public class EnforceCertificateService {
     @Autowired
     private AreaGridBiz areaGridBiz;
 
+    @Autowired
+    private LawEnforcePathBiz lawEnforcePathBiz;
+
     /**
      * 分页查询
      * 
@@ -74,7 +77,7 @@ public class EnforceCertificateService {
      *            查询条件
      * @return
      */
-    public TableResultResponse<EnforceCertificate> getList(int page, int limit,
+    public TableResultResponse<JSONObject> getList(int page, int limit,
         EnforceCertificate rightsIssues) {
 
         TableResultResponse<EnforceCertificate> tableResult =
@@ -82,7 +85,7 @@ public class EnforceCertificateService {
         List<EnforceCertificate> list = tableResult.getData().getRows();
 
         if (list.size() == 0) {
-            return tableResult;
+            return new TableResultResponse<>(0, new ArrayList<>());
         }
 
         List<String> bizTypes =
@@ -92,13 +95,6 @@ public class EnforceCertificateService {
          * 业务条线有可能是null，在聚和数据的时候要去除
          */
         if (bizTypes != null && bizTypes.size() > 0) {
-            // for (int i = 0; i < bizTypes.size(); i++) {
-            // if (StringUtils.isBlank(bizTypes.get(i))) {
-            // bizTypes.remove(i);
-            // i--;
-            // }
-            // }
-
             /*
              * -------------------By尚------------------开始----------------
              */
@@ -129,27 +125,6 @@ public class EnforceCertificateService {
             /*
              * -------------------By尚------------------结束----------------
              */
-
-            /*
-             * -------------------原代码-------------------开始---------------
-             */
-            // Map<String, String> typeMap =
-            // eventTypeBiz.getByIds(String.join(",", bizTypes));
-            //
-            // for(EnforceCertificate item:list) {
-            // if(StringUtil.isEmpty(item.getBizLists())) {
-            // continue;
-            // }
-            // String[] bizAry = item.getBizLists().split(",");
-            // List<String> bizTypeNames = new ArrayList<>();
-            // for(String bizType:bizAry) {
-            // bizTypeNames.add(typeMap.get(bizType));
-            // }
-            // item.setBizLists(String.join(",", bizTypeNames));
-            // }
-            /*
-             * -------------------原代码-------------------结束---------------
-             */
         }
 
         // 获取执证人联系电话
@@ -179,7 +154,33 @@ public class EnforceCertificateService {
             log.error("merge data exception", ex);
         }
 
-        return tableResult;
+        /*
+         * 原本返回对象为TableResultResponse<EnforceCertificate>，在指挥中心页面需要执法者定位信息，
+         * 将返回值 改为TableResultResponse<JSONObject>，用于封装与定位信息相关的数据
+         */
+        JSONArray resultJArray=JSONArray.parseArray(JSON.toJSONString(list));
+        
+        /*
+         *  关联执法人员定位
+         */
+        Map<String, JSONObject> lawMap = new HashMap<>();
+        if (userIds != null && userIds.size() > 0) {
+            lawMap = lawEnforcePathBiz.getByUserIds(String.join(",", userIds));
+        }
+        
+        List<JSONObject> resultJObjList=new ArrayList<>();
+        if (lawMap != null && !lawMap.isEmpty()) {
+            for (int i=0;i<resultJArray.size();i++) {
+                JSONObject jsonObject = resultJArray.getJSONObject(i);
+                JSONObject uTmpJObj = JSONObject.parseObject(jsonObject.getString("usrId"));
+                if(uTmpJObj!=null) {
+                    jsonObject.put("mapInfo", lawMap.get(uTmpJObj.getString("id")));
+                }
+                resultJObjList.add(jsonObject);
+            }
+        }
+        
+        return new TableResultResponse<>(tableResult.getData().getTotal(), resultJObjList);
     }
 
     /**
@@ -293,13 +294,13 @@ public class EnforceCertificateService {
      * @return
      */
     public ObjectRestResponse<JSONObject> getDetailOfCertificater(String userId) {
-        ObjectRestResponse<JSONObject> restResult=new ObjectRestResponse<>();
-        if(StringUtils.isBlank(userId)) {
+        ObjectRestResponse<JSONObject> restResult = new ObjectRestResponse<>();
+        if (StringUtils.isBlank(userId)) {
             restResult.setStatus(400);
             restResult.setMessage("请指定用户ID");
             return restResult;
         }
-        
+
         JSONObject jsonObject = new JSONObject();
 
         // 查询执法人员
@@ -347,18 +348,22 @@ public class EnforceCertificateService {
         }
 
         // 所属角色
-        List<String> roleNameList=new ArrayList<>();
-        if(roleList!=null&&!roleList.isEmpty()) {
+        List<String> roleNameList = new ArrayList<>();
+        if (roleList != null && !roleList.isEmpty()) {
             Map<String, String> roleMap = dictFeign.getByCodeIn(String.join(",", roleList));
-            roleNameList=new ArrayList<>(roleMap.values());
+            roleNameList = new ArrayList<>(roleMap.values());
         }
         /*
          * 人员所属网格及角色===============结束======================
          */
-        
+
+        // 执法人员定位
+        JSONObject mapInfoAndTime = lawEnforcePathBiz.getMapInfoByUserId(userId);
+
         jsonObject.put("gridName", String.join(",", gridNameList));
         jsonObject.put("gridRoleName", String.join(",", roleNameList));
-        
+        jsonObject.put("mapInfo", mapInfoAndTime.isEmpty()?null:mapInfoAndTime);
+
         restResult.setStatus(200);
         restResult.setData(jsonObject);
         return restResult;

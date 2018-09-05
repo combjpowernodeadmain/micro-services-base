@@ -62,5 +62,5 @@ public interface UserMapper extends CommonMapper<User> {
      * @param userId
      * @return
      */
-    public List<Map<String, String>> getUserDetail(@Param("userId")List<String> userId);
+    public List<Map<String, String>> getUserDetail(@Param("userId")String userId);
 }

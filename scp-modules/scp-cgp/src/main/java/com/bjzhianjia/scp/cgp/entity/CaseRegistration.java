@@ -147,6 +147,10 @@ public class CaseRegistration implements Serializable {
 	    //部门ID
     @Column(name = "dept_id")
     private String deptId;
+    
+        //处理状态
+    @Column(name="exe_status")
+    private String exeStatus;
 	
 
 	/**
@@ -533,4 +537,17 @@ public class CaseRegistration implements Serializable {
 	public String getDeptId() {
 		return deptId;
 	}
+	/**
+     * 获取：处理状态
+     */
+    public String getExeStatus() {
+        return exeStatus;
+    }
+    /**
+     * 设置：处理状态
+     */
+    public void setExeStatus(String exeStatus) {
+        this.exeStatus = exeStatus;
+    }
+	
 }

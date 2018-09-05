@@ -1,17 +1,5 @@
 package com.bjzhianjia.scp.cgp.rest;
 
-import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
-import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
-import com.bjzhianjia.scp.security.common.rest.BaseController;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-
-import com.alibaba.fastjson.JSONObject;
-import com.bjzhianjia.scp.cgp.biz.WritsInstancesBiz;
-import com.bjzhianjia.scp.cgp.entity.WritsInstances;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -19,9 +7,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.alibaba.fastjson.JSONObject;
+import com.bjzhianjia.scp.cgp.biz.WritsInstancesBiz;
+import com.bjzhianjia.scp.cgp.entity.WritsInstances;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
+import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.common.rest.BaseController;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 @RestController
 @RequestMapping("writsInstances")
@@ -38,9 +37,16 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
 	public TableResultResponse<WritsInstances> getList(
 			@RequestParam(value = "page", defaultValue = "1") @ApiParam(name = "当前页") Integer page,
 			@RequestParam(value = "limit", defaultValue = "10") @ApiParam(name = "页容量") Integer limit,
-			@RequestBody @ApiParam(name = "封装有查询条件的实体类") WritsInstances writsInstances) {
+			@RequestParam(value="templatedId",required=false) @ApiParam(name = "文书模板") Integer templateId,
+			@RequestParam(value="procTaskId",defaultValue="") @ApiParam(name = "流程任务ID") String procTaskId,
+			@RequestParam(value="caseId",defaultValue="") @ApiParam(name = "案件 ID") String caseId
+			) {
 		TableResultResponse<WritsInstances> restResult = new TableResultResponse<>();
 
+		WritsInstances writsInstances=new WritsInstances();
+		writsInstances.setCaseId(caseId);
+		writsInstances.setTemplateId(templateId);
+		
 		restResult = writsInstancesBiz.getList(writsInstances, page, limit);
 
 		return restResult;

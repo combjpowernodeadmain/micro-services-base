@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.cgp.biz;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,7 @@ import tk.mybatis.mapper.entity.Example.Criteria;
  * </pre>
  * 
  *
- * @version 1.0 
+ * @version 1.0
  * @author bo
  *
  */
@@ -105,6 +106,14 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             criteria.andEqualTo("isFinished", "0");
             criteria.andNotEqualTo("id", caseInfo.getId());
         }
+
+        if (caseInfo.getGrid() != null) {
+            criteria.andEqualTo("grid", caseInfo.getGrid());
+        }
+        if (StringUtils.isNotBlank(caseInfo.getRegulaObjList())) {
+            criteria.andIn("regulaObjList", Arrays.asList(caseInfo.getRegulaObjList().split(",")));
+        }
+        example.setOrderByClause("id desc");
 
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<CaseInfo> list = this.mapper.selectByExample(example);
@@ -201,7 +210,11 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         // 处理状态：已结案(0:未完成|1:已结案2:已终止)
         if (StringUtils.isNotBlank(isFinished)
             && !CaseInfo.FINISHED_STATE_TODO.equals(isFinished)) {
-            criteria.andEqualTo("isFinished", isFinished);
+            //只查询1:已结案2:已终止
+            if (CaseInfo.FINISHED_STATE_FINISH.equals(queryData.getString("procCtaskname"))
+                && CaseInfo.FINISHED_STATE_STOP.equals(queryData.getString("procCtaskname"))) {
+                criteria.andEqualTo("isFinished", isFinished);
+            }
         }
         if (StringUtils.isNotBlank(sourceType) && StringUtils.isNotBlank(sourceCode)
             && Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CHECK.equals(sourceType)) {

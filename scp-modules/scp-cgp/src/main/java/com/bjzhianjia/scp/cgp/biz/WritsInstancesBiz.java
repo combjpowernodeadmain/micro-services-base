@@ -85,16 +85,16 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 
 		// 判断当前处于哪个节点上(中队，法治科，镇局)
 		String procNode = bizData.getString("processNode");
-
+		//前端 传入的文书内容
 		String fillContext = writsInstances.getFillContext();
 
 		if (writsInstances.getId() == null) {
+		    // 还没有插入过对象
 			JSONObject jObjInDB = mergeFillContext(procNode, fillContext, null);
 
 			// 把处理后的文书内容(fillContext)放回，进行更新操作
 			writsInstances.setFillContext(jObjInDB.toJSONString());
 
-			// 还没有插入过对象
 			this.insertSelective(writsInstances);
 		} else {
 			/*
@@ -142,6 +142,7 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 			jObjInDB.put("TownLeader", fillContext);
 		} else if (procNode.endsWith(WorkFlowConstances.ProcessNodeSuffix.LAWMEMBER_SUFFIX)) {
 			// 执法队员
+		    jObjInDB.put("LawMember", fillContext);
 		}
 		return jObjInDB;
 	}

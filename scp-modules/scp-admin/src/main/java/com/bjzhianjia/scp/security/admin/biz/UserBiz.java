@@ -16,7 +16,6 @@
 
 package com.bjzhianjia.scp.security.admin.biz;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -269,7 +268,7 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
      * @return
      */
     public JSONArray getUserDetail(String userId) {
-        List<Map<String, String>> userDetail = mapper.getUserDetail(Arrays.asList(userId.split(",")));
+        List<Map<String, String>> userDetail = mapper.getUserDetail(userId);
         return JSONArray.parseArray(JSON.toJSONString(userDetail));
     }
 }

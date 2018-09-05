@@ -1,20 +1,21 @@
 package com.bjzhianjia.scp.cgp.rest;
 
-import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
-import com.bjzhianjia.scp.security.common.rest.BaseController;
-
-import io.swagger.annotations.ApiOperation;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.AreaGridMemberBiz;
 import com.bjzhianjia.scp.cgp.entity.AreaGridMember;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
+import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.common.rest.BaseController;
+
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 @RestController
 @RequestMapping("areaGridMember")
@@ -34,5 +35,11 @@ public class AreaGridMemberController
         areaGridMember.setGridMember(memId);
 
         return this.baseBiz.getList(areaGridMember, page, limit);
+    }
+
+    @RequestMapping(value = "/get/member/detail")
+    public ObjectRestResponse<JSONObject> getDetailOfAeraMem(
+        @RequestParam(value = "memID", defaultValue = "") @ApiParam("待查询网格员ID") String memId) {
+        return null;
     }
 }
