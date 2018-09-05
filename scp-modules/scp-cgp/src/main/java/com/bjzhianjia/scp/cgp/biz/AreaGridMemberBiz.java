@@ -58,17 +58,22 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
 
     @Autowired
     private AreaGridMapper areaGridMapper;
+
     @Autowired
     private AdminFeign adminFeign;
+
     @Autowired
     private AreaGridMemberBiz areaGridMemberBiz;
+
     @Autowired
     private AreaGridBiz areaGridBiz;
+
     @Autowired
     private DictFeign dictFeign;
+
     @Autowired
     private PatrolTaskPathBiz patrolTaskPathBiz;
-    
+
     /**
      * 按条件获取网格成员对象集合
      * 
@@ -226,23 +231,24 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
         }
         return jListResult;
     }
-    
+
     /**
      * 获取网格员详细信息
+     * 
      * @param memId
      * @return
      */
-    public ObjectRestResponse<JSONObject> getDetailOfAeraMem(String memId){
-        ObjectRestResponse<JSONObject> restResult=new ObjectRestResponse<>();
-        if(StringUtils.isBlank(memId)) {
+    public ObjectRestResponse<JSONObject> getDetailOfAeraMem(String memId) {
+        ObjectRestResponse<JSONObject> restResult = new ObjectRestResponse<>();
+        if (StringUtils.isBlank(memId)) {
             restResult.setStatus(400);
             restResult.setMessage("请指定网格员ID");
             return restResult;
         }
-        
+
         JSONObject jsonObject = new JSONObject();
-        
-     // 查询执法人员
+
+        // 查询执法人员
 
         /*
          * userDetail内信息
@@ -256,7 +262,7 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
             // 按ID进行查询，如果有返回值 ，则返回值必定唯一
             jsonObject = userDetail.getJSONObject(0);
         }
-        
+
         /*
          * 人员所属网格及角色===============开始======================
          */
@@ -287,26 +293,27 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
         }
 
         // 所属角色
-        List<String> roleNameList=new ArrayList<>();
-        if(roleList!=null&&!roleList.isEmpty()) {
+        List<String> roleNameList = new ArrayList<>();
+        if (roleList != null && !roleList.isEmpty()) {
             Map<String, String> roleMap = dictFeign.getByCodeIn(String.join(",", roleList));
-            roleNameList=new ArrayList<>(roleMap.values());
+            roleNameList = new ArrayList<>(roleMap.values());
         }
         /*
          * 人员所属网格及角色===============结束======================
          */
-        
-        //网格人员定位
+
+        // 网格人员定位
         JSONObject mapInfo = patrolTaskPathBiz.getMapInfoByUserId(memId);
-        String positionTime="";
-        if(mapInfo!=null) {
-            positionTime=DateUtil.dateFromDateToStr(mapInfo.getDate("time"), "yyyy-MM-dd HH:mm:ss");
+        String positionTime = "";
+        if (mapInfo != null) {
+            positionTime =
+                DateUtil.dateFromDateToStr(mapInfo.getDate("time"), "yyyy-MM-dd HH:mm:ss");
         }
-        
+
         jsonObject.put("gridName", String.join(",", gridNameList));
         jsonObject.put("gridRoleName", String.join(",", roleNameList));
         jsonObject.put("positionTime", positionTime);
-        
+
         restResult.setStatus(200);
         restResult.setData(jsonObject);
         return restResult;
