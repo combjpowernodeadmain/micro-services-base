@@ -45,7 +45,7 @@ public class EnforceCertificateController extends BaseController<EnforceCertific
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
     @ResponseBody
     @ApiOperation("终端查询分页列表")
-    public TableResultResponse<EnforceCertificate> page(@RequestParam(defaultValue = "10") int limit
+    public TableResultResponse<JSONObject> page(@RequestParam(defaultValue = "10") int limit
     				,@RequestParam(defaultValue = "1") int page
     				,@RequestParam(defaultValue = "") String certCode
     				,@RequestParam(defaultValue = "") String holderName) {

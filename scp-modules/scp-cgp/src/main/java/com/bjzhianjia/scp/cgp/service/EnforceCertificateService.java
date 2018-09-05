@@ -25,7 +25,6 @@ import com.bjzhianjia.scp.cgp.entity.EnforceCertificate;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
-import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
@@ -63,6 +62,7 @@ public class EnforceCertificateService {
 
     @Autowired
     private AreaGridBiz areaGridBiz;
+
     @Autowired
     private LawEnforcePathBiz lawEnforcePathBiz;
 
@@ -77,7 +77,7 @@ public class EnforceCertificateService {
      *            查询条件
      * @return
      */
-    public TableResultResponse<EnforceCertificate> getList(int page, int limit,
+    public TableResultResponse<JSONObject> getList(int page, int limit,
         EnforceCertificate rightsIssues) {
 
         TableResultResponse<EnforceCertificate> tableResult =
@@ -85,7 +85,7 @@ public class EnforceCertificateService {
         List<EnforceCertificate> list = tableResult.getData().getRows();
 
         if (list.size() == 0) {
-            return tableResult;
+            return new TableResultResponse<>(0, new ArrayList<>());
         }
 
         List<String> bizTypes =
@@ -95,13 +95,6 @@ public class EnforceCertificateService {
          * 业务条线有可能是null，在聚和数据的时候要去除
          */
         if (bizTypes != null && bizTypes.size() > 0) {
-            // for (int i = 0; i < bizTypes.size(); i++) {
-            // if (StringUtils.isBlank(bizTypes.get(i))) {
-            // bizTypes.remove(i);
-            // i--;
-            // }
-            // }
-
             /*
              * -------------------By尚------------------开始----------------
              */
@@ -132,27 +125,6 @@ public class EnforceCertificateService {
             /*
              * -------------------By尚------------------结束----------------
              */
-
-            /*
-             * -------------------原代码-------------------开始---------------
-             */
-            // Map<String, String> typeMap =
-            // eventTypeBiz.getByIds(String.join(",", bizTypes));
-            //
-            // for(EnforceCertificate item:list) {
-            // if(StringUtil.isEmpty(item.getBizLists())) {
-            // continue;
-            // }
-            // String[] bizAry = item.getBizLists().split(",");
-            // List<String> bizTypeNames = new ArrayList<>();
-            // for(String bizType:bizAry) {
-            // bizTypeNames.add(typeMap.get(bizType));
-            // }
-            // item.setBizLists(String.join(",", bizTypeNames));
-            // }
-            /*
-             * -------------------原代码-------------------结束---------------
-             */
         }
 
         // 获取执证人联系电话
@@ -182,7 +154,31 @@ public class EnforceCertificateService {
             log.error("merge data exception", ex);
         }
 
-        return tableResult;
+        /*
+         * 原本返回对象为TableResultResponse<EnforceCertificate>，在指挥中心页面需要执法者定位信息，
+         * 将返回值 改为TableResultResponse<JSONObject>，用于封装与定位信息相关的数据
+         */
+        JSONArray resultJArray=JSONArray.parseArray(JSON.toJSONString(list));
+        
+        /*
+         *  关联执法人员定位
+         */
+        Map<String, JSONObject> lawMap = new HashMap<>();
+        if (userIds != null && userIds.size() > 0) {
+            lawMap = lawEnforcePathBiz.getByUserIds(String.join(",", userIds));
+        }
+        
+        List<JSONObject> resultJObjList=new ArrayList<>();
+        if (lawMap != null && !lawMap.isEmpty()) {
+            for (int i=0;i<resultJArray.size();i++) {
+                JSONObject jsonObject = resultJArray.getJSONObject(i);
+                JSONObject uTmpJObj = JSONObject.parseObject(jsonObject.getString("usrId"));
+                jsonObject.put("mapInfo", lawMap.get(uTmpJObj.getString("id")));
+                resultJObjList.add(jsonObject);
+            }
+        }
+        
+        return new TableResultResponse<>(tableResult.getData().getTotal(), resultJObjList);
     }
 
     /**
@@ -296,13 +292,13 @@ public class EnforceCertificateService {
      * @return
      */
     public ObjectRestResponse<JSONObject> getDetailOfCertificater(String userId) {
-        ObjectRestResponse<JSONObject> restResult=new ObjectRestResponse<>();
-        if(StringUtils.isBlank(userId)) {
+        ObjectRestResponse<JSONObject> restResult = new ObjectRestResponse<>();
+        if (StringUtils.isBlank(userId)) {
             restResult.setStatus(400);
             restResult.setMessage("请指定用户ID");
             return restResult;
         }
-        
+
         JSONObject jsonObject = new JSONObject();
 
         // 查询执法人员
@@ -350,26 +346,22 @@ public class EnforceCertificateService {
         }
 
         // 所属角色
-        List<String> roleNameList=new ArrayList<>();
-        if(roleList!=null&&!roleList.isEmpty()) {
+        List<String> roleNameList = new ArrayList<>();
+        if (roleList != null && !roleList.isEmpty()) {
             Map<String, String> roleMap = dictFeign.getByCodeIn(String.join(",", roleList));
-            roleNameList=new ArrayList<>(roleMap.values());
+            roleNameList = new ArrayList<>(roleMap.values());
         }
         /*
          * 人员所属网格及角色===============结束======================
          */
-        
-      //执法人员定位
-        JSONObject mapInfo = lawEnforcePathBiz.getMapInfoByUserId(userId);
-        String positionTime="";
-        if(mapInfo.getDate("time")!=null) {
-            positionTime=DateUtil.dateFromDateToStr(mapInfo.getDate("time"), "yyyy-MM-dd HH:mm:ss");
-        }
-        
+
+        // 执法人员定位
+        JSONObject mapInfoAndTime = lawEnforcePathBiz.getMapInfoByUserId(userId);
+
         jsonObject.put("gridName", String.join(",", gridNameList));
         jsonObject.put("gridRoleName", String.join(",", roleNameList));
-        jsonObject.put("positionTime", positionTime);
-        
+        jsonObject.put("mapInfoAndTime", mapInfoAndTime);
+
         restResult.setStatus(200);
         restResult.setData(jsonObject);
         return restResult;
