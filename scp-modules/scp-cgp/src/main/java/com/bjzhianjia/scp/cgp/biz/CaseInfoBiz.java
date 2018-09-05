@@ -40,7 +40,7 @@ import tk.mybatis.mapper.entity.Example.Criteria;
  * </pre>
  * 
  *
- * @version 1.0 
+ * @version 1.0
  * @author bo
  *
  */
@@ -106,11 +106,11 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             criteria.andEqualTo("isFinished", "0");
             criteria.andNotEqualTo("id", caseInfo.getId());
         }
-        
-        if (caseInfo.getGrid()!=null) {
+
+        if (caseInfo.getGrid() != null) {
             criteria.andEqualTo("grid", caseInfo.getGrid());
         }
-        if(StringUtils.isNotBlank(caseInfo.getRegulaObjList())) {
+        if (StringUtils.isNotBlank(caseInfo.getRegulaObjList())) {
             criteria.andIn("regulaObjList", Arrays.asList(caseInfo.getRegulaObjList().split(",")));
         }
         example.setOrderByClause("id desc");
@@ -210,7 +210,11 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         // 处理状态：已结案(0:未完成|1:已结案2:已终止)
         if (StringUtils.isNotBlank(isFinished)
             && !CaseInfo.FINISHED_STATE_TODO.equals(isFinished)) {
-            criteria.andEqualTo("isFinished", isFinished);
+            //只查询1:已结案2:已终止
+            if (CaseInfo.FINISHED_STATE_FINISH.equals(queryData.getString("procCtaskname"))
+                && CaseInfo.FINISHED_STATE_STOP.equals(queryData.getString("procCtaskname"))) {
+                criteria.andEqualTo("isFinished", isFinished);
+            }
         }
         if (StringUtils.isNotBlank(sourceType) && StringUtils.isNotBlank(sourceCode)
             && Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CHECK.equals(sourceType)) {
@@ -223,7 +227,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
 
         return new TableResultResponse<CaseInfo>(pageInfo.getTotal(), list);
     }
-    
+
     /**
      * 按ID集合查询对象集合
      * 

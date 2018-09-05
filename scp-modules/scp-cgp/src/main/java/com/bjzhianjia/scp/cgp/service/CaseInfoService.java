@@ -282,7 +282,12 @@ public class CaseInfoService {
             if (StringUtils.isNotBlank(queryData.getString("procCtaskname"))) {
                 // 是否按进度进行查找(即任务表中·PROC_CTASKNAME·字段)
                 bizData = objs.getJSONObject("bizData");
-                bizData.put("procCtaskname", queryData.getString("procCtaskname"));
+                if (!CaseInfo.FINISHED_STATE_FINISH.equals(queryData.getString("procCtaskname"))
+                    && !CaseInfo.FINISHED_STATE_STOP
+                        .equals(queryData.getString("procCtaskname"))) {
+                    bizData.put("procCtaskname", queryData.getString("procCtaskname"));
+                }
+
                 objs.put("bizData", bizData);
             }
         }
