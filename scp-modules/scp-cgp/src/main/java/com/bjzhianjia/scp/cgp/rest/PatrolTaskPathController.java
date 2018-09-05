@@ -64,7 +64,7 @@ import io.swagger.annotations.ApiParam;
 @RequestMapping("patrolTaskPath")
 @CheckClientToken
 @CheckUserToken
-@Api("巡查轨迹记录管理")
+@Api(tags = "巡查轨迹记录管理")
 public class PatrolTaskPathController
     extends BaseController<PatrolTaskPathBiz, PatrolTaskPath, Integer> {
 
@@ -78,11 +78,11 @@ public class PatrolTaskPathController
      * @param bindingResult
      * @return
      */
-    @RequestMapping(value = "add", method = RequestMethod.POST )
+    @RequestMapping(value = "add", method = RequestMethod.POST)
     @ResponseBody
-    @ApiOperation("添加巡查轨迹")
+    @ApiOperation(value = "添加巡查轨迹")
     public ObjectRestResponse<Void> add(
-        @RequestBody @Validated @ApiParam("巡查轨迹") PatrolTaskPathVo patrolTaskPathVo,
+        @RequestBody @Validated @ApiParam(value = "巡查轨迹") PatrolTaskPathVo patrolTaskPathVo,
         BindingResult bindingResult) {
 
         ObjectRestResponse<Void> restResult = new ObjectRestResponse<>();
@@ -98,21 +98,21 @@ public class PatrolTaskPathController
             return restResult;
         }
 
-        //mapinfo转换为单独的字段
+        // mapinfo转换为单独的字段
         JSONObject json = null;
         try {
             json = JSONObject.parseObject(patrolTaskPathVo.getMapInfo());
             if (json == null) {
                 return restResult;
             }
-            //mapInfo 数据封装
+            // mapInfo 数据封装
             PatrolTaskPath patrolTaskPath = new PatrolTaskPath();
             patrolTaskPath.setLat(json.getDouble("lat"));
             patrolTaskPath.setLng(json.getDouble("lng"));
             patrolTaskPath.setTerminalId(patrolTaskPathVo.getTerminalId());
             patrolTaskPath.setDeptId(BaseContextHandler.getDepartID());
             patrolTaskPath.setTanentId(BaseContextHandler.getTenantID());
-            
+
             patrolTaskPathBiz.insertSelective(patrolTaskPath);
         } catch (Exception e) {
             restResult.setMessage("添加失败");
@@ -133,6 +133,7 @@ public class PatrolTaskPathController
      */
     @RequestMapping(value = "user", method = RequestMethod.GET)
     @ResponseBody
+    @ApiOperation(value = "巡查轨迹")
     public ObjectRestResponse<JSONArray> getByUserIdAndDate(
         @RequestParam("") @ApiParam("用户id") String userId,
         @RequestParam("") @ApiParam("开始时间") String startTime,
@@ -146,8 +147,8 @@ public class PatrolTaskPathController
             return result;
         }
 
-        Date _startTime = DateUtil.dateFromStrToDate(startTime,"yyyy-MM-dd HH:mm:ss");
-        Date _endTime = DateUtil.dateFromStrToDate(endTime,"yyyy-MM-dd HH:mm:ss");
+        Date _startTime = DateUtil.dateFromStrToDate(startTime, "yyyy-MM-dd HH:mm:ss");
+        Date _endTime = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
 
         JSONArray array = patrolTaskPathBiz.getByUserIdAndDate(userId, _startTime, _endTime);
 
@@ -155,21 +156,23 @@ public class PatrolTaskPathController
             result.setStatus(200);
             result.setMessage("ok");
             result.setData(array);
-        }else {
+        } else {
             result.setMessage("没有定位记录！");
         }
         return result;
     }
+
     /**
      * 通过用户id查询定位
+     * 
      * @param userId
      * @return
      */
     @RequestMapping(value = "user/{userId}", method = RequestMethod.GET)
     @ResponseBody
-    @ApiOperation("查询指定用户定位")
+    @ApiOperation(value = "查询指定用户定位")
     public ObjectRestResponse<JSONObject> getByUserId(
-        @PathVariable("userId") @ApiParam("用户id") String userId) {
+        @PathVariable("userId") @ApiParam(value = "用户id") String userId) {
         ObjectRestResponse<JSONObject> result = new ObjectRestResponse<>();
         result.setStatus(400);
         result.setMessage("非法参数");
@@ -178,7 +181,7 @@ public class PatrolTaskPathController
             return result;
         }
         JSONObject obj = patrolTaskPathBiz.getMapInfoByUserId(userId);
-        if(obj != null) {
+        if (obj != null) {
             result.setStatus(200);
             result.setMessage("ok");
             result.setData(obj);
