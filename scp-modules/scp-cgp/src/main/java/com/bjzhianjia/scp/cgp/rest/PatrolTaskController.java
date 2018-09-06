@@ -115,6 +115,7 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
 	
 	
 	@RequestMapping(value="/get/{id}",method=RequestMethod.GET)
+	@ResponseBody
 	@ApiOperation("巡查记录详情")
 	public ObjectRestResponse<Map<String ,Object>> getOne(@PathVariable(value="id") @ApiParam(name="待查询巡查任务id") Integer id){
 		ObjectRestResponse<Map<String ,Object>> restResult = new ObjectRestResponse<>();

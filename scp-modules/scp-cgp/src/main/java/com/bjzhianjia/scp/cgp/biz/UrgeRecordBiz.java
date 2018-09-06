@@ -25,49 +25,55 @@ import tk.mybatis.mapper.entity.Example;
 @Service
 public class UrgeRecordBiz extends BusinessBiz<UrgeRecordMapper, UrgeRecord> {
 
-	@Autowired
-	private UrgeRecordMapper urgeRecordMapper;
-	
-	@Autowired
-	private CaseInfoBiz caseInfoBiz;
+    @Autowired
+    private UrgeRecordMapper urgeRecordMapper;
 
-	/**
-	 * 通过立案单id，翻页查询
-	 * 
-	 * @param page       页码
-	 * @param limit      页容量
-	 * @param caseInfoId 立案单id
-	 * @return
-	 * 
-	 */
-	public TableResultResponse<UrgeRecord> getList(Integer page, Integer limit, Integer caseInfoId) {
-		Example example = new Example(UrgeRecord.class);
-		Example.Criteria criteria = example.createCriteria();
-		example.setOrderByClause("id DESC");
-	
-		criteria.andEqualTo("caseInfoId", caseInfoId);
+    @Autowired
+    private CaseInfoBiz caseInfoBiz;
 
-		Page<Object> result = PageHelper.startPage(page, limit);
+    /**
+     * 通过立案单id，翻页查询
+     * 
+     * @param page
+     *            页码
+     * @param limit
+     *            页容量
+     * @param caseInfoId
+     *            立案单id
+     * @return
+     * 
+     */
+    public TableResultResponse<UrgeRecord> getList(Integer page, Integer limit, Integer caseInfoId) {
+        Example example = new Example(UrgeRecord.class);
+        Example.Criteria criteria = example.createCriteria();
+        example.setOrderByClause("id DESC");
 
-		List<UrgeRecord> list = urgeRecordMapper.selectByExample(example);
-		return new TableResultResponse<UrgeRecord>(result.getTotal(), list);
-	}
-	/**
-	 * 新增
-	 */
-	public void createUrgeRecord(UrgeRecord urgeRecord){
-		//更新事件表催办状态
-		Integer caseInfoId = urgeRecord.getCaseInfoId();
-		CaseInfo caseInfo = caseInfoBiz.selectById(caseInfoId);
-		if(caseInfo == null) {
-			return;
-		}
-		if(!"1".equals(caseInfo.getIsUrge())){ //没有记录催办时，修改催办状态
-			caseInfo = new CaseInfo();
-			caseInfo.setId(caseInfoId);
-			caseInfo.setIsUrge("1");
-			caseInfoBiz.updateSelectiveById(caseInfo);
-		}
-		super.insertSelective(urgeRecord);
-	}
+        criteria.andEqualTo("caseInfoId", caseInfoId);
+
+        Page<Object> result = PageHelper.startPage(page, limit);
+
+        List<UrgeRecord> list = urgeRecordMapper.selectByExample(example);
+        return new TableResultResponse<UrgeRecord>(result.getTotal(), list);
+    }
+
+    /**
+     * 新增
+     */
+    public void createUrgeRecord(UrgeRecord urgeRecord) {
+        // 是否催办（0否| 1是）
+        String isUrge = "1";
+        // 更新事件表催办状态
+        Integer caseInfoId = urgeRecord.getCaseInfoId();
+        CaseInfo caseInfo = caseInfoBiz.selectById(caseInfoId);
+        if (caseInfo != null) {
+            if (!isUrge.equals(caseInfo.getIsUrge())) { // 没有记录催办时，修改催办状态
+                caseInfo = new CaseInfo();
+                caseInfo.setId(caseInfoId);
+                caseInfo.setIsUrge(isUrge);
+                caseInfoBiz.updateSelectiveById(caseInfo);
+            }
+            super.insertSelective(urgeRecord);
+        }
+
+    }
 }

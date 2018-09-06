@@ -55,7 +55,7 @@ import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 @RequestMapping("lawEnforcePath")
 @CheckClientToken
 @CheckUserToken
-@Api("执法轨迹记录管理")
+@Api(tags="执法轨迹记录管理")
 public class LawEnforcePathController extends BaseController<LawEnforcePathBiz,LawEnforcePath,Integer> {
     @Autowired
     private LawEnforcePathBiz lawEnforcePathBiz;
@@ -69,9 +69,9 @@ public class LawEnforcePathController extends BaseController<LawEnforcePathBiz,L
      */
     @RequestMapping(value = "add", method = RequestMethod.POST )
     @ResponseBody
-    @ApiOperation("添加执法轨迹")
+    @ApiOperation(value="添加执法轨迹")
     public ObjectRestResponse<Void> add(
-        @RequestBody @Validated @ApiParam("执法轨迹") LawEnforcePathVo lawEnforcePathVo,
+        @RequestBody @Validated @ApiParam(value="执法轨迹") LawEnforcePathVo lawEnforcePathVo,
         BindingResult bindingResult) {
 
         ObjectRestResponse<Void> restResult = new ObjectRestResponse<>();
@@ -121,10 +121,11 @@ public class LawEnforcePathController extends BaseController<LawEnforcePathBiz,L
      */
     @RequestMapping(value = "user", method = RequestMethod.GET)
     @ResponseBody
+    @ApiOperation(value="执法轨迹")
     public ObjectRestResponse<JSONArray> getByUserIdAndDate(
-        @RequestParam("") @ApiParam("用户id") String userId,
-        @RequestParam("") @ApiParam("开始时间") String startTime,
-        @RequestParam("") @ApiParam("结束时间") String endTime) {
+        @RequestParam("") @ApiParam(value="用户id") String userId,
+        @RequestParam("") @ApiParam(value="开始时间") String startTime,
+        @RequestParam("") @ApiParam(value="结束时间") String endTime) {
 
         ObjectRestResponse<JSONArray> result = new ObjectRestResponse<>();
         result.setStatus(400);
