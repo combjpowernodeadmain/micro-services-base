@@ -1,21 +1,4 @@
 
-/*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- */
-
 package com.bjzhianjia.scp.security.dict.rest;
 
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
@@ -66,7 +49,10 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 	@RequestMapping(value = "/type/{code}", method = RequestMethod.GET)
 	public TableResultResponse<DictValue> getDictValueByDictTypeCode(@PathVariable("code") String code) {
 		Example example = new Example(DictValue.class);
-		example.createCriteria().andLike("code", code + "%");
+		Criteria criteria = example.createCriteria();
+		criteria.andLike("code", code + "%");
+		  //0没有删除，1 删除
+        criteria.andEqualTo("isDeleted","0");
 		List<DictValue> dictValues = this.baseBiz.selectByExample(example).stream().sorted(new Comparator<DictValue>() {
 			@Override
 			public int compare(DictValue o1, DictValue o2) {
@@ -81,7 +67,10 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 	@RequestMapping(value = "/feign/{code}", method = RequestMethod.GET)
 	public Map<String, String> getDictValueByCode(@PathVariable("code") String code) {
 		Example example = new Example(DictValue.class);
-		example.createCriteria().andLike("code", code + "%");
+	    Criteria criteria = example.createCriteria();
+        criteria.andLike("code", code + "%");
+          //0没有删除，1 删除
+        criteria.andEqualTo("isDeleted","0");
 
 		// 按order_num升序排列=============By尚
 		example.setOrderByClause("order_num");
@@ -97,7 +86,10 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 	@RequestMapping(value = "/feign/ids/{code}", method = RequestMethod.GET)
 	public Map<String, String> getDictIdByCode(@PathVariable("code") String code) {
 		Example example = new Example(DictValue.class);
-		example.createCriteria().andLike("code", code + "%");
+	    Criteria criteria = example.createCriteria();
+        criteria.andLike("code", code + "%");
+          //0没有删除，1 删除
+        criteria.andEqualTo("isDeleted","0");
 
 		// 按order_num升序排列=============By尚
 		example.setOrderByClause("order_num");
@@ -120,14 +112,6 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 	@IgnoreUserToken
 	@RequestMapping(value = "/feign/id/{id}", method = RequestMethod.GET)
 	public Map<String, String> getDictIdById(@PathVariable("id") String id) {
-//    	DictValue dictValue = this.baseBiz.selectById(id);
-//    	
-//    	if(dictValue!=null) {
-//    		Map<String, String> result=new HashMap<>();
-//    		result.put(dictValue.getId(), JSON.toJSONString(dictValue));
-//    		return result;
-//    	}
-//    	return null;
 		return this.baseBiz.getDictValues(id);
 	}
 	
@@ -156,8 +140,10 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 	@RequestMapping(value = "/feign/code/{code}", method = RequestMethod.GET)
 	public Map<String, String> getByCode(@PathVariable("code") String code) {
 		Example example = new Example(DictValue.class);
-		example.createCriteria().andLike("code", code + "%");
-
+		Criteria criteria = example.createCriteria();
+        criteria.andLike("code", code + "%");
+          //0没有删除，1 删除
+        criteria.andEqualTo("isDeleted","0");
 		example.setOrderByClause("order_num");
 
 		List<DictValue> dictValues = this.baseBiz.selectByExample(example);
@@ -194,7 +180,8 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 			codeSet.add(string);
 		}
 		criteria.andIn("code", codeSet);
-		
+	    //0没有删除，1 删除
+	    criteria.andEqualTo("isDeleted","0");
 		example.setOrderByClause("order_num");
 		List<DictValue> dictValues = this.baseBiz.selectByExample(example);
 		
