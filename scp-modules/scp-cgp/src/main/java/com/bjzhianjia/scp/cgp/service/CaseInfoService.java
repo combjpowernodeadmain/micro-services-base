@@ -311,7 +311,13 @@ public class CaseInfoService {
         JSONObject queryData, List<JSONObject> jObjList, PageInfo<WfProcBackBean> pageInfo,
         JSONObject objs) {
         List<WfProcBackBean> procBackBeanList = pageInfo.getList();
-
+        
+        //封装工作流任务
+        Map<String, WfProcBackBean> wfProcBackBean_ID_Entity_Map = new HashMap<>();
+        for (WfProcBackBean wfProcBackBean : procBackBeanList) {
+            wfProcBackBean_ID_Entity_Map.put(wfProcBackBean.getProcBizid(), wfProcBackBean);
+        }
+        
         Set<Integer> bizIds = new HashSet<>();
         List<String> eventTypeIdStrList = new ArrayList<>();
 
@@ -334,14 +340,11 @@ public class CaseInfoService {
 
         List<CaseInfo> caseInfoList = tableResult.getData().getRows();
 
-        Map<Integer, CaseInfo> caseInfo_ID_Entity_Map = new HashMap<>();
         for (CaseInfo caseInfo : caseInfoList) {
-            caseInfo_ID_Entity_Map.put(caseInfo.getId(), caseInfo);
 
             rootBizIdSet.add(caseInfo.getBizList());
             rootBizIdSet.add(caseInfo.getSourceType());
             rootBizIdSet.add(caseInfo.getCaseLevel());
-
             eventTypeIdStrList.add(caseInfo.getEventTypeList());
         }
 
@@ -369,53 +372,51 @@ public class CaseInfoService {
             eventTypeName = String.join(",", eventTypeNameList);
         }
 
-        for (WfProcBackBean tmp : procBackBeanList) {
-            JSONObject wfJObject = JSONObject.parseObject(JSON.toJSONString(tmp));
+        
+        for (CaseInfo caseInfo : caseInfoList) {
+            
+            JSONObject wfJObject = JSONObject.parseObject(JSON.toJSONString(caseInfo));
+            wfJObject.put("bizListName",
+                getRootBizTypeName(caseInfo.getBizList(), rootBizList));
+            wfJObject.put("eventTypeListName", eventTypeName);
+            wfJObject.put("sourceTypeName",
+                getRootBizTypeName(caseInfo.getSourceType(), rootBizList));
+            wfJObject.put("caseLevelName",
+                getRootBizTypeName(caseInfo.getCaseLevel(), rootBizList));
 
-            CaseInfo caseInfo = caseInfo_ID_Entity_Map.get(Integer.valueOf(tmp.getProcBizid()));
-            if (caseInfo != null) {
-                JSONObject parse = JSONObject.parseObject(JSON.toJSONString(caseInfo));
-                wfJObject.putAll(parse);
+            wfJObject.put("isUrge", "0".equals(caseInfo.getIsUrge()) ? false : true);
+            wfJObject.put("isSupervise", "0".equals(caseInfo.getIsSupervise()) ? false : true);
 
-                wfJObject.put("bizListName",
-                    getRootBizTypeName(caseInfo.getBizList(), rootBizList));
-                wfJObject.put("eventTypeListName", eventTypeName);
-                wfJObject.put("sourceTypeName",
-                    getRootBizTypeName(caseInfo.getSourceType(), rootBizList));
-                wfJObject.put("caseLevelName",
-                    getRootBizTypeName(caseInfo.getCaseLevel(), rootBizList));
+            Date deadLine = caseInfo.getDeadLine();
+            Date finishTime = caseInfo.getFinishTime();
+            boolean isOvertime = false;
+            if (CaseInfo.FINISHED_STATE_TODO.equals(caseInfo.getIsFinished())) {
+                // 任务未完成判断是否超时
+                isOvertime =
+                    deadLine == null ? false
+                        : (deadLine.compareTo(new Date()) > 0 ? true : false);
+            } else {
+                // 完成任务判断是否超时
+                isOvertime =
+                    deadLine == null ? false
+                        : (deadLine.compareTo(finishTime) > 0 ? true : false);
+            }
+            // 是否超时
+            wfJObject.put("isOvertime", isOvertime);
 
-                wfJObject.put("isUrge", "0".equals(caseInfo.getIsUrge()) ? false : true);
-                wfJObject.put("isSupervise", "0".equals(caseInfo.getIsSupervise()) ? false : true);
-
-                Date deadLine = caseInfo.getDeadLine();
-                Date finishTime = caseInfo.getFinishTime();
-                boolean isOvertime = false;
-                if (CaseInfo.FINISHED_STATE_TODO.equals(caseInfo.getIsFinished())) {
-                    // 任务未完成判断是否超时
-                    isOvertime =
-                        deadLine == null ? false
-                            : (deadLine.compareTo(new Date()) > 0 ? true : false);
-                } else {
-                    // 完成任务判断是否超时
-                    isOvertime =
-                        deadLine == null ? false
-                            : (deadLine.compareTo(finishTime) > 0 ? true : false);
-                }
-                // 是否超时
-                wfJObject.put("isOvertime", isOvertime);
-
-                wfJObject.put("caseInfoId", caseInfo.getId());
-                if (CaseInfo.FINISHED_STATE_FINISH.equals(caseInfo.getIsFinished())) {
-                    wfJObject.put("procCtaskname", "已结案");
-                }
-
-                if (CaseInfo.FINISHED_STATE_STOP.equals(caseInfo.getIsFinished())) {
-                    wfJObject.put("procCtaskname", "已终止");
-                }
-                jObjList.add(wfJObject);
+            wfJObject.put("caseInfoId", caseInfo.getId());
+            if (CaseInfo.FINISHED_STATE_FINISH.equals(caseInfo.getIsFinished())) {
+                wfJObject.put("procCtaskname", "已结案");
             }
 
+            if (CaseInfo.FINISHED_STATE_STOP.equals(caseInfo.getIsFinished())) {
+                wfJObject.put("procCtaskname", "已终止");
+            }
+            WfProcBackBean wfProcBackBean = wfProcBackBean_ID_Entity_Map.get(String.valueOf(caseInfo.getId()));
+            if(wfProcBackBean != null) {
+                wfJObject.put("procCtaskname", wfProcBackBean.getProcCtaskname());
+            }
+            jObjList.add(wfJObject);
         }
 
         return new TableResultResponse<>(tableResult.getData().getTotal(), jObjList);
