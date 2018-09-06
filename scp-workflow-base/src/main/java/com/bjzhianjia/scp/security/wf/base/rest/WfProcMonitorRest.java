@@ -130,7 +130,21 @@ public class WfProcMonitorRest {
         log.debug("SCP信息---开始查询用户待办任务列表...");
         return ResultUtils.success( wfMonitorService.getUserToDoTasks(objs));
     }
+    /**
+     * 查询用户待办流程任务列表
+     * @param objs
+     * @param request
+     * @return
+     */
+    @ApiOperation("查询全部用户待办")
+    @ResponseBody
+    @RequestMapping(value = { "/userAllToDoTasks" }, method = { RequestMethod.GET, RequestMethod.POST })
+    public ObjectRestResponse<PageInfo> getUserAllDoneTasks(@RequestBody JSONObject objs, HttpServletRequest request) {
+        log.debug("SCP信息---开始查询用户待办任务列表...");
+        return ResultUtils.success( wfMonitorService.getUserAllToDoTasks(objs));
+    }
 
+    
     /**
      * 查询用户待办流程任务数量
      * @param objs

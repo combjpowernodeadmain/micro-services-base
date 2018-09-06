@@ -125,6 +125,28 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
         List<WfProcBackBean> list = wfMonitorBiz.getUserToDoTasks(queryObj);
         return new PageInfo<WfProcBackBean>(list);
     }
+    /**
+     * 查询用户全部待办流程任务列表
+     * @param objs
+     * @return
+     * @throws WorkflowException
+     */
+    public PageInfo<WfProcBackBean> getUserAllToDoTasks(JSONObject objs) throws WorkflowException {
+        WfProcAuthDataBean authData = parseAuthData(objs);
+        WfProcBizDataBean bizData = parseBizData(objs);
+        wfProcUserAuthBiz.userAuthenticate(authData, false, false, true);
+        JSONObject queryObj = parseQueryData(authData, bizData);
+
+        parseAndUpdateDate(queryObj, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procCreateTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        parseAndUpdateDate(queryObj, "procTaskCommitTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
+        parseAndUpdateDate(queryObj, "procTaskCommitTimeEnd", DateUtil.DATECONVERTYPE_DATEEND);
+        
+        List<WfProcBackBean> list = wfMonitorBiz.getUserAllToDoTasks(queryObj);
+        return new PageInfo<WfProcBackBean>(list);
+    }
+    
+    
     
     /**
      * 查询用户待办流程任务数量
