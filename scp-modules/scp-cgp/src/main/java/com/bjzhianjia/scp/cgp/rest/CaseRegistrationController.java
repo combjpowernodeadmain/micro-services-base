@@ -1,11 +1,14 @@
 package com.bjzhianjia.scp.cgp.rest;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSONObject;
@@ -83,5 +86,55 @@ public class CaseRegistrationController
         caseRegistration.setGirdId(gridId);
         
         return this.baseBiz.getList(caseRegistration, page, limit);
+    }
+    
+    /**
+     *   查询个人案件代办
+     * 
+     * @param objs
+     * @param request
+     * @return
+     */
+    @ApiOperation("个人案件代办")
+    @ResponseBody
+    @RequestMapping(value = { "/userToDoTasks" }, method = RequestMethod.POST)
+    public TableResultResponse<JSONObject> getUserToDoTasks(@RequestBody JSONObject objs,
+        HttpServletRequest request) {
+
+        TableResultResponse<JSONObject> userToDoTasks = this.baseBiz.getUserToDoTasks(objs);
+        return userToDoTasks;
+    }
+    
+    /**
+     *   案件综合查询
+     * 
+     * @param objs
+     * @param request
+     * @return
+     */
+    @ApiOperation("案件综合查询")
+    @ResponseBody
+    @RequestMapping(value = { "/allTasks" }, method = RequestMethod.POST)
+    public TableResultResponse<JSONObject> getUserAllToDoTasks(@RequestBody JSONObject objs,
+        HttpServletRequest request) {
+        TableResultResponse<JSONObject> userToDoTasks = this.baseBiz.getAllTasks(objs);
+        return userToDoTasks;
+    }
+    
+    /**
+     *   所有用户案件代办查询
+     * 
+     * @param objs
+     * @param request
+     * @return
+     */
+    @ApiOperation("所有用户案件代办查询")
+    @ResponseBody
+    @RequestMapping(value = { "/userAllToDoTasks" }, method = RequestMethod.POST)
+    public TableResultResponse<JSONObject> getAllToDoTasks(@RequestBody JSONObject objs,
+        HttpServletRequest request) {
+
+        TableResultResponse<JSONObject> userToDoTasks = this.baseBiz.getUserAllToDoTasks(objs);
+        return userToDoTasks;
     }
 }

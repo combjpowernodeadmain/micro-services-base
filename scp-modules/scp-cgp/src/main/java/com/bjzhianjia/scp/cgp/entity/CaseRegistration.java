@@ -19,6 +19,36 @@ public class CaseRegistration implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * 处理状态：处理中
+     */
+    public static final String EXESTATUS_STATE_TODO = "0";
+
+    /**
+     * 处理状态：已完成
+     */
+    public static final String EXESTATUS_STATE_FINISH = "1";
+
+    /**
+     * 处理状态：已终止
+     */
+    public static final String EXESTATUS_STATE_STOP = "2";
+
+    /**
+     * 案件来源：执法任务
+     */
+    public static final String CASE_SOURCE_TYPE_TASK = "root_biz_caseSourceT_task";
+
+    /**
+     * 案件来源：日常执法
+     */
+    public static final String CASE_SOURCE_TYPE_NORMAL = "root_biz_caseSourceT_normal";
+
+    /**
+     * 案件来源：中心交办
+     */
+    public static final String CASE_SOURCE_TYPE_CENTER = "root_biz_caseSourceT_center";
+
     // 主键
     @Id
     private String id;
@@ -30,6 +60,10 @@ public class CaseRegistration implements Serializable {
     // 当事人信息主键
     @Column(name = "concerned_id")
     private Integer concernedId;
+    
+    //案件编号
+    @Column(name = "case_code")
+    private String caseCode;
 
     // 所属业务线条
     @Column(name = "biz_type")
@@ -59,8 +93,8 @@ public class CaseRegistration implements Serializable {
     // 案件来源 *
     @Column(name = "case_source")
     private String caseSource;
-    
-    // 案件来源类型 
+
+    // 案件来源类型
     @Column(name = "case_source_type")
     private String caseSourceType;
 
@@ -653,16 +687,31 @@ public class CaseRegistration implements Serializable {
     public void setIsUrge(String isUrge) {
         this.isUrge = isUrge;
     }
+
     /**
      * 获取：案件来源类型
      */
     public String getCaseSourceType() {
         return caseSourceType;
     }
+
     /**
      * 设置：案件来源类型
      */
     public void setCaseSourceType(String caseSourceType) {
         this.caseSourceType = caseSourceType;
+    }
+    
+    /**
+     * 获取：案件编号
+     */
+    public String getCaseCode() {
+        return caseCode;
+    }
+    /**
+     * 设置：案件编号
+     */
+    public void setCaseCode(String caseCode) {
+        this.caseCode = caseCode;
     }
 }
