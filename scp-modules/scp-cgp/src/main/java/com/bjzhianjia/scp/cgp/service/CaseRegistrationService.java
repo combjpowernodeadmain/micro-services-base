@@ -17,7 +17,6 @@ import com.bjzhianjia.scp.cgp.biz.CaseAttachmentsBiz;
 import com.bjzhianjia.scp.cgp.biz.CaseRegistrationBiz;
 import com.bjzhianjia.scp.cgp.entity.CLEConcernedCompany;
 import com.bjzhianjia.scp.cgp.entity.CLEConcernedPerson;
-import com.bjzhianjia.scp.cgp.entity.CaseAttachments;
 import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
@@ -28,8 +27,6 @@ import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.task.entity.WfProcTaskHistoryBean;
 import com.bjzhianjia.scp.security.wf.base.task.service.impl.WfProcTaskServiceImpl;
 import com.github.pagehelper.PageInfo;
-
-import tk.mybatis.mapper.entity.Example;
 
 /**
  * @author 尚
@@ -76,7 +73,7 @@ public class CaseRegistrationService {
 
 		/*
 		 * =================================查询历史========================================
-		 * ================= TODO 先按模板进行查询，后根据案件的需求进行调整
+		 * ================= TODO By尚--先按模板进行查询，后根据案件的需求进行调整
 		 */
 		// 查询流程历史记录
 		JSONObject procDataJObj = objs.getJSONObject("procData");
@@ -152,7 +149,7 @@ public class CaseRegistrationService {
 				if (concernedPerson != null) {
 					concernedPersonJObj = JSONObject.parseObject(JSON.toJSONString(concernedPerson));
 					if (manyDictValuesMap != null && !manyDictValuesMap.isEmpty()) {
-						// TODO 案件中待联合当事人信息的地方
+						// TODO By尚--案件中待联合当事人信息的地方
 					}
 				}
 			} else if (Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG.equals(caseRegistration.getConcernedType())) {
@@ -161,9 +158,9 @@ public class CaseRegistrationService {
 						.selectById(Integer.valueOf(caseRegistration.getConcernedId()));
 				if (concernedCompany != null) {
 					concernedCompanyJObj = JSONObject.parseObject(JSON.toJSONString(concernedCompany));
-					// TODO 案件中待联合当事人信息的地方
+					// TODO By尚--案件中待联合当事人信息的地方
 				}
-			}
+			}   
 		}
 
 		/*

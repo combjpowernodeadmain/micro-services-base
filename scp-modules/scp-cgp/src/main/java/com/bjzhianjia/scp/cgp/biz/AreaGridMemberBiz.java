@@ -229,6 +229,8 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
             jsonObject.put("gridName", areaGrid_ID_NAME_Map.get(jsonObject.getInteger("gridId")));
             jListResult.add(jsonObject);
         }
+        
+        //TODO 网格员列表需要网格员名称和mapInfo
         return jListResult;
     }
 

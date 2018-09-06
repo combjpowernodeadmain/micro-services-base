@@ -72,4 +72,13 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
 		restResult.setMessage("成功");
 		return restResult;
 	}
+	
+	@RequestMapping(value="/get",method=RequestMethod.GET)
+	@ApiOperation("获取文书路径")
+	public ObjectRestResponse<String> getWritsInstance(
+	    @RequestParam(value="writsInstanceId",defaultValue="")Integer writsInstanceId
+	    ) {
+	    ObjectRestResponse<String> restResult = this.baseBiz.getWritsInstance(writsInstanceId);
+	    return restResult;
+	}
 }

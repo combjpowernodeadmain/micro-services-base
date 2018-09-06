@@ -146,4 +146,27 @@ public class WritsTemplatesBiz extends BusinessBiz<WritsTemplatesMapper, WritsTe
 
 		return codes;
 	}
+	
+	/**
+	 * 按tcode查询文书模板
+	 * @param tcode
+	 * @return
+	 */
+	public WritsTemplates getByTcode(String tcode) {
+	    if(StringUtils.isBlank(tcode)) {
+	        return null;
+	    }
+	    
+	    Example example=new Example(WritsTemplates.class);
+	    Criteria criteria = example.createCriteria();
+	    criteria.andEqualTo("isDeleted", "0");
+	    criteria.andEqualTo("tcode", tcode);
+	    
+	    List<WritsTemplates> list = this.selectByExample(example);
+	    if(list!=null&&!list.isEmpty()) {
+	        //tcode在文书模板表内唯一，如果 有值则list长度为1
+	        return list.get(0);
+	    }
+	    return null;
+	}
 }

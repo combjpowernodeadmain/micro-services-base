@@ -37,9 +37,10 @@ public class AreaGridMemberController
         return this.baseBiz.getList(areaGridMember, page, limit);
     }
 
-    @RequestMapping(value = "/get/member/detail")
+    @RequestMapping(value = "/get/member/detail",method=RequestMethod.GET)
+    @ApiOperation("查询单个对象详情")
     public ObjectRestResponse<JSONObject> getDetailOfAeraMem(
         @RequestParam(value = "memID", defaultValue = "") @ApiParam("待查询网格员ID") String memId) {
-        return null;
+        return this.baseBiz.getDetailOfAeraMem(memId);
     }
 }

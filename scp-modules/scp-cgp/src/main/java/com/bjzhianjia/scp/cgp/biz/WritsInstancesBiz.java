@@ -1,19 +1,27 @@
 package com.bjzhianjia.scp.cgp.biz;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.bjzhianjia.scp.cgp.config.PropertiesConfig;
 import com.bjzhianjia.scp.cgp.constances.WorkFlowConstances;
+import com.bjzhianjia.scp.cgp.constances.WritsConstances;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.WritsInstances;
+import com.bjzhianjia.scp.cgp.entity.WritsTemplates;
 import com.bjzhianjia.scp.cgp.mapper.WritsInstancesMapper;
+import com.bjzhianjia.scp.cgp.util.CommonUtil;
+import com.bjzhianjia.scp.cgp.util.DocUtil;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -30,120 +38,181 @@ import tk.mybatis.mapper.entity.Example;
 @Service
 public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsInstances> {
 
-	/**
-	 * 分页查询记录列表
-	 * 
-	 * @author 尚
-	 * @param writsInstances
-	 * @param page
-	 * @param limit
-	 * @return
-	 */
-	public TableResultResponse<WritsInstances> getList(WritsInstances writsInstances, int page, int limit) {
-		Example example = new Example(WritsInstances.class);
-		Example.Criteria criteria = example.createCriteria();
+    @Autowired
+    private WritsTemplatesBiz writsTemplatesBiz;
 
-		criteria.andEqualTo("isDeleted", "0");
-		if (StringUtils.isNotBlank(writsInstances.getCaseId())) {
-			criteria.andEqualTo("caseId", writsInstances.getCaseId());
-		}
-		if (writsInstances.getTemplateId() != null) {
-			criteria.andEqualTo("templateId", writsInstances.getTemplateId());
-		}
-		if (StringUtils.isNotBlank(writsInstances.getProcTaskId())) {
-			criteria.andEqualTo("procTaskId", writsInstances.getProcTaskId());
-		}
+    @Autowired
+    private PropertiesConfig propertiesConfig;
 
-		Page<Object> pageInfo = PageHelper.startPage(page, limit);
-		List<WritsInstances> list = this.selectByExample(example);
+    /**
+     * 分页查询记录列表
+     * 
+     * @author 尚
+     * @param writsInstances
+     * @param page
+     * @param limit
+     * @return
+     */
+    public TableResultResponse<WritsInstances> getList(WritsInstances writsInstances, int page,
+        int limit) {
+        Example example = new Example(WritsInstances.class);
+        Example.Criteria criteria = example.createCriteria();
 
-		return new TableResultResponse<>(pageInfo.getTotal(), list);
-	}
+        criteria.andEqualTo("isDeleted", "0");
+        if (StringUtils.isNotBlank(writsInstances.getCaseId())) {
+            criteria.andEqualTo("caseId", writsInstances.getCaseId());
+        }
+        if (writsInstances.getTemplateId() != null) {
+            criteria.andEqualTo("templateId", writsInstances.getTemplateId());
+        }
+        if (StringUtils.isNotBlank(writsInstances.getProcTaskId())) {
+            criteria.andEqualTo("procTaskId", writsInstances.getProcTaskId());
+        }
 
-	/**
-	 * 更新或插入对象
-	 * 
-	 * @author 尚
-	 * @param bizData
-	 * @return
-	 */
-	@Transactional
-	public Result<Void> updateOrInsert(JSONObject bizData) {
-		Result<Void> result = new Result<>();
+        Page<Object> pageInfo = PageHelper.startPage(page, limit);
+        List<WritsInstances> list = this.selectByExample(example);
 
-		WritsInstances writsInstances = JSON.parseObject(bizData.toJSONString(), WritsInstances.class);
-		/*
-		 * 文书ID用writsId作为变量名传入，以增强可读性<br/>
-		 * 文书ID用writsId作为变量名，因为不能直接parseObject给WritsInstances中的ID的属性，需要手动指定
-		 */
-		writsInstances.setId(bizData.getInteger("writsId"));
+        return new TableResultResponse<>(pageInfo.getTotal(), list);
+    }
 
-		if (!"-1".equals(bizData.getString("procBizId")) && StringUtils.isBlank(writsInstances.getCaseId())) {
-			// procBizId即为案件ID，将该值赋给文书里的案件ID
-			writsInstances.setCaseId(bizData.getString("procBizId"));
-		}
+    /**
+     * 更新或插入对象
+     * 
+     * @author 尚
+     * @param bizData
+     * @return
+     */
+    @Transactional
+    public Result<Void> updateOrInsert(JSONObject bizData) {
+        Result<Void> result = new Result<>();
 
-		// 判断当前处于哪个节点上(中队，法治科，镇局)
-		String procNode = bizData.getString("processNode");
-		//前端 传入的文书内容
-		String fillContext = writsInstances.getFillContext();
+        WritsInstances writsInstances =
+            JSON.parseObject(bizData.toJSONString(), WritsInstances.class);
+        /*
+         * 文书ID用writsId作为变量名传入，以增强可读性<br/>
+         * 文书ID用writsId作为变量名，因为不能直接parseObject给WritsInstances中的ID的属性，需要手动指定
+         */
+        writsInstances.setId(bizData.getInteger("writsId"));
 
-		if (writsInstances.getId() == null) {
-		    // 还没有插入过对象
-			JSONObject jObjInDB = mergeFillContext(procNode, fillContext, null);
+        if (!"-1".equals(bizData.getString("procBizId"))
+            && StringUtils.isBlank(writsInstances.getCaseId())) {
+            // procBizId即为案件ID，将该值赋给文书里的案件ID
+            writsInstances.setCaseId(bizData.getString("procBizId"));
+        }
 
-			// 把处理后的文书内容(fillContext)放回，进行更新操作
-			writsInstances.setFillContext(jObjInDB.toJSONString());
+        // 判断当前处于哪个节点上(中队，法治科，镇局)
+        String procNode = bizData.getString("processNode");
+        // 前端 传入的文书内容
+        String fillContext = writsInstances.getFillContext();
 
-			this.insertSelective(writsInstances);
-		} else {
-			/*
-			 * 处理逻辑<br/> 判断当前是谁在审批——从已存在的记录中将审批记录(fill_context)取出，对json字符串进行处理
-			 */
-			WritsInstances writsInstancesInDB = this.selectById(writsInstances.getId());
+        if (writsInstances.getId() == null) {
+            // 还没有插入过对象
+            JSONObject jObjInDB = mergeFillContext(procNode, fillContext, null);
 
-			String fillContextInDB = writsInstancesInDB.getFillContext();
+            // 把处理后的文书内容(fillContext)放回，进行更新操作
+            writsInstances.setFillContext(jObjInDB.toJSONString());
 
-			JSONObject jObjInDB = JSONObject.parseObject(fillContextInDB);
-			jObjInDB = mergeFillContext(procNode, fillContext, jObjInDB);
+            this.insertSelective(writsInstances);
+        } else {
+            /*
+             * 处理逻辑<br/> 判断当前是谁在审批——从已存在的记录中将审批记录(fill_context)取出，对json字符串进行处理
+             */
+            WritsInstances writsInstancesInDB = this.selectById(writsInstances.getId());
 
-			// 把处理后的文书内容(fillContext)放回，进行更新操作
-			writsInstances.setFillContext(jObjInDB.toJSONString());
+            String fillContextInDB = writsInstancesInDB.getFillContext();
 
-			this.updateSelectiveById(writsInstances);
-		}
+            JSONObject jObjInDB = JSONObject.parseObject(fillContextInDB);
+            jObjInDB = mergeFillContext(procNode, fillContext, jObjInDB);
 
-		result.setIsSuccess(true);
-		return result;
-	}
+            // 把处理后的文书内容(fillContext)放回，进行更新操作
+            writsInstances.setFillContext(jObjInDB.toJSONString());
 
-	/**
-	 * 根据当前工作的节点(procNode)，处理案件的文书信息(fillContext)，并将该信息存入jObjInDB中返回
-	 * 
-	 * @author 尚
-	 * @param procNode
-	 * @param fillContext
-	 * @param jObjInDB
-	 * @return
-	 */
-	private JSONObject mergeFillContext(String procNode, String fillContext, JSONObject jObjInDB) {
-		if (jObjInDB == null) {
-			jObjInDB = new JSONObject();
-		}
+            this.updateSelectiveById(writsInstances);
+        }
 
-		if (procNode.endsWith(WorkFlowConstances.ProcessNodeSuffix.SQUADRONLEADER_SUFFIX)) {
-			// 中队领导
-			jObjInDB.put("SquadronLeader", fillContext);
-		} else if (procNode.endsWith(WorkFlowConstances.ProcessNodeSuffix.LEGAL_SUFFIX)) {
-			// 法治科
-			jObjInDB.put("Legal", fillContext);
-		} else if (procNode.endsWith(WorkFlowConstances.ProcessNodeSuffix.TOWNLEADER_SUFFIX)) {
-			// 镇局
-			jObjInDB.put("TownLeader", fillContext);
-		} else if (procNode.endsWith(WorkFlowConstances.ProcessNodeSuffix.LAWMEMBER_SUFFIX)) {
-			// 执法队员
-		    jObjInDB.put("LawMember", fillContext);
-		}
-		return jObjInDB;
-	}
+        result.setIsSuccess(true);
+        return result;
+    }
+
+    /**
+     * 根据当前工作的节点(procNode)，处理案件的文书信息(fillContext)，并将该信息存入jObjInDB中返回
+     * 
+     * @author 尚
+     * @param procNode
+     * @param fillContext
+     * @param jObjInDB
+     * @return
+     */
+    private JSONObject mergeFillContext(String procNode, String fillContext, JSONObject jObjInDB) {
+        if (jObjInDB == null) {
+            jObjInDB = new JSONObject();
+        }
+
+        if (procNode.endsWith(WorkFlowConstances.ProcessNodeSuffix.SQUADRONLEADER_SUFFIX)) {
+            // 中队领导
+            jObjInDB.put("SquadronLeader", fillContext);
+        } else if (procNode.endsWith(WorkFlowConstances.ProcessNodeSuffix.LEGAL_SUFFIX)) {
+            // 法治科
+            jObjInDB.put("Legal", fillContext);
+        } else if (procNode.endsWith(WorkFlowConstances.ProcessNodeSuffix.TOWNLEADER_SUFFIX)) {
+            // 镇局
+            jObjInDB.put("TownLeader", fillContext);
+        } else if (procNode.endsWith(WorkFlowConstances.ProcessNodeSuffix.LAWMEMBER_SUFFIX)) {
+            // 执法队员
+            jObjInDB.put("LawMember", fillContext);
+        }
+        return jObjInDB;
+    }
+
+    /**
+     * 获取文书<br/>
+     * 
+     * 
+     * @param tcode
+     * @param caseId
+     * @param procTaskId
+     * @return
+     */
+    public ObjectRestResponse<String> getWritsInstance(Integer id) {
+        ObjectRestResponse<String> restResult = new ObjectRestResponse<>();
+
+        WritsInstances writsInstances = this.selectById(id);
+        WritsTemplates writsTemplate = writsTemplatesBiz.selectById(writsInstances.getTemplateId());
+
+        String writsPath = "";
+
+        if (writsInstances != null) {
+            String fillContext = writsInstances.getFillContext();
+
+            // 生成与fillContext相对应的文件名
+            StringBuffer destFileNameBuffer = new StringBuffer();
+            destFileNameBuffer.append(WritsConstances.WRITS_PREFFIX).append(fillContext.hashCode())
+                .append(".docx");
+
+            String destPath = propertiesConfig.getTempWordPath() + destFileNameBuffer.toString();
+
+            if (DocUtil.exists(destPath)) {
+                writsPath = destFileNameBuffer.toString();
+            } else {
+                // 说明可能已存在过旧文件，将所有旧文件进行删除，将生成的新文件进行生成并返回路径
+                DocUtil.deletePrefix(WritsConstances.WRITS_PREFFIX, WritsConstances.WRITS_SUFFIX,
+                    propertiesConfig.getTempWordPath());
+
+                // 将fillContext内的内容添加到文书模板上
+                JSONObject fillJObj = JSONObject.parseObject(fillContext);
+
+                @SuppressWarnings({ "unchecked", "rawtypes" })
+                Map<String, String> map = (Map) fillJObj;
+                
+                /*map=CommonUtil.surroundKeyWith_$(map);*/
+
+                writsPath =
+                    DocUtil.getDestUrlAfterReplaceWord(writsTemplate.getDocUrl(),
+                        destFileNameBuffer.toString(), propertiesConfig.getTempWordPath(), map);
+            }
+        }
+
+        restResult.setData(writsPath);
+        return restResult;
+    }
 }
