@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -186,4 +187,17 @@ public class UserController extends BaseController<UserBiz, User, String> {
 	public JSONArray getUserDetail(@RequestParam(value="userId") @ApiParam("待查询人员ID") String userId) {
         return this.baseBiz.getUserDetail(userId);
 	}
+	/**
+     * 通过用户ids查询
+     * @param userIds
+     * @return
+     */
+    @ApiOperation("通过用户ids查询")
+    @RequestMapping(value="/ids/{userIds}",method=RequestMethod.GET)
+    public JSONArray getByUserIds(@PathVariable("userIds") String userIds) {
+        if(StringUtils.isBlank(userIds)) {
+            return null;
+        }
+        return this.baseBiz.getByUserIds(userIds);
+    }
 }
