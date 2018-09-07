@@ -33,7 +33,8 @@
 		lk.patrol_object as patrolObject ,
 		lk.start_time as startTime,
 		lk.end_time as endTime,
-		lk.state as state
+		lk.state as state,
+		lk.law_title as lawTitle
 		FROM
 			law_task as lk
 		LEFT JOIN law_execute_person as lep ON lk.id = lep.law_task_id

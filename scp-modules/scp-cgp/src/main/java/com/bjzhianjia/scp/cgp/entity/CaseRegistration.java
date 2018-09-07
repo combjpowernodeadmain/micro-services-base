@@ -2,8 +2,12 @@ package com.bjzhianjia.scp.cgp.entity;
 
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.*;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import com.alibaba.fastjson.annotation.JSONField;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.merge.annonation.MergeField;
 
@@ -83,12 +87,14 @@ public class CaseRegistration implements Serializable {
     private String caseName;
 
     // 案发时间
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     @Column(name = "case_time")
     private Date caseTime;
 
     // 完成期限 *
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     @Column(name = "case_end")
-    private Integer caseEnd;
+    private Date caseEnd;
 
     // 案件来源 *
     @Column(name = "case_source")
@@ -313,14 +319,14 @@ public class CaseRegistration implements Serializable {
     /**
      * 设置：完成期限 *
      */
-    public void setCaseEnd(Integer caseEnd) {
+    public void setCaseEnd(Date caseEnd) {
         this.caseEnd = caseEnd;
     }
 
     /**
      * 获取：完成期限 *
      */
-    public Integer getCaseEnd() {
+    public Date getCaseEnd() {
         return caseEnd;
     }
 
