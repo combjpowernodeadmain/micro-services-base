@@ -148,7 +148,8 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
         @RequestParam(defaultValue = "") @ApiParam("结束时间") String endTime,
         @RequestParam(defaultValue = "") @ApiParam("任务要求") String info,
         @RequestParam(defaultValue = "") @ApiParam("业务条线") String bizTypeCode,
-        @RequestParam(defaultValue = "") @ApiParam("事件类别ids") String eventTypeId) {
+        @RequestParam(defaultValue = "") @ApiParam("事件类别ids") String eventTypeId,
+        @RequestParam(defaultValue = "") @ApiParam("执法任务名称") String lawTitle) {
 
         ObjectRestResponse<Void> result = new ObjectRestResponse<Void>();
 
@@ -168,7 +169,7 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
 
         try {
             lawTaskBiz.randomLawTask(objType, griIds, peopleNumber, regulaObjNumber, _startTime,
-                _endTimeTmp, info, bizTypeCode, eventTypeId);
+                _endTimeTmp, info, bizTypeCode, eventTypeId,lawTitle);
         } catch (Exception e) {
             result.setStatus(400);
             result.setMessage("分配异常");

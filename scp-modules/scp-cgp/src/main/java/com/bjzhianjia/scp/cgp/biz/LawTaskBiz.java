@@ -267,10 +267,11 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 	 * @param info            任务要求
 	 * @param bizTypeCode     业务条线
 	 * @param eventTypeId     事件类别id
+	 * @param lawTitle        执法任务名称
 	 * @throws Exception
 	 */
 	public Result<Void> randomLawTask(String objType, String griIds, int peopleNumber, int regulaObjNumber, Date startTime,
-			Date endTime, String info,String bizTypeCode,String eventTypeId) throws Exception {
+			Date endTime, String info,String bizTypeCode,String eventTypeId,String lawTitle) throws Exception {
 	    
 	    Result<Void> result = new Result<>();
 		// 执法者列表
@@ -310,6 +311,7 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 				lawTask.setInfo(info);
 				lawTask.setBizTypeCode(bizTypeCode);
 				lawTask.setEventTypeId(eventTypeId);
+				lawTask.setLawTitle(lawTitle);
 				this.createLawTask(lawTask);
 				
 				//执法者没有了，则停止分配，或者监管对象没有了，则停止分配
