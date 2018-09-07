@@ -19,12 +19,16 @@ import com.bjzhianjia.scp.cgp.entity.CLEConcernedCompany;
 import com.bjzhianjia.scp.cgp.entity.CLEConcernedPerson;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
+import com.bjzhianjia.scp.cgp.entity.ConcernedCompany;
+import com.bjzhianjia.scp.cgp.entity.ConcernedPerson;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.EventType;
+import com.bjzhianjia.scp.cgp.entity.InspectItems;
 import com.bjzhianjia.scp.cgp.entity.LawTask;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.WritsInstances;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
+import com.bjzhianjia.scp.cgp.feign.IUserFeign;
 import com.bjzhianjia.scp.cgp.mapper.CaseRegistrationMapper;
 import com.bjzhianjia.scp.cgp.mapper.EventTypeMapper;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
@@ -65,6 +69,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
     @Autowired
     private DictFeign dictFeign;
+    
+    @Autowired
+    private IUserFeign iUserFeign;
 
     @Autowired
     private EventTypeMapper eventTypeMapper;
@@ -74,6 +81,18 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     
     @Autowired
     private CaseInfoBiz caseInfoBiz;
+    
+    @Autowired
+    private ConcernedCompanyBiz concernedCompanyBiz;
+    
+    @Autowired
+    private ConcernedPersonBiz concernedPersonBiz;
+    
+    @Autowired
+    private InspectItemsBiz inspectItemsBiz;
+    
+    @Autowired
+    private EventTypeBiz eventTypeBiz;
     
     /**
      * 添加立案记录<br/>
@@ -563,6 +582,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         if (StringUtils.isNotBlank(caseRegistration.getCaseSourceType())) {
             criteria.andEqualTo("caseSourceType", caseRegistration.getCaseSourceType());
         }
+        if (StringUtils.isNotBlank(caseRegistration.getCaseSource())) {
+            criteria.andEqualTo("caseSource", caseRegistration.getCaseSource());
+        }
         if (!(StringUtils.isBlank(startQueryTime) || StringUtils.isBlank(endQueryTime))) {
             Date start = DateUtil.dateFromStrToDate(startQueryTime, "yyyy-MM-dd HH:mm:ss");
             Date end = DateUtils.addDays(DateUtil.dateFromStrToDate(endQueryTime, "yyyy-MM-dd HH:mm:ss"), 1);
@@ -616,6 +638,63 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             return String.join(",", nameList);
         }
         return "";
+    }
+    
+    public JSONObject getInfoById(Integer id) {
+        JSONObject result = null;
+        CaseRegistration caseRegistration = this.selectById(id);
+        if(caseRegistration != null) {
+            
+            result = JSONObject.parseObject(JSONObject.toJSONString(caseRegistration));
+            if(result != null) {
+                //org:单位，person:个人
+                String concernedType = "org";
+                JSONObject concernedResult = null;
+                //当事人：单位
+                if(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG.equals(caseRegistration.getConcernedType())){
+                   ConcernedCompany concernedCompany = concernedCompanyBiz.selectById(Integer.valueOf(caseRegistration.getConcernedId()));
+                   concernedResult = JSONObject.parseObject(JSONObject.toJSONString(concernedCompany));
+                }
+                //当事人：个人
+                if(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON.equals(caseRegistration.getConcernedType())) {
+                    ConcernedPerson concernedPerson = concernedPersonBiz.selectById(Integer.valueOf(caseRegistration.getConcernedId()));
+                    concernedResult = JSONObject.parseObject(JSONObject.toJSONString(concernedPerson));
+                    concernedType = "person";
+                }
+                //当事人类型
+                result.put("concernedType", concernedType);
+                //当事人详情
+                result.put("concernedResult", concernedResult);
+                
+                //业务条线
+                Map<String, String> bizMap = dictFeign.getByCode(caseRegistration.getBizType());
+                if(bizMap != null && bizMap.isEmpty()) {
+                    result.put("bizName", bizMap.get(caseRegistration.getBizType()));
+                }
+                
+                //事件类别
+                EventType eventType = eventTypeBiz.selectById(caseRegistration.getEventType());
+                if(eventType == null) {
+                   result.put("eventTypeName", eventType.getTypeName());
+                }
+                
+                //违法行为
+                InspectItems inspectItems =inspectItemsBiz.selectById(caseRegistration.getInspectItem());
+                if(inspectItems != null) {
+                    result.put("inspectName",inspectItems.getName());
+                }
+                
+               
+                
+               
+                iUserFeign.getByUserIds(caseRegistration.getEnforcers());
+               
+                
+                
+            }
+        }
+        
+        return result;
     }
 
 }
