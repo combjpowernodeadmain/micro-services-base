@@ -157,8 +157,7 @@ public class CaseInfoService {
      * @param limit
      * @return
      */
-    public TableResultResponse<CaseInfo> getList(CaseInfo caseInfo, int page, int limit,
-        boolean isNoFinish) {
+    public TableResultResponse<CaseInfo> getList(CaseInfo caseInfo, int page, int limit, boolean isNoFinish) {
         return caseInfoBiz.getList(caseInfo, page, limit, isNoFinish);
     }
 
@@ -283,8 +282,7 @@ public class CaseInfoService {
                 // 是否按进度进行查找(即任务表中·PROC_CTASKNAME·字段)
                 bizData = objs.getJSONObject("bizData");
                 if (!CaseInfo.FINISHED_STATE_FINISH.equals(queryData.getString("procCtaskname"))
-                    && !CaseInfo.FINISHED_STATE_STOP
-                        .equals(queryData.getString("procCtaskname"))) {
+                    && !CaseInfo.FINISHED_STATE_STOP.equals(queryData.getString("procCtaskname"))) {
                     bizData.put("procCtaskname", queryData.getString("procCtaskname"));
                 }
 
@@ -307,17 +305,16 @@ public class CaseInfoService {
         }
     }
 
-    private TableResultResponse<JSONObject> queryAssist(CaseInfo queryCaseInfo,
-        JSONObject queryData, List<JSONObject> jObjList, PageInfo<WfProcBackBean> pageInfo,
-        JSONObject objs) {
+    private TableResultResponse<JSONObject> queryAssist(CaseInfo queryCaseInfo, JSONObject queryData,
+        List<JSONObject> jObjList, PageInfo<WfProcBackBean> pageInfo, JSONObject objs) {
         List<WfProcBackBean> procBackBeanList = pageInfo.getList();
-        
-        //封装工作流任务
+
+        // 封装工作流任务
         Map<String, WfProcBackBean> wfProcBackBean_ID_Entity_Map = new HashMap<>();
         for (WfProcBackBean wfProcBackBean : procBackBeanList) {
             wfProcBackBean_ID_Entity_Map.put(wfProcBackBean.getProcBizid(), wfProcBackBean);
         }
-        
+
         Set<Integer> bizIds = new HashSet<>();
         List<String> eventTypeIdStrList = new ArrayList<>();
 
@@ -335,8 +332,7 @@ public class CaseInfoService {
         }
 
         // 查询与工作流任务对应的业务
-        TableResultResponse<CaseInfo> tableResult =
-            caseInfoBiz.getList(queryCaseInfo, bizIds, queryData);
+        TableResultResponse<CaseInfo> tableResult = caseInfoBiz.getList(queryCaseInfo, bizIds, queryData);
 
         List<CaseInfo> caseInfoList = tableResult.getData().getRows();
 
@@ -372,17 +368,14 @@ public class CaseInfoService {
             eventTypeName = String.join(",", eventTypeNameList);
         }
 
-        
         for (CaseInfo caseInfo : caseInfoList) {
-            
+
             JSONObject wfJObject = JSONObject.parseObject(JSON.toJSONString(caseInfo));
-            wfJObject.put("bizListName",
-                getRootBizTypeName(caseInfo.getBizList(), rootBizList));
+            
+            wfJObject.put("bizListName", getRootBizTypeName(caseInfo.getBizList(), rootBizList));
             wfJObject.put("eventTypeListName", eventTypeName);
-            wfJObject.put("sourceTypeName",
-                getRootBizTypeName(caseInfo.getSourceType(), rootBizList));
-            wfJObject.put("caseLevelName",
-                getRootBizTypeName(caseInfo.getCaseLevel(), rootBizList));
+            wfJObject.put("sourceTypeName", getRootBizTypeName(caseInfo.getSourceType(), rootBizList));
+            wfJObject.put("caseLevelName", getRootBizTypeName(caseInfo.getCaseLevel(), rootBizList));
 
             wfJObject.put("isUrge", "0".equals(caseInfo.getIsUrge()) ? false : true);
             wfJObject.put("isSupervise", "0".equals(caseInfo.getIsSupervise()) ? false : true);
@@ -392,14 +385,10 @@ public class CaseInfoService {
             boolean isOvertime = false;
             if (CaseInfo.FINISHED_STATE_TODO.equals(caseInfo.getIsFinished())) {
                 // 任务未完成判断是否超时
-                isOvertime =
-                    deadLine == null ? false
-                        : (deadLine.compareTo(new Date()) > 0 ? true : false);
+                isOvertime = deadLine == null ? false : (deadLine.compareTo(new Date()) > 0 ? true : false);
             } else {
                 // 完成任务判断是否超时
-                isOvertime =
-                    deadLine == null ? false
-                        : (deadLine.compareTo(finishTime) > 0 ? true : false);
+                isOvertime = deadLine == null ? false : (deadLine.compareTo(finishTime) > 0 ? true : false);
             }
             // 是否超时
             wfJObject.put("isOvertime", isOvertime);
@@ -413,8 +402,10 @@ public class CaseInfoService {
                 wfJObject.put("procCtaskname", "已终止");
             }
             WfProcBackBean wfProcBackBean = wfProcBackBean_ID_Entity_Map.get(String.valueOf(caseInfo.getId()));
-            if(wfProcBackBean != null) {
+            if (wfProcBackBean != null) {
                 wfJObject.put("procCtaskname", wfProcBackBean.getProcCtaskname());
+                wfJObject.put("procInstId",  wfProcBackBean.getProcInstId());
+                wfJObject.put("procBizid", wfProcBackBean.getProcBizid());
             }
             jObjList.add(wfJObject);
         }
@@ -434,8 +425,7 @@ public class CaseInfoService {
         switch (key) {
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345:
                 // 市长热线
-                MayorHotline mayorHotline =
-                    mayorHotlineBiz.selectById(Integer.valueOf(caseInfo.getSourceCode()));
+                MayorHotline mayorHotline = mayorHotlineBiz.selectById(Integer.valueOf(caseInfo.getSourceCode()));
                 reportPersonId = mayorHotline.getCrtUserId();
                 resultJObjct = JSONObject.parseObject(JSON.toJSONString(mayorHotline));
                 resultJObjct.put("eventSourceType", "市长热线12345");
@@ -445,14 +435,12 @@ public class CaseInfoService {
                 zhaiyaoList.add(mayorHotline.getHotlnSubType());
                 zhaiyaoList.add(mayorHotline.getAppealTel());
                 if (mayorHotline.getReplyDatetime() != null) {
-                    zhaiyaoList.add(DateUtil.dateFromDateToStr(mayorHotline.getReplyDatetime(),
-                        "yyyy-MM-dd HH:mm:ss"));
+                    zhaiyaoList.add(DateUtil.dateFromDateToStr(mayorHotline.getReplyDatetime(), "yyyy-MM-dd HH:mm:ss"));
                 }
                 break;
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CONSENSUS:
                 // 舆情
-                PublicOpinion poinion =
-                    publicOpinionBiz.selectById(Integer.valueOf(caseInfo.getSourceCode()));
+                PublicOpinion poinion = publicOpinionBiz.selectById(Integer.valueOf(caseInfo.getSourceCode()));
 
                 reportPersonId = poinion.getCrtUserId();
 
@@ -464,8 +452,7 @@ public class CaseInfoService {
                 resultJObjct.put("eventSourceType", "舆情");
                 resultJObjct.put("sourceCode", poinion.getOpinCode());
 
-                Map<String, String> dictValueMap =
-                    dictFeign.getByCodeIn(String.join(",", dictIdList));
+                Map<String, String> dictValueMap = dictFeign.getByCodeIn(String.join(",", dictIdList));
                 if (dictValueMap != null && !dictValueMap.isEmpty()) {
                     zhaiyaoList.add(dictValueMap.get(poinion.getOpinType()));
                     zhaiyaoList.add(dictValueMap.get(poinion.getOpinLevel()));
@@ -504,8 +491,7 @@ public class CaseInfoService {
                     patreolTaskService.get(Integer.valueOf(caseInfo.getSourceCode()));
 
                 // By尚
-                PatrolTask patrolTask =
-                    patrolTaskResult == null ? new PatrolTask() : patrolTaskResult.getData();
+                PatrolTask patrolTask = patrolTaskResult == null ? new PatrolTask() : patrolTaskResult.getData();
 
                 resultJObjct = JSONObject.parseObject(JSON.toJSONString(patrolTask));
                 resultJObjct.put("eventSourceType", "巡查上报");
@@ -589,8 +575,7 @@ public class CaseInfoService {
              */
             log.info("该请求流向【结束】，流程即将结束。");
             // 查询数据库中的caseInfo,以确定与caseInfo相对应的登记表那条记录的ID
-            CaseInfo caseInfoInDB =
-                caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
+            CaseInfo caseInfoInDB = caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
 
             caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
             caseInfo.setIsFinished(CaseInfo.FINISHED_STATE_FINISH);
@@ -600,8 +585,7 @@ public class CaseInfoService {
             // 因重覆而结束
             log.info("该请求流向【结束】（因事件重复），流程即将结束。");
             // 查询数据库中的caseInfo,以确定与caseInfo相对应的登记表那条记录的ID
-            CaseInfo caseInfoInDB =
-                caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
+            CaseInfo caseInfoInDB = caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
 
             caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
             caseInfo.setIsFinished(CaseInfo.FINISHED_STATE_FINISH);
@@ -634,8 +618,7 @@ public class CaseInfoService {
         // 判断 是否有处理情况信息
         JSONObject executeInfoJObj = bizDataJObject.getJSONObject("executeInfoJObj");
         if (executeInfoJObj != null) {
-            ExecuteInfo executeInfo =
-                JSON.parseObject(executeInfoJObj.toJSONString(), ExecuteInfo.class);
+            ExecuteInfo executeInfo = JSON.parseObject(executeInfoJObj.toJSONString(), ExecuteInfo.class);
             executeInfo.setCaseId(caseInfo.getId());
             executeInfoBiz.insertSelective(executeInfo);
         }
@@ -664,15 +647,12 @@ public class CaseInfoService {
                 if (isTermination) {
                     // 事件终止操作
                     assist =
-                        assist(caseInfo.getSourceCode(),
-                            Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_STOP);
+                        assist(caseInfo.getSourceCode(), Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_STOP);
                 } else {
                     assist =
-                        assist(caseInfo.getSourceCode(),
-                            Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_DONE);
+                        assist(caseInfo.getSourceCode(), Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_DONE);
                 }
-                MayorHotline mayorHotline =
-                    JSON.parseObject(JSON.toJSONString(assist), MayorHotline.class);
+                MayorHotline mayorHotline = JSON.parseObject(JSON.toJSONString(assist), MayorHotline.class);
                 mayorHotlineBiz.updateSelectiveById(mayorHotline);
                 break;
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CONSENSUS:
@@ -680,16 +660,12 @@ public class CaseInfoService {
                 log.info("更新舆情事件为【已完成】");
                 if (isTermination) {
                     // 事件终止操作
-                    assist =
-                        assist(caseInfo.getSourceCode(),
-                            Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_STOP);
+                    assist = assist(caseInfo.getSourceCode(), Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_STOP);
                 } else {
                     assist =
-                        assist(caseInfo.getSourceCode(),
-                            Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_FINISH);
+                        assist(caseInfo.getSourceCode(), Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_FINISH);
                 }
-                PublicOpinion publicOpinion =
-                    JSON.parseObject(assist.toJSONString(), PublicOpinion.class);
+                PublicOpinion publicOpinion = JSON.parseObject(assist.toJSONString(), PublicOpinion.class);
                 publicOpinionBiz.updateSelectiveById(publicOpinion);
                 break;
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_LEADER:
@@ -697,16 +673,11 @@ public class CaseInfoService {
                 log.info("更新领导交办事件为【已完成】");
                 if (isTermination) {
                     // 事件终止操作
-                    assist =
-                        assist(caseInfo.getSourceCode(),
-                            Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_STOP);
+                    assist = assist(caseInfo.getSourceCode(), Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_STOP);
                 } else {
-                    assist =
-                        assist(caseInfo.getSourceCode(),
-                            Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_FINISH);
+                    assist = assist(caseInfo.getSourceCode(), Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_FINISH);
                 }
-                LeadershipAssign leadershipAssign =
-                    JSON.parseObject(assist.toJSONString(), LeadershipAssign.class);
+                LeadershipAssign leadershipAssign = JSON.parseObject(assist.toJSONString(), LeadershipAssign.class);
                 leadershipAssignBiz.updateSelectiveById(leadershipAssign);
                 break;
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CHECK:
@@ -714,13 +685,9 @@ public class CaseInfoService {
                 log.info("更新巡查上报事件为【已完成】");
                 if (isTermination) {
                     // 事件终止操作
-                    assist =
-                        assist(caseInfo.getSourceCode(),
-                            Constances.PartolTaskStatus.ROOT_BIZ_PARTOLTASKT_STOP);
+                    assist = assist(caseInfo.getSourceCode(), Constances.PartolTaskStatus.ROOT_BIZ_PARTOLTASKT_STOP);
                 } else {
-                    assist =
-                        assist(caseInfo.getSourceCode(),
-                            Constances.PartolTaskStatus.ROOT_BIZ_PARTOLTASKT_FINISH);
+                    assist = assist(caseInfo.getSourceCode(), Constances.PartolTaskStatus.ROOT_BIZ_PARTOLTASKT_FINISH);
                 }
                 PatrolTask patrolTask = JSON.parseObject(assist.toJSONString(), PatrolTask.class);
                 patrolTaskBiz.updateSelectiveById(patrolTask);
@@ -782,8 +749,7 @@ public class CaseInfoService {
         if (procDataJObj == null) {
             throw new BizException("请指定待查询流程组件");
         }
-        PageInfo<WfProcTaskHistoryBean> procApprovedHistory =
-            wfProcTaskService.getProcApprovedHistory(objs);
+        PageInfo<WfProcTaskHistoryBean> procApprovedHistory = wfProcTaskService.getProcApprovedHistory(objs);
         List<WfProcTaskHistoryBean> procHistoryList = procApprovedHistory.getList();
         JSONArray procHistoryJArray = JSONArray.parseArray(JSON.toJSONString(procHistoryList));
 
@@ -791,11 +757,9 @@ public class CaseInfoService {
         // o.getProcTaskCommitter()).distinct()
         // .collect(Collectors.toList());
         List<String> procTaskAssigneeIdList =
-            procHistoryList.stream().map(o -> o.getProcTaskAssignee()).distinct()
-                .collect(Collectors.toList());
+            procHistoryList.stream().map(o -> o.getProcTaskAssignee()).distinct().collect(Collectors.toList());
         if (procTaskAssigneeIdList != null && !procTaskAssigneeIdList.isEmpty()) {
-            Map<String, String> assignMap =
-                adminFeign.getUser(String.join(",", procTaskAssigneeIdList));
+            Map<String, String> assignMap = adminFeign.getUser(String.join(",", procTaskAssigneeIdList));
             if (assignMap != null && !assignMap.isEmpty()) {
                 for (int i = 0; i < procHistoryJArray.size(); i++) {
                     JSONObject procHistoryJObj = procHistoryJArray.getJSONObject(i);
@@ -809,13 +773,11 @@ public class CaseInfoService {
                      * "procTaskAssignee"))为空 需要进行非空判断
                      */
                     JSONObject nameJObj =
-                        JSONObject.parseObject(
-                            assignMap.get(procHistoryJObj.getString("procTaskAssignee")));
+                        JSONObject.parseObject(assignMap.get(procHistoryJObj.getString("procTaskAssignee")));
 
                     if (nameJObj != null) {
                         procHistoryJObj.put("procTaskAssigneeName", nameJObj.getString("name"));
-                        procHistoryJObj.put("procTaskAssigneeTel",
-                            nameJObj.getString("mobilePhone"));
+                        procHistoryJObj.put("procTaskAssigneeTel", nameJObj.getString("mobilePhone"));
                     }
                 }
             }
@@ -892,14 +854,11 @@ public class CaseInfoService {
         JSONObject concernedPersonJObj = new JSONObject();
         JSONObject concernedCompanyJObj = new JSONObject();
         if (StringUtils.isNotBlank(caseInfo.getConcernedPerson())) {
-            if (Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON
-                .equals(caseInfo.getConcernedType())) {
+            if (Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON.equals(caseInfo.getConcernedType())) {
                 // 当事人以个人形式存在
-                concernedPerson =
-                    concernedPersonBiz.selectById(Integer.valueOf(caseInfo.getConcernedPerson()));
+                concernedPerson = concernedPersonBiz.selectById(Integer.valueOf(caseInfo.getConcernedPerson()));
                 if (concernedPerson != null) {
-                    concernedPersonJObj =
-                        JSONObject.parseObject(JSON.toJSONString(concernedPerson));
+                    concernedPersonJObj = JSONObject.parseObject(JSON.toJSONString(concernedPerson));
                     if (manyDictValuesMap != null && !manyDictValuesMap.isEmpty()) {
                         if (StringUtils.isNotBlank(concernedPerson.getCredType())) {
                             concernedPersonJObj.put("credTypeName",
@@ -907,18 +866,14 @@ public class CaseInfoService {
                         }
                     }
                 }
-            } else if (Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG
-                .equals(caseInfo.getConcernedType())) {
+            } else if (Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG.equals(caseInfo.getConcernedType())) {
                 // 当事人以单位形式存在
-                concernedCompany =
-                    concernedCompanyBiz.selectById(Integer.valueOf(caseInfo.getConcernedPerson()));
+                concernedCompany = concernedCompanyBiz.selectById(Integer.valueOf(caseInfo.getConcernedPerson()));
                 if (concernedCompany != null) {
-                    concernedCompanyJObj =
-                        JSONObject.parseObject(JSON.toJSONString(concernedCompany));
+                    concernedCompanyJObj = JSONObject.parseObject(JSON.toJSONString(concernedCompany));
                     // 与该当事人(单位)对应的监管对象
                     if (concernedCompany.getRegulaObjectId() != null) {
-                        RegulaObject regulaObj =
-                            regulaObjectBiz.selectById(concernedCompany.getRegulaObjectId());
+                        RegulaObject regulaObj = regulaObjectBiz.selectById(concernedCompany.getRegulaObjectId());
                         if (regulaObj != null) {
                             concernedCompanyJObj.put("objName", regulaObj.getObjName());
                             concernedCompanyJObj.put("objAddress", regulaObj.getObjAddress());
@@ -969,8 +924,7 @@ public class CaseInfoService {
         // 监管对象,为多选
         List<String> regulaObjectNameList = new ArrayList<>();
         if (StringUtils.isNotBlank(caseInfo.getRegulaObjList())) {
-            List<RegulaObject> regulaObjList =
-                regulaObjectMapper.selectByIds(caseInfo.getRegulaObjList());
+            List<RegulaObject> regulaObjList = regulaObjectMapper.selectByIds(caseInfo.getRegulaObjList());
             for (RegulaObject regulaObject : regulaObjList) {
                 regulaObjectNameList.add(regulaObject.getObjName());
             }
@@ -1010,15 +964,13 @@ public class CaseInfoService {
         if (caseInfo.getCheckPerson() != null) {
             checkJObj.put("checkPerson", caseInfo.getCheckPerson());
             if (manyUsersMap != null && !manyUsersMap.isEmpty()) {
-                JSONObject checkPersonJObj =
-                    JSONObject.parseObject(manyUsersMap.get(caseInfo.getCheckPerson()));
+                JSONObject checkPersonJObj = JSONObject.parseObject(manyUsersMap.get(caseInfo.getCheckPerson()));
                 checkJObj.put("checkPersonName", checkPersonJObj.getString("name"));
                 checkJObj.put("checkPersonTel", checkPersonJObj.getString("mobilePhone"));
             }
         }
         if (caseInfo.getCheckTime() != null) {
-            checkJObj.put("checkTime",
-                DateUtil.dateFromDateToStr(caseInfo.getCheckTime(), "yyyy-MM-dd HH:mm:ss"));
+            checkJObj.put("checkTime", DateUtil.dateFromDateToStr(caseInfo.getCheckTime(), "yyyy-MM-dd HH:mm:ss"));
         }
         checkJObj.put("checkPic", caseInfo.getCheckPic());
         /*
@@ -1036,8 +988,7 @@ public class CaseInfoService {
             Map<String, String> executeDeptMap = adminFeign.getDepart(caseInfo.getExecuteDept());// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>查询了admin》》》》》》》》》》》》》》》》》》》》》》》》》
             if (executeDeptMap != null && !executeDeptMap.isEmpty()) {
                 executedDeptName =
-                    CommonUtil.getValueFromJObjStr(executeDeptMap.get(caseInfo.getExecuteDept()),
-                        "name");
+                    CommonUtil.getValueFromJObjStr(executeDeptMap.get(caseInfo.getExecuteDept()), "name");
             }
         }
         requiredJObj.put("executedDeptName", executedDeptName);
@@ -1051,27 +1002,20 @@ public class CaseInfoService {
          */
         JSONArray commanderApproveJArray = new JSONArray();
         for (WfProcTaskHistoryBean wfProcTaskHistoryBean : procHistoryList) {
-            if (Constances.ProcCTaskCode.COMMANDERAPPROVE
-                .equals(wfProcTaskHistoryBean.getProcCtaskcode())) {
-                JSONObject commanderApproveJObj =
-                    JSONObject.parseObject(JSON.toJSONString(wfProcTaskHistoryBean));
+            if (Constances.ProcCTaskCode.COMMANDERAPPROVE.equals(wfProcTaskHistoryBean.getProcCtaskcode())) {
+                JSONObject commanderApproveJObj = JSONObject.parseObject(JSON.toJSONString(wfProcTaskHistoryBean));
                 // 查询指挥长
                 if (StringUtils.isNotBlank(wfProcTaskHistoryBean.getProcTaskCommitter())) {
                     // Map<String, String> commanderApproveMap =
                     // adminFeign.getUser(wfProcTaskHistoryBean.getProcTaskCommitter());//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>查询了admin》》》》》》》》》》》》》》》》》》》》》》》》》
                     if (manyUsersMap != null && !manyUsersMap.isEmpty()) {
                         JSONObject jObjTmp =
-                            JSONObject.parseObject(
-                                manyUsersMap.get(wfProcTaskHistoryBean.getProcTaskCommitter()));
-                        commanderApproveJObj.put("procTaskCommitter",
-                            wfProcTaskHistoryBean.getProcTaskCommitter());// 审批人ID
-                        commanderApproveJObj.put("procTaskCommitterName",
-                            jObjTmp.getString("name"));// 审批人姓名
+                            JSONObject.parseObject(manyUsersMap.get(wfProcTaskHistoryBean.getProcTaskCommitter()));
+                        commanderApproveJObj.put("procTaskCommitter", wfProcTaskHistoryBean.getProcTaskCommitter());// 审批人ID
+                        commanderApproveJObj.put("procTaskCommitterName", jObjTmp.getString("name"));// 审批人姓名
                         commanderApproveJObj.put("commanderTel", jObjTmp.getString("mobilePhone"));// 审批人联系方法
-                        commanderApproveJObj.put("procTaskCommittime",
-                            wfProcTaskHistoryBean.getProcTaskCommittime());// 审批时间
-                        commanderApproveJObj.put("procTaskApprOpinion",
-                            wfProcTaskHistoryBean.getProcTaskApprOpinion());// 审批意见
+                        commanderApproveJObj.put("procTaskCommittime", wfProcTaskHistoryBean.getProcTaskCommittime());// 审批时间
+                        commanderApproveJObj.put("procTaskApprOpinion", wfProcTaskHistoryBean.getProcTaskApprOpinion());// 审批意见
                         commanderApproveJArray.add(commanderApproveJObj);
                     }
                 }
@@ -1108,11 +1052,10 @@ public class CaseInfoService {
                     // 登记人电话
                     String recordPersonTel = "";
                     if (StringUtils.isNotBlank(sourceType.getString("crtUserId"))) {
-                        Map<String, String> recordUser =
-                            adminFeign.getUser(sourceType.getString("crtUserId"));// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>查询了admin》》》》》》》》》》》》》》》》》》》》》》》》》
+                        Map<String, String> recordUser = adminFeign.getUser(sourceType.getString("crtUserId"));// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>查询了admin》》》》》》》》》》》》》》》》》》》》》》》》》
                         recordPersonTel =
-                            CommonUtil.getValueFromJObjStr(
-                                recordUser.get(sourceType.getString("crtUserId")), "mobilePhone");
+                            CommonUtil.getValueFromJObjStr(recordUser.get(sourceType.getString("crtUserId")),
+                                "mobilePhone");
                     }
                     executeInfoJObj.put("recordPersonTel", recordPersonTel);
                     executeInfoJObj.put("recordTime", sourceType.getDate("crtTime"));// 登记时间
@@ -1144,10 +1087,8 @@ public class CaseInfoService {
 
                 JSONObject finishCheckPersonJObj =
                     JSONObject.parseObject(manyUsersMap.get(caseInfo.getFinishCheckPerson()));
-                finishCheckJObj.put("finishCheckPersonName",
-                    finishCheckPersonJObj.getString("name"));
-                finishCheckJObj.put("finishCheckPersonTel",
-                    finishCheckPersonJObj.getString("mobilePhone"));
+                finishCheckJObj.put("finishCheckPersonName", finishCheckPersonJObj.getString("name"));
+                finishCheckJObj.put("finishCheckPersonTel", finishCheckPersonJObj.getString("mobilePhone"));
             }
         }
         /*
@@ -1166,8 +1107,7 @@ public class CaseInfoService {
             if (manyUsersMap != null && !manyUsersMap.isEmpty()) {
                 finishJObj.put("finishPerson", caseInfo.getFinishPerson());
 
-                JSONObject finishPersonJObj =
-                    JSONObject.parseObject(manyUsersMap.get(caseInfo.getFinishPerson()));
+                JSONObject finishPersonJObj = JSONObject.parseObject(manyUsersMap.get(caseInfo.getFinishPerson()));
                 finishJObj.put("finishPersonName", finishPersonJObj.getString("name"));
                 finishJObj.put("finishPersonTel", finishPersonJObj.getString("mobilePhone"));
             }
@@ -1210,8 +1150,7 @@ public class CaseInfoService {
         JSONObject bizDataJObject = objs.getJSONObject("bizData");
 
         // 查询数据库中的caseInfo,以确定与caseInfo相对应的登记表那条记录的ID
-        CaseInfo caseInfoInDB =
-            caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
+        CaseInfo caseInfoInDB = caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
 
         caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
         caseInfo.setId(Integer.valueOf(bizDataJObject.getString("procBizId")));
