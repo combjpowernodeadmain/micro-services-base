@@ -226,10 +226,6 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             concernedPerson.getName() == null ? "" : concernedPerson.getName());
         fillContextJObj.put("concernedCredNum",
             concernedPerson.getCertCode() == null ? "" : concernedPerson.getCertCode());
-        fillContextJObj.put("concernedPhone",
-            concernedPerson.getPhone() == null ? "" : concernedPerson.getPhone());
-        fillContextJObj.put("concernedAddr",
-            concernedPerson.getAddress() == null ? "" : concernedPerson.getAddress());
 
         return fillContextJObj.toString();
     }
