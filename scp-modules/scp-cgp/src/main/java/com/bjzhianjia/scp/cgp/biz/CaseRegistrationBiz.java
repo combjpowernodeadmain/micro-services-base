@@ -445,7 +445,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         Set<String> rootBizIdSet = new HashSet<>(); // 数据字典code
         for (CaseRegistration caseRegistration : caseRegistrationList) {
             rootBizIdSet.add(caseRegistration.getBizType());
-            rootBizIdSet.add(caseRegistration.getCaseSource());
+            rootBizIdSet.add(caseRegistration.getCaseSourceType());
             eventTypeIdStrList.add(caseRegistration.getEventType());
         }
 
@@ -475,19 +475,25 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         WfProcBackBean wfProcBackBean = null;
         for (CaseRegistration caseRegistration : caseRegistrationList) {
             objResult = JSONObject.parseObject(JSON.toJSONString(caseRegistration));
-            wfProcBackBean = wfProcBackBean_ID_Entity_Map.get(objResult.get("procBizid"));
+            wfProcBackBean = wfProcBackBean_ID_Entity_Map.get(objResult.get("id"));
+            //处理状态
+            String procCtaskname = "";
             if (wfProcBackBean != null) {
-                objResult.put("procCtaskname", wfProcBackBean.getProcCtaskname());  
+                procCtaskname = wfProcBackBean.getProcCtaskname();  
             }
             if (CaseRegistration.EXESTATUS_STATE_FINISH.equals(caseRegistration.getExeStatus())) {
-                objResult.put("procCtaskname", "已结案");
+                procCtaskname = "已结案";
             }
 
             if (CaseRegistration.EXESTATUS_STATE_STOP.equals(caseRegistration.getExeStatus())) {
-                objResult.put("procCtaskname", "已终止");
+                procCtaskname =  "已终止";
             }
+            objResult.put("procCtaskname",procCtaskname);
+            //业务条线
             objResult.put("bizListName", getRootBizTypeName(caseRegistration.getBizType(), rootBizList));
+            //事件类别
             objResult.put("eventTypeListName", eventTypeName);
+            //事件来源
             objResult.put("sourceTypeName", getRootBizTypeName(caseRegistration.getCaseSourceType(), rootBizList));
             //具体来源id
             String sourceId = caseRegistration.getCaseSource();
@@ -496,12 +502,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             //执法任务
             if(StringUtils.isNotBlank(sourceId)){
                 if(CaseRegistration.CASE_SOURCE_TYPE_TASK.equals(caseRegistration.getCaseSourceType())) {
-                    LawTask lawTask = lawTaskBiz.selectById(sourceId);
+                    LawTask lawTask = lawTaskBiz.selectById(Integer.valueOf(sourceId));
                     if(lawTask != null) {
                         sourceTitle = lawTask.getLawTitle();
                     }
                 }else if(CaseRegistration.CASE_SOURCE_TYPE_CENTER.equals(caseRegistration.getCaseSourceType())) { //中心交办
-                    CaseInfo caseInfo = caseInfoBiz.selectById(sourceId);
+                    CaseInfo caseInfo = caseInfoBiz.selectById(Integer.valueOf(sourceId));
                     if(caseInfo != null) {
                         sourceTitle = caseInfo.getCaseTitle();
                     }
@@ -554,13 +560,13 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         if (StringUtils.isNotBlank(caseRegistration.getEventType())) {
             criteria.andLike("eventType", "%" + caseRegistration.getEventType() + "%");
         }
-        if (StringUtils.isNotBlank(caseRegistration.getCaseSource())) {
-            criteria.andEqualTo("caseSource", caseRegistration.getCaseSource());
+        if (StringUtils.isNotBlank(caseRegistration.getCaseSourceType())) {
+            criteria.andEqualTo("caseSourceType", caseRegistration.getCaseSourceType());
         }
         if (!(StringUtils.isBlank(startQueryTime) || StringUtils.isBlank(endQueryTime))) {
             Date start = DateUtil.dateFromStrToDate(startQueryTime, "yyyy-MM-dd HH:mm:ss");
             Date end = DateUtils.addDays(DateUtil.dateFromStrToDate(endQueryTime, "yyyy-MM-dd HH:mm:ss"), 1);
-            criteria.andBetween("crtTime", start, end);
+            criteria.andBetween("case_source_time", start, end);
         }
         if (ids != null && !ids.isEmpty()) {
             criteria.andIn("id", ids);
