@@ -19,12 +19,16 @@ import com.bjzhianjia.scp.cgp.entity.CLEConcernedCompany;
 import com.bjzhianjia.scp.cgp.entity.CLEConcernedPerson;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
+import com.bjzhianjia.scp.cgp.entity.ConcernedCompany;
+import com.bjzhianjia.scp.cgp.entity.ConcernedPerson;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.EventType;
+import com.bjzhianjia.scp.cgp.entity.InspectItems;
 import com.bjzhianjia.scp.cgp.entity.LawTask;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.WritsInstances;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
+import com.bjzhianjia.scp.cgp.feign.IUserFeign;
 import com.bjzhianjia.scp.cgp.mapper.CaseRegistrationMapper;
 import com.bjzhianjia.scp.cgp.mapper.EventTypeMapper;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
@@ -65,16 +69,31 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
     @Autowired
     private DictFeign dictFeign;
+    
+    @Autowired
+    private IUserFeign iUserFeign;
 
     @Autowired
     private EventTypeMapper eventTypeMapper;
-
+    
     @Autowired
     private LawTaskBiz lawTaskBiz;
-
+    
     @Autowired
     private CaseInfoBiz caseInfoBiz;
-
+    
+    @Autowired
+    private ConcernedCompanyBiz concernedCompanyBiz;
+    
+    @Autowired
+    private ConcernedPersonBiz concernedPersonBiz;
+    
+    @Autowired
+    private InspectItemsBiz inspectItemsBiz;
+    
+    @Autowired
+    private EventTypeBiz eventTypeBiz;
+    
     /**
      * 添加立案记录<br/>
      * 如果 有当事人，则一并添加<br/>
@@ -90,8 +109,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         int concernedId = addConcerned(caseRegJObj);
 
         // 添加立案单
-        CaseRegistration caseRegistration =
-            JSON.parseObject(caseRegJObj.toJSONString(), CaseRegistration.class);
+        CaseRegistration caseRegistration = JSON.parseObject(caseRegJObj.toJSONString(), CaseRegistration.class);
         // 生成caseRegistration主键
         String caseId = UUIDUtils.generateUuid();
         caseRegistration.setId(caseId);
@@ -110,8 +128,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         result.setIsSuccess(true);
         return result;
     }
-
-    /**
+   /**
      * 将请求信息中文书信息进行保存
      * 
      * @param caseRegJObj
@@ -129,8 +146,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         writsInstances.setCaseId(caseId);
         writsInstancesBiz.insertSelective(writsInstances);
     }
-
-    /**
+	 /**
      * =生成文书fillContext
      * 
      * @param caseRegJObj
@@ -229,7 +245,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
         return fillContextJObj.toString();
     }
-
+	
     /**
      * 添加当事人记录
      * 
@@ -249,15 +265,13 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             switch (concernedType) {
                 case Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG:
                     // 当事人以单位形式存在
-                    CLEConcernedCompany concernedCompany =
-                        JSON.parseObject(concernedJObj.toJSONString(), CLEConcernedCompany.class);
+                    CLEConcernedCompany concernedCompany = JSON.parseObject(concernedJObj.toJSONString(), CLEConcernedCompany.class);
                     cLEConcernedCompanyBiz.insertSelective(concernedCompany);
                     resultId = concernedCompany.getId();
                     break;
                 case Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON:
                     // 当事人以人个形式存在
-                    CLEConcernedPerson concernedPerson =
-                        JSON.parseObject(concernedJObj.toJSONString(), CLEConcernedPerson.class);
+                    CLEConcernedPerson concernedPerson = JSON.parseObject(concernedJObj.toJSONString(), CLEConcernedPerson.class);
                     cLEConcernedPersonBiz.insertSelective(concernedPerson);
                     resultId = concernedPerson.getId();
                     break;
@@ -298,8 +312,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      * @param limit
      * @return
      */
-    public TableResultResponse<CaseRegistration> getListByExecutePerson(String userId, int page,
-        int limit) {
+    public TableResultResponse<CaseRegistration> getListByExecutePerson(String userId, int page, int limit) {
         // enforcers
         TableResultResponse<CaseRegistration> restResult = new TableResultResponse<>();
 
@@ -326,8 +339,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      * @param limit
      * @return
      */
-    public TableResultResponse<CaseRegistration> getList(CaseRegistration caseRegistration,
-        int page, int limit) {
+    public TableResultResponse<CaseRegistration> getList(CaseRegistration caseRegistration, int page, int limit) {
         Example example = new Example(CaseRegistration.class);
         Criteria criteria = example.createCriteria();
 
@@ -371,8 +383,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             // 业务ids
             Set<String> bizIds = this.getBizIds(wfProcBackBeanList);
             // 查询与工作流任务对应的业务
-            TableResultResponse<CaseRegistration> tableResult =
-                this.getList(queryCaseRegistration, bizIds, objs.getJSONObject("queryData"));
+            TableResultResponse<CaseRegistration> tableResult = this.getList(queryCaseRegistration, bizIds, objs.getJSONObject("queryData"));
             List<CaseRegistration> caseRegistrationList = tableResult.getData().getRows();
             if (caseRegistrationList != null && !caseRegistrationList.isEmpty()) {
                 // 封装业务数据
@@ -424,13 +435,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      */
     public TableResultResponse<JSONObject> getUserAllToDoTasks(JSONObject objs) {
         List<JSONObject> result = new ArrayList<>();
-
-        // 业务查询条件
+        
+        //业务查询条件
         JSONObject queryData = objs.getJSONObject("queryData");
         CaseRegistration queryCaseRegistration = new CaseRegistration();
-        queryCaseRegistration =
-            JSONObject.parseObject(queryData.toJSONString(), CaseRegistration.class);
-
+        queryCaseRegistration = JSONObject.parseObject(queryData.toJSONString(), CaseRegistration.class);
+        
         // 工作流查询条件
         JSONObject bizData = objs.getJSONObject("bizData");
         // 事件工作流的定义代码
@@ -442,11 +452,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             bizData.put("procCtaskname", queryData.getString("procCtaskname"));
             objs.put("bizData", bizData);
         }
-
+        
         // 查询所有工作流任务
         PageInfo<WfProcBackBean> pageInfo = wfMonitorService.getAllToDoTasks(objs);
         List<WfProcBackBean> wfProcBackBeanList = pageInfo.getList();
-
+        
+        
         if (wfProcBackBeanList != null && !wfProcBackBeanList.isEmpty()) {
             // 有待办任务
             return queryAssist(queryCaseRegistration, queryData, result, wfProcBackBeanList);
@@ -455,7 +466,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             return new TableResultResponse<>(0, result);
         }
     }
-
+    
+    
     /**
      * 案件综合查询
      * 
@@ -466,13 +478,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      */
     public TableResultResponse<JSONObject> getAllTasks(JSONObject objs) {
         List<JSONObject> result = new ArrayList<>();
-
-        // 业务查询条件
+        
+        //业务查询条件
         JSONObject queryData = objs.getJSONObject("queryData");
         CaseRegistration queryCaseRegistration = new CaseRegistration();
-        queryCaseRegistration =
-            JSONObject.parseObject(queryData.toJSONString(), CaseRegistration.class);
-
+        queryCaseRegistration = JSONObject.parseObject(queryData.toJSONString(), CaseRegistration.class);
+        
         // 工作流查询条件
         JSONObject bizData = objs.getJSONObject("bizData");
         // 事件工作流的定义代码
@@ -484,11 +495,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             bizData.put("procCtaskname", queryData.getString("procCtaskname"));
             objs.put("bizData", bizData);
         }
-
+        
         // 查询所有工作流任务
         PageInfo<WfProcBackBean> pageInfo = wfMonitorService.getAllTasks(objs);
         List<WfProcBackBean> wfProcBackBeanList = pageInfo.getList();
-
+        
+       
         if (wfProcBackBeanList != null && !wfProcBackBeanList.isEmpty()) {
             // 有待办任务
             return queryAssist(queryCaseRegistration, queryData, result, wfProcBackBeanList);
@@ -497,7 +509,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             return new TableResultResponse<>(0, result);
         }
     }
-
+    
     /**
      * 工作流中获取业务ids
      * 
@@ -521,22 +533,18 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     }
 
     /**
-     * 联合查询，返回前端json
+     *  联合查询，返回前端json
      * 
-     * @param queryCaseRegistration
-     *            业务条件
-     * @param queryData
-     *            业务条件
-     * @param result
-     *            前端结果集
-     * @param procBackBeanList
-     *            工作流任列表
+     * @param queryCaseRegistration 业务条件
+     * @param queryData  业务条件
+     * @param result  前端结果集
+     * @param procBackBeanList 工作流任列表
      * @return
      */
-    private TableResultResponse<JSONObject> queryAssist(CaseRegistration queryCaseRegistration,
-        JSONObject queryData, List<JSONObject> result, List<WfProcBackBean> procBackBeanList) {
-
-        // 封装工作流任务
+    private TableResultResponse<JSONObject> queryAssist(CaseRegistration queryCaseRegistration, JSONObject queryData, List<JSONObject> result,
+        List<WfProcBackBean> procBackBeanList) {
+        
+        //封装工作流任务
         Map<String, WfProcBackBean> wfProcBackBean_ID_Entity_Map = new HashMap<>();
         for (WfProcBackBean wfProcBackBean : procBackBeanList) {
             wfProcBackBean_ID_Entity_Map.put(wfProcBackBean.getProcBizid(), wfProcBackBean);
@@ -546,8 +554,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         // 业务ids
         Set<String> bizIds = this.getBizIds(procBackBeanList);
         // 查询与工作流任务对应的业务
-        TableResultResponse<CaseRegistration> bizResult =
-            this.getList(queryCaseRegistration, bizIds, queryData);
+        TableResultResponse<CaseRegistration> bizResult = this.getList(queryCaseRegistration, bizIds, queryData);
         List<CaseRegistration> caseRegistrationList = bizResult.getData().getRows();
 
         // 数据字典code封装
@@ -584,21 +591,24 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         JSONObject objResult = null;
         WfProcBackBean wfProcBackBean = null;
         for (CaseRegistration caseRegistration : caseRegistrationList) {
-           objResult = JSONObject.parseObject(JSON.toJSONString(caseRegistration));
+            objResult = JSONObject.parseObject(JSON.toJSONString(caseRegistration));
             wfProcBackBean = wfProcBackBean_ID_Entity_Map.get(objResult.get("id"));
             //处理状态
             String procCtaskname = "";
             if (wfProcBackBean != null) {
                 procCtaskname = wfProcBackBean.getProcCtaskname();  
-            }
-            if (CaseRegistration.EXESTATUS_STATE_FINISH.equals(caseRegistration.getExeStatus())) {
-                procCtaskname = "已结案";
-            }
+                if (CaseRegistration.EXESTATUS_STATE_FINISH.equals(caseRegistration.getExeStatus())) {
+                    procCtaskname = "已结案";
+                }
 
-            if (CaseRegistration.EXESTATUS_STATE_STOP.equals(caseRegistration.getExeStatus())) {
-                procCtaskname =  "已终止";
+                if (CaseRegistration.EXESTATUS_STATE_STOP.equals(caseRegistration.getExeStatus())) {
+                    procCtaskname =  "已终止";
+                }
+                objResult.put("procCtaskname",procCtaskname);
+                objResult.put("procInstId",  wfProcBackBean.getProcInstId());
+                objResult.put("procBizid", wfProcBackBean.getProcBizid());
             }
-            objResult.put("procCtaskname",procCtaskname);
+            
             //业务条线
             objResult.put("bizListName", getRootBizTypeName(caseRegistration.getBizType(), rootBizList));
             //事件类别
@@ -632,7 +642,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         }
         return new TableResultResponse<>(bizResult.getData().getTotal(), result);
     }
-
+    
     /**
      * 通过条件查询案件
      * 
@@ -644,8 +654,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      *            查询条件
      * @return
      */
-    public TableResultResponse<CaseRegistration> getList(CaseRegistration caseRegistration,
-        Set<String> ids, JSONObject queryData) {
+    public TableResultResponse<CaseRegistration> getList(CaseRegistration caseRegistration, Set<String> ids, JSONObject queryData) {
         // 查询参数
         int page = StringUtils.isBlank(queryData.getString("page")) ? 1 : Integer.valueOf(queryData.getString("page"));
         int limit = StringUtils.isBlank(queryData.getString("limit")) ? 10 : Integer.valueOf(queryData.getString("limit"));
@@ -673,6 +682,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         }
         if (StringUtils.isNotBlank(caseRegistration.getCaseSourceType())) {
             criteria.andEqualTo("caseSourceType", caseRegistration.getCaseSourceType());
+        }
+        if (StringUtils.isNotBlank(caseRegistration.getCaseSource())) {
+            criteria.andEqualTo("caseSource", caseRegistration.getCaseSource());
         }
         if (!(StringUtils.isBlank(startQueryTime) || StringUtils.isBlank(endQueryTime))) {
             Date start = DateUtil.dateFromStrToDate(startQueryTime, "yyyy-MM-dd HH:mm:ss");
@@ -727,6 +739,63 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             return String.join(",", nameList);
         }
         return "";
+    }
+    
+    public JSONObject getInfoById(Integer id) {
+        JSONObject result = null;
+        CaseRegistration caseRegistration = this.selectById(id);
+        if(caseRegistration != null) {
+            
+            result = JSONObject.parseObject(JSONObject.toJSONString(caseRegistration));
+            if(result != null) {
+                //org:单位，person:个人
+                String concernedType = "org";
+                JSONObject concernedResult = null;
+                //当事人：单位
+                if(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG.equals(caseRegistration.getConcernedType())){
+                   ConcernedCompany concernedCompany = concernedCompanyBiz.selectById(Integer.valueOf(caseRegistration.getConcernedId()));
+                   concernedResult = JSONObject.parseObject(JSONObject.toJSONString(concernedCompany));
+                }
+                //当事人：个人
+                if(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON.equals(caseRegistration.getConcernedType())) {
+                    ConcernedPerson concernedPerson = concernedPersonBiz.selectById(Integer.valueOf(caseRegistration.getConcernedId()));
+                    concernedResult = JSONObject.parseObject(JSONObject.toJSONString(concernedPerson));
+                    concernedType = "person";
+                }
+                //当事人类型
+                result.put("concernedType", concernedType);
+                //当事人详情
+                result.put("concernedResult", concernedResult);
+                
+                //业务条线
+                Map<String, String> bizMap = dictFeign.getByCode(caseRegistration.getBizType());
+                if(bizMap != null && bizMap.isEmpty()) {
+                    result.put("bizName", bizMap.get(caseRegistration.getBizType()));
+                }
+                
+                //事件类别
+                EventType eventType = eventTypeBiz.selectById(caseRegistration.getEventType());
+                if(eventType == null) {
+                   result.put("eventTypeName", eventType.getTypeName());
+                }
+                
+                //违法行为
+                InspectItems inspectItems =inspectItemsBiz.selectById(caseRegistration.getInspectItem());
+                if(inspectItems != null) {
+                    result.put("inspectName",inspectItems.getName());
+                }
+                
+               
+                
+               
+                iUserFeign.getByUserIds(caseRegistration.getEnforcers());
+               
+                
+                
+            }
+        }
+        
+        return result;
     }
 
 }

@@ -17,6 +17,8 @@
 
 package com.bjzhianjia.scp.cgp.feign;
 
+import java.util.List;
+
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,7 +29,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.bjzhianjia.scp.security.auth.client.config.FeignApplyConfiguration;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 
-import java.util.List;
+import io.swagger.annotations.ApiOperation;
 
 /**
  * @author scp
@@ -83,5 +85,11 @@ public interface IUserFeign {
      */
     @RequestMapping(value = "/api/getGroupCodesdByUserId", method = RequestMethod.GET)
     public List<String> getGroupCodesByUserId(@RequestParam(value = "userid") String userid);
-    
+    /**
+     * 通过用户ids查询
+     * @param userIds 用户ids
+     * @return
+     */
+    @RequestMapping(value="/user/ids/{userIds}",method=RequestMethod.GET)
+    public JSONArray getByUserIds(@PathVariable("userIds") String userIds) ;
 }
