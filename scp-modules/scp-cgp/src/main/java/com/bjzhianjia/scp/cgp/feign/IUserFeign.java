@@ -90,6 +90,6 @@ public interface IUserFeign {
      * @param userIds 用户ids
      * @return
      */
-    @RequestMapping(value="/user/ids/{userIds}",method=RequestMethod.GET)
-    public JSONArray getByUserIds(@PathVariable("userIds") String userIds) ;
+    @RequestMapping(value="/user/ids",method=RequestMethod.GET)
+    public JSONArray getByUserIds(@RequestParam(value="userIds") String userIds) ;
 }

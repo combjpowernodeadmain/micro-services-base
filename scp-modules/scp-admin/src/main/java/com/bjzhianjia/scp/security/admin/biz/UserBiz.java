@@ -16,6 +16,7 @@
 
 package com.bjzhianjia.scp.security.admin.biz;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -278,8 +279,15 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
      */
     public JSONArray getByUserIds(String userIds) {
         JSONArray array = new JSONArray();
-        List<User> userList =  mapper.selectByIds(userIds);
-        if(userList != null && userList.isEmpty()) {
+        Example example=new Example(User.class);
+        
+        List<String> _userIds = Arrays.asList(userIds.split(","));
+        Example.Criteria criteria = example.createCriteria();
+        if(_userIds != null && !_userIds.isEmpty()) {
+            criteria.andIn("id", _userIds);
+        }
+        List<User> userList =  mapper.selectByExample(example);
+        if(userList != null && !userList.isEmpty()) {
             JSONObject obj = null;
             for(User user : userList) {
                  obj = JSONObject.parseObject(JSONObject.toJSONString(user));
