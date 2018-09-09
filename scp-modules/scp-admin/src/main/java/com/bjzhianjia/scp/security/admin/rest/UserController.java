@@ -194,6 +194,7 @@ public class UserController extends BaseController<UserBiz, User, String> {
      */
     @ApiOperation("通过用户ids查询")
     @RequestMapping(value="/ids/{userIds}",method=RequestMethod.GET)
+    @IgnoreClientToken
     public JSONArray getByUserIds(@PathVariable("userIds") String userIds) {
         if(StringUtils.isBlank(userIds)) {
             return null;
