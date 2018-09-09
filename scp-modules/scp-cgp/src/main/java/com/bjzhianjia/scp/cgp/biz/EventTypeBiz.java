@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.biz;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -21,173 +22,201 @@ import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
 
 /**
- * 事件类型
+ * EventTypeBiz 事件类型.
  *
+ *
+ * <pre>
+ * Modification History: 
+ * Date             Author      Version         Description 
+ * ------------------------------------------------------------------
+ * 2018年7月7日          bo      1.0            ADD
+ * </pre>
+ * 
+ *
+ * @version 1.0 
  * @author bo
- * @email 576866311@qq.com
- * @version 2018-07-07 16:48:27
+ *
  */
 @Service
 public class EventTypeBiz extends BusinessBiz<EventTypeMapper, EventType> {
 
-	@Autowired
-	private EventTypeMapper eventTypeMapper;
+    @Autowired
+    private EventTypeMapper eventTypeMapper;
 
-	/**
-	 * 根据事件编号获取
-	 * 
-	 * @param typeCode 事件编号
-	 * @return
-	 */
-	public EventType getByTypeCode(String typeCode) {
+    /**
+     * 根据事件编号获取
+     * 
+     * @param typeCode
+     *            事件编号
+     * @return
+     */
+    public EventType getByTypeCode(String typeCode) {
 
-		Example example = new Example(EventType.class);
+        Example example = new Example(EventType.class);
 
-		Criteria criteria = example.createCriteria();
-		criteria.andEqualTo("typeCode", typeCode);
+        Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("typeCode", typeCode);
 
-		List<EventType> list = eventTypeMapper.selectByExample(example);
+        List<EventType> list = eventTypeMapper.selectByExample(example);
 
-		if (list == null || list.size() == 0) {
-			return null;
-		}
+        if (list == null || list.size() == 0) {
+            return null;
+        }
 
-		EventType eventType = list.get(0);
+        EventType eventType = list.get(0);
 
-		if (eventType.getIsDeleted().equals("1")) {
-			return null;
-		}
+        if (eventType.getIsDeleted().equals("1")) {
+            return null;
+        }
 
-		return eventType;
-	}
+        return eventType;
+    }
 
-	/**
-	 * 根据事件名称获取
-	 * 
-	 * @param typeName 事件名称
-	 * @return
-	 */
-	public EventType getByTypeName(String typeName) {
-		Example example = new Example(EventType.class);
+    /**
+     * 根据事件名称获取
+     * 
+     * @param typeName
+     *            事件名称
+     * @return
+     */
+    public EventType getByTypeName(String typeName) {
+        Example example = new Example(EventType.class);
 
-		Criteria criteria = example.createCriteria();
-		criteria.andEqualTo("typeName", typeName);
+        Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("typeName", typeName);
 
-		List<EventType> list = eventTypeMapper.selectByExample(example);
+        List<EventType> list = eventTypeMapper.selectByExample(example);
 
-		if (list == null || list.size() == 0) {
-			return null;
-		}
+        if (list == null || list.size() == 0) {
+            return null;
+        }
 
-		EventType eventType = list.get(0);
+        EventType eventType = list.get(0);
 
-		if (eventType.getIsDeleted().equals("1")) {
-			return null;
-		}
+        if (eventType.getIsDeleted().equals("1")) {
+            return null;
+        }
 
-		return eventType;
-	}
+        return eventType;
+    }
 
-	/**
-	 * 根据事件条线获取
-	 * 
-	 * @param bizType 事件条线
-	 * @return
-	 */
-	public List<EventType> getByBizType(String bizType) {
-		Example example = new Example(EventType.class);
+    /**
+     * 根据事件条线获取
+     * 
+     * @param bizType
+     *            事件条线
+     * @return
+     */
+    public List<EventType> getByBizType(String bizType) {
+        Example example = new Example(EventType.class);
 
-		Criteria criteria = example.createCriteria();
-		criteria.andEqualTo("isDeleted", "0");
-		criteria.andEqualTo("bizType", bizType);
+        Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isDeleted", "0");
+        criteria.andEqualTo("bizType", bizType);
 
-		return eventTypeMapper.selectByExample(example);
+        return eventTypeMapper.selectByExample(example);
 
-	}
+    }
 
-	/**
-	 * 根据查询条件搜索
-	 * 
-	 * @param eventType
-	 * @return
-	 */
-	public TableResultResponse<EventType> getList(int page, int limit, EventType eventType) {
-		Example example = new Example(EventType.class);
-		Example.Criteria criteria = example.createCriteria();
+    /**
+     * 根据查询条件搜索
+     * 
+     * @param eventType
+     * @return
+     */
+    public TableResultResponse<EventType> getList(int page, int limit, EventType eventType) {
+        Example example = new Example(EventType.class);
+        Example.Criteria criteria = example.createCriteria();
 
-		criteria.andEqualTo("isDeleted", "0");
-		if (StringUtils.isNotBlank(eventType.getTypeName())) {
-			// 事件类别名称模糊匹配查询
-			criteria.andLike("typeName", "%" + eventType.getTypeName() + "%");
-//	    	criteria.andEqualTo("typeName", eventType.getTypeName());
-		}
-		if (StringUtils.isNotBlank(eventType.getBizType())) {
-			criteria.andEqualTo("bizType", eventType.getBizType());
-		}
-		if (StringUtils.isNotBlank(eventType.getIsEnable())) {
-			criteria.andEqualTo("isEnable", eventType.getIsEnable());
-		}
+        criteria.andEqualTo("isDeleted", "0");
+        if (StringUtils.isNotBlank(eventType.getTypeName())) {
+            // 事件类别名称模糊匹配查询
+            criteria.andLike("typeName", "%" + eventType.getTypeName() + "%");
+            // criteria.andEqualTo("typeName", eventType.getTypeName());
+        }
+        if (StringUtils.isNotBlank(eventType.getBizType())) {
+            criteria.andEqualTo("bizType", eventType.getBizType());
+        }
+        if (StringUtils.isNotBlank(eventType.getIsEnable())) {
+            criteria.andEqualTo("isEnable", eventType.getIsEnable());
+        }
 
-		// 按创建时间倒序
-		example.setOrderByClause("id desc");
+        // 按创建时间倒序
+        example.setOrderByClause("id desc");
 
-		Page<Object> result = PageHelper.startPage(page, limit);
-		List<EventType> list = eventTypeMapper.selectByExample(example);
-		return new TableResultResponse<EventType>(result.getTotal(), list);
-	}
+        Page<Object> result = PageHelper.startPage(page, limit);
+        List<EventType> list = eventTypeMapper.selectByExample(example);
+        return new TableResultResponse<EventType>(result.getTotal(), list);
+    }
 
-	/**
-	 * 按Id获取事件类型对象
-	 * 
-	 * @author 尚
-	 * @param idList 事件类型Id集合
-	 * @return
-	 */
-	public List<EventType> getByIds(List<String> idList) {
-		Example example = new Example(EventType.class);
-		Example.Criteria criteria = example.createCriteria();
-		criteria.andIn("id", idList);
-		List<EventType> eventTypeList = this.mapper.selectByExample(example);
-		return eventTypeList;
-	}
+    /**
+     * 按Id获取事件类型对象
+     * 
+     * @author 尚
+     * @param idList
+     *            事件类型Id集合
+     * @return
+     */
+    public List<EventType> getByIds(List<String> idList) {
+        Example example = new Example(EventType.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andIn("id", idList);
+        List<EventType> eventTypeList = this.mapper.selectByExample(example);
+        return eventTypeList;
+    }
 
-	/**
-	 * 根据编号获取终端
-	 * 
-	 * @param id 编号
-	 * @return
-	 */
-	public EventType getById(Integer id) {
+    /**
+     * 根据编号获取终端
+     * 
+     * @param id
+     *            编号
+     * @return
+     */
+    public EventType getById(Integer id) {
 
-		EventType eventType = eventTypeMapper.selectByPrimaryKey(id);
+        EventType eventType = eventTypeMapper.selectByPrimaryKey(id);
 
-		if (eventType != null && eventType.getIsDeleted().equals("1")) {
-			return null;
-		}
+        if (eventType != null && eventType.getIsDeleted().equals("1")) {
+            return null;
+        }
 
-		return eventType;
-	}
+        return eventType;
+    }
 
-	/**
-	 * 批量删除
-	 * 
-	 * @param ids id列表
-	 */
-	public void deleteByIds(Integer[] ids) {
-		eventTypeMapper.deleteByIds(ids, BaseContextHandler.getUserID(), BaseContextHandler.getName(), new Date());
-	}
+    /**
+     * 批量删除
+     * 
+     * @param ids
+     *            id列表
+     */
+    public void deleteByIds(Integer[] ids) {
+        eventTypeMapper.deleteByIds(ids, BaseContextHandler.getUserID(), BaseContextHandler.getName(), new Date());
+    }
 
-	/**
-	 * 根据多个id获取
-	 * 
-	 * @param ids
-	 */
-	public Map<Integer, String> getByIds(String ids) {
-		ids = "'" + ids.replaceAll(",", "','") + "'";
-		List<EventType> list = eventTypeMapper.selectByIds(ids);
+    /**
+     * 根据多个id获取
+     * 
+     * @param ids
+     */
+    public Map<Integer, String> getByIds(String ids) {
+        ids = "'" + ids.replaceAll(",", "','") + "'";
+        List<EventType> list = eventTypeMapper.selectByIds(ids);
 
-		return list.stream().collect(Collectors.toMap(EventType::getId, EventType::getTypeName));
-		// 待聚和对象中enevtType属性封装的是Id，如果 返回typeCode:typeName组合，无法确定怎样去聚和
-//		return list.stream().collect(Collectors.toMap(EventType::getTypeCode, EventType::getTypeName));
-	}
+        return list.stream().collect(Collectors.toMap(EventType::getId, EventType::getTypeName));
+        // 待聚和对象中enevtType属性封装的是Id，如果 返回typeCode:typeName组合，无法确定怎样去聚和
+        // return list.stream().collect(Collectors.toMap(EventType::getTypeCode,
+        // EventType::getTypeName));
+    }
+
+    /**
+     * 根据多个id获取
+     * 
+     * @param ids
+     */
+    public List<EventType> getByEventTypeIds(String ids) {
+        if (StringUtils.isBlank(ids)) {
+            return new ArrayList<>();
+        }
+        return eventTypeMapper.selectByIds(ids);
+    }
 }
