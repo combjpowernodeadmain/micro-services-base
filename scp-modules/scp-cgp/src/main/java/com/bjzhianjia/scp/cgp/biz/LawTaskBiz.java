@@ -483,9 +483,15 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
                         String bizType = "";
                         StringBuilder typeName = new StringBuilder();
                         // 封装数据 "code":"name1,name2.."
-                        for (EventType eventType : list) {
-                            bizType = eventType.getBizType();
-                            typeName.append(",").append(eventType.getTypeName());
+                        for(int i=0 ; i < list.size();i++) {
+                            EventType eventType = list.get(i);
+                            if(i ==  list.size()-1) {
+                                typeName.append(eventType.getTypeName());
+                                //biz相同，所以添加一次
+                                bizType = eventType.getBizType();
+                            }else {
+                                typeName.append(eventType.getTypeName()).append(",");
+                            }
                         }
                         eventMap.put(bizType, typeName.toString());
                     }
