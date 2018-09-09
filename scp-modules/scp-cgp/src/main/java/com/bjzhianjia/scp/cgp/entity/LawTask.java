@@ -5,6 +5,8 @@ import java.util.Date;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 
 /**
  * LawTask  执法任务管理.
@@ -62,6 +64,7 @@ public class LawTask implements Serializable {
     private String lawTaskCode;
 
     // 任务开始日期
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     @NotNull
     @Column(name = "start_time")
     private Date startTime;
@@ -72,6 +75,7 @@ public class LawTask implements Serializable {
     private String lawTitle;
 
     // 任务结束日期
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     @NotNull
     @Column(name = "end_time")
     private Date endTime;
@@ -96,6 +100,7 @@ public class LawTask implements Serializable {
     private String eventTypeId;
 
     // 创建时间
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     @Column(name = "crt_time")
     private Date crtTime;
 
@@ -108,6 +113,7 @@ public class LawTask implements Serializable {
     private String crtUserName;
 
     // 更新时间
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     @Column(name = "upd_time")
     private Date updTime;
 
