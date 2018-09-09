@@ -3,7 +3,9 @@ package com.bjzhianjia.scp.cgp.biz;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.bjzhianjia.scp.cgp.entity.LawEnforcePath;
 import com.bjzhianjia.scp.cgp.entity.PatrolTaskPath;
 import com.bjzhianjia.scp.cgp.mapper.PatrolTaskPathMapper;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
@@ -148,5 +151,32 @@ public class PatrolTaskPathBiz extends BusinessBiz<PatrolTaskPathMapper, PatrolT
             return null;
         }
         return list.get(0);
+    }
+    
+    
+    /**
+     * 按用户ID查询记录，多个ID之间用逗号隔开
+     * @param userIds
+     * @return
+     */
+    public Map<String, JSONObject> getByUserIds(String userIds){
+        userIds="'"+userIds.replaceAll(",", "','")+"'";
+        List<PatrolTaskPath> list = this.mapper.getByUserIds(userIds);
+        
+        if (list == null || list.isEmpty()) {
+            return new HashMap<String,JSONObject>();
+        }
+        
+        Map<String, JSONObject> result=new HashMap<>();
+        for(PatrolTaskPath patrolTaskPath:list) {
+            JSONObject obj = new JSONObject();
+            if(patrolTaskPath != null) {
+                obj.put("mapInfo", "{\"lng\":\""+patrolTaskPath.getLng()+"\",\"lat\":\""+patrolTaskPath.getLat()+"\"}");
+                obj.put("time", patrolTaskPath.getCrtTime());
+            }
+            
+            result.put(patrolTaskPath.getCrtUserId(), obj);
+        }
+        return result;
     }
 }

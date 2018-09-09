@@ -64,8 +64,8 @@ public class PropertiesConfig {
     /**
      * 目的文书路径
      */
-    @Value("${writsInstances.tempWordPath}")
-    private String tempWordPath;
+    @Value("${writsInstances.destFilePath}")
+    private String destFilePath;
 
     /**
      * 现场检查
@@ -113,7 +113,7 @@ public class PropertiesConfig {
         return destFileName;
     }
 
-    public String getTempWordPath() {
-        return tempWordPath;
+    public String getDestFilePath() {
+        return destFilePath;
     }
 }
