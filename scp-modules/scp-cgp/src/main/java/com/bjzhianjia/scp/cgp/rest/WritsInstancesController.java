@@ -29,56 +29,69 @@ import io.swagger.annotations.ApiParam;
 @Api(tags = "综合执法 - 案件登记文书记录")
 public class WritsInstancesController extends BaseController<WritsInstancesBiz, WritsInstances, Integer> {
 
-	@Autowired
-	private WritsInstancesBiz writsInstancesBiz;
+    @Autowired
+    private WritsInstancesBiz writsInstancesBiz;
 
-	@RequestMapping(value = "/list", method = RequestMethod.GET)
-	@ApiOperation("查询文书列表")
-	public TableResultResponse<WritsInstances> getList(
-			@RequestParam(value = "page", defaultValue = "1") @ApiParam(name = "当前页") Integer page,
-			@RequestParam(value = "limit", defaultValue = "10") @ApiParam(name = "页容量") Integer limit,
-			@RequestParam(value="templatedId",required=false) @ApiParam(name = "文书模板") Integer templateId,
-			@RequestParam(value="procTaskId",defaultValue="") @ApiParam(name = "流程任务ID") String procTaskId,
-			@RequestParam(value="caseId",defaultValue="") @ApiParam(name = "案件 ID") String caseId
-			) {
-		TableResultResponse<WritsInstances> restResult = new TableResultResponse<>();
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @ApiOperation("查询文书列表")
+    public TableResultResponse<WritsInstances> getList(
+        @RequestParam(value = "page", defaultValue = "1") @ApiParam(name = "当前页") Integer page,
+        @RequestParam(value = "limit", defaultValue = "10") @ApiParam(name = "页容量") Integer limit,
+        @RequestParam(value = "templatedId", required = false) @ApiParam(name = "文书模板") Integer templatedId,
+        @RequestParam(value = "templateCodes", defaultValue = "") @ApiParam(name = "文书模板Code集合，多个用逗号隔开") String templateCodes,
+        @RequestParam(value = "procTaskId", defaultValue = "") @ApiParam(name = "流程任务ID") String procTaskId,
+        @RequestParam(value = "caseId", defaultValue = "") @ApiParam(name = "案件 ID") String caseId) {
+        TableResultResponse<WritsInstances> restResult = new TableResultResponse<>();
 
-		WritsInstances writsInstances=new WritsInstances();
-		writsInstances.setCaseId(caseId);
-		writsInstances.setTemplateId(templateId);
-		
-		restResult = writsInstancesBiz.getList(writsInstances, page, limit);
+        JSONObject queryJObj = new JSONObject();
+        queryJObj.put("templatedId", templatedId);
+        queryJObj.put("templateCodes", templateCodes);
+        queryJObj.put("procTaskId", procTaskId);
+        queryJObj.put("caseId", caseId);
 
-		return restResult;
-	}
+        restResult = writsInstancesBiz.getList(queryJObj, page, limit);
 
-	@RequestMapping(value="/add",method=RequestMethod.POST)
-	@ApiOperation("添加单对象")
-	public ObjectRestResponse<WritsInstances> add(
-			@RequestBody @ApiParam(name = "待添加对象实例") @Validated JSONObject jobs,
-			BindingResult bindingResult) {
+        return restResult;
+    }
 
-		ObjectRestResponse<WritsInstances> restResult=new ObjectRestResponse<>();
-		
-		if(bindingResult.hasErrors()) {
-			restResult.setStatus(400);
-			restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
-			return restResult;
-		}
-		
-		JSONObject bizData = jobs.getJSONObject("bizData");
-		writsInstancesBiz.updateOrInsert(bizData);
-		
-		restResult.setMessage("成功");
-		return restResult;
-	}
-	
-	@RequestMapping(value="/get",method=RequestMethod.GET)
-	@ApiOperation("获取文书路径")
-	public ObjectRestResponse<String> getWritsInstance(
-	    @RequestParam(value="writsInstanceId",defaultValue="")Integer writsInstanceId
-	    ) {
-	    ObjectRestResponse<String> restResult = this.baseBiz.getWritsInstance(writsInstanceId);
-	    return restResult;
-	}
+    @RequestMapping(value = "/add", method = RequestMethod.POST)
+    @ApiOperation("添加单对象")
+    public ObjectRestResponse<WritsInstances> add(@RequestBody @ApiParam(name = "待添加对象实例") @Validated JSONObject jobs,
+        BindingResult bindingResult) {
+
+        ObjectRestResponse<WritsInstances> restResult = new ObjectRestResponse<>();
+
+        if (bindingResult.hasErrors()) {
+            restResult.setStatus(400);
+            restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            return restResult;
+        }
+
+        JSONObject bizData = jobs.getJSONObject("bizData");
+        writsInstancesBiz.updateOrInsert(bizData);
+
+        restResult.setMessage("成功");
+        return restResult;
+    }
+
+    @RequestMapping(value = "/get", method = RequestMethod.GET)
+    @ApiOperation("获取文书路径")
+    public ObjectRestResponse<String> getWritsInstance(
+        @RequestParam(value = "writsInstanceId", defaultValue = "") Integer writsInstanceId) {
+        ObjectRestResponse<String> restResult = this.baseBiz.getWritsInstance(writsInstanceId);
+        return restResult;
+    }
+
+    @RequestMapping(value="/list/by_template",method=RequestMethod.GET)
+    @ApiOperation("获取文书模板及其下的文书")
+    public TableResultResponse<JSONObject> getWithWritsInstance(
+        @RequestParam(value = "templateCodes", defaultValue = "") @ApiParam(name = "文书模板Code集合，多个用逗号隔开") String templateCodes,
+        @RequestParam(value = "procTaskId", defaultValue = "") @ApiParam(name = "流程任务ID") String procTaskId,
+        @RequestParam(value = "caseId", defaultValue = "") @ApiParam(name = "案件 ID") String caseId) {
+        TableResultResponse<JSONObject> restResult = new TableResultResponse<>();
+
+        restResult = this.baseBiz.getWithWritsInstance(templateCodes, procTaskId, caseId);
+        return restResult;
+    }
+
 }

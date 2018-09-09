@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.biz;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -148,11 +149,11 @@ public class WritsTemplatesBiz extends BusinessBiz<WritsTemplatesMapper, WritsTe
 	}
 	
 	/**
-	 * 按tcode查询文书模板
-	 * @param tcode
+	 * =按tcode查询文书模板
+	 * @param tcode code集合，多个code之间用逗号隔开
 	 * @return
 	 */
-	public WritsTemplates getByTcode(String tcode) {
+	public List<WritsTemplates> getByTcodes(String tcode) {
 	    if(StringUtils.isBlank(tcode)) {
 	        return null;
 	    }
@@ -160,13 +161,12 @@ public class WritsTemplatesBiz extends BusinessBiz<WritsTemplatesMapper, WritsTe
 	    Example example=new Example(WritsTemplates.class);
 	    Criteria criteria = example.createCriteria();
 	    criteria.andEqualTo("isDeleted", "0");
-	    criteria.andEqualTo("tcode", tcode);
+	    criteria.andIn("tcode", Arrays.asList(tcode.split(",")));
 	    
 	    List<WritsTemplates> list = this.selectByExample(example);
 	    if(list!=null&&!list.isEmpty()) {
-	        //tcode在文书模板表内唯一，如果 有值则list长度为1
-	        return list.get(0);
+	        return list;
 	    }
-	    return null;
+	    return new ArrayList<WritsTemplates>();
 	}
 }
