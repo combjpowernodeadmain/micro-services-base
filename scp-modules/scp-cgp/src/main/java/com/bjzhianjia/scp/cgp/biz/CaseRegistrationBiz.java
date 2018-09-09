@@ -774,13 +774,21 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 if (Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG.equals(caseRegistration.getConcernedType())) {
                     ConcernedCompany concernedCompany =
                         concernedCompanyBiz.selectById(Integer.valueOf(caseRegistration.getConcernedId()));
-                    concernedResult = JSONObject.parseObject(JSONObject.toJSONString(concernedCompany));
+                    if(concernedCompany != null) {
+                        concernedResult = JSONObject.parseObject(JSONObject.toJSONString(concernedCompany));
+                    }
                 }
                 // 当事人：个人
                 if (Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON.equals(caseRegistration.getConcernedType())) {
                     ConcernedPerson concernedPerson =
                         concernedPersonBiz.selectById(Integer.valueOf(caseRegistration.getConcernedId()));
-                    concernedResult = JSONObject.parseObject(JSONObject.toJSONString(concernedPerson));
+                    if(concernedPerson != null) {
+                        concernedResult = JSONObject.parseObject(JSONObject.toJSONString(concernedPerson));
+                        Map<String, String> credMap = dictFeign.getByCode(concernedPerson.getCredType());
+                        if (credMap != null && !credMap.isEmpty()) {
+                            concernedResult.put("credTypeName", credMap.get(concernedPerson.getCredType()));
+                        }
+                    }
                     concernedType = "person";
                 }
                 // 当事人类型
