@@ -798,7 +798,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                     result.put("inspectName", inspectItems.getName());
                 }
                 //执法者用户名
-                JSONArray userList = iUserFeign.getByUserIds(caseRegistration.getEnforcers());
+                JSONArray userList = null;
+                try {
+                    userList = iUserFeign.getByUserIds(caseRegistration.getEnforcers());
+                }catch (Exception e) {
+                    e.printStackTrace();
+                }
                 if (userList != null && !userList.isEmpty()) {
                     StringBuilder userName = new StringBuilder();
                     //最后一条记录
@@ -815,14 +820,17 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 }
                 
                 //网格名称
-                AreaGrid areaGrid = areaGridBiz.selectById(Integer.valueOf(caseRegistration.getId()));
+                AreaGrid areaGrid = areaGridBiz.selectById(caseRegistration.getGirdId());
                 if(areaGrid != null) {
                     result.put("gridName", areaGrid.getGridName());
                 }
                 //移送部门
-                JSONObject dept = adminFeign.getByDeptId(caseRegistration.getTransferDepart());
-                if(dept != null) {
-                    result.put("transferDeptName", dept.getString("name"));
+                String transferDepart = caseRegistration.getTransferDepart();
+                if(StringUtils.isNotBlank(transferDepart)) {
+                    JSONObject dept = adminFeign.getByDeptId(transferDepart);
+                    if(dept != null) {
+                        result.put("transferDeptName", dept.getString("name"));
+                    }
                 }
             }
         }
