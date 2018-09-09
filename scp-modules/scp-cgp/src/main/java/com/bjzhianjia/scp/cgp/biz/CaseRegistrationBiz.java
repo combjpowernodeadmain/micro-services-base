@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
+import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +41,6 @@ import com.bjzhianjia.scp.cgp.vo.CaseRegistrationVo;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.util.UUIDUtils;
-import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.monitor.entity.WfProcBackBean;
 import com.bjzhianjia.scp.security.wf.base.monitor.service.impl.WfMonitorServiceImpl;
 import com.bjzhianjia.scp.security.wf.base.task.entity.WfProcTaskHistoryBean;
@@ -109,7 +109,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
     @Autowired
     private WfProcTaskServiceImpl wfProcTaskService;
-    
+
     /**
      * 添加立案记录<br/>
      * 如果 有当事人，则一并添加<br/>
@@ -162,8 +162,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             writsInstancesBiz.theNextWenHao(writsInstances.getCaseId(), writsInstances.getTemplateId(),
                 writsInstances.getRefEnforceType());
         writsInstances.setRefNo(theNextWenHao.getRefNo());
-
-        writsInstances.setFillContext(getWritsFillContext(caseRegJObj, writsInstances.getFillContext(),writsInstances.getRefNo()));
+        writsInstances.setRefYear(String.valueOf(new LocalDate().getYear()));
+        writsInstances.setFillContext(
+            getWritsFillContext(caseRegJObj, writsInstances.getFillContext(), writsInstances.getRefNo()));
         // 关联该文书相关的案件
         writsInstances.setCaseId(caseId);
         writsInstancesBiz.insertSelective(writsInstances);
@@ -176,7 +177,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      * @param oldFillContext
      * @return
      */
-    private String getWritsFillContext(JSONObject caseRegJObj, String oldFillContext,String ziHao) {
+    private String getWritsFillContext(JSONObject caseRegJObj, String oldFillContext, String ziHao) {
         JSONObject fillContextJObj = JSONObject.parseObject(oldFillContext);
         fillContextJObj = fillContextJObj == null ? new JSONObject() : fillContextJObj;
 
@@ -186,7 +187,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         // fillContextJObj.put("XinZLZi",
         // caseRegJObj.getString("XinZLZi") == null ? "" :
         // caseRegJObj.getString("XinZLZi"));
-        fillContextJObj.put("ZiHao", caseRegJObj.getString("ZiHao") == null ? "" : caseRegJObj.getString("ZiHao")+ziHao);
+        fillContextJObj.put("ZiHao",
+            caseRegJObj.getString("ZiHao") == null ? "" : caseRegJObj.getString("ZiHao") + ziHao);
         /*
          * ======================== 案件相关字段信息=============开始=================
          */
@@ -765,6 +767,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
     /**
      * 案件详情
+     * 
      * @param id
      * @return
      */
@@ -783,7 +786,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 if (Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG.equals(caseRegistration.getConcernedType())) {
                     ConcernedCompany concernedCompany =
                         concernedCompanyBiz.selectById(Integer.valueOf(caseRegistration.getConcernedId()));
-                    if(concernedCompany != null) {
+                    if (concernedCompany != null) {
                         concernedResult = JSONObject.parseObject(JSONObject.toJSONString(concernedCompany));
                     }
                 }
@@ -791,9 +794,10 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 if (Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON.equals(caseRegistration.getConcernedType())) {
                     ConcernedPerson concernedPerson =
                         concernedPersonBiz.selectById(Integer.valueOf(caseRegistration.getConcernedId()));
-                    if(concernedPerson != null) {
+                    if (concernedPerson != null) {
                         concernedResult = JSONObject.parseObject(JSONObject.toJSONString(concernedPerson));
-                        Map<String, String> credMap = dictFeign.getByCodeIn(concernedPerson.getCredType()+","+concernedPerson.getSex());
+                        Map<String, String> credMap =
+                            dictFeign.getByCodeIn(concernedPerson.getCredType() + "," + concernedPerson.getSex());
                         if (credMap != null && !credMap.isEmpty()) {
                             concernedResult.put("credTypeName", credMap.get(concernedPerson.getCredType()));
                             concernedResult.put("sexName", credMap.get(concernedPerson.getSex()));
@@ -817,54 +821,56 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 if (eventType != null) {
                     result.put("eventTypeName", eventType.getTypeName());
                 }
-                
-                //案件来源
+
+                // 案件来源
                 Map<String, String> caseSourceMap = dictFeign.getByCode(caseRegistration.getCaseSource());
                 if (caseSourceMap != null && !caseSourceMap.isEmpty()) {
                     result.put("caseSourceName", caseSourceMap.get(caseRegistration.getCaseSource()));
                 }
-                
+
                 // 违法行为
-                InspectItems inspectItems = inspectItemsBiz.selectById(Integer.valueOf(caseRegistration.getInspectItem()));
-                if (inspectItems != null) {}
-                    result.put("inspectName", inspectItems.getName());
-                
-                //执法者用户名
+                InspectItems inspectItems =
+                    inspectItemsBiz.selectById(Integer.valueOf(caseRegistration.getInspectItem()));
+                if (inspectItems != null) {
+                }
+                result.put("inspectName", inspectItems.getName());
+
+                // 执法者用户名
                 JSONArray userList = null;
                 try {
                     userList = iUserFeign.getByUserIds(caseRegistration.getEnforcers());
-                }catch (Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
                 if (userList != null && !userList.isEmpty()) {
                     StringBuilder userName = new StringBuilder();
-                    //最后一条记录
-                    int size = userList.size()-1;
+                    // 最后一条记录
+                    int size = userList.size() - 1;
                     for (int i = 0; i < userList.size(); i++) {
-                        if(i == size) {
+                        if (i == size) {
                             userName.append(userList.getJSONObject(i).getString("name"));
-                        }else {
+                        } else {
                             userName.append(userList.getJSONObject(i).getString("name")).append(",");
                         }
-                        
+
                     }
                     result.put("enforcersName", userName.toString());
                 }
-                
-                //网格名称
+
+                // 网格名称
                 AreaGrid areaGrid = areaGridBiz.selectById(caseRegistration.getGirdId());
-                if(areaGrid != null) {
+                if (areaGrid != null) {
                     result.put("gridName", areaGrid.getGridName());
                 }
-                //移送部门
+                // 移送部门
                 String transferDepart = caseRegistration.getTransferDepart();
-                if(StringUtils.isNotBlank(transferDepart)) {
+                if (StringUtils.isNotBlank(transferDepart)) {
                     JSONObject dept = adminFeign.getByDeptId(transferDepart);
-                    if(dept != null) {
+                    if (dept != null) {
                         result.put("transferDeptName", dept.getString("name"));
                     }
                 }
-                
+
                 // 查询流程历史记录
                 PageInfo<WfProcTaskHistoryBean> procApprovedHistory = wfProcTaskService.getProcApprovedHistory(objs);
                 List<WfProcTaskHistoryBean> procHistoryList = procApprovedHistory.getList();

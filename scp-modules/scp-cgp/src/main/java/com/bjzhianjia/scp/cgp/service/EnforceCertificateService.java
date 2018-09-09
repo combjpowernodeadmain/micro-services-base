@@ -77,19 +77,16 @@ public class EnforceCertificateService {
      *            查询条件
      * @return
      */
-    public TableResultResponse<JSONObject> getList(int page, int limit,
-        EnforceCertificate rightsIssues) {
+    public TableResultResponse<JSONObject> getList(int page, int limit, EnforceCertificate rightsIssues) {
 
-        TableResultResponse<EnforceCertificate> tableResult =
-            enforceCertificateBiz.getList(page, limit, rightsIssues);
+        TableResultResponse<EnforceCertificate> tableResult = enforceCertificateBiz.getList(page, limit, rightsIssues);
         List<EnforceCertificate> list = tableResult.getData().getRows();
 
         if (list.size() == 0) {
             return new TableResultResponse<>(0, new ArrayList<>());
         }
 
-        List<String> bizTypes =
-            list.stream().map((o) -> o.getBizLists()).distinct().collect(Collectors.toList());
+        List<String> bizTypes = list.stream().map((o) -> o.getBizLists()).distinct().collect(Collectors.toList());
 
         /*
          * 业务条线有可能是null，在聚和数据的时候要去除
@@ -128,8 +125,7 @@ public class EnforceCertificateService {
         }
 
         // 获取执证人联系电话
-        List<String> userIds =
-            list.stream().map((o) -> o.getUsrId()).distinct().collect(Collectors.toList());
+        List<String> userIds = list.stream().map((o) -> o.getUsrId()).distinct().collect(Collectors.toList());
         if (userIds != null && userIds.size() > 0) {
             Map<String, String> userMap = adminFeign.getUser(String.join(",", userIds));
             if (userMap != null && userMap.size() > 0) {
@@ -158,28 +154,28 @@ public class EnforceCertificateService {
          * =原本返回对象为TableResultResponse<EnforceCertificate>，在指挥中心页面需要执法者定位信息，
          * =将返回值 改为TableResultResponse<JSONObject>，用于封装与定位信息相关的数据
          */
-        JSONArray resultJArray=JSONArray.parseArray(JSON.toJSONString(list));
-        
+        JSONArray resultJArray = JSONArray.parseArray(JSON.toJSONString(list));
+
         /*
-         *  =关联执法人员定位
+         * =关联执法人员定位
          */
         Map<String, JSONObject> lawMap = new HashMap<>();
         if (userIds != null && userIds.size() > 0) {
             lawMap = lawEnforcePathBiz.getByUserIds(String.join(",", userIds));
         }
-        
-        List<JSONObject> resultJObjList=new ArrayList<>();
+
+        List<JSONObject> resultJObjList = new ArrayList<>();
         if (lawMap != null && !lawMap.isEmpty()) {
-            for (int i=0;i<resultJArray.size();i++) {
+            for (int i = 0; i < resultJArray.size(); i++) {
                 JSONObject jsonObject = resultJArray.getJSONObject(i);
                 JSONObject uTmpJObj = JSONObject.parseObject(jsonObject.getString("usrId"));
-                if(uTmpJObj!=null) {
+                if (uTmpJObj != null) {
                     jsonObject.put("mapInfo", lawMap.get(uTmpJObj.getString("id")));
                 }
                 resultJObjList.add(jsonObject);
             }
         }
-        
+
         return new TableResultResponse<>(tableResult.getData().getTotal(), resultJObjList);
     }
 
@@ -200,8 +196,7 @@ public class EnforceCertificateService {
             return result;
         }
 
-        tempEnforceCertificate =
-            enforceCertificateBiz.getByHolderName(enforceCertificate.getHolderName());
+        tempEnforceCertificate = enforceCertificateBiz.getByHolderName(enforceCertificate.getHolderName());
         if (tempEnforceCertificate != null) {
             result.setMessage("持证人已存在");
             return result;
@@ -244,14 +239,12 @@ public class EnforceCertificateService {
 
         EnforceCertificate tempEnforceCertificate =
             enforceCertificateBiz.getByCertCode(enforceCertificate.getCertCode());
-        if (tempEnforceCertificate != null
-            && !tempEnforceCertificate.getId().equals(enforceCertificate.getId())) {
+        if (tempEnforceCertificate != null && !tempEnforceCertificate.getId().equals(enforceCertificate.getId())) {
             result.setMessage("证件编号已存在");
             return result;
         }
 
-        tempEnforceCertificate =
-            enforceCertificateBiz.getByHolderName(enforceCertificate.getHolderName());
+        tempEnforceCertificate = enforceCertificateBiz.getByHolderName(enforceCertificate.getHolderName());
         /*
          * 持证人唯一性验证<br/>
          */
@@ -328,12 +321,8 @@ public class EnforceCertificateService {
         List<String> roleList = new ArrayList<>();
 
         if (gridMemList != null && !gridMemList.isEmpty()) {
-            gridIdList =
-                gridMemList.stream().map(o -> o.getGridId()).distinct()
-                    .collect(Collectors.toList());
-            roleList =
-                gridMemList.stream().map(o -> o.getGridRole()).distinct()
-                    .collect(Collectors.toList());
+            gridIdList = gridMemList.stream().map(o -> o.getGridId()).distinct().collect(Collectors.toList());
+            roleList = gridMemList.stream().map(o -> o.getGridRole()).distinct().collect(Collectors.toList());
         }
 
         // 所属网格
@@ -341,9 +330,7 @@ public class EnforceCertificateService {
         if (gridIdList != null && !gridIdList.isEmpty()) {
             List<AreaGrid> gridList = areaGridBiz.getByIds(gridIdList);
             if (gridList != null && !gridList.isEmpty()) {
-                gridNameList =
-                    gridList.stream().map(o -> o.getGridName()).distinct()
-                        .collect(Collectors.toList());
+                gridNameList = gridList.stream().map(o -> o.getGridName()).distinct().collect(Collectors.toList());
             }
         }
 
@@ -362,7 +349,7 @@ public class EnforceCertificateService {
 
         jsonObject.put("gridName", String.join(",", gridNameList));
         jsonObject.put("gridRoleName", String.join(",", roleNameList));
-        jsonObject.put("mapInfo", mapInfoAndTime.isEmpty()?null:mapInfoAndTime);
+        jsonObject.put("mapInfo", mapInfoAndTime.isEmpty() ? null : mapInfoAndTime);
 
         restResult.setStatus(200);
         restResult.setData(jsonObject);

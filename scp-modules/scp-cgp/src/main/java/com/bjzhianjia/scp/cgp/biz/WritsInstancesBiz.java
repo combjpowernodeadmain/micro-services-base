@@ -25,7 +25,6 @@ import com.bjzhianjia.scp.cgp.util.DocUtil;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
-import com.bjzhianjia.scp.security.wf.base.utils.StringUtil;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
@@ -131,6 +130,7 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
                 mergeFillContext(procNode, fillContext, null, writsInstances.getCaseId(), theNextWenHao.getRefNo());
 
             // 把处理后的文书内容(fillContext)放回，进行更新操作
+            writsInstances.setRefYear(String.valueOf(new LocalDate().getYear()));
             writsInstances.setFillContext(jObjInDB.toJSONString());
 
             this.insertSelective(writsInstances);
@@ -173,7 +173,8 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 
         if (StringUtils.isNotBlank(fillContext)) {
             JSONObject tmpFillContext = JSONObject.parseObject(fillContext);
-            tmpFillContext.put("ZiHao", tmpFillContext.getString("ZiHao") == null ? "" : tmpFillContext.getString("ZiHao")+refNo);
+            tmpFillContext.put("ZiHao",
+                tmpFillContext.getString("ZiHao") == null ? "" : tmpFillContext.getString("ZiHao") + refNo);
             jObjInDB.putAll(tmpFillContext);
         }
 
@@ -339,7 +340,7 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 
         WritsInstances resultInstance = new WritsInstances();
         if (BeanUtil.isNotEmpty(maxWenHao)) {
-            resultInstance.setRefNo(String.valueOf(Integer.valueOf(maxWenHao.getRefYear()) + 1));
+            resultInstance.setRefNo(String.valueOf(Integer.valueOf(maxWenHao.getRefNo()) + 1));
         } else {
             resultInstance.setRefNo("1");
         }
