@@ -30,11 +30,14 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
 		log.debug("*********************************enter into call_back program*************************************");
 		log.debug("*********************************bizType:" + bizType + "*************************************");
 
-		switch (bizType) {
+		switch (bizType) { 
 		case PROC_APPROVE:
 			// 审批操作
 			writsInstanceBiz.updateOrInsert(JSONObject.parseObject(JSON.toJSONString(procBizData)));
 			break;
+		case PROC_CLAIM:
+		    // 签收操作
+		    break;
 		case PROC_END:
 			// 流程走向结束
 		case "termination":

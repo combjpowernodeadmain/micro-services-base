@@ -155,13 +155,13 @@ public class EnforceCertificateService {
         }
 
         /*
-         * 原本返回对象为TableResultResponse<EnforceCertificate>，在指挥中心页面需要执法者定位信息，
-         * 将返回值 改为TableResultResponse<JSONObject>，用于封装与定位信息相关的数据
+         * =原本返回对象为TableResultResponse<EnforceCertificate>，在指挥中心页面需要执法者定位信息，
+         * =将返回值 改为TableResultResponse<JSONObject>，用于封装与定位信息相关的数据
          */
         JSONArray resultJArray=JSONArray.parseArray(JSON.toJSONString(list));
         
         /*
-         *  关联执法人员定位
+         *  =关联执法人员定位
          */
         Map<String, JSONObject> lawMap = new HashMap<>();
         if (userIds != null && userIds.size() > 0) {

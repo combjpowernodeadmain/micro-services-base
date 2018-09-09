@@ -22,6 +22,7 @@ import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.mapper.AreaGridMapper;
 import com.bjzhianjia.scp.cgp.mapper.AreaGridMemberMapper;
+import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
@@ -229,8 +230,33 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
             jsonObject.put("gridName", areaGrid_ID_NAME_Map.get(jsonObject.getInteger("gridId")));
             jListResult.add(jsonObject);
         }
-        
-        //TODO 网格员列表需要网格员名称和mapInfo
+
+        // 收集网格员ID
+        List<String> gridMemIds =
+            rows.stream().map(o -> o.getGridMember()).distinct().collect(Collectors.toList());
+
+        // 网格员名称与联系方式
+        Map<String, String> userMap = adminFeign.getUser(String.join(",", gridMemIds));
+        if (userMap != null && !userMap.isEmpty()) {
+            for (JSONObject tmpJObj : jListResult) {
+                tmpJObj.put("gridMemberName", CommonUtil
+                    .getValueFromJObjStr(userMap.get(tmpJObj.getString("gridMember")), "name"));
+                tmpJObj.put("gridMemberPhone", CommonUtil
+                    .getValueFromJObjStr(userMap.get(tmpJObj.getString("gridMember")), "mobilePhone"));
+            }
+        }
+
+        // 聚和网格员定位
+        Map<String, JSONObject> memMap = new HashMap<>();
+        if (gridMemIds != null && !gridMemIds.isEmpty()) {
+            memMap = patrolTaskPathBiz.getByUserIds(String.join(",", gridMemIds));
+        }
+
+        if (memMap != null && !memMap.isEmpty()) {
+            for (JSONObject tmpJObj : jListResult) {
+                tmpJObj.put("mapInfo", memMap.get(tmpJObj.getString("gridMember")));
+            }
+        }
         return jListResult;
     }
 
@@ -305,16 +331,11 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
          */
 
         // 网格人员定位
-        JSONObject mapInfo = patrolTaskPathBiz.getMapInfoByUserId(memId);
-        String positionTime = "";
-        if (mapInfo != null) {
-            positionTime =
-                DateUtil.dateFromDateToStr(mapInfo.getDate("time"), "yyyy-MM-dd HH:mm:ss");
-        }
+        JSONObject mapInfoAndTime = patrolTaskPathBiz.getMapInfoByUserId(memId);
 
         jsonObject.put("gridName", String.join(",", gridNameList));
         jsonObject.put("gridRoleName", String.join(",", roleNameList));
-        jsonObject.put("positionTime", positionTime);
+        jsonObject.put("mapInfo", mapInfoAndTime.isEmpty()?null:mapInfoAndTime);
 
         restResult.setStatus(200);
         restResult.setData(jsonObject);
