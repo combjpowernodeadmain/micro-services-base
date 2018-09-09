@@ -57,7 +57,7 @@ public class CaseRegistration implements Serializable {
     @Id
     private String id;
 
-    // 当事人类型(1: 个人 2: 单位)
+    // 当事人类型(数据字典id)
     @Column(name = "concerned_type")
     private String concernedType;
 
@@ -219,14 +219,14 @@ public class CaseRegistration implements Serializable {
     }
 
     /**
-     * 设置：当事人类型(1: 个人 2: 单位)
+     * 设置：当事人类型(数据字典id)
      */
     public void setConcernedType(String concernedType) {
         this.concernedType = concernedType;
     }
 
     /**
-     * 获取：当事人类型(1: 个人 2: 单位)
+     * 获取：当事人类型(数据字典id)
      */
     public String getConcernedType() {
         return concernedType;

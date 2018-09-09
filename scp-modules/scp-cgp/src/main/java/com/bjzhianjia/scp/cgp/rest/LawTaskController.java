@@ -8,6 +8,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.LawTaskBiz;
 import com.bjzhianjia.scp.cgp.entity.LawTask;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
@@ -32,9 +33,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 
+
 /**
- * 执法任务
+ * LawTaskController 执法任务.
+ *
+ *
+ * <pre>
+ * Modification History: 
+ * Date             Author      Version         Description 
+ * ------------------------------------------------------------------
+ * 2018年9月9日          chenshuai      1.0            ADD
+ * </pre>
  * 
+ *
+ * @version 1.0 
  * @author chenshuai
  *
  */
@@ -177,4 +189,27 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
 
         return result;
     }
+    
+    /**
+     * 执法任务详情
+     * @param id
+     *      执法任务的id
+     * @return
+     */
+    @RequestMapping(value = "id/{id}", method = RequestMethod.GET)
+    @ApiOperation("执法任务详情")
+    public ObjectRestResponse<JSONObject> getById(@PathVariable("id") @ApiParam("执法任务的id") Integer id) {
+        ObjectRestResponse<JSONObject> result = new ObjectRestResponse<>();
+        result.setStatus(400);
+        if (id == null) {
+            return result;
+        }
+        JSONObject reslutObj =  lawTaskBiz.getById(id);
+        if(reslutObj != null) {
+            result.setData(reslutObj); 
+            result.setStatus(200);
+        }
+        return result;
+    }
+
 }
