@@ -365,6 +365,23 @@ public class Constances {
 		 */
 		public static final String Z_Z="z_z";
 	}
-	
-	
+	/**
+	 * 
+	 * 个人证件类型.
+	 *
+	 */
+	public static class CredType {
+	    /**
+	     * 身份证
+	     */
+	    public static final String ROOT_BIZ_CREDTYPE_ID = "root_biz_credType_id";
+	    /**
+	     * 护照
+	     */
+	    public static final String ROOT_BIZ_CREDTYPE_PASSPORT = "root_biz_credType_passport";
+	    /**
+	     * 军官
+	     */
+	    public static final String ROOT_BIZ_CREDTYPE_OFFICER = "root_biz_credType_officer";
+	}
 }

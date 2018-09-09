@@ -157,11 +157,11 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
      * @return
      */
     @ApiOperation("案件详情页")
-    @RequestMapping(value = "/id/{id}", method = RequestMethod.GET)
-    public ObjectRestResponse<JSONObject> getInfoById(@PathVariable(value = "id") String id) {
+    @RequestMapping(value = "/id", method = RequestMethod.POST)
+    public ObjectRestResponse<JSONObject> getInfoById(@RequestBody @ApiParam("请求参数") JSONObject objs) {
         ObjectRestResponse<JSONObject> result = new ObjectRestResponse<>();
-        if (id != null) {
-            result.setData(this.baseBiz.getInfoById(id));
+        if (objs != null) {
+            result.setData(this.baseBiz.getInfoById(objs));
         } else {
             result.setStatus(400);
             result.setMessage("非法参数");
