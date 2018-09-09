@@ -121,10 +121,11 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         // 前端 传入的文书内容
         String fillContext = writsInstances.getFillContext();
 
-        WritsInstances theNextWenHao =
-            theNextWenHao(writsInstances.getCaseId(), writsInstances.getTemplateId(),
-                writsInstances.getRefEnforceType());
         if (writsInstances.getId() == null) {
+            WritsInstances theNextWenHao =
+                theNextWenHao(writsInstances.getCaseId(), writsInstances.getTemplateId(),
+                    writsInstances.getRefEnforceType());
+
             // 还没有插入过对象
             JSONObject jObjInDB =
                 mergeFillContext(procNode, fillContext, null, writsInstances.getCaseId(), theNextWenHao.getRefNo());
@@ -144,7 +145,8 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 
             JSONObject jObjInDB = JSONObject.parseObject(fillContextInDB);
             jObjInDB =
-                mergeFillContext(procNode, fillContext, jObjInDB, writsInstances.getCaseId(), theNextWenHao.getRefNo());
+                mergeFillContext(procNode, fillContext, jObjInDB, writsInstances.getCaseId(),
+                    writsInstancesInDB.getRefNo());
 
             // 把处理后的文书内容(fillContext)放回，进行更新操作
             writsInstances.setFillContext(jObjInDB.toJSONString());
@@ -173,8 +175,9 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 
         if (StringUtils.isNotBlank(fillContext)) {
             JSONObject tmpFillContext = JSONObject.parseObject(fillContext);
-            tmpFillContext.put("ZiHao",
-                tmpFillContext.getString("ZiHao") == null ? "" : tmpFillContext.getString("ZiHao") + refNo);
+            // tmpFillContext.put("ZiHao",
+            // tmpFillContext.getString("ZiHao") == null ? "" :
+            // tmpFillContext.getString("ZiHao") + refNo);
             jObjInDB.putAll(tmpFillContext);
         }
 
@@ -219,6 +222,10 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 
                 // 将fillContext内的内容添加到文书模板上
                 JSONObject fillJObj = JSONObject.parseObject(fillContext);
+
+                StringBuffer ziHao = new StringBuffer();
+                ziHao.append("[").append(writsInstances.getRefYear()).append("]").append(writsInstances.getRefNo());
+                fillJObj.put("ZiHao", ziHao.toString());
 
                 @SuppressWarnings({ "unchecked", "rawtypes" })
                 Map<String, String> map = (Map) fillJObj;
@@ -309,9 +316,9 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         Example example = new Example(WritsInstances.class);
 
         Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("isDeleted", "0");
-        criteria.andEqualTo("caseId", caseId);
-        criteria.andEqualTo("templateId", caseId);
+        // criteria.andEqualTo("isDeleted", "0");
+        // criteria.andEqualTo("caseId", caseId);
+        // criteria.andEqualTo("templateId", caseId);
         criteria.andEqualTo("refEnforceType", refEnforceType);
         criteria.andEqualTo("refYear", new LocalDate().getYear());
 

@@ -18,20 +18,20 @@ import com.bjzhianjia.scp.security.wf.base.task.service.IWfProcTaskCallBackServi
  */
 @Service
 public class ClePreCaseCallBackServiceImpl implements IWfProcTaskCallBackService {
-	@Autowired
-	private CaseRegistrationBiz caseResistrationBiz;
 
-	@Override
-	public void before(String dealType, Map<String, Object> procBizData) throws BizException {
-		JSONObject bizData = JSONObject.parseObject(JSON.toJSONString(procBizData));
+    @Autowired
+    private CaseRegistrationBiz caseResistrationBiz;
 
-		// 添加立案
-		caseResistrationBiz.addCase(bizData);
-		procBizData.put("procBizId", bizData.getString("procBizId"));
-	}
+    @Override
+    public void before(String dealType, Map<String, Object> procBizData) throws BizException {
+        JSONObject bizData = JSONObject.parseObject(JSON.toJSONString(procBizData));
 
-	@Override
-	public void after(String dealType, Map<String, Object> procBizData) throws BizException {
-	}
+        // 添加立案
+        caseResistrationBiz.addCase(bizData);
+        procBizData.put("procBizId", bizData.getString("procBizId"));
+    }
+
+    @Override
+    public void after(String dealType, Map<String, Object> procBizData) throws BizException {}
 
 }

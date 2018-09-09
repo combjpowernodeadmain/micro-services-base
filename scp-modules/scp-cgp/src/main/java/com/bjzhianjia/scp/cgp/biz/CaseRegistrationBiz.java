@@ -161,7 +161,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         WritsInstances theNextWenHao =
             writsInstancesBiz.theNextWenHao(writsInstances.getCaseId(), writsInstances.getTemplateId(),
                 writsInstances.getRefEnforceType());
-        writsInstances.setRefNo(theNextWenHao.getRefNo());
+        String refNo =
+            caseRegJObj.getString("squadronLeader") + String.format("%03d", Integer.valueOf(theNextWenHao.getRefNo()));
+        writsInstances.setRefNo(refNo);
         writsInstances.setRefYear(String.valueOf(new LocalDate().getYear()));
         writsInstances.setFillContext(
             getWritsFillContext(caseRegJObj, writsInstances.getFillContext(), writsInstances.getRefNo()));
@@ -187,8 +189,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         // fillContextJObj.put("XinZLZi",
         // caseRegJObj.getString("XinZLZi") == null ? "" :
         // caseRegJObj.getString("XinZLZi"));
-        fillContextJObj.put("ZiHao",
-            caseRegJObj.getString("ZiHao") == null ? "" : caseRegJObj.getString("ZiHao") + ziHao);
+        // fillContextJObj.put("ZiHao",
+        // caseRegJObj.getString("ZiHao") == null ? "" :
+        // caseRegJObj.getString("ZiHao") + ziHao);
         /*
          * ======================== 案件相关字段信息=============开始=================
          */
@@ -735,7 +738,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             }
         }
         // 处理状态
-        if ( StringUtils.isNotBlank(caseSourceType)) {
+        if (StringUtils.isNotBlank(caseSourceType)) {
             criteria.andEqualTo("caseSourceType", caseSourceType);
         }
 
