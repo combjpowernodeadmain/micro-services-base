@@ -733,9 +733,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             }
         }
         // 处理状态
-        if (StringUtils.isNotBlank(caseSource) && StringUtils.isNotBlank(caseSourceType)) {
+        if ( StringUtils.isNotBlank(caseSourceType)) {
             criteria.andEqualTo("caseSourceType", caseSourceType);
-            criteria.andEqualTo("caseSource", caseSource);
         }
 
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
