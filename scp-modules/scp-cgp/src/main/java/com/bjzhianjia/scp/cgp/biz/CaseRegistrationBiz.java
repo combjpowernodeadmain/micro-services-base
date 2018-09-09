@@ -784,9 +784,10 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                         concernedPersonBiz.selectById(Integer.valueOf(caseRegistration.getConcernedId()));
                     if(concernedPerson != null) {
                         concernedResult = JSONObject.parseObject(JSONObject.toJSONString(concernedPerson));
-                        Map<String, String> credMap = dictFeign.getByCode(concernedPerson.getCredType());
+                        Map<String, String> credMap = dictFeign.getByCodeIn(concernedPerson.getCredType()+","+concernedPerson.getSex());
                         if (credMap != null && !credMap.isEmpty()) {
                             concernedResult.put("credTypeName", credMap.get(concernedPerson.getCredType()));
+                            concernedResult.put("sexName", credMap.get(concernedPerson.getSex()));
                         }
                     }
                     concernedType = "person";
@@ -807,12 +808,18 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 if (eventType != null) {
                     result.put("eventTypeName", eventType.getTypeName());
                 }
-
+                
+                //案件来源
+                Map<String, String> caseSourceMap = dictFeign.getByCode(caseRegistration.getCaseSource());
+                if (caseSourceMap != null && !caseSourceMap.isEmpty()) {
+                    result.put("caseSourceName", caseSourceMap.get(caseRegistration.getCaseSource()));
+                }
+                
                 // 违法行为
                 InspectItems inspectItems = inspectItemsBiz.selectById(Integer.valueOf(caseRegistration.getInspectItem()));
-                if (inspectItems != null) {
+                if (inspectItems != null) {}
                     result.put("inspectName", inspectItems.getName());
-                }
+                
                 //执法者用户名
                 JSONArray userList = null;
                 try {
