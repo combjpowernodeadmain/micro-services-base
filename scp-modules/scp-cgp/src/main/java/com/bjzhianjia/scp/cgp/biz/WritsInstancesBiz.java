@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,14 +20,17 @@ import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.WritsInstances;
 import com.bjzhianjia.scp.cgp.entity.WritsTemplates;
 import com.bjzhianjia.scp.cgp.mapper.WritsInstancesMapper;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.DocUtil;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.wf.base.utils.StringUtil;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
 import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.entity.Example.Criteria;
 
 /**
  * WritsInstancesBiz 类描述.文书模板实例
@@ -118,9 +122,13 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         // 前端 传入的文书内容
         String fillContext = writsInstances.getFillContext();
 
+        WritsInstances theNextWenHao =
+            theNextWenHao(writsInstances.getCaseId(), writsInstances.getTemplateId(),
+                writsInstances.getRefEnforceType());
         if (writsInstances.getId() == null) {
             // 还没有插入过对象
-            JSONObject jObjInDB = mergeFillContext(procNode, fillContext, null, writsInstances.getCaseId());
+            JSONObject jObjInDB =
+                mergeFillContext(procNode, fillContext, null, writsInstances.getCaseId(), theNextWenHao.getRefNo());
 
             // 把处理后的文书内容(fillContext)放回，进行更新操作
             writsInstances.setFillContext(jObjInDB.toJSONString());
@@ -135,7 +143,8 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             String fillContextInDB = writsInstancesInDB.getFillContext();
 
             JSONObject jObjInDB = JSONObject.parseObject(fillContextInDB);
-            jObjInDB = mergeFillContext(procNode, fillContext, jObjInDB, writsInstances.getCaseId());
+            jObjInDB =
+                mergeFillContext(procNode, fillContext, jObjInDB, writsInstances.getCaseId(), theNextWenHao.getRefNo());
 
             // 把处理后的文书内容(fillContext)放回，进行更新操作
             writsInstances.setFillContext(jObjInDB.toJSONString());
@@ -156,13 +165,16 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
      * @param jObjInDB
      * @return
      */
-    private JSONObject mergeFillContext(String procNode, String fillContext, JSONObject jObjInDB, String caseId) {
+    private JSONObject mergeFillContext(String procNode, String fillContext, JSONObject jObjInDB, String caseId,
+        String refNo) {
         if (jObjInDB == null) {
             jObjInDB = new JSONObject();
         }
 
-        if(StringUtils.isNotBlank(fillContext)) {
-            jObjInDB.putAll(JSONObject.parseObject(fillContext));
+        if (StringUtils.isNotBlank(fillContext)) {
+            JSONObject tmpFillContext = JSONObject.parseObject(fillContext);
+            tmpFillContext.put("ZiHao", tmpFillContext.getString("ZiHao") == null ? "" : tmpFillContext.getString("ZiHao")+refNo);
+            jObjInDB.putAll(tmpFillContext);
         }
 
         return jObjInDB;
@@ -199,8 +211,10 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
                 writsPath = destFileNameBuffer.toString();
             } else {
                 // 说明可能已存在过旧文件，将所有旧文件进行删除，将生成的新文件进行生成并返回路径
-                DocUtil.deletePrefix(WritsConstances.WRITS_PREFFIX, WritsConstances.WRITS_SUFFIX,
-                    propertiesConfig.getDestFilePath());
+                // 该删除操作已放到定时任务中进行com.bjzhianjia.scp.cgp.service.DocService.deletedDocFiles()
+                // DocUtil.deletePrefix(WritsConstances.WRITS_PREFFIX,
+                // WritsConstances.WRITS_SUFFIX,
+                // propertiesConfig.getDestFilePath());
 
                 // 将fillContext内的内容添加到文书模板上
                 JSONObject fillJObj = JSONObject.parseObject(fillContext);
@@ -238,11 +252,11 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             restResult.setMessage("请指定任务ID");
             return restResult;
         }
-//        if (StringUtils.isBlank(procTaskId)) {
-//            restResult.setStatus(400);
-//            restResult.setMessage("请指定流程任务ID");
-//            return restResult;
-//        }
+        // if (StringUtils.isBlank(procTaskId)) {
+        // restResult.setStatus(400);
+        // restResult.setMessage("请指定流程任务ID");
+        // return restResult;
+        // }
         if (StringUtils.isBlank(templateCodes)) {
             restResult.setStatus(400);
             restResult.setMessage("请指定模板tcode");
@@ -250,7 +264,7 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         }
 
         criteria.andEqualTo("caseId", caseId);
-//        criteria.andEqualTo("procTaskId", procTaskId);
+        // criteria.andEqualTo("procTaskId", procTaskId);
         // 按code相出相应的模板ID集合
         List<WritsTemplates> temTemplatesList = writsTemplatesBiz.getByTcodes(templateCodes);
         List<Integer> templateIdList =
@@ -280,5 +294,56 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             templateJObjList.add(templateJObj);
         }
         return new TableResultResponse<>(0, templateJObjList);
+    }
+
+    /**
+     * =查询目前某一refEnforceType下，某一年中refYear最大的记录
+     * 
+     * @param caseId
+     * @param templateId
+     * @param refEnforceType
+     * @return
+     */
+    public WritsInstances theMaxWenHao(String caseId, Integer templateId, String refEnforceType) {
+        Example example = new Example(WritsInstances.class);
+
+        Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isDeleted", "0");
+        criteria.andEqualTo("caseId", caseId);
+        criteria.andEqualTo("templateId", caseId);
+        criteria.andEqualTo("refEnforceType", refEnforceType);
+        criteria.andEqualTo("refYear", new LocalDate().getYear());
+
+        example.setOrderByClause("ref_no desc");
+        PageHelper.startPage(1, 1);
+
+        List<WritsInstances> maxRefNoWritsInstanceList = this.selectByExample(example);
+        if (BeanUtil.isNotEmpty(maxRefNoWritsInstanceList)) {
+            // 对某一refEnforceType下的文书按refYear进行倒序查找，查询数量为1，如果集合不为空，则结果集只有一个
+            return maxRefNoWritsInstanceList.get(0);
+        }
+
+        return null;
+    }
+
+    /**
+     * =查询目前某一refEnforceType下，某一年中refYear最大的文号序号，并将文号序号加1后返回
+     * 
+     * @param caseId
+     * @param templateId
+     * @param refEnforceType
+     * @return
+     */
+    public WritsInstances theNextWenHao(String caseId, Integer templateId, String refEnforceType) {
+        WritsInstances maxWenHao = theMaxWenHao(caseId, templateId, refEnforceType);
+
+        WritsInstances resultInstance = new WritsInstances();
+        if (BeanUtil.isNotEmpty(maxWenHao)) {
+            resultInstance.setRefNo(String.valueOf(Integer.valueOf(maxWenHao.getRefYear()) + 1));
+        } else {
+            resultInstance.setRefNo("1");
+        }
+
+        return resultInstance;
     }
 }

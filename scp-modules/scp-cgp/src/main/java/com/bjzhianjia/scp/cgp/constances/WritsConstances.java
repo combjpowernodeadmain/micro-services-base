@@ -21,9 +21,9 @@ public class WritsConstances {
     /**
      * 文书名前缀
      */
-    public static String WRITS_PREFFIX="wri_";
+    public static final String WRITS_PREFFIX="wri_";
     /**
      * 文书名后缀
      */
-    public static String WRITS_SUFFIX="docx";
+    public static final String WRITS_SUFFIX="docx";
 }

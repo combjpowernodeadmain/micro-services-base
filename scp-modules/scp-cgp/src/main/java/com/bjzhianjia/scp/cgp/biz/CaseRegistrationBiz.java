@@ -75,7 +75,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
     @Autowired
     private IUserFeign iUserFeign;
-    
+
     @Autowired
     private AdminFeign adminFeign;
 
@@ -102,7 +102,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
     @Autowired
     private AreaGridBiz areaGridBiz;
-    
+
     /**
      * 添加立案记录<br/>
      * 如果 有当事人，则一并添加<br/>
@@ -149,7 +149,14 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         if (writsInstances == null) {
             writsInstances = new WritsInstances();
         }
-        writsInstances.setFillContext(getWritsFillContext(caseRegJObj, writsInstances.getFillContext()));
+
+        // 生成某一文号执法种类下某一年中文号序号
+        WritsInstances theNextWenHao =
+            writsInstancesBiz.theNextWenHao(writsInstances.getCaseId(), writsInstances.getTemplateId(),
+                writsInstances.getRefEnforceType());
+        writsInstances.setRefNo(theNextWenHao.getRefNo());
+
+        writsInstances.setFillContext(getWritsFillContext(caseRegJObj, writsInstances.getFillContext(),writsInstances.getRefNo()));
         // 关联该文书相关的案件
         writsInstances.setCaseId(caseId);
         writsInstancesBiz.insertSelective(writsInstances);
@@ -162,15 +169,17 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      * @param oldFillContext
      * @return
      */
-    private String getWritsFillContext(JSONObject caseRegJObj, String oldFillContext) {
+    private String getWritsFillContext(JSONObject caseRegJObj, String oldFillContext,String ziHao) {
         JSONObject fillContextJObj = JSONObject.parseObject(oldFillContext);
         fillContextJObj = fillContextJObj == null ? new JSONObject() : fillContextJObj;
 
         CaseRegistration caseRegistration = JSON.parseObject(caseRegJObj.toJSONString(), CaseRegistration.class);
 
         // 新综立字
-        fillContextJObj.put("XinZLZi",
-            caseRegJObj.getString("XinZLZi") == null ? "" : caseRegJObj.getString("XinZLZi"));
+        // fillContextJObj.put("XinZLZi",
+        // caseRegJObj.getString("XinZLZi") == null ? "" :
+        // caseRegJObj.getString("XinZLZi"));
+        fillContextJObj.put("ZiHao", caseRegJObj.getString("ZiHao") == null ? "" : caseRegJObj.getString("ZiHao")+ziHao);
         /*
          * ======================== 案件相关字段信息=============开始=================
          */
@@ -746,9 +755,10 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         }
         return "";
     }
-    
+
     /**
      * 案件详情
+     * 
      * @param id
      * @return
      */
@@ -793,35 +803,36 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 }
 
                 // 违法行为
-                InspectItems inspectItems = inspectItemsBiz.selectById(Integer.valueOf(caseRegistration.getInspectItem()));
+                InspectItems inspectItems =
+                    inspectItemsBiz.selectById(Integer.valueOf(caseRegistration.getInspectItem()));
                 if (inspectItems != null) {
                     result.put("inspectName", inspectItems.getName());
                 }
-                //执法者用户名
+                // 执法者用户名
                 JSONArray userList = iUserFeign.getByUserIds(caseRegistration.getEnforcers());
                 if (userList != null && !userList.isEmpty()) {
                     StringBuilder userName = new StringBuilder();
-                    //最后一条记录
-                    int size = userList.size()-1;
+                    // 最后一条记录
+                    int size = userList.size() - 1;
                     for (int i = 0; i < userList.size(); i++) {
-                        if(i == size) {
+                        if (i == size) {
                             userName.append(userList.getJSONObject(i).getString("name"));
-                        }else {
+                        } else {
                             userName.append(userList.getJSONObject(i).getString("name")).append(",");
                         }
-                        
+
                     }
                     result.put("enforcersName", userName.toString());
                 }
-                
-                //网格名称
+
+                // 网格名称
                 AreaGrid areaGrid = areaGridBiz.selectById(Integer.valueOf(caseRegistration.getId()));
-                if(areaGrid != null) {
+                if (areaGrid != null) {
                     result.put("gridName", areaGrid.getGridName());
                 }
-                //移送部门
+                // 移送部门
                 JSONObject dept = adminFeign.getByDeptId(caseRegistration.getTransferDepart());
-                if(dept != null) {
+                if (dept != null) {
                     result.put("transferDeptName", dept.getString("name"));
                 }
             }
