@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -39,8 +40,11 @@ import com.bjzhianjia.scp.cgp.vo.CaseRegistrationVo;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.util.UUIDUtils;
+import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.monitor.entity.WfProcBackBean;
 import com.bjzhianjia.scp.security.wf.base.monitor.service.impl.WfMonitorServiceImpl;
+import com.bjzhianjia.scp.security.wf.base.task.entity.WfProcTaskHistoryBean;
+import com.bjzhianjia.scp.security.wf.base.task.service.impl.WfProcTaskServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -102,6 +106,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
     @Autowired
     private AreaGridBiz areaGridBiz;
+    
+    @Autowired
+    private WfProcTaskServiceImpl wfProcTaskService;
     
     /**
      * 添加立案记录<br/>
@@ -752,9 +759,10 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      * @param id
      * @return
      */
-    public JSONObject getInfoById(String id) {
+    public JSONObject getInfoById(JSONObject objs) {
         JSONObject result = null;
-        CaseRegistration caseRegistration = this.selectById(id);
+        JSONObject queryData = objs.getJSONObject("queryData");
+        CaseRegistration caseRegistration = this.selectById(queryData.get("caseRegistrationId"));
         if (caseRegistration != null) {
 
             result = JSONObject.parseObject(JSONObject.toJSONString(caseRegistration));
@@ -832,6 +840,28 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                         result.put("transferDeptName", dept.getString("name"));
                     }
                 }
+                
+                // 查询流程历史记录
+                PageInfo<WfProcTaskHistoryBean> procApprovedHistory = wfProcTaskService.getProcApprovedHistory(objs);
+                List<WfProcTaskHistoryBean> procHistoryList = procApprovedHistory.getList();
+                JSONArray procHistoryJArray = JSONArray.parseArray(JSON.toJSONString(procHistoryList));
+                List<String> procTaskAssigneeIdList =
+                    procHistoryList.stream().map(o -> o.getProcTaskAssignee()).distinct().collect(Collectors.toList());
+                if (procTaskAssigneeIdList != null && !procTaskAssigneeIdList.isEmpty()) {
+                    Map<String, String> assignMap = adminFeign.getUser(String.join(",", procTaskAssigneeIdList));
+                    if (assignMap != null && !assignMap.isEmpty()) {
+                        for (int i = 0; i < procHistoryJArray.size(); i++) {
+                            JSONObject procHistoryJObj = procHistoryJArray.getJSONObject(i);
+                            JSONObject nameJObj =
+                                JSONObject.parseObject(assignMap.get(procHistoryJObj.getString("procTaskAssignee")));
+                            if (nameJObj != null) {
+                                procHistoryJObj.put("procTaskAssigneeName", nameJObj.getString("name"));
+                                procHistoryJObj.put("procTaskAssigneeTel", nameJObj.getString("mobilePhone"));
+                            }
+                        }
+                    }
+                }
+                result.put("procHistory", procHistoryJArray);
             }
         }
         return result;
