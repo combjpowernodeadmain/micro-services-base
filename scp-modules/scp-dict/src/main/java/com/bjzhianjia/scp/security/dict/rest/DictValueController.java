@@ -1,6 +1,23 @@
 
 package com.bjzhianjia.scp.security.dict.rest;
 
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreClientToken;
@@ -13,25 +30,9 @@ import com.bjzhianjia.scp.security.dict.entity.DictValue;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import io.swagger.annotations.ApiParam;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
-
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("dictValue")
@@ -243,9 +244,9 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
         return result;
     }
     
+    @ApiOperation("删除单个对象")
     @RequestMapping(value = "delete/{id}",method = RequestMethod.DELETE)
     @ResponseBody
-    @ApiOperation("删除单个对象")
     public ObjectRestResponse<DictValue> del(@PathVariable("id") String id){
     	ObjectRestResponse<DictValue> result =  new ObjectRestResponse<>();
     	if(StringUtils.isNotBlank(id)) {
@@ -261,4 +262,24 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
     	}
         return result;
     }
+    
+    @ApiOperation("通过类型id")
+    @RequestMapping(value = "/typeId/{typeId}",method = RequestMethod.GET)
+    @ResponseBody
+    public List<DictValue> list(@PathVariable(value="typeId") @ApiParam("类型id") String typeId){
+        if(StringUtils.isBlank(typeId)) {
+            return null;
+        }
+        Example example=new Example(DictValue.class);
+        Criteria criteria = example.createCriteria();
+        //查询列表数据
+        criteria.andEqualTo("typeId",typeId);
+        //0没有删除，1 删除
+        criteria.andEqualTo("isDeleted","0");
+        example.setOrderByClause("order_num");
+        List<DictValue> dictValues = this.baseBiz.selectByExample(example);
+        return dictValues;
+    }
+  
+    
 }
