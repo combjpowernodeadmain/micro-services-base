@@ -3,6 +3,7 @@ package com.bjzhianjia.scp.cgp.biz;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,10 +14,13 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.Constances;
+import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.mapper.CaseInfoMapper;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
@@ -49,6 +53,9 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
 
     @Autowired
     private MergeCore mergeCore;
+
+    @Autowired
+    private DictFeign dictFeign;
 
     /**
      * 查询ID最大的那条记录
@@ -96,8 +103,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
      * @param limit
      * @return
      */
-    public TableResultResponse<CaseInfo> getList(CaseInfo caseInfo, int page, int limit,
-        boolean isNoFinish) {
+    public TableResultResponse<CaseInfo> getList(CaseInfo caseInfo, int page, int limit, boolean isNoFinish) {
         Example example = new Example(CaseInfo.class);
 
         Criteria criteria = example.createCriteria();
@@ -142,15 +148,11 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
      * @param limit
      * @return
      */
-    public TableResultResponse<CaseInfo> getList(CaseInfo caseInfo, Set<Integer> ids,
-        JSONObject queryData) {
+    public TableResultResponse<CaseInfo> getList(CaseInfo caseInfo, Set<Integer> ids, JSONObject queryData) {
         // 查询参数
-        int page =
-            StringUtils.isBlank(queryData.getString("page")) ? 1
-                : Integer.valueOf(queryData.getString("page"));
+        int page = StringUtils.isBlank(queryData.getString("page")) ? 1 : Integer.valueOf(queryData.getString("page"));
         int limit =
-            StringUtils.isBlank(queryData.getString("limit")) ? 10
-                : Integer.valueOf(queryData.getString("limit"));
+            StringUtils.isBlank(queryData.getString("limit")) ? 10 : Integer.valueOf(queryData.getString("limit"));
         String startQueryTime = queryData.getString("startQueryTime");
         String endQueryTime = queryData.getString("endQueryTime");
 
@@ -182,9 +184,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         }
         if (!(StringUtils.isBlank(startQueryTime) || StringUtils.isBlank(endQueryTime))) {
             Date start = DateUtil.dateFromStrToDate(startQueryTime, "yyyy-MM-dd HH:mm:ss");
-            Date end =
-                DateUtils.addDays(DateUtil.dateFromStrToDate(endQueryTime, "yyyy-MM-dd HH:mm:ss"),
-                    1);
+            Date end = DateUtils.addDays(DateUtil.dateFromStrToDate(endQueryTime, "yyyy-MM-dd HH:mm:ss"), 1);
             criteria.andBetween("occurTime", start, end);
         }
         if (StringUtils.isNotBlank(caseInfo.getCaseLevel())) {
@@ -208,9 +208,8 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             criteria.andCondition("(dead_line > '" + date + "' or dead_line > finish_time)");
         }
         // 处理状态：已结案(0:未完成|1:已结案2:已终止)
-        if (StringUtils.isNotBlank(isFinished)
-            && !CaseInfo.FINISHED_STATE_TODO.equals(isFinished)) {
-            //只查询1:已结案2:已终止
+        if (StringUtils.isNotBlank(isFinished) && !CaseInfo.FINISHED_STATE_TODO.equals(isFinished)) {
+            // 只查询1:已结案2:已终止
             if (CaseInfo.FINISHED_STATE_FINISH.equals(queryData.getString("procCtaskname"))
                 && CaseInfo.FINISHED_STATE_STOP.equals(queryData.getString("procCtaskname"))) {
                 criteria.andEqualTo("isFinished", isFinished);
@@ -237,5 +236,176 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
      */
     public List<CaseInfo> getListByIds(List<String> idList) {
         return this.mapper.selectByIds(String.join(",", idList));
+    }
+
+    /**
+     * 事件处理统计
+     * 
+     * @return
+     */
+    public JSONArray getStatisCaseState(JSONObject objs) {
+
+        Example example = new Example(CaseInfo.class);
+        Criteria criteria = example.createCriteria();
+
+        // 业务条线
+        String bizList = objs.getString("bizList");
+        if (StringUtils.isNotBlank(bizList)) {
+            criteria.andEqualTo("bizList", bizList);
+        }
+
+        // 事件类别
+        String eventTypeList = objs.getString("eventTypeList");
+        if (StringUtils.isNotBlank(eventTypeList)) {
+            criteria.andEqualTo("eventTypeList", eventTypeList);
+        }
+
+        // 网格范围
+        String grid = objs.getString("grid");
+        if (StringUtils.isNotBlank(grid)) {
+            criteria.andEqualTo("grid", grid);
+        }
+
+        // 事件来源类型
+        String sourceType = objs.getString("sourceType");
+        if (StringUtils.isNotBlank(sourceType)) {
+            criteria.andEqualTo("sourceType", sourceType);
+        }
+        // 事件级别
+        String caseLevel = objs.getString("caseLevel");
+        if (StringUtils.isNotBlank(caseLevel)) {
+            criteria.andEqualTo("caseLevel", caseLevel);
+        }
+
+        // 日期范围
+        String startTime = objs.getString("startTime");
+        String endTime = objs.getString("endTime");
+        Date _start = null;
+        Date _end = null;
+        if (StringUtils.isNotBlank(startTime) && StringUtils.isNotBlank(endTime)) {
+            _start = DateUtil.dateFromStrToDate(startTime, "yyyy-MM-dd HH:mm:ss");
+            _end = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
+        }
+
+        List<CaseInfo> caseInfoList = this.mapper.selectByExample(example);
+        if (BeanUtil.isNotEmpty(caseInfoList)) {
+
+        }
+
+        return null;
+    }
+
+    /**
+     * 事件来源分布统计
+     * 
+     */
+    public JSONArray getStatisEventSource(CaseInfo caseInfo, String startTime, String endTime) {
+        JSONArray result = new JSONArray();
+
+        List<Map<String, Object>> eventSourceList = this.mapper.getStatisEventSource(caseInfo, startTime, endTime);
+        Map<String, String> eventtypeMap = dictFeign.getByCode(Constances.ROOT_BIZ_EVENTTYPE);
+        if (BeanUtil.isNotEmpty(eventtypeMap)) {
+            //事件来源数量
+            Integer count = 0;
+            //事件来源类型集处理
+            Map<String ,Integer> eventSourceMap = new HashMap<>();
+            for (Map<String, Object> eventSource : eventSourceList) {
+                String key = String.valueOf(eventSource.get("sourceType"));
+                count = Integer.valueOf(String.valueOf(eventSource.get("count")));
+                eventSourceMap.put(key, count);
+            }
+        
+            //封装前台显示数据
+            JSONObject obj = null;
+            Set<String> eventtypeKey = eventtypeMap.keySet();
+            if(eventtypeKey != null && !eventtypeKey.isEmpty()) {
+                for(String key: eventtypeKey) {
+                    obj = new JSONObject();
+                    obj.put("sourceTypeName", eventtypeMap.get(key));
+                    count = eventSourceMap.get(key);
+                    obj.put("count", count!=null?count:0);
+                    result.add(obj);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 事件量趋势统计
+     * 
+     */
+    public JSONArray getStatisCaseInfo(CaseInfo caseInfo, String startTime, String endTime) {
+        JSONArray result = new JSONArray();
+
+        List<Map<String, Object>> eventSourceList = this.mapper.getStatisCaseInfo(caseInfo, startTime, endTime);
+
+        if (BeanUtil.isNotEmpty(eventSourceList)) {
+
+            // 数据筛选
+            Map<String, Map<String, Object>> eventSourceMap = new HashMap<>();
+            for (Map<String, Object> eventSource : eventSourceList) {
+
+                String year = String.valueOf(eventSource.get("year"));
+                String month = String.valueOf(eventSource.get("month"));
+                String key = year + "-" + month;
+
+                // 事件级别名称
+                String caseLevel = String.valueOf(eventSource.get("caseLevel"));
+
+                // 当前事件级别个数
+                Integer count = Integer.valueOf(String.valueOf(eventSource.get("count")));
+
+                // 是否已存在记录，存在则追加
+                Map<String, Object> _eventSource = eventSourceMap.get(key);
+                if (_eventSource != null) {
+                    _eventSource.put(caseLevel, eventSource.get("count"));
+
+                    // 计算总数
+                    Integer total = Integer.valueOf(String.valueOf(_eventSource.get("total")));
+                    total += count;
+
+                    _eventSource.put("total", total);
+
+                } else {
+                    eventSource.put(caseLevel, count);
+                    // 总数
+                    eventSource.put("total", count);
+                    // 删除多余字段
+                    eventSource.remove("caseLevel");
+                    eventSource.remove("count");
+
+                    eventSourceMap.put(key, eventSource);
+                }
+            }
+
+            // 封装插件需要的数据
+            Set<String> eventSourceKey = eventSourceMap.keySet();
+            //回显数据的长度固定6条
+            int size = 6;
+            for (String key : eventSourceKey) {
+                JSONObject obj = JSONObject.parseObject(JSONObject.toJSONString(eventSourceMap.get(key)));
+                // 判断是否缺失回显数据个数，如果缺失默认给0
+                if (obj.size() == size) {
+                    result.add(obj);
+                } else {
+                    // 紧急
+                    if (obj.get(Constances.EventLevel.ROOT_BIZ_EVENTLEVEL_JINJI) == null) {
+                        obj.put(Constances.EventLevel.ROOT_BIZ_EVENTLEVEL_JINJI, 0);
+                    }
+                    // 特急
+                    if (obj.get(Constances.EventLevel.ROOT_BIZ_EVENTLEVEL_TEJI) == null) {
+                        obj.put(Constances.EventLevel.ROOT_BIZ_EVENTLEVEL_TEJI, 0);
+                    }
+                    // 一般级别
+                    if (obj.get(Constances.EventLevel.ROOT_BIZ_EVENTLEVEL_NORMAL) == null) {
+                        obj.put(Constances.EventLevel.ROOT_BIZ_EVENTLEVEL_NORMAL, 0);
+                    }
+                    result.add(obj);
+                }
+            }
+
+        }
+        return result;
     }
 }

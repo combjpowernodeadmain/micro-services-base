@@ -69,6 +69,11 @@ public class Constances {
 	public static final String ROOT_BIZ_CONLEVEL="root_biz_conLevel";
 	
 	/**
+	 * 事件级别
+	 */
+	public static final String ROOT_BIZ_EVENTLEVEL = "root_biz_eventLevel";
+	
+	/**
 	 * 专项管理处理状态
 	 * @author 尚
 	 *
