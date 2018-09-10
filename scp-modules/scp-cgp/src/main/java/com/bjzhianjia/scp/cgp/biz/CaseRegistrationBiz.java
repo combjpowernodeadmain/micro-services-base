@@ -413,8 +413,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         List<String> commiterList =
             wfProcBackBeanList.stream().map(o -> o.getProcTaskCommitter()).distinct().collect(Collectors.toList());
         Map<String, String> userMap = adminFeign.getUser(String.join(",", commiterList));
-        if(userMap==null) {
-            userMap=new HashMap<>();
+        if (userMap == null) {
+            userMap = new HashMap<>();
         }
 
         if (wfProcBackBeanList != null && !wfProcBackBeanList.isEmpty()) {
@@ -638,6 +638,11 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         for (CaseRegistration caseRegistration : caseRegistrationList) {
             objResult = JSONObject.parseObject(JSON.toJSONString(caseRegistration));
             wfProcBackBean = wfProcBackBean_ID_Entity_Map.get(objResult.get("id"));
+            
+            //定位坐标
+            objResult.put("mapInfo", "{\"lng\":\"" + caseRegistration.getCaseOngitude() + "\",\"lat\":\""
+                + caseRegistration.getCaseLatitude() + "\"}");
+
             // 处理状态
             String procCtaskname = "";
             if (wfProcBackBean != null) {
@@ -856,7 +861,19 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 if (inspectItems != null) {
                 }
                 result.put("inspectName", inspectItems.getName());
-
+                
+                
+                //举报人姓名
+                JSONArray informerUser = iUserFeign.getByUserIds(caseRegistration.getCaseInformer());
+                String caseInformerName = "";
+                if (informerUser != null && !informerUser.isEmpty()) {
+                    for (int i = 0; i < informerUser.size(); i++) {
+                        caseInformerName = informerUser.getJSONObject(i).getString("name");
+                    }
+                }
+                result.put("caseInformerName", caseInformerName);
+                
+                
                 // 执法者用户名
                 JSONArray userList = null;
                 try {
