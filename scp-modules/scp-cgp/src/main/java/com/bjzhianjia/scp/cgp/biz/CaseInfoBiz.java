@@ -273,11 +273,15 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         if(overtime != null && BeanUtil.isNotEmpty(finishedState)) {
             result.put("overtime", overtime);
             //已终止的
-            Integer stopCount = result.getInteger("stop");
+            Integer stopCount = result.getInteger(stateKey[0]);
+            stopCount = stopCount == null?0:stopCount;
             //已完成
-            Integer finishCount = result.getInteger("finish");
+            Integer finishCount = result.getInteger(stateKey[1]);
+            finishCount = finishCount == null?0:stopCount;
             //已完成 = 已完成 + 已终止
             result.put(stateKey[1],stopCount+finishCount);
+            
+            
             //事件总数
             result.put(stateKey[3], this.getCount());
             //删除多余字段
