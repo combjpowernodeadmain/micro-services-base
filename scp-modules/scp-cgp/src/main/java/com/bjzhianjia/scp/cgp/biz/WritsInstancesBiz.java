@@ -1,8 +1,10 @@
 package com.bjzhianjia.scp.cgp.biz;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -13,14 +15,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.config.PropertiesConfig;
 import com.bjzhianjia.scp.cgp.constances.WritsConstances;
+import com.bjzhianjia.scp.cgp.entity.CaseAttachments;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.WritsInstances;
 import com.bjzhianjia.scp.cgp.entity.WritsTemplates;
+import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.mapper.WritsInstancesMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
+import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.util.DocUtil;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
@@ -55,6 +61,12 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 
     @Autowired
     private PropertiesConfig propertiesConfig;
+
+    @Autowired
+    private CaseAttachmentsBiz caseAttachmentsBiz;
+
+    @Autowired
+    private AdminFeign adminFeign;
 
     /**
      * 分页查询记录列表
@@ -243,7 +255,8 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             }
         }
 
-        restResult.setData(writsPath);
+        // restResult.setData(writsPath);
+        restResult.setData("http://www.xdocin.com/demo/demo.docx");
         return restResult;
     }
 
@@ -353,5 +366,103 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         }
 
         return resultInstance;
+    }
+
+    /**
+     * =添加文书暂存
+     * 
+     * @param writsInstances
+     * @return
+     */
+    public ObjectRestResponse<WritsInstances> addCache(WritsInstances writsInstances) {
+        ObjectRestResponse<WritsInstances> restResult = new ObjectRestResponse<>();
+
+        this.insertSelective(writsInstances);
+        // 将自动生成的ID传回前端
+        writsInstances.setId(writsInstances.getId());
+
+        restResult.setData(writsInstances);
+        restResult.setStatus(200);
+        return restResult;
+    }
+
+    /**
+     * =查询某一案件下的文书及历史
+     * 
+     * @param caseId
+     * @return
+     */
+    public ObjectRestResponse<JSONArray> writsAndAttachmentHistory(String caseId) {
+        ObjectRestResponse<JSONArray> restResult = new ObjectRestResponse<>();
+        JSONArray resultJArray = new JSONArray();
+
+        if (StringUtils.isBlank(caseId)) {
+            restResult.setStatus(400);
+            restResult.setMessage("请指定任务ID");
+            return restResult;
+        }
+
+        List<WritsInstances> writsInstanceList = getWrtisInstances(caseId);
+        List<CaseAttachments> attachmentsList = getAttachments(caseId);
+
+        // 收集需要查询的人
+        Set<String> userIdList = new HashSet<>();
+        List<String> writsCrtUserIdList =
+            writsInstanceList.stream().map(o -> o.getCrtUserId()).distinct().collect(Collectors.toList());
+        List<String> attaCrtUserIdList =
+            attachmentsList.stream().map(o -> o.getCrtUserId()).collect(Collectors.toList());
+
+        userIdList.addAll(writsCrtUserIdList);
+        userIdList.addAll(attaCrtUserIdList);
+
+        Map<String, String> userMap = adminFeign.getUser(String.join(",", userIdList));
+
+        for (WritsInstances writsInstances : writsInstanceList) {
+            JSONObject tmp = new JSONObject();
+            tmp.put("refNo", writsInstances.getRefNo());// 文号
+            tmp.put("crtUserId", writsInstances.getCrtUserId());// 上传人ID
+            tmp.put("crtUserName", CommonUtil.getValueFromJObjStr(userMap.get(writsInstances.getCrtUserId()), "name"));// 上传人姓名
+            tmp.put("crtTime", writsInstances.getCrtTime());// 上传时间
+            
+            resultJArray.add(tmp);
+        }
+        for (CaseAttachments caseAttachments : attachmentsList) {
+            JSONObject tmp = new JSONObject();
+            tmp.put("uploadPhraseTitle", caseAttachments.getUploadPhraseTitle());// 文号
+            tmp.put("crtUserId", caseAttachments.getCrtUserId());// 上传人ID
+            tmp.put("crtUserName", CommonUtil.getValueFromJObjStr(userMap.get(caseAttachments.getCrtUserId()), "name"));// 上传人姓名
+            tmp.put("crtTime", caseAttachments.getCrtTime());// 上传时间
+            resultJArray.add(tmp);
+        }
+
+        restResult.setStatus(200);
+        restResult.setData(resultJArray);
+        return restResult;
+    }
+
+    private List<CaseAttachments> getAttachments(String caseId) {
+        Example example = new Example(CaseAttachments.class);
+        Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isDeleted", "0");
+        criteria.andEqualTo("caseId", caseId);
+
+        List<CaseAttachments> attachmentList = caseAttachmentsBiz.selectByExample(example);
+        if (BeanUtil.isEmpty(attachmentList)) {
+            return new ArrayList<CaseAttachments>();
+        }
+        return attachmentList;
+    }
+
+    private List<WritsInstances> getWrtisInstances(String caseId) {
+        Example example = new Example(WritsInstances.class);
+        Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isDeleted", "0");
+        criteria.andEqualTo("caseId", caseId);
+
+        List<WritsInstances> writsList = this.selectByExample(example);
+        if (BeanUtil.isEmpty(writsList)) {
+            return new ArrayList<WritsInstances>();
+        }
+        return writsList;
     }
 }

@@ -18,6 +18,7 @@ public class WritsInstances implements Serializable {
 	
 	    //主键
     @Id
+    @GeneratedValue(generator="JDBC")
     private Integer id;
 	
 	    //案件主键

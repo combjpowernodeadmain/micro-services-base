@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.WritsInstancesBiz;
 import com.bjzhianjia.scp.cgp.entity.WritsInstances;
@@ -82,7 +83,7 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
         return restResult;
     }
 
-    @RequestMapping(value="/list/by_template",method=RequestMethod.GET)
+    @RequestMapping(value = "/list/by_template", method = RequestMethod.GET)
     @ApiOperation("获取文书模板及其下的文书")
     public TableResultResponse<JSONObject> getWithWritsInstance(
         @RequestParam(value = "templateCodes", defaultValue = "") @ApiParam(name = "文书模板Code集合，多个用逗号隔开") String templateCodes,
@@ -94,4 +95,22 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
         return restResult;
     }
 
+    @RequestMapping(value = "/add/cache", method = RequestMethod.POST)
+    @ApiOperation("添加文书暂存")
+    public ObjectRestResponse<WritsInstances> addCache(
+        @RequestBody @ApiParam("待暂存对象实例") @Validated WritsInstances writsInstances, BindingResult bindingResult) {
+        ObjectRestResponse<WritsInstances> restResult = new ObjectRestResponse<>();
+        this.baseBiz.addCache(writsInstances);
+        return restResult;
+    }
+
+    @RequestMapping(value = "/writs/history")
+    @ApiOperation("过程文书与附件")
+    public ObjectRestResponse<JSONArray> writsAndAttachmentHistory(
+        @RequestParam(value = "caseId", defaultValue = "") String caseId,
+        @RequestParam(value = "page", defaultValue = "1") Integer page,
+        @RequestParam(value = "limit", defaultValue = "10") Integer limit) {
+
+        return this.baseBiz.writsAndAttachmentHistory(caseId);
+    }
 }

@@ -36,6 +36,8 @@ import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.feign.IUserFeign;
 import com.bjzhianjia.scp.cgp.mapper.CaseRegistrationMapper;
 import com.bjzhianjia.scp.cgp.mapper.EventTypeMapper;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
+import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.cgp.vo.CaseRegistrationVo;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
@@ -169,7 +171,15 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             getWritsFillContext(caseRegJObj, writsInstances.getFillContext(), writsInstances.getRefNo()));
         // 关联该文书相关的案件
         writsInstances.setCaseId(caseId);
-        writsInstancesBiz.insertSelective(writsInstances);
+
+        // 判断文书是否进行过暂存(如果请求参数中有文书ID表明暂存过)
+        if (BeanUtil.isEmpty(writsInstances.getId())) {
+            // 没有暂存过，进行一次添加操作
+            writsInstancesBiz.insertSelective(writsInstances);
+        } else {
+            // 暂存过，进行更新操作
+            writsInstancesBiz.updateById(writsInstances);
+        }
     }
 
     /**
@@ -400,6 +410,13 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         PageInfo<WfProcBackBean> pageInfo = wfMonitorService.getUserAllToDoTasks(objs);
         List<WfProcBackBean> wfProcBackBeanList = pageInfo.getList();
 
+        List<String> commiterList =
+            wfProcBackBeanList.stream().map(o -> o.getProcTaskCommitter()).distinct().collect(Collectors.toList());
+        Map<String, String> userMap = adminFeign.getUser(String.join(",", commiterList));
+        if(userMap==null) {
+            userMap=new HashMap<>();
+        }
+
         if (wfProcBackBeanList != null && !wfProcBackBeanList.isEmpty()) {
 
             // 查询业务列表
@@ -426,10 +443,11 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                     // 案件id
                     String bizId = wfProcBackBean.getProcBizid();
                     caseRegistration = caseRegistration_ID_Entity_Map.get(bizId);
-                    //没有匹配业务数据，则跳过
-                    if(caseRegistration == null)
-                        continue;
+                    // 没有匹配业务数据，则跳过
+                    if (caseRegistration == null) continue;
                     obj = JSONObject.parseObject(JSON.toJSONString(wfProcBackBean));
+                    obj.put("procTaskCommitterName",
+                        CommonUtil.getValueFromJObjStr(userMap.get(wfProcBackBean.getProcTaskCommitter()), "name"));
 
                     // 封装督办催办
                     if (caseRegistration != null) {
