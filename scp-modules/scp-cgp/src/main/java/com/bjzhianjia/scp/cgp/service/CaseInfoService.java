@@ -371,7 +371,7 @@ public class CaseInfoService {
         for (CaseInfo caseInfo : caseInfoList) {
 
             JSONObject wfJObject = JSONObject.parseObject(JSON.toJSONString(caseInfo));
-            
+
             wfJObject.put("bizListName", getRootBizTypeName(caseInfo.getBizList(), rootBizList));
             wfJObject.put("eventTypeListName", eventTypeName);
             wfJObject.put("sourceTypeName", getRootBizTypeName(caseInfo.getSourceType(), rootBizList));
@@ -404,8 +404,12 @@ public class CaseInfoService {
             WfProcBackBean wfProcBackBean = wfProcBackBean_ID_Entity_Map.get(String.valueOf(caseInfo.getId()));
             if (wfProcBackBean != null) {
                 wfJObject.put("procCtaskname", wfProcBackBean.getProcCtaskname());
-                wfJObject.put("procInstId",  wfProcBackBean.getProcInstId());
+                wfJObject.put("procInstId", wfProcBackBean.getProcInstId());
                 wfJObject.put("procBizid", wfProcBackBean.getProcBizid());
+                wfJObject.put("procCtaskId", wfProcBackBean.getProcCtaskId());
+                wfJObject.put("procTaskStatusName", wfProcBackBean.getProcTaskStatusName());
+                wfJObject.put("procTaskStatus", wfProcBackBean.getProcTaskStatus());
+                wfJObject.put("procCtaskcode", wfProcBackBean.getProcCtaskcode());
             }
             jObjList.add(wfJObject);
         }
