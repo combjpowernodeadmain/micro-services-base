@@ -243,56 +243,47 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
      * 
      * @return
      */
-    public JSONArray getStatisCaseState(JSONObject objs) {
-
-        Example example = new Example(CaseInfo.class);
-        Criteria criteria = example.createCriteria();
-
-        // 业务条线
-        String bizList = objs.getString("bizList");
-        if (StringUtils.isNotBlank(bizList)) {
-            criteria.andEqualTo("bizList", bizList);
+    public JSONObject getStatisCaseState(CaseInfo caseInfo, String startTime, String endTime) {
+        JSONObject result = new JSONObject();
+        //已终止、已完成、处理中、总数
+        String[] stateKey = {"stop","finish","todo","total"};
+        
+        //超时统计
+        Integer overtime = this.mapper.selectOvertime(caseInfo, startTime, endTime);
+        //处理状态统计
+        List<Map<String, Integer>> finishedState = this.mapper.selectState(caseInfo, startTime, endTime);
+        String stateName = "";
+        for(Map<String, Integer> state : finishedState) {
+            switch (String.valueOf(state.get("state"))) {
+                case CaseInfo.FINISHED_STATE_STOP:
+                    stateName = stateKey[0];
+                    break;
+                case CaseInfo.FINISHED_STATE_FINISH:
+                    stateName = stateKey[1];
+                    break;
+                case CaseInfo.FINISHED_STATE_TODO:
+                    stateName = stateKey[2];
+                    break;
+              
+            }
+            result.put(stateName, state.get("count"));
         }
-
-        // 事件类别
-        String eventTypeList = objs.getString("eventTypeList");
-        if (StringUtils.isNotBlank(eventTypeList)) {
-            criteria.andEqualTo("eventTypeList", eventTypeList);
+        
+        //封装处理中、总数
+        if(overtime != null && BeanUtil.isNotEmpty(finishedState)) {
+            result.put("overtime", overtime);
+            //已终止的
+            Integer stopCount = result.getInteger("stop");
+            //已完成
+            Integer finishCount = result.getInteger("finish");
+            //已完成 = 已完成 + 已终止
+            result.put(stateKey[1],stopCount+finishCount);
+            //事件总数
+            result.put(stateKey[3], this.getCount());
+            //删除多余字段
+            result.remove(stateKey[0]);
         }
-
-        // 网格范围
-        String grid = objs.getString("grid");
-        if (StringUtils.isNotBlank(grid)) {
-            criteria.andEqualTo("grid", grid);
-        }
-
-        // 事件来源类型
-        String sourceType = objs.getString("sourceType");
-        if (StringUtils.isNotBlank(sourceType)) {
-            criteria.andEqualTo("sourceType", sourceType);
-        }
-        // 事件级别
-        String caseLevel = objs.getString("caseLevel");
-        if (StringUtils.isNotBlank(caseLevel)) {
-            criteria.andEqualTo("caseLevel", caseLevel);
-        }
-
-        // 日期范围
-        String startTime = objs.getString("startTime");
-        String endTime = objs.getString("endTime");
-        Date _start = null;
-        Date _end = null;
-        if (StringUtils.isNotBlank(startTime) && StringUtils.isNotBlank(endTime)) {
-            _start = DateUtil.dateFromStrToDate(startTime, "yyyy-MM-dd HH:mm:ss");
-            _end = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
-        }
-
-        List<CaseInfo> caseInfoList = this.mapper.selectByExample(example);
-        if (BeanUtil.isNotEmpty(caseInfoList)) {
-
-        }
-
-        return null;
+        return result;
     }
 
     /**
@@ -408,4 +399,15 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         }
         return result;
     }
+    
+    /**
+     * 查询未删除的总数
+     * @return
+     */
+    public Integer getCount() {
+        CaseInfo caseInfo = new CaseInfo();
+        caseInfo.setIsDeleted("0");
+        return this.mapper.selectCount(caseInfo);
+    }
+    
 }

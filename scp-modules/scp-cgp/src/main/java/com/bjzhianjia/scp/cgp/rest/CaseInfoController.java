@@ -213,20 +213,34 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
     }
 
     /**
-     * 事件处理统计
+     * 事件处理状态统计
      * 
      * @return
      */
+    @ApiOperation("事件处理状态统计")
     @RequestMapping(value = "/statis/caseState", method = RequestMethod.GET)
     @ResponseBody
-    public JSONArray getStatisCaseState(@RequestParam(defaultValue = "") @ApiParam("业务条线") String bizList,
+    public JSONObject getStatisCaseState(@RequestParam(defaultValue = "") @ApiParam("业务条线") String bizList,
         @RequestParam(defaultValue = "") @ApiParam("事件类别") String eventTypeList,
-        @RequestParam(defaultValue = "") @ApiParam("网格范围") String grid,
+        @RequestParam(defaultValue = "") @ApiParam("网格范围") Integer grid,
         @RequestParam(defaultValue = "") @ApiParam("事件来源类型") String sourceType,
         @RequestParam(defaultValue = "") @ApiParam("事件级别") String caseLevel,
         @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
         @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime) {
-        JSONArray result = null;
+        JSONObject result = null;
+        
+        CaseInfo caseInfo = new CaseInfo();
+        caseInfo.setBizList(bizList);
+        caseInfo.setEventTypeList(eventTypeList);
+        caseInfo.setGrid(grid);
+        caseInfo.setCaseLevel(caseLevel);
+        if(StringUtils.isNotBlank(endTime)) {
+            Date _end = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
+            _end = DateUtils.addDays(_end, 1);
+            endTime = DateUtil.dateFromDateToStr(_end, "yyyy-MM-dd HH:mm:ss");
+        }
+        result = caseInfoBiz.getStatisCaseState(caseInfo,startTime,endTime);
+        
         
         return result;
     }
@@ -236,9 +250,9 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
      * 
      * @return
      */
+    @ApiOperation("事件来源分布统计")
     @RequestMapping(value = "/statis/eventSource", method = RequestMethod.GET)
     @ResponseBody
-    @ApiOperation("事件来源分布统计")
     public JSONArray getStatisEventSource(@RequestParam(defaultValue = "") @ApiParam("业务条线") String bizList,
         @RequestParam(defaultValue = "") @ApiParam("事件类别") String eventTypeList,
         @RequestParam(defaultValue = "0") @ApiParam("网格范围") Integer grid,
@@ -267,9 +281,9 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
      * 
      * @return
      */
+    @ApiOperation("事件量趋势统计")
     @RequestMapping(value = "/statis/caseInfo", method = RequestMethod.GET)
     @ResponseBody
-    @ApiOperation("事件来源分布统计")
     public JSONArray getStatisCaseInfo(@RequestParam(defaultValue = "") @ApiParam("业务条线") String bizList,
         @RequestParam(defaultValue = "") @ApiParam("事件类别") String eventTypeList,
         @RequestParam(defaultValue = "0") @ApiParam("网格范围") Integer grid,

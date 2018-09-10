@@ -55,38 +55,8 @@
 		<result property="deptId" column="dept_id" />
 	</resultMap>
 
-	<!-- 事件来源分布统计 -->
-	<select id="getStatisEventSource" resultType="java.util.Map">
-		SELECT
-		source_type as sourceType,
-		count(*) as count
-		FROM
-		case_info
-		WHERE
-			<include refid="isParam" />
-		GROUP BY
-		source_type
-	</select>
-
-	<!-- 事件量趋势统计 -->
-	<select id="getStatisCaseInfo" resultType="java.util.Map">
-		SELECT
-		YEAR (crt_time) AS year,
-		MONTH (crt_time) AS month,
-		case_level AS caseLevel,
-		count(*) count
-		FROM
-		case_info
-		WHERE
-			<include refid="isParam" />
-		GROUP BY
-		YEAR (crt_time),
-		MONTH (crt_time),
-		case_level
-	</select>
-
-	<!-- 事件查询参数 -->
-	<sql id="isParam">
+	<!-- 拼接不为空的事件参数 -->
+	<sql id="isParamNull">
 		<!-- 未删除 -->
 		is_deleted=0
 		<!-- 业务线条 -->
@@ -120,4 +90,73 @@
 			</if>
 		</if>
 	</sql>
+	
+	<!-- 事件来源分布统计 -->
+	<select id="getStatisEventSource" resultType="java.util.Map">
+		SELECT
+		source_type as sourceType,
+		count(*) as count
+		FROM
+		case_info
+		WHERE
+		<include refid="isParamNull" />
+		GROUP BY
+		source_type
+	</select>
+
+	<!-- 事件量趋势统计 -->
+	<select id="getStatisCaseInfo" resultType="java.util.Map">
+		SELECT
+		YEAR (crt_time) AS year,
+		MONTH (crt_time) AS month,
+		case_level AS
+		caseLevel,
+		count(*) count
+		FROM
+		case_info
+		WHERE
+		<include refid="isParamNull" />
+		GROUP BY
+		YEAR (crt_time),
+		MONTH (crt_time),
+		case_level
+	</select>
+	
+	<!-- 事件超时数 -->
+	<select id="selectOvertime" resultType="int">
+		SELECT
+		count(*) overtime
+		FROM
+		case_info
+		WHERE
+		<include refid="isParamNull" />
+		<!-- 有期限时间 -->
+		and dead_line IS NOT NULL
+		AND (
+		<!-- 处理中的超时 -->
+		(
+		is_finished = 0
+		AND NOW() >
+		dead_line
+		)
+		<!-- 已完成、已终止的超时 -->
+		OR (
+		is_finished IN (1, 2)
+		AND finish_time > dead_line
+		)
+		)
+		
+	</select>
+	<!-- 处理中、已完成、已终止统计 -->
+	<select id="selectState" resultType="java.util.Map">
+		SELECT
+		is_finished as state,
+		count(*) count
+		FROM
+		case_info
+		WHERE
+		<include refid="isParamNull" />
+		GROUP BY
+		is_finished
+	</select>
 </mapper>
