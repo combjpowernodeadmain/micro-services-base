@@ -56,7 +56,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("caseInfo")
 @CheckClientToken
 @CheckUserToken
-@Api(tags = "立案管理")
+@Api(tags = "事件管理")
 @Slf4j
 public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, Integer> {
 
@@ -187,7 +187,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         return restResult;
     }
 
-    @RequestMapping(value = "/get/userToDoTask")
+    @RequestMapping(value = "/get/userToDoTask", method = RequestMethod.POST)
     @ApiOperation("查询详细待办任务")
     public ObjectRestResponse<JSONObject> getUserToDoTask(@RequestBody JSONObject objs, HttpServletRequest request) {
 
