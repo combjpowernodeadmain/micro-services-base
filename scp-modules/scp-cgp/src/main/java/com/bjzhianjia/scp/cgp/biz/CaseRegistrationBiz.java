@@ -421,15 +421,17 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 String isUrge = "0";
                 String isSupervise = "0";
                 WfProcBackBean wfProcBackBean = null;
-                for (int i = 0; i < caseRegistrationList.size(); i++) {
+                for (int i = 0; i < wfProcBackBeanList.size(); i++) {
                     wfProcBackBean = wfProcBackBeanList.get(i);
-
                     // 案件id
                     String bizId = wfProcBackBean.getProcBizid();
+                    caseRegistration = caseRegistration_ID_Entity_Map.get(bizId);
+                    //没有匹配业务数据，则跳过
+                    if(caseRegistration == null)
+                        continue;
                     obj = JSONObject.parseObject(JSON.toJSONString(wfProcBackBean));
 
                     // 封装督办催办
-                    caseRegistration = caseRegistration_ID_Entity_Map.get(bizId);
                     if (caseRegistration != null) {
                         isUrge = caseRegistration.getIsSupervise();
                         isSupervise = caseRegistration.getIsUrge();
