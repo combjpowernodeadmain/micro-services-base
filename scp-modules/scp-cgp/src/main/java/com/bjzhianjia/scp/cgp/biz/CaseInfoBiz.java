@@ -56,7 +56,16 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
 
     @Autowired
     private DictFeign dictFeign;
-
+    
+    /**
+     * 查询未删除的总数
+     * @return
+     */
+    public Integer getCount() {
+        CaseInfo caseInfo = new CaseInfo();
+        caseInfo.setIsDeleted("0");
+        return this.mapper.selectCount(caseInfo);
+    }
     /**
      * 查询ID最大的那条记录
      * 
@@ -405,13 +414,35 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
     }
     
     /**
-     * 查询未删除的总数
+     * 业务条线分布统计 
+     * @param caseInfo 查询条件
+     * @param startTime  开始时间
+     * @param endTime   结束时间
      * @return
      */
-    public Integer getCount() {
-        CaseInfo caseInfo = new CaseInfo();
-        caseInfo.setIsDeleted("0");
-        return this.mapper.selectCount(caseInfo);
+    public JSONArray getStatisBizLine(CaseInfo caseInfo, String startTime, String endTime) {
+        JSONArray result = new JSONArray();
+        
+        Map<String, String> bizType = dictFeign.getByCode(Constances.ROOT_BIZ_TYPE);
+        if(BeanUtil.isEmpty(bizType)) {
+            bizType = new HashMap<>();
+        }
+        
+        List<Map<String,Object>> bizLineList = this.mapper.selectBizLine(caseInfo, startTime, endTime);
+        if(BeanUtil.isNotEmpty(bizLineList)) {
+            JSONObject obj = null;
+            for(Map<String,Object> bizLineMap : bizLineList) {
+                obj = new JSONObject();
+                String bizList= String.valueOf(bizLineMap.get("bizList"));
+                //业务条线
+                obj.put("bizList", bizList);
+                obj.put("count", bizLineMap.get("count"));
+                obj.put("bizListName", bizType.get(bizList));
+                result.add(obj);
+            }
+        }
+        return result;
     }
+    
     
 }
