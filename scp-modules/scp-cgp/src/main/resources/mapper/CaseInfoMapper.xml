@@ -68,9 +68,9 @@
 			test="caseInfo.eventTypeList != null and caseInfo.eventTypeList != ''">
 			and event_type_list=#{caseInfo.eventTypeList}
 		</if>
-		<!-- 网格范围（网格id） -->
-		<if test="caseInfo.grid != null and caseInfo.grid != ''">
-			and grid=#{caseInfo.grid}
+		<!-- 网格范围（网格ids） -->
+		<if test="gridIds != null and gridIds != ''">
+			and grid in (#{gridIds})
 		</if>
 		<!-- 事件来源 -->
 		<if
@@ -120,6 +120,8 @@
 		YEAR (crt_time),
 		MONTH (crt_time),
 		case_level
+		ORDER BY
+			YEAR DESC
 	</select>
 
 	<!-- 事件超时数 -->
@@ -169,6 +171,7 @@
 		case_info
 		WHERE
 		<include refid="isParamNull"/>
+			AND grid in(#{gridIds})
 		GROUP BY
 		biz_list
 	</select>
