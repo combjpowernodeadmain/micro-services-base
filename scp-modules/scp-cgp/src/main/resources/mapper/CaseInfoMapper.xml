@@ -90,7 +90,7 @@
 			</if>
 		</if>
 	</sql>
-	
+
 	<!-- 事件来源分布统计 -->
 	<select id="getStatisEventSource" resultType="java.util.Map">
 		SELECT
@@ -121,7 +121,7 @@
 		MONTH (crt_time),
 		case_level
 	</select>
-	
+
 	<!-- 事件超时数 -->
 	<select id="selectOvertime" resultType="int">
 		SELECT
@@ -145,7 +145,7 @@
 		AND finish_time > dead_line
 		)
 		)
-		
+
 	</select>
 	<!-- 处理中、已完成、已终止统计 -->
 	<select id="selectState" resultType="java.util.Map">
@@ -158,5 +158,18 @@
 		<include refid="isParamNull" />
 		GROUP BY
 		is_finished
+	</select>
+	
+	<!-- 业务条线分布统计 -->
+	<select id="selectBizLine" resultType="java.util.Map">
+		SELECT
+		biz_list bizList,
+		count(*) count
+		FROM
+		case_info
+		WHERE
+		<include refid="isParamNull"/>
+		GROUP BY
+		biz_list
 	</select>
 </mapper>

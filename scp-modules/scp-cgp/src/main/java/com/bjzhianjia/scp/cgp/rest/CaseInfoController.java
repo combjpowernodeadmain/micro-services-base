@@ -35,7 +35,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 
-
 /**
  * CaseInfoController 事件控制器.
  *
@@ -48,7 +47,7 @@ import lombok.extern.slf4j.Slf4j;
  * </pre>
  * 
  *
- * @version 1.0 
+ * @version 1.0
  * @author chenshuai
  *
  */
@@ -62,10 +61,9 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
 
     @Autowired
     private CaseInfoService caserInfoService;
-    
+
     @Autowired
     private CaseInfoBiz caseInfoBiz;
-    
 
     @RequestMapping(value = "/update/{id}", method = RequestMethod.PUT)
     @ApiOperation("更新单个对象")
@@ -220,31 +218,36 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
     @ApiOperation("事件处理状态统计")
     @RequestMapping(value = "/statis/caseState", method = RequestMethod.GET)
     @ResponseBody
-    public JSONObject getStatisCaseState(@RequestParam(defaultValue = "") @ApiParam("业务条线") String bizList,
+    public ObjectRestResponse<JSONObject> getStatisCaseState(
+        @RequestParam(defaultValue = "") @ApiParam("业务条线") String bizList,
         @RequestParam(defaultValue = "") @ApiParam("事件类别") String eventTypeList,
         @RequestParam(defaultValue = "") @ApiParam("网格范围") Integer grid,
         @RequestParam(defaultValue = "") @ApiParam("事件来源类型") String sourceType,
         @RequestParam(defaultValue = "") @ApiParam("事件级别") String caseLevel,
         @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
         @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime) {
-        JSONObject result = null;
-        
+        ObjectRestResponse<JSONObject> result = new ObjectRestResponse<>();
+
         CaseInfo caseInfo = new CaseInfo();
         caseInfo.setBizList(bizList);
         caseInfo.setEventTypeList(eventTypeList);
         caseInfo.setGrid(grid);
         caseInfo.setCaseLevel(caseLevel);
-        if(StringUtils.isNotBlank(endTime)) {
+        if (StringUtils.isNotBlank(endTime)) {
             Date _end = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
             _end = DateUtils.addDays(_end, 1);
             endTime = DateUtil.dateFromDateToStr(_end, "yyyy-MM-dd HH:mm:ss");
         }
-        result = caseInfoBiz.getStatisCaseState(caseInfo,startTime,endTime);
-        
-        
+        JSONObject data = caseInfoBiz.getStatisCaseState(caseInfo, startTime, endTime);
+        if (data != null) {
+            result.setData(data);
+        } else {
+            result.setStatus(400);
+        }
+
         return result;
     }
-    
+
     /**
      * 事件来源分布统计
      * 
@@ -253,29 +256,34 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
     @ApiOperation("事件来源分布统计")
     @RequestMapping(value = "/statis/eventSource", method = RequestMethod.GET)
     @ResponseBody
-    public JSONArray getStatisEventSource(@RequestParam(defaultValue = "") @ApiParam("业务条线") String bizList,
+    public ObjectRestResponse<JSONArray> getStatisEventSource(
+        @RequestParam(defaultValue = "") @ApiParam("业务条线") String bizList,
         @RequestParam(defaultValue = "") @ApiParam("事件类别") String eventTypeList,
         @RequestParam(defaultValue = "0") @ApiParam("网格范围") Integer grid,
         @RequestParam(defaultValue = "") @ApiParam("事件级别") String caseLevel,
         @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
         @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime) {
-        JSONArray result = null;
-        
+        ObjectRestResponse<JSONArray> result = new ObjectRestResponse<>();
+
         CaseInfo caseInfo = new CaseInfo();
         caseInfo.setBizList(bizList);
         caseInfo.setEventTypeList(eventTypeList);
         caseInfo.setGrid(grid);
         caseInfo.setCaseLevel(caseLevel);
-        if(StringUtils.isNotBlank(endTime)) {
+        if (StringUtils.isNotBlank(endTime)) {
             Date _end = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
             _end = DateUtils.addDays(_end, 1);
             endTime = DateUtil.dateFromDateToStr(_end, "yyyy-MM-dd HH:mm:ss");
         }
-        result = caseInfoBiz.getStatisEventSource(caseInfo,startTime,endTime);
-        
+        JSONArray data = caseInfoBiz.getStatisEventSource(caseInfo, startTime, endTime);
+        if (data != null) {
+            result.setData(data);
+        } else {
+            result.setStatus(400);
+        }
         return result;
     }
-    
+
     /**
      * 事件量趋势统计
      * 
@@ -284,26 +292,70 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
     @ApiOperation("事件量趋势统计")
     @RequestMapping(value = "/statis/caseInfo", method = RequestMethod.GET)
     @ResponseBody
-    public JSONArray getStatisCaseInfo(@RequestParam(defaultValue = "") @ApiParam("业务条线") String bizList,
+    public ObjectRestResponse<JSONArray> getStatisCaseInfo(
+        @RequestParam(defaultValue = "") @ApiParam("业务条线") String bizList,
         @RequestParam(defaultValue = "") @ApiParam("事件类别") String eventTypeList,
         @RequestParam(defaultValue = "0") @ApiParam("网格范围") Integer grid,
         @RequestParam(defaultValue = "") @ApiParam("事件级别") String caseLevel,
         @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
         @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime) {
-        JSONArray result = null;
-        
+        ObjectRestResponse<JSONArray> result = new ObjectRestResponse<>();
+
         CaseInfo caseInfo = new CaseInfo();
         caseInfo.setBizList(bizList);
         caseInfo.setEventTypeList(eventTypeList);
         caseInfo.setGrid(grid);
         caseInfo.setCaseLevel(caseLevel);
-        if(StringUtils.isNotBlank(endTime)) {
+        if (StringUtils.isNotBlank(endTime)) {
             Date _end = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
             _end = DateUtils.addDays(_end, 1);
             endTime = DateUtil.dateFromDateToStr(_end, "yyyy-MM-dd HH:mm:ss");
         }
-        result = caseInfoBiz.getStatisCaseInfo(caseInfo,startTime,endTime);
-        
+        JSONArray data = caseInfoBiz.getStatisCaseInfo(caseInfo, startTime, endTime);
+
+        if (data != null) {
+            result.setData(data);
+        } else {
+            result.setStatus(400);
+        }
+
         return result;
     }
+
+    /**
+     *  业务条线分布
+     * 
+     * @return
+     */
+    @ApiOperation("业务条线分布")
+    @RequestMapping(value = "/statis/bizLine", method = RequestMethod.GET)
+    @ResponseBody
+    public ObjectRestResponse<JSONArray> getStatisBizLine(
+        @RequestParam(defaultValue = "") @ApiParam("事件类别") String eventTypeList,
+        @RequestParam(defaultValue = "0") @ApiParam("网格范围") Integer grid,
+        @RequestParam(defaultValue = "") @ApiParam("事件级别") String caseLevel,
+        @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
+        @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime) {
+        
+        ObjectRestResponse<JSONArray> result = new ObjectRestResponse<>();
+
+        CaseInfo caseInfo = new CaseInfo();
+        caseInfo.setEventTypeList(eventTypeList);
+        caseInfo.setGrid(grid);
+        caseInfo.setCaseLevel(caseLevel);
+        if (StringUtils.isNotBlank(endTime)) {
+            Date _end = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
+            _end = DateUtils.addDays(_end, 1);
+            endTime = DateUtil.dateFromDateToStr(_end, "yyyy-MM-dd HH:mm:ss");
+        }
+        JSONArray data = caseInfoBiz.getStatisBizLine(caseInfo, startTime, endTime);
+
+        if (data != null) {
+            result.setData(data);
+        } else {
+            result.setStatus(400);
+        }
+        return result;
+    }
+
 }
