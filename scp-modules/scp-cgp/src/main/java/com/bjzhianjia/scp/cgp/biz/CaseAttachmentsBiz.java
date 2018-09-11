@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.biz;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.bjzhianjia.scp.cgp.entity.CaseAttachments;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.mapper.CaseAttachmentsMapper;
+import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
@@ -61,17 +63,24 @@ public class CaseAttachmentsBiz extends BusinessBiz<CaseAttachmentsMapper, CaseA
     }
 
     /**
-     * =添加单个对象
-     * @param caseAttachments
+     * =批量添加对象
+     * 
+     * @param caseAttachmentsList
      * @return
      */
-    public Result<Void> add(CaseAttachments caseAttachments) {
+    public Result<Void> add(List<CaseAttachments> caseAttachmentsList) {
         Result<Void> result = new Result<>();
 
-        if(StringUtils.isBlank(caseAttachments.getIsDeleted())) {
-            caseAttachments.setIsDeleted("0");
+        for (CaseAttachments caseAttachments : caseAttachmentsList) {
+            caseAttachments.setCrtTime(new Date());
+            caseAttachments.setCrtUserId(BaseContextHandler.getUserID());
+            caseAttachments.setCrtUserName(BaseContextHandler.getUsername());
+
+            caseAttachments.setIsDeleted(
+                StringUtils.isBlank(caseAttachments.getIsDeleted()) ? "0" : caseAttachments.getIsDeleted());
         }
-        this.insertSelective(caseAttachments);
+
+        this.mapper.insertCaseAttachmentList(caseAttachmentsList);
         result.setIsSuccess(true);
         return result;
     }

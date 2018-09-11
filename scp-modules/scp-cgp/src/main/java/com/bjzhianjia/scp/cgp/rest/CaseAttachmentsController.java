@@ -11,6 +11,9 @@ import io.swagger.annotations.ApiParam;
 import com.bjzhianjia.scp.cgp.biz.CaseAttachmentsBiz;
 import com.bjzhianjia.scp.cgp.entity.CaseAttachments;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -64,9 +67,9 @@ public class CaseAttachmentsController extends BaseController<CaseAttachmentsBiz
     @RequestMapping(value="/add",method=RequestMethod.POST)
     @ApiOperation("添加单个对象")
     public ObjectRestResponse<CaseAttachments> add(
-        @RequestBody @Validated @ApiParam("待添加对象实例") CaseAttachments caseAttachments, BindingResult bindingResult) {
+        @RequestBody @Validated @ApiParam("待添加对象实例") List<CaseAttachments> caseAttachments, BindingResult bindingResult) {
         ObjectRestResponse<CaseAttachments> restResult = new ObjectRestResponse<>();
-
+        this.baseBiz.add(caseAttachments);
         return restResult;
     }
 }
