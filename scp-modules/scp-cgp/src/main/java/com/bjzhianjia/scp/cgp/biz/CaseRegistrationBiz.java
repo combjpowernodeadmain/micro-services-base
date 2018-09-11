@@ -11,13 +11,14 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
-import org.joda.time.LocalDate;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.bjzhianjia.scp.cgp.constances.CommonConstances;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.CLEConcernedCompany;
 import com.bjzhianjia.scp.cgp.entity.CLEConcernedPerson;
@@ -41,6 +42,7 @@ import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.cgp.vo.CaseRegistrationVo;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.util.UUIDUtils;
 import com.bjzhianjia.scp.security.wf.base.monitor.entity.WfProcBackBean;
@@ -154,31 +156,44 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      * @param caseId
      */
     private void addWritsInstances(JSONObject caseRegJObj, String caseId) {
-        WritsInstances writsInstances = JSON.parseObject(caseRegJObj.toJSONString(), WritsInstances.class);
-        if (writsInstances == null) {
-            writsInstances = new WritsInstances();
+        JSONArray writsInstancesJArray = caseRegJObj.getJSONArray("writsInstances");
+        
+        List<WritsInstances> writsInstanceList = JSONArray.parseArray(writsInstancesJArray.toJSONString(), WritsInstances.class);
+        
+        if (writsInstanceList == null) {
+            writsInstanceList = new ArrayList<>();
         }
 
+        /*
+         * ===================以下代码暂时不要删=================
+         */
         // 生成某一文号执法种类下某一年中文号序号
-        WritsInstances theNextWenHao =
-            writsInstancesBiz.theNextWenHao(writsInstances.getCaseId(), writsInstances.getTemplateId(),
-                writsInstances.getRefEnforceType());
-        String refNo =
-            caseRegJObj.getString("squadronLeader") + String.format("%03d", Integer.valueOf(theNextWenHao.getRefNo()));
-        writsInstances.setRefNo(refNo);
-        writsInstances.setRefYear(String.valueOf(new LocalDate().getYear()));
-        writsInstances.setFillContext(
-            getWritsFillContext(caseRegJObj, writsInstances.getFillContext(), writsInstances.getRefNo()));
-        // 关联该文书相关的案件
-        writsInstances.setCaseId(caseId);
+//        WritsInstances theNextWenHao =
+//            writsInstancesBiz.theNextWenHao(writsInstances.getCaseId(), writsInstances.getTemplateId(),
+//                writsInstances.getRefEnforceType());
+//        String refNo =
+//            caseRegJObj.getString("squadronLeader") + String.format("%03d", Integer.valueOf(theNextWenHao.getRefNo()));
+//        writsInstances.setRefNo(refNo);
+//        writsInstances.setRefYear(String.valueOf(new LocalDate().getYear()));
 
-        // 判断文书是否进行过暂存(如果请求参数中有文书ID表明暂存过)
-        if (BeanUtil.isEmpty(writsInstances.getId())) {
-            // 没有暂存过，进行一次添加操作
-            writsInstancesBiz.insertSelective(writsInstances);
-        } else {
-            // 暂存过，进行更新操作
-            writsInstancesBiz.updateById(writsInstances);
+        // TODO By尚 可能需要将fillContext进行合并
+//        writsInstances.setFillContext(
+//            getWritsFillContext(caseRegJObj, writsInstances.getFillContext(), writsInstances.getRefNo()));
+        /*
+         * =================以上代码暂时不要删====================
+         */
+        // 关联该文书相关的案件
+
+        for (WritsInstances writsInstances : writsInstanceList) {
+            writsInstances.setCaseId(caseId);
+            // 判断文书是否进行过暂存(如果请求参数中有文书ID表明暂存过)
+            if (BeanUtil.isEmpty(writsInstances.getId())) {
+                // 没有暂存过，进行一次添加操作
+                writsInstancesBiz.insertSelective(writsInstances);
+            } else {
+                // 暂存过，进行更新操作
+                writsInstancesBiz.updateById(writsInstances);
+            }
         }
     }
 
@@ -638,8 +653,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         for (CaseRegistration caseRegistration : caseRegistrationList) {
             objResult = JSONObject.parseObject(JSON.toJSONString(caseRegistration));
             wfProcBackBean = wfProcBackBean_ID_Entity_Map.get(objResult.get("id"));
-            
-            //定位坐标
+
+            // 定位坐标
             objResult.put("mapInfo", "{\"lng\":\"" + caseRegistration.getCaseOngitude() + "\",\"lat\":\""
                 + caseRegistration.getCaseLatitude() + "\"}");
 
@@ -861,9 +876,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 if (inspectItems != null) {
                 }
                 result.put("inspectName", inspectItems.getName());
-                
-                
-                //举报人姓名
+
+                // 举报人姓名
                 JSONArray informerUser = iUserFeign.getByUserIds(caseRegistration.getCaseInformer());
                 String caseInformerName = "";
                 if (informerUser != null && !informerUser.isEmpty()) {
@@ -872,8 +886,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                     }
                 }
                 result.put("caseInformerName", caseInformerName);
-                
-                
+
                 // 执法者用户名
                 JSONArray userList = null;
                 try {
@@ -936,4 +949,55 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         return result;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public ObjectRestResponse<JSONObject> getStatisZhDuiCase(JSONObject caseRegistrationJObj, String startTime,
+        String endTime) {
+        DateTime startDateTime=new DateTime(DateUtil.dateFromStrToDate(startTime, CommonConstances.DATE_FORMAT_FULL));
+        DateTime _endDateTime=new DateTime(DateUtil.dateFromStrToDate(endTime, CommonConstances.DATE_FORMAT_FULL));
+        DateTime endDateTime = _endDateTime.plusDays(1);
+        
+        ObjectRestResponse<JSONObject> restResponse = new ObjectRestResponse<>();
+        JSONObject resultJobj = new JSONObject();
+
+        if (StringUtils.isNotBlank(caseRegistrationJObj.getString("gridIds"))) {
+            StringBuffer buffer = new StringBuffer();
+            buffer.append("'").append(caseRegistrationJObj.getString("gridIds").replaceAll(",", "','")).append("'");
+            caseRegistrationJObj.put("gridIds", buffer.toString());
+        }else {
+            caseRegistrationJObj.put("gridIds", null);
+        }
+
+        JSONArray byDealType = this.mapper.getStatisByDealType((Map) caseRegistrationJObj);
+        JSONArray byDept = this.mapper.getStatisByDept((Map) caseRegistrationJObj);
+        
+        do {
+            
+        }while(false);
+        
+        
+        List<Integer> yearList=new ArrayList<>();
+        for(int i=startDateTime.getYear();i<=endDateTime.getYear();i++) {
+            if(i==startDateTime.getYear()) {
+                //遍历到起始年
+                for(int j=0;j<byDept.size();j++) {
+                    
+                }
+            }
+        }
+        
+        //格式化数据
+        for(int i=0;i<byDealType.size();i++) {
+            
+        }
+        for(int i=0;i<byDept.size();i++) {
+            
+        }
+
+        resultJobj.put("byDept", byDept);
+        resultJobj.put("byDealType", byDealType);
+
+        restResponse.setStatus(200);
+        restResponse.setData(resultJobj);
+        return restResponse;
+    }
 }

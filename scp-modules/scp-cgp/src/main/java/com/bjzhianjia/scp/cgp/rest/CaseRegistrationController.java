@@ -24,6 +24,7 @@ import com.bjzhianjia.scp.security.common.rest.BaseController;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+
 /**
  * 
  * CaseRegistrationController 案件登记.
@@ -37,7 +38,7 @@ import io.swagger.annotations.ApiParam;
  * </pre>
  * 
  *
- * @version 1.0 
+ * @version 1.0
  * @author chenshuai
  *
  */
@@ -166,5 +167,23 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
             result.setMessage("非法参数");
         }
         return result;
+    }
+
+    @RequestMapping(value = "/statis/ZhDui", method = RequestMethod.GET)
+    @ApiOperation("执法中队案件量趋势分析")
+    public ObjectRestResponse<JSONObject> getStatisZhDuiCase(
+        @RequestParam(value = "bizType", defaultValue = "") String bizType,
+        @RequestParam(value = "caseSourceType", defaultValue = "") String caseSourceType,
+        @RequestParam(value = "gridIds", defaultValue = "") String gridIds,
+        @RequestParam(value = "startTime", defaultValue = "") String startTime,
+        @RequestParam(value = "endTime", defaultValue = "") String endTime) {
+
+        JSONObject caseRegistrationJObj = new JSONObject();
+        caseRegistrationJObj.put("bizType", bizType);
+        caseRegistrationJObj.put("caseSourceType", caseSourceType);
+        caseRegistrationJObj.put("gridIds", gridIds);
+        caseRegistrationJObj.put("startTime", startTime);
+        caseRegistrationJObj.put("endTime", endTime);
+        return this.baseBiz.getStatisZhDuiCase(caseRegistrationJObj, startTime, endTime);
     }
 }
