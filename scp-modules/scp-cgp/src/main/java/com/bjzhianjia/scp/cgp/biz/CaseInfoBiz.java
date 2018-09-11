@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
@@ -56,9 +57,13 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
 
     @Autowired
     private DictFeign dictFeign;
-    
+
+    @Autowired
+    private AreaGridBiz areaGridBiz;
+
     /**
      * 查询未删除的总数
+     * 
      * @return
      */
     public Integer getCount() {
@@ -66,6 +71,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         caseInfo.setIsDeleted("0");
         return this.mapper.selectCount(caseInfo);
     }
+
     /**
      * 查询ID最大的那条记录
      * 
@@ -252,17 +258,17 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
      * 
      * @return
      */
-    public JSONObject getStatisCaseState(CaseInfo caseInfo, String startTime, String endTime) {
+    public JSONObject getStatisCaseState(CaseInfo caseInfo, String startTime, String endTime,String grids) {
         JSONObject result = new JSONObject();
-        //已终止、已完成、处理中、总数
-        String[] stateKey = {"stop","finish","todo","total"};
-        
-        //超时统计
+        // 已终止、已完成、处理中、总数
+        String[] stateKey = { "stop", "finish", "todo", "total" };
+
+        // 超时统计
         Integer overtime = this.mapper.selectOvertime(caseInfo, startTime, endTime);
-        //处理状态统计
-        List<Map<String, Integer>> finishedState = this.mapper.selectState(caseInfo, startTime, endTime);
+        // 处理状态统计
+        List<Map<String, Integer>> finishedState = this.mapper.selectState(caseInfo, startTime, endTime,grids);
         String stateName = "";
-        for(Map<String, Integer> state : finishedState) {
+        for (Map<String, Integer> state : finishedState) {
             switch (String.valueOf(state.get("state"))) {
                 case CaseInfo.FINISHED_STATE_STOP:
                     stateName = stateKey[0];
@@ -273,27 +279,26 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
                 case CaseInfo.FINISHED_STATE_TODO:
                     stateName = stateKey[2];
                     break;
-              
+
             }
             result.put(stateName, state.get("count"));
         }
-        
-        //封装处理中、总数
-        if(overtime != null && BeanUtil.isNotEmpty(finishedState)) {
+
+        // 封装处理中、总数
+        if (overtime != null && BeanUtil.isNotEmpty(finishedState)) {
             result.put("overtime", overtime);
-            //已终止的
+            // 已终止的
             Integer stopCount = result.getInteger(stateKey[0]);
-            stopCount = stopCount == null?0:stopCount;
-            //已完成
+            stopCount = stopCount == null ? 0 : stopCount;
+            // 已完成
             Integer finishCount = result.getInteger(stateKey[1]);
-            finishCount = finishCount == null?0:stopCount;
-            //已完成 = 已完成 + 已终止
-            result.put(stateKey[1],stopCount+finishCount);
-            
-            
-            //事件总数
+            finishCount = finishCount == null ? 0 : stopCount;
+            // 已完成 = 已完成 + 已终止
+            result.put(stateKey[1], stopCount + finishCount);
+
+            // 事件总数
             result.put(stateKey[3], this.getCount());
-            //删除多余字段
+            // 删除多余字段
             result.remove(stateKey[0]);
         }
         return result;
@@ -303,31 +308,31 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
      * 事件来源分布统计
      * 
      */
-    public JSONArray getStatisEventSource(CaseInfo caseInfo, String startTime, String endTime) {
+    public JSONArray getStatisEventSource(CaseInfo caseInfo, String startTime, String endTime,String gridIds) {
         JSONArray result = new JSONArray();
 
-        List<Map<String, Object>> eventSourceList = this.mapper.getStatisEventSource(caseInfo, startTime, endTime);
+        List<Map<String, Object>> eventSourceList = this.mapper.getStatisEventSource(caseInfo, startTime, endTime,gridIds);
         Map<String, String> eventtypeMap = dictFeign.getByCode(Constances.ROOT_BIZ_EVENTTYPE);
         if (BeanUtil.isNotEmpty(eventtypeMap)) {
-            //事件来源数量
+            // 事件来源数量
             Integer count = 0;
-            //事件来源类型集处理
-            Map<String ,Integer> eventSourceMap = new HashMap<>();
+            // 事件来源类型集处理
+            Map<String, Integer> eventSourceMap = new HashMap<>();
             for (Map<String, Object> eventSource : eventSourceList) {
                 String key = String.valueOf(eventSource.get("sourceType"));
                 count = Integer.valueOf(String.valueOf(eventSource.get("count")));
                 eventSourceMap.put(key, count);
             }
-        
-            //封装前台显示数据
+
+            // 封装前台显示数据
             JSONObject obj = null;
             Set<String> eventtypeKey = eventtypeMap.keySet();
-            if(eventtypeKey != null && !eventtypeKey.isEmpty()) {
-                for(String key: eventtypeKey) {
+            if (eventtypeKey != null && !eventtypeKey.isEmpty()) {
+                for (String key : eventtypeKey) {
                     obj = new JSONObject();
                     obj.put("sourceTypeName", eventtypeMap.get(key));
                     count = eventSourceMap.get(key);
-                    obj.put("count", count!=null?count:0);
+                    obj.put("count", count != null ? count : 0);
                     result.add(obj);
                 }
             }
@@ -338,11 +343,18 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
     /**
      * 事件量趋势统计
      * 
+     * @param caseInfod
+     *            查询参数
+     * @param startTime
+     *            开始时间
+     * @param endTime
+     *            结束时间
+     * @return
      */
-    public JSONArray getStatisCaseInfo(CaseInfo caseInfo, String startTime, String endTime) {
+    public JSONArray getStatisCaseInfo(CaseInfo caseInfo, String startTime, String endTime,String gridIds) {
         JSONArray result = new JSONArray();
 
-        List<Map<String, Object>> eventSourceList = this.mapper.getStatisCaseInfo(caseInfo, startTime, endTime);
+        List<Map<String, Object>> eventSourceList = this.mapper.getStatisCaseInfo(caseInfo, startTime, endTime,gridIds);
 
         if (BeanUtil.isNotEmpty(eventSourceList)) {
 
@@ -385,7 +397,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
 
             // 封装插件需要的数据
             Set<String> eventSourceKey = eventSourceMap.keySet();
-            //回显数据的长度固定6条
+            // 回显数据的长度固定6条
             int size = 6;
             for (String key : eventSourceKey) {
                 JSONObject obj = JSONObject.parseObject(JSONObject.toJSONString(eventSourceMap.get(key)));
@@ -412,37 +424,76 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         }
         return result;
     }
-    
+
     /**
-     * 业务条线分布统计 
-     * @param caseInfo 查询条件
-     * @param startTime  开始时间
-     * @param endTime   结束时间
+     * 业务条线分布统计
+     * 
+     * @param caseInfo
+     *            查询条件
+     * @param gridLevel
+     *            网格等级
+     * @param startTime
+     *            开始时间
+     * @param endTime
+     *            结束时间
      * @return
      */
-    public JSONArray getStatisBizLine(CaseInfo caseInfo, String startTime, String endTime) {
+    public JSONArray getStatisBizLine(CaseInfo caseInfo, String gridLevel, String startTime, String endTime) {
         JSONArray result = new JSONArray();
-        
+
+        // 网格等级
+        List<AreaGrid> areaGridList = null;
+        //网格ids
+        StringBuilder gridIds = new StringBuilder();
+        if (StringUtils.isBlank(gridLevel)) {
+            areaGridList = areaGridBiz.getByGridLevel(gridLevel);
+            int size = areaGridList.size();
+            for (int i = 0; i < size; i++) {
+                AreaGrid areaGrid = areaGridList.get(i);
+                if (i == size - 1) {
+                    gridIds.append(areaGrid.getId());
+                } else {
+                    gridIds.append(areaGrid.getId()).append(",");
+                }
+            }
+        }
+
         Map<String, String> bizType = dictFeign.getByCode(Constances.ROOT_BIZ_TYPE);
-        if(BeanUtil.isEmpty(bizType)) {
+        if (BeanUtil.isEmpty(bizType)) {
             bizType = new HashMap<>();
         }
-        
-        List<Map<String,Object>> bizLineList = this.mapper.selectBizLine(caseInfo, startTime, endTime);
-        if(BeanUtil.isNotEmpty(bizLineList)) {
-            JSONObject obj = null;
-            for(Map<String,Object> bizLineMap : bizLineList) {
+
+        JSONObject obj = null;
+        // 返回集初始化
+        Map<String, JSONObject> temp = new HashMap<>();
+        Set<String> setKey = bizType.keySet();
+        for (String key : setKey) {
+            obj = new JSONObject();
+            obj.put("bizList", key);
+            obj.put("count", 0);
+            obj.put("bizListName", bizType.get(key));
+            temp.put(key, obj);
+        }
+        // 封装数据库中的数据
+        List<Map<String, Object>> bizLineList =
+            this.mapper.selectBizLine(caseInfo, gridIds.toString(), startTime, endTime);
+        if (BeanUtil.isNotEmpty(bizLineList)) {
+            for (Map<String, Object> bizLineMap : bizLineList) {
                 obj = new JSONObject();
-                String bizList= String.valueOf(bizLineMap.get("bizList"));
-                //业务条线
+                String bizList = String.valueOf(bizLineMap.get("bizList"));
+                // 业务条线
                 obj.put("bizList", bizList);
                 obj.put("count", bizLineMap.get("count"));
                 obj.put("bizListName", bizType.get(bizList));
-                result.add(obj);
+                temp.put(bizList, obj);
             }
+        }
+        // 封装返回集数据
+        setKey = temp.keySet();
+        for (String key : setKey) {
+            result.add(temp.get(key));
         }
         return result;
     }
-    
-    
+
 }

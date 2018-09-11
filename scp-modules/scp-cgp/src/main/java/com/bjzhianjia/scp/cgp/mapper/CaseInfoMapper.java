@@ -32,13 +32,14 @@ public interface CaseInfoMapper extends CommonMapper<CaseInfo> {
      * @param caseInfo  查询条件
      * @param startTime 开始时间
      * @param endTime 结束时间
+     * @param gridIds  网格范围ids
      * @return
      *         source_type1=count1，
      *         source_type2=count2，
      *         source_type3=count3
      */
     public List<Map<String, Object>> getStatisEventSource(@Param("caseInfo") CaseInfo caseInfo,
-        @Param("startTime") String startTime, @Param("endTime") String endTime);
+        @Param("startTime") String startTime, @Param("endTime") String endTime,@Param("gridIds") String gridIds);
 
     /**
      * 事件量趋势统计
@@ -46,10 +47,11 @@ public interface CaseInfoMapper extends CommonMapper<CaseInfo> {
      * @param caseInfo 查询条件
      * @param startTime 开始时间
      * @param endTime 结束时间
+     * @param gridIds  网格范围ids
      * @return
      */
     public List<Map<String, Object>> getStatisCaseInfo(@Param("caseInfo") CaseInfo caseInfo,
-        @Param("startTime") String startTime, @Param("endTime") String endTime);
+        @Param("startTime") String startTime, @Param("endTime") String endTime ,@Param("gridIds") String gridIds);
 
     /**
      * 事件超时统计
@@ -66,19 +68,21 @@ public interface CaseInfoMapper extends CommonMapper<CaseInfo> {
      * @param caseInfo 查询条件
      * @param startTime  开始时间
      * @param endTime   结束时间
+     * @param gridIds  网格范围ids
      * @return
      *         处理中、已完成、已终止
      */
     public List<Map<String, Integer>> selectState(@Param("caseInfo") CaseInfo caseInfo,
-        @Param("startTime") String startTime, @Param("endTime") String endTime);
+        @Param("startTime") String startTime, @Param("endTime") String endTime,@Param("gridIds") String gridIds);
 
     /**
      * 业务条线分布统计 
      * @param caseInfo 查询条件
+     * @param gridIds 网格ids
      * @param startTime  开始时间
      * @param endTime   结束时间
      * @return
      */
-    public List<Map<String ,Object>> selectBizLine(@Param("caseInfo") CaseInfo caseInfo,
+    public List<Map<String ,Object>> selectBizLine(@Param("caseInfo") CaseInfo caseInfo,@Param("gridIds")String gridIds,
         @Param("startTime") String startTime, @Param("endTime") String endTime);
 }
