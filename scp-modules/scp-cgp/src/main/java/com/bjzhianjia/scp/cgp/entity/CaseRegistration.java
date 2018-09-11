@@ -56,23 +56,23 @@ public class CaseRegistration implements Serializable {
     /**
      * 责令改正
      */
-    public static final String RECTIFICATION="boor_biz_dealType_rectification";
+    public static final String RECTIFICATION="root_biz_dealType_rec";
     /**
      * 现场处罚（简易程序）
      */
-    public static final String SPOTPUNISHMENT="boor_biz_dealType_spotpunishment";
+    public static final String SPOTPUNISHMENT="root_biz_dealType_spo";
     /**
      * 责令改正并现场处罚(一般程序)
      */
-    public static final String RECTIFICATION_SPOTPUNISHMENT="boor_biz_dealType_rectification_spotpunishment";
+    public static final String RECTIFICATION_SPOTPUNISHMENT="root_biz_dealType_rec_spo";
     /**
      * 检查无事
      */
-    public static final String NOTHING_HAPPENED="boor_biz_dealType_nothing_happened";
+    public static final String NOTHING_HAPPENED="root_biz_dealType_nothing_hap";
     /**
      * 口头警告
      */
-    public static final String GIVE_WARING="boor_biz_dealType_give_waring";
+    public static final String GIVE_WARING="root_biz_dealType_give_waring";
 
     // 主键
     @Id
