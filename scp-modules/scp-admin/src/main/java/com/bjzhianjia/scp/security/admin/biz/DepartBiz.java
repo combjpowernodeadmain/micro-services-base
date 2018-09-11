@@ -26,6 +26,7 @@ import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.util.UUIDUtils;
 
 import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.entity.Example.Criteria;
 
 /**
  *
@@ -164,5 +165,18 @@ public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
     	criteria.andEqualTo("parentId",parentId);
     	List<Depart> deptList = mapper.selectByExample(example);
     	return deptList;
+    }
+    
+    /**
+     * 查询执法分队
+     * @return
+     */
+    public List<Depart> getEnforcersGroup(){
+      Example example = new Example(Depart.class);
+      Criteria criteria = example.createCriteria();
+      //1 执法分队 0非执法分队
+      String isEnforcersGroup = "1";
+      criteria.andEqualTo("attr1", isEnforcersGroup);
+     return this.mapper.selectByExample(example);
     }
 }
