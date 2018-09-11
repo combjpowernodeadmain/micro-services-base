@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.cgp.biz;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ import com.bjzhianjia.scp.cgp.entity.WritsInstances;
 import com.bjzhianjia.scp.cgp.entity.WritsTemplates;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.mapper.WritsInstancesMapper;
+import com.bjzhianjia.scp.cgp.mapper.WritsTemplatesMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.util.DocUtil;
@@ -58,6 +60,8 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 
     @Autowired
     private WritsTemplatesBiz writsTemplatesBiz;
+    @Autowired
+    private WritsTemplatesMapper writsTemplatesMapper;
 
     @Autowired
     private PropertiesConfig propertiesConfig;
@@ -255,8 +259,8 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             }
         }
 
-        // restResult.setData(writsPath);
-        restResult.setData("http://www.xdocin.com/demo/demo.docx");
+         restResult.setData(writsPath);
+//        restResult.setData("http://www.xdocin.com/demo/demo.docx");
         return restResult;
     }
 
@@ -374,7 +378,23 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
      * @param writsInstances
      * @return
      */
-    public ObjectRestResponse<WritsInstances> addCache(WritsInstances writsInstances) {
+    public ObjectRestResponse<WritsInstances> addCache(JSONObject writsJObj) {
+        WritsInstances writsInstances = JSONObject.toJavaObject(writsJObj, WritsInstances.class);
+        
+        if(BeanUtil.isEmpty(writsInstances.getTemplateId())) {
+            //尝试通过tcode来获取模板ID
+            //获取模板ID
+            String tCode=writsJObj.getString("tCode");
+            List<WritsTemplates> writsTemplateList = writsTemplatesBiz.getByTcodes(tCode);
+            WritsTemplates writsTemplates=new WritsTemplates();
+            if(BeanUtil.isNotEmpty(writsTemplateList)) {
+                writsTemplates=writsTemplateList.get(0);
+            }
+            
+            writsInstances.setTemplateId(writsTemplates.getId());
+        }
+        
+        
         ObjectRestResponse<WritsInstances> restResult = new ObjectRestResponse<>();
 
         this.insertSelective(writsInstances);
@@ -409,13 +429,27 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         Set<String> userIdList = new HashSet<>();
         List<String> writsCrtUserIdList =
             writsInstanceList.stream().map(o -> o.getCrtUserId()).distinct().collect(Collectors.toList());
+        List<String> writstemplateIdList =
+            writsInstanceList.stream().map(o -> String.valueOf(o.getTemplateId())).distinct().collect(Collectors.toList());
         List<String> attaCrtUserIdList =
             attachmentsList.stream().map(o -> o.getCrtUserId()).collect(Collectors.toList());
 
         userIdList.addAll(writsCrtUserIdList);
         userIdList.addAll(attaCrtUserIdList);
 
-        Map<String, String> userMap = adminFeign.getUser(String.join(",", userIdList));
+        Map<String, String> userMap = new HashMap<>();
+        if(BeanUtil.isNotEmpty(userIdList)) {
+            userMap = adminFeign.getUser(String.join(",", userIdList));
+        }
+        
+        //查询文书对应的模板
+        List<WritsTemplates> templateList = new ArrayList<>();
+        Map<Integer, String> template_ID_NAME_Map=new HashMap<>();
+        if(BeanUtil.isNotEmpty(writstemplateIdList)) {
+            templateList = writsTemplatesMapper.selectByIds(String.join(",", writstemplateIdList));
+            template_ID_NAME_Map = templateList.stream().collect(Collectors.toMap(WritsTemplates::getId, WritsTemplates::getName));
+        }
+        
 
         for (WritsInstances writsInstances : writsInstanceList) {
             JSONObject tmp = new JSONObject();
@@ -423,7 +457,8 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             tmp.put("crtUserId", writsInstances.getCrtUserId());// 上传人ID
             tmp.put("crtUserName", CommonUtil.getValueFromJObjStr(userMap.get(writsInstances.getCrtUserId()), "name"));// 上传人姓名
             tmp.put("crtTime", writsInstances.getCrtTime());// 上传时间
-            
+            tmp.put("type", "writs");
+            tmp.put("templateName", template_ID_NAME_Map.get(writsInstances.getTemplateId()));
             resultJArray.add(tmp);
         }
         for (CaseAttachments caseAttachments : attachmentsList) {
@@ -432,6 +467,8 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             tmp.put("crtUserId", caseAttachments.getCrtUserId());// 上传人ID
             tmp.put("crtUserName", CommonUtil.getValueFromJObjStr(userMap.get(caseAttachments.getCrtUserId()), "name"));// 上传人姓名
             tmp.put("crtTime", caseAttachments.getCrtTime());// 上传时间
+            tmp.put("type", "attachment");
+            tmp.put("docUrl", caseAttachments.getDocUrl());
             resultJArray.add(tmp);
         }
 
@@ -464,5 +501,26 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             return new ArrayList<WritsInstances>();
         }
         return writsList;
+    }
+    
+    /**
+     * 批量添加记录
+     * @param writsInstancesList
+     * @return
+     */
+    public ObjectRestResponse<WritsInstances> addList(List<WritsInstances> writsInstanceList){
+        ObjectRestResponse<WritsInstances> restResult=new ObjectRestResponse<>();
+        
+        for (WritsInstances writsInstances : writsInstanceList) {
+            // 判断文书是否进行过暂存(如果请求参数中有文书ID表明暂存过)
+            if (BeanUtil.isEmpty(writsInstances.getId())) {
+                // 没有暂存过，进行一次添加操作
+                this.insertSelective(writsInstances);
+            } else {
+                // 暂存过，进行更新操作
+                this.updateById(writsInstances);
+            }
+        }
+        return restResult;
     }
 }
