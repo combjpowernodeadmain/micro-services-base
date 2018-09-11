@@ -55,4 +55,12 @@ public interface AdminFeign {
      */
 	@RequestMapping(value="/user/get/user/detail")
 	public JSONArray getUserDetail(@RequestParam("userId") String userId);
+	
+	/**
+	 * 查询执法分队
+	 * @return
+	 *     所有的执法分队
+	 */
+    @RequestMapping(value="/depart/enforcersGroup",method=RequestMethod.GET)
+    public JSONArray getEnforcersGroup();
 }
