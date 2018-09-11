@@ -76,7 +76,13 @@ public class Constances {
     /**
      * 案件处理方式类型
      */
-    public static final String BOOR_BIZ_DEAL_TYPE="root_biz_dealType";
+    public static final String ROOT_BIZ_CASEDEALTYPE="root_biz_caseDealType";
+    
+    /**
+     * 案件来源
+     */
+    public static final String CASE_SOURCE_TYPE = "root_biz_caseSourceT";
+    
     
 	/**
 	 * 专项管理处理状态
