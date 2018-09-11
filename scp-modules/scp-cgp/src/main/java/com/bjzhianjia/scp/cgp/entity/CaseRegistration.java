@@ -53,30 +53,26 @@ public class CaseRegistration implements Serializable {
      */
     public static final String CASE_SOURCE_TYPE_CENTER = "root_biz_caseSourceT_center";
     
-    
-    //责令改正 现场处罚 责令改正并现场处罚  检查无事
-    public static final String BOOR_BIZ_DEAL_TYPE="boor_biz_dealType";
-    
     /**
-     * =责令改正
+     * 责令改正
      */
-    public static final String RECTIFICATION="rectification";
+    public static final String RECTIFICATION="boor_biz_dealType_rectification";
     /**
-     * =现场处罚（简易程序）
+     * 现场处罚（简易程序）
      */
-    public static final String SPOTPUNISHMENT="spotpunishment";
+    public static final String SPOTPUNISHMENT="boor_biz_dealType_spotpunishment";
     /**
-     * =责令改正并现场处罚(一般程序)
+     * 责令改正并现场处罚(一般程序)
      */
-    public static final String RECTIFICATION_SPOTPUNISHMENT="rectification_spotpunishment";
+    public static final String RECTIFICATION_SPOTPUNISHMENT="boor_biz_dealType_rectification_spotpunishment";
     /**
      * 检查无事
      */
-    public static final String NOTHING_HAPPENED="nothing_happened";
+    public static final String NOTHING_HAPPENED="boor_biz_dealType_nothing_happened";
     /**
      * 口头警告
      */
-    public static final String GIVE_WARING="give_waring";
+    public static final String GIVE_WARING="boor_biz_dealType_give_waring";
 
     // 主键
     @Id

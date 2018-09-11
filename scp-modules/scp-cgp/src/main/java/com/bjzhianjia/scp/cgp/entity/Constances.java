@@ -73,6 +73,10 @@ public class Constances {
 	 */
 	public static final String ROOT_BIZ_EVENTLEVEL = "root_biz_eventLevel";
 	
+    /**
+     * 案件处理方式类型
+     */
+    public static final String BOOR_BIZ_DEAL_TYPE="boor_biz_dealType";
 	/**
 	 * 专项管理处理状态
 	 * @author 尚
