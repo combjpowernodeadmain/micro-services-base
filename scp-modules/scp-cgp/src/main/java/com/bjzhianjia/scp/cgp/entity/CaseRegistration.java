@@ -52,6 +52,25 @@ public class CaseRegistration implements Serializable {
      * 案件来源：中心交办
      */
     public static final String CASE_SOURCE_TYPE_CENTER = "root_biz_caseSourceT_center";
+    
+    
+    //责令改正 现场处罚 责令改正并现场处罚  检查无事
+    /**
+     * =责令改正
+     */
+    public static final String RECTIFICATION="1";
+    /**
+     * =现场处罚
+     */
+    public static final String SPOTPUNISHMENT="2";
+    /**
+     * =责令改正并现场处罚
+     */
+    public static final String RECTIFICATION_SPOTPUNISHMENT="3";
+    /**
+     * 检查无事
+     */
+    public static final String NOTHING_HAPPENED="4";
 
     // 主键
     @Id
