@@ -24,6 +24,7 @@ import com.bjzhianjia.scp.cgp.entity.CaseAttachments;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.WritsInstances;
 import com.bjzhianjia.scp.cgp.entity.WritsTemplates;
+import com.bjzhianjia.scp.cgp.exception.BizException;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.mapper.WritsInstancesMapper;
 import com.bjzhianjia.scp.cgp.mapper.WritsTemplatesMapper;
@@ -60,6 +61,7 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 
     @Autowired
     private WritsTemplatesBiz writsTemplatesBiz;
+
     @Autowired
     private WritsTemplatesMapper writsTemplatesMapper;
 
@@ -138,13 +140,15 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         String fillContext = writsInstances.getFillContext();
 
         if (writsInstances.getId() == null) {
-            WritsInstances theNextWenHao =
-                theNextWenHao(writsInstances.getCaseId(), writsInstances.getTemplateId(),
-                    writsInstances.getRefEnforceType());
+            
+            
+//            WritsInstances theNextWenHao =
+//                theNextWenHao(writsInstances.getCaseId(), writsInstances.getTemplateId(),
+//                    writsInstances.getRefEnforceType());
 
             // 还没有插入过对象
             JSONObject jObjInDB =
-                mergeFillContext(procNode, fillContext, null, writsInstances.getCaseId(), theNextWenHao.getRefNo());
+                mergeFillContext(procNode, fillContext, null, writsInstances.getCaseId(), null);
 
             // 把处理后的文书内容(fillContext)放回，进行更新操作
             writsInstances.setRefYear(String.valueOf(new LocalDate().getYear()));
@@ -162,7 +166,7 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             JSONObject jObjInDB = JSONObject.parseObject(fillContextInDB);
             jObjInDB =
                 mergeFillContext(procNode, fillContext, jObjInDB, writsInstances.getCaseId(),
-                    writsInstancesInDB.getRefNo());
+                    null);
 
             // 把处理后的文书内容(fillContext)放回，进行更新操作
             writsInstances.setFillContext(jObjInDB.toJSONString());
@@ -223,24 +227,27 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 
             // 生成与fillContext相对应的文件名
             StringBuffer destFileNameBuffer = new StringBuffer();
-            destFileNameBuffer.append(WritsConstances.WRITS_PREFFIX).append(fillContext.hashCode()).append(".docx");
+            destFileNameBuffer.append(WritsConstances.WRITS_PREFFIX).append(writsInstances.getCaseId()).append("_")
+                .append(fillContext.hashCode()).append(".docx");
 
             String destPath = propertiesConfig.getDestFilePath() + destFileNameBuffer.toString();
 
             if (DocUtil.exists(destPath)) {
-                writsPath = destFileNameBuffer.toString();
+                writsPath = destPath;
             } else {
                 // 说明可能已存在过旧文件，将所有旧文件进行删除，将生成的新文件进行生成并返回路径
-                // 该删除操作已放到定时任务中进行com.bjzhianjia.scp.cgp.service.DocService.deletedDocFiles()
-                // DocUtil.deletePrefix(WritsConstances.WRITS_PREFFIX,
-                // WritsConstances.WRITS_SUFFIX,
-                // propertiesConfig.getDestFilePath());
+                List<String> ignoreFileNameList = new ArrayList<>();
+                ignoreFileNameList.add(destFileNameBuffer.toString());
+
+                DocUtil.deletePrefix(WritsConstances.WRITS_PREFFIX + writsInstances.getCaseId() + "_",
+                    WritsConstances.WRITS_SUFFIX, propertiesConfig.getDestFilePath(), ignoreFileNameList);
 
                 // 将fillContext内的内容添加到文书模板上
                 JSONObject fillJObj = JSONObject.parseObject(fillContext);
 
                 StringBuffer ziHao = new StringBuffer();
-                ziHao.append("[").append(writsInstances.getRefYear()).append("]").append(writsInstances.getRefNo());
+                ziHao.append(writsInstances.getRefEnforceType()).append("[").append(writsInstances.getRefYear())
+                    .append("]").append(writsInstances.getRefNo());
                 fillJObj.put("ZiHao", ziHao.toString());
 
                 @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -259,8 +266,8 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             }
         }
 
-         restResult.setData(writsPath);
-//        restResult.setData("http://www.xdocin.com/demo/demo.docx");
+        restResult.setData(writsPath);
+        // restResult.setData("http://www.xdocin.com/demo/demo.docx");
         return restResult;
     }
 
@@ -305,13 +312,12 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             templateJObj.put("writsTemplatesId", tmpT.getId());
             templateJObj.put("writsTemplates", tmpT.getName());
             List<JSONObject> innerWritsInstancesList = new ArrayList<>();// 用于封装回传前端的文书信息集合
-            int count = 1;
             for (WritsInstances tmpW : writsInstancesLis) {
                 // 搜索与temT对应的文书
                 if (tmpT.getId().equals(tmpW.getTemplateId())) {
                     JSONObject writsInstancesJObj = new JSONObject();// 用于封装回传前端的文书信息，减少回传数据量
                     writsInstancesJObj.put("writsInstancesId", tmpW.getId());
-                    writsInstancesJObj.put("writsInstancesName", "实例" + count);
+                    writsInstancesJObj.put("writsInstancesName", tmpW.getRefAbbrev());
                     innerWritsInstancesList.add(writsInstancesJObj);
                 }
                 templateJObj.put("writsInstances", innerWritsInstancesList);
@@ -380,21 +386,20 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
      */
     public ObjectRestResponse<WritsInstances> addCache(JSONObject writsJObj) {
         WritsInstances writsInstances = JSONObject.toJavaObject(writsJObj, WritsInstances.class);
-        
-        if(BeanUtil.isEmpty(writsInstances.getTemplateId())) {
-            //尝试通过tcode来获取模板ID
-            //获取模板ID
-            String tCode=writsJObj.getString("tCode");
+
+        if (BeanUtil.isEmpty(writsInstances.getTemplateId())) {
+            // 尝试通过tcode来获取模板ID
+            // 获取模板ID
+            String tCode = writsJObj.getString("tCode");
             List<WritsTemplates> writsTemplateList = writsTemplatesBiz.getByTcodes(tCode);
-            WritsTemplates writsTemplates=new WritsTemplates();
-            if(BeanUtil.isNotEmpty(writsTemplateList)) {
-                writsTemplates=writsTemplateList.get(0);
+            WritsTemplates writsTemplates = new WritsTemplates();
+            if (BeanUtil.isNotEmpty(writsTemplateList)) {
+                writsTemplates = writsTemplateList.get(0);
             }
-            
+
             writsInstances.setTemplateId(writsTemplates.getId());
         }
-        
-        
+
         ObjectRestResponse<WritsInstances> restResult = new ObjectRestResponse<>();
 
         this.insertSelective(writsInstances);
@@ -429,8 +434,10 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         Set<String> userIdList = new HashSet<>();
         List<String> writsCrtUserIdList =
             writsInstanceList.stream().map(o -> o.getCrtUserId()).distinct().collect(Collectors.toList());
-        List<String> writstemplateIdList =
-            writsInstanceList.stream().map(o -> String.valueOf(o.getTemplateId())).distinct().collect(Collectors.toList());
+        // List<String> writstemplateIdList =
+        // writsInstanceList.stream().map(o ->
+        // String.valueOf(o.getTemplateId())).distinct()
+        // .collect(Collectors.toList());
         List<String> attaCrtUserIdList =
             attachmentsList.stream().map(o -> o.getCrtUserId()).collect(Collectors.toList());
 
@@ -438,27 +445,30 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         userIdList.addAll(attaCrtUserIdList);
 
         Map<String, String> userMap = new HashMap<>();
-        if(BeanUtil.isNotEmpty(userIdList)) {
+        if (BeanUtil.isNotEmpty(userIdList)) {
             userMap = adminFeign.getUser(String.join(",", userIdList));
         }
-        
-        //查询文书对应的模板
-        List<WritsTemplates> templateList = new ArrayList<>();
-        Map<Integer, String> template_ID_NAME_Map=new HashMap<>();
-        if(BeanUtil.isNotEmpty(writstemplateIdList)) {
-            templateList = writsTemplatesMapper.selectByIds(String.join(",", writstemplateIdList));
-            template_ID_NAME_Map = templateList.stream().collect(Collectors.toMap(WritsTemplates::getId, WritsTemplates::getName));
-        }
-        
+
+        // 查询文书对应的模板
+        // List<WritsTemplates> templateList = new ArrayList<>();
+        // Map<Integer, String> template_ID_NAME_Map = new HashMap<>();
+        // if (BeanUtil.isNotEmpty(writstemplateIdList)) {
+        // templateList = writsTemplatesMapper.selectByIds(String.join(",",
+        // writstemplateIdList));
+        // template_ID_NAME_Map =
+        // templateList.stream().collect(Collectors.toMap(WritsTemplates::getId,
+        // WritsTemplates::getName));
+        // }
 
         for (WritsInstances writsInstances : writsInstanceList) {
             JSONObject tmp = new JSONObject();
+            tmp.put("id", writsInstances.getId());
             tmp.put("refNo", writsInstances.getRefNo());// 文号
             tmp.put("crtUserId", writsInstances.getCrtUserId());// 上传人ID
             tmp.put("crtUserName", CommonUtil.getValueFromJObjStr(userMap.get(writsInstances.getCrtUserId()), "name"));// 上传人姓名
             tmp.put("crtTime", writsInstances.getCrtTime());// 上传时间
             tmp.put("type", "writs");
-            tmp.put("templateName", template_ID_NAME_Map.get(writsInstances.getTemplateId()));
+            tmp.put("templateName", writsInstances.getRefAbbrev());
             resultJArray.add(tmp);
         }
         for (CaseAttachments caseAttachments : attachmentsList) {
@@ -502,15 +512,21 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         }
         return writsList;
     }
-    
+
     /**
      * 批量添加记录
+     * 
      * @param writsInstancesList
      * @return
      */
-    public ObjectRestResponse<WritsInstances> addList(List<WritsInstances> writsInstanceList){
-        ObjectRestResponse<WritsInstances> restResult=new ObjectRestResponse<>();
-        
+    public ObjectRestResponse<WritsInstances> addList(JSONArray writsInstancesJArray) {
+        List<WritsInstances> writsInstanceList =
+            JSONArray.parseArray(writsInstancesJArray.toJSONString(), WritsInstances.class);
+
+        // TODO 用tcode去换模板ID
+
+        ObjectRestResponse<WritsInstances> restResult = new ObjectRestResponse<>();
+
         for (WritsInstances writsInstances : writsInstanceList) {
             // 判断文书是否进行过暂存(如果请求参数中有文书ID表明暂存过)
             if (BeanUtil.isEmpty(writsInstances.getId())) {
@@ -522,5 +538,67 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             }
         }
         return restResult;
+    }
+    
+    /**
+     * 将请求信息中文书信息进行保存
+     * 
+     * @param caseRegJObj
+     * @param caseId
+     */
+    public void addWritsInstances(JSONObject caseRegJObj) {
+        /*
+         * =文书ID用writsId作为变量名传入，以增强可读性<br/>
+         * =文书ID用writsId作为变量名，因为不能直接parseObject给WritsInstances中的ID的属性，需要手动指定
+         */
+        String caseId =caseRegJObj.getString("writsId");
+        
+        JSONArray writsInstancesJArray = caseRegJObj.getJSONArray("writsInstances");
+
+        String tcode = "";
+        for (int i = 0; i < writsInstancesJArray.size(); i++) {
+            tcode = writsInstancesJArray.getJSONObject(i).getString("tcode");
+        }
+        
+        WritsTemplates writsTemplates=new WritsTemplates();
+        List<WritsTemplates> templateList = writsTemplatesBiz.getByTcodes(tcode);
+        if(BeanUtil.isNotEmpty(templateList)) {
+            //传入一个tcode值，则得到的结果也一定是一个
+            writsTemplates=templateList.get(0);
+        }
+
+        List<WritsInstances> writsInstanceList =
+            JSONArray.parseArray(writsInstancesJArray.toJSONString(), WritsInstances.class);
+
+        if (writsInstanceList == null) {
+            writsInstanceList = new ArrayList<>();
+        }
+
+        // 关联该文书相关的案件
+        for (WritsInstances writsInstances : writsInstanceList) {
+            //无法判断传入的文书是否进行暂存过，需要进行逐条验证
+            
+            writsInstances.setCaseId(caseId);
+            // 判断文书是否进行过暂存(如果请求参数中有文书ID表明暂存过)
+            if (BeanUtil.isEmpty(writsInstances.getId())) {
+                /*
+                 * 没有暂存过，进行一次添加操作<br/>
+                 * 前端并没有办法获取文书ID，然后入的是文书的code值，
+                 */
+                if (StringUtils.isBlank(tcode)) {
+                    /*
+                     * 如果程序执行到这里，总该有一条记录里tcode不为空，如果tcode为空，
+                     * 说明没有进行暂存的那条记录也没有传tcode进来
+                     */
+                    throw new BizException("请指定模板ID或模板tcode");
+                }
+                writsInstances.setTemplateId(writsTemplates.getId());
+                this.insertSelective(writsInstances);
+            } else {
+                // 暂存过，进行更新操作
+                writsInstances.setTemplateId(writsTemplates.getId());
+                this.updateById(writsInstances);
+            }
+        }
     }
 }

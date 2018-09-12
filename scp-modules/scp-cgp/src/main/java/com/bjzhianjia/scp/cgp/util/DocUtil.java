@@ -57,10 +57,10 @@ public class DocUtil {
      * @param map
      *            参数，key表示word文档中的占位符，value为替换占位符对应的内容
      * @return 目标文件存放后的路径，包含路径与文件名
-     * @throws Exception 
+     * @throws Exception
      */
-    public static String getDestUrlAfterReplaceWord(String srcPath, String destFileName,
-        String destPath, Map<String, String> map) throws Exception {
+    public static String getDestUrlAfterReplaceWord(String srcPath, String destFileName, String destPath,
+        Map<String, String> map) throws Exception {
 
         String[] sp = srcPath.split("\\.");
         String destFullPath = "";
@@ -137,8 +137,7 @@ public class DocUtil {
                     // 删除临时文件
                     DocUtil.delete(copyFile);
                 }
-            } else if ((sp[sp.length - 1].equalsIgnoreCase("doc"))
-                && (dp[dp.length - 1].equalsIgnoreCase("doc"))) {
+            } else if ((sp[sp.length - 1].equalsIgnoreCase("doc")) && (dp[dp.length - 1].equalsIgnoreCase("doc"))) {
                 /** doc只能生成doc，如果生成docx会出错 **/
                 HWPFDocument document = null;
                 try {
@@ -186,36 +185,14 @@ public class DocUtil {
         for (int i = 0; i < runs.size(); i++) {
             String oneparaString = runs.get(i).getText(runs.get(i).getTextPosition());
             for (Map.Entry<String, String> entry : map.entrySet()) {
-                if(oneparaString!=null) {
+                if (oneparaString != null) {
                     String replaceRegx = "\\$\\{" + entry.getKey() + "}";
                     Pattern pattern = Pattern.compile(replaceRegx);
                     Matcher matcher = pattern.matcher(oneparaString);
-                    oneparaString=matcher.replaceAll(entry.getValue());
+
+                    String rep = String.valueOf(entry.getValue());
+                    oneparaString = matcher.replaceAll(rep);
                 }
-                
-             // String replaceRegx = "\\$\\{" +
-                // e.getKey() + "\\}";
-                // Pattern pattern =
-                // Pattern.compile(replaceRegx);
-                // Matcher matcher =
-                // pattern.matcher(cellTextString);
-                //
-                // cellTextString =
-                // matcher.replaceAll(e.getValue());
-                //
-                // cell.removeParagraph(0);
-                // cell.setText(cellTextString);
-                
-                
-//                if(map.keySet().contains(oneparaString)) {
-//                    oneparaString = oneparaString.replace(replaceRegx,entry.getValue());
-//                }else {
-//                    if(oneparaString.contains("${")&&oneparaString.contains("}")) {
-//                        Pattern p = Pattern.compile("\\$\\{[a-zA-Z]*}"); 
-//                        Matcher m = p.matcher(oneparaString);
-//                        oneparaString = m.replaceAll("");
-//                    }
-//                }
             }
             runs.get(i).setText(oneparaString, 0);
         }
@@ -223,8 +200,7 @@ public class DocUtil {
 
     private static String copyFile(String srcPath, String destPath) {
         String copyPath =
-            srcPath.substring(0, srcPath.lastIndexOf(".")) + "_copy"
-                + srcPath.substring(srcPath.lastIndexOf("."));
+            srcPath.substring(0, srcPath.lastIndexOf(".")) + "_copy" + srcPath.substring(srcPath.lastIndexOf("."));
 
         InputStream is = null;
         OutputStream os = null;
@@ -299,6 +275,30 @@ public class DocUtil {
         String[] names = files.list();
         if (names != null) {
             for (String string : names) {
+                if (string.startsWith(preffix) && string.endsWith(suffix)) {
+                    delete(path + string);
+                }
+            }
+        }
+    }
+
+    /**
+     * 删除带特定前缀与后缀的文件
+     * @param preffix 文件前缀
+     * @param suffix 文件后缀
+     * @param path 文件路
+     * @param ignoreFileNameList 不进行删除的文件名列表
+     */
+    public static void deletePrefix(String preffix, String suffix, String path, List<String> ignoreFileNameList) {
+        File files = new File(path);
+
+        String[] names = files.list();
+        if (names != null) {
+            for (String string : names) {
+                if (ignoreFileNameList.contains(string)) {
+                    // 说明要删除的文件在忽略的文件名列表中榜上有名，不删除忽略的文件名
+                    continue;
+                }
                 if (string.startsWith(preffix) && string.endsWith(suffix)) {
                     delete(path + string);
                 }
