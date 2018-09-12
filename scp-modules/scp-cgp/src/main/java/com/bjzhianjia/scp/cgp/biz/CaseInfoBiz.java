@@ -393,9 +393,9 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
                         resultData.put("cyear", i); //年
                         resultData.put("cmonth", j); //月
                         resultData.put("total", 0); //总数
-                        resultData.put("root_biz_eventLevel_teji", 0); //特急
-                        resultData.put("root_biz_eventLevel_jinji", 0);//紧急
-                        resultData.put("root_biz_eventLevel_normal", 0);//一般
+                        resultData.put(Constances.EventLevel.ROOT_BIZ_EVENTLEVEL_TEJI, 0); //特急
+                        resultData.put(Constances.EventLevel.ROOT_BIZ_EVENTLEVEL_JINJI, 0);//紧急
+                        resultData.put(Constances.EventLevel.ROOT_BIZ_EVENTLEVEL_NORMAL, 0);//一般
                     }
                     list.add(resultData);
                    }
