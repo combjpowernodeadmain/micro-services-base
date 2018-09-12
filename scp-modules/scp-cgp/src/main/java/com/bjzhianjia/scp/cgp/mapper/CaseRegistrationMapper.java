@@ -89,5 +89,19 @@ public interface CaseRegistrationMapper extends CommonMapper<CaseRegistration> {
      * @return
      */
     public JSONArray getStatisByDept(Map<String, Object> parameters);
+    
+    /**
+     * 案件违法类别统计
+     * 
+     * @param caseRegistration
+     *            查询条件
+     * @param startTime
+     *            开始时间
+     * @param endTime
+     *            结束时间
+     * @return
+     */
+    public List<Map<String,Object>> selectInspectItem(@Param("caseRegistration") CaseRegistration caseRegistration,
+        @Param("startTime") String startTime, @Param("endTime") String endTime, @Param("gridIds") String gridIds);
 
 }
