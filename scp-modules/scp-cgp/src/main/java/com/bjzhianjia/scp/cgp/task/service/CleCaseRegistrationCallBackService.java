@@ -39,7 +39,7 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
         switch (bizType) {
             case PROC_APPROVE:
                 // 审批操作
-                writsInstanceBiz.updateOrInsert(JSONObject.parseObject(JSON.toJSONString(procBizData)));
+                writsInstanceBiz.addWritsInstances(JSONObject.parseObject(JSON.toJSONString(procBizData)));
                 break;
             case PROC_CLAIM:
                 // 签收操作

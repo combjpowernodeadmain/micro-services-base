@@ -32,6 +32,8 @@ import com.bjzhianjia.scp.cgp.entity.InspectItems;
 import com.bjzhianjia.scp.cgp.entity.LawTask;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.WritsInstances;
+import com.bjzhianjia.scp.cgp.entity.WritsTemplates;
+import com.bjzhianjia.scp.cgp.exception.BizException;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.feign.IUserFeign;
@@ -114,6 +116,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     @Autowired
     private WfProcTaskServiceImpl wfProcTaskService;
 
+    @Autowired
+    private WritsTemplatesBiz writsTemplatesBiz;
+
     /**
      * 添加立案记录<br/>
      * 如果 有当事人，则一并添加<br/>
@@ -157,9 +162,22 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      */
     private void addWritsInstances(JSONObject caseRegJObj, String caseId) {
         JSONArray writsInstancesJArray = caseRegJObj.getJSONArray("writsInstances");
+
+        String tcode = "";
+        for (int i = 0; i < writsInstancesJArray.size(); i++) {
+            tcode = writsInstancesJArray.getJSONObject(i).getString("tcode");
+        }
         
-        List<WritsInstances> writsInstanceList = JSONArray.parseArray(writsInstancesJArray.toJSONString(), WritsInstances.class);
-        
+        WritsTemplates writsTemplates=new WritsTemplates();
+        List<WritsTemplates> templateList = writsTemplatesBiz.getByTcodes(tcode);
+        if(BeanUtil.isNotEmpty(templateList)) {
+            //传入一个tcode值，则得到的结果也一定是一个
+            writsTemplates=templateList.get(0);
+        }
+
+        List<WritsInstances> writsInstanceList =
+            JSONArray.parseArray(writsInstancesJArray.toJSONString(), WritsInstances.class);
+
         if (writsInstanceList == null) {
             writsInstanceList = new ArrayList<>();
         }
@@ -168,30 +186,47 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
          * ===================以下代码暂时不要删=================
          */
         // 生成某一文号执法种类下某一年中文号序号
-//        WritsInstances theNextWenHao =
-//            writsInstancesBiz.theNextWenHao(writsInstances.getCaseId(), writsInstances.getTemplateId(),
-//                writsInstances.getRefEnforceType());
-//        String refNo =
-//            caseRegJObj.getString("squadronLeader") + String.format("%03d", Integer.valueOf(theNextWenHao.getRefNo()));
-//        writsInstances.setRefNo(refNo);
-//        writsInstances.setRefYear(String.valueOf(new LocalDate().getYear()));
+        // WritsInstances theNextWenHao =
+        // writsInstancesBiz.theNextWenHao(writsInstances.getCaseId(),
+        // writsInstances.getTemplateId(),
+        // writsInstances.getRefEnforceType());
+        // String refNo =
+        // caseRegJObj.getString("squadronLeader") + String.format("%03d",
+        // Integer.valueOf(theNextWenHao.getRefNo()));
+        // writsInstances.setRefNo(refNo);
+        // writsInstances.setRefYear(String.valueOf(new LocalDate().getYear()));
 
         // TODO By尚 可能需要将fillContext进行合并
-//        writsInstances.setFillContext(
-//            getWritsFillContext(caseRegJObj, writsInstances.getFillContext(), writsInstances.getRefNo()));
+        // writsInstances.setFillContext(
+        // getWritsFillContext(caseRegJObj, writsInstances.getFillContext(),
+        // writsInstances.getRefNo()));
         /*
          * =================以上代码暂时不要删====================
          */
         // 关联该文书相关的案件
 
         for (WritsInstances writsInstances : writsInstanceList) {
+            //无法判断传入的文书是否进行暂存过，需要进行逐条验证
+            
             writsInstances.setCaseId(caseId);
             // 判断文书是否进行过暂存(如果请求参数中有文书ID表明暂存过)
             if (BeanUtil.isEmpty(writsInstances.getId())) {
-                // 没有暂存过，进行一次添加操作
+                /*
+                 * 没有暂存过，进行一次添加操作<br/>
+                 * 前端并没有办法获取文书ID，然后入的是文书的code值，
+                 */
+                if (StringUtils.isBlank(tcode)) {
+                    /*
+                     * 如果程序执行到这里，总该有一条记录里tcode不为空，如果tcode为空，
+                     * 说明没有进行暂存的那条记录也没有传tcode进来
+                     */
+                    throw new BizException("请指定模板ID或模板tcode");
+                }
+                writsInstances.setTemplateId(writsTemplates.getId());
                 writsInstancesBiz.insertSelective(writsInstances);
             } else {
                 // 暂存过，进行更新操作
+                writsInstances.setTemplateId(writsTemplates.getId());
                 writsInstancesBiz.updateById(writsInstances);
             }
         }
@@ -952,49 +987,74 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public ObjectRestResponse<JSONObject> getStatisZhDuiCase(JSONObject caseRegistrationJObj, String startTime,
         String endTime) {
-        DateTime startDateTime=new DateTime(DateUtil.dateFromStrToDate(startTime, CommonConstances.DATE_FORMAT_FULL));
-        DateTime _endDateTime=new DateTime(DateUtil.dateFromStrToDate(endTime, CommonConstances.DATE_FORMAT_FULL));
-        DateTime endDateTime = _endDateTime.plusDays(1);
-        
         ObjectRestResponse<JSONObject> restResponse = new ObjectRestResponse<>();
         JSONObject resultJobj = new JSONObject();
 
+        /*
+         * ========进行查询操作============开始=============
+         */
         if (StringUtils.isNotBlank(caseRegistrationJObj.getString("gridIds"))) {
             StringBuffer buffer = new StringBuffer();
             buffer.append("'").append(caseRegistrationJObj.getString("gridIds").replaceAll(",", "','")).append("'");
             caseRegistrationJObj.put("gridIds", buffer.toString());
-        }else {
+        } else {
             caseRegistrationJObj.put("gridIds", null);
         }
+        /*
+         * ========进行查询操作============结束=============
+         */
 
-        JSONArray byDealType = this.mapper.getStatisByDealType((Map) caseRegistrationJObj);
+        
+        /*
+         * ========进行数据整合============开始=============
+         */
+//        JSONArray byDealType = this.mapper.getStatisByDealType((Map) caseRegistrationJObj);
         JSONArray byDept = this.mapper.getStatisByDept((Map) caseRegistrationJObj);
         
+        /*
+         * ============
+         */
+        Date d1 = DateUtil.dateFromStrToDate(startTime,true);
+        Date d2 = DateUtil.dateFromStrToDate(endTime,true);
+        //将结束日期定位到当月最后一天
+        d2=DateUtil.theLastDatOfMonth(d2);
+        
+        DateTime dd=new DateTime(d1.getTime());
+//        DateTime tt=new DateTime(d2.getTime());
+        DateTime dl1=new DateTime(dd.getYear(), dd.getMonthOfYear(), 1, 0, 0);
+//        DateTime dl2=new DateTime(tt.getYear(), tt.getMonthOfYear(), 1, 0, 0);
+        
+        int count=byDept.size();
+        
+        
         do {
-            
-        }while(false);
-        
-        
-        List<Integer> yearList=new ArrayList<>();
-        for(int i=startDateTime.getYear();i<=endDateTime.getYear();i++) {
-            if(i==startDateTime.getYear()) {
-                //遍历到起始年
-                for(int j=0;j<byDept.size();j++) {
+            for(int i=0;i<count;i++) {
+                JSONObject deptJObj = byDept.getJSONObject(i);
+                
+                DateTime localDate = new DateTime(deptJObj.getInteger("year"), deptJObj.getInteger("month"), 1,0,0);
+                if(localDate.getMillis()!=dl1.getMillis()) {
+                    //说明该年该月下没有数据
+                    JSONObject fDate3 = new JSONObject();
+                    fDate3.put("year", dl1.getYear());
+                    fDate3.put("month", dl1.getMonthOfYear());
+                    fDate3.put("count", 0);
+                    fDate3.put("deptId", deptJObj.getString("deptId"));
                     
+                    byDept.add(fDate3);
+//                    break;
                 }
             }
-        }
+            dl1=dl1.plusMonths(1);
+            
+        }while(dl1.getMillis()<=d2.getTime());
+        /*
+         * ============
+         */
         
-        //格式化数据
-        for(int i=0;i<byDealType.size();i++) {
-            
-        }
-        for(int i=0;i<byDept.size();i++) {
-            
-        }
-
+        
+        
         resultJobj.put("byDept", byDept);
-        resultJobj.put("byDealType", byDealType);
+//        resultJobj.put("byDealType", byDealType);
 
         restResponse.setStatus(200);
         restResponse.setData(resultJobj);

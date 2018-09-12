@@ -49,13 +49,15 @@ import io.swagger.annotations.ApiParam;
 @Api(tags = "综合执法 - 案件登记")
 public class CaseRegistrationController extends BaseController<CaseRegistrationBiz, CaseRegistration, String> {
 
-    @RequestMapping(value = "/add", method = RequestMethod.POST)
+    @RequestMapping(value="/add",method=RequestMethod.POST)
     @ApiOperation("业务--添加单个对象")
     public ObjectRestResponse<Void> addCase(
-        @RequestBody @ApiParam(name = "待添加对象实例") @Validated JSONObject caseRegJObj) {
+        @RequestBody @ApiParam(name = "待添加对象实例") @Validated JSONObject objs) {
         ObjectRestResponse<Void> restResult = new ObjectRestResponse<>();
 
-        Result<Void> result = this.baseBiz.addCase(caseRegJObj);
+        JSONObject caseRegiJObj = objs.getJSONObject("bizData");
+        
+        Result<Void> result = this.baseBiz.addCase(caseRegiJObj);
         if (!result.getIsSuccess()) {
             restResult.setStatus(400);
             restResult.setMessage(result.getMessage());

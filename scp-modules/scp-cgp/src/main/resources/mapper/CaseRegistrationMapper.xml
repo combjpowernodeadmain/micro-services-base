@@ -82,13 +82,13 @@
 	</resultMap>
 
 	<select id="getList" resultMap="voResultMap">
-		SELECT
-		cc.*,ag.`grid_name`,et.`type_name`
-		FROM cle_case_registration cc
-		LEFT JOIN area_grid ag ON ag.id =cc.`gird_id`
-		LEFT JOIN event_type et
-		ON et.id=cc.`event_type`
-		WHERE cc.`id`
+	SELECT
+	cc.*,ag.`grid_name`,et.`type_name`
+	FROM cle_case_registration cc
+	LEFT JOIN area_grid ag ON ag.id =cc.`gird_id`
+	LEFT JOIN event_type et
+	ON et.id=cc.`event_type`
+	WHERE cc.`id`
 		<foreach collection="ids" item="id" open="(" separator=","
 			close=")">
 			#{id}
@@ -122,23 +122,54 @@
 	<!-- 按执法者对案件进行统计 -->
 	<select id="getStatisByDept" parameterType="java.util.Map"
 		resultType="com.alibaba.fastjson.JSONObject">
-		SELECT MONTH(crt_time) month,YEAR(crt_time) year, COUNT(*) AS
-		count,dept_id deptId FROM cle_case_registration ccr
-		<where>
-			is_deleted='0'
-			<if test="bizType!=null and bizType!=''">
-				AND ccr.`biz_type`=#{bizType}
-			</if>
-			<if test="caseSourceType!=null and caseSourceType!=''">
-				AND ccr.`case_source_type`=#{caseSourceType}
-			</if>
-			<if test="gridIds !=null">
-				AND ccr.`gird_id` IN (${gridIds})
-			</if>
-			<if test="startTime !=null and startTime != '' and endTime != null and endTime != ''">
-				AND ccr.`crt_time` BETWEEN #{startTime} AND #{endTime}
-			</if>
-		</where>
-		GROUP BY YEAR(crt_time),MONTH(crt_time),deptId
+		SELECT
+		cyear,
+		cmonth,
+		total,
+		MAX( CASE deptId WHEN '15927f7a956a43a3a616d3c6d90e0aeb' THEN COUNT ELSE 0 END ) 15927f7a956a43a3a616d3c6d90e0aeb,
+		MAX( CASE deptId WHEN '1c6ab9714c4a4a85a2c0868d2f23fb5f' THEN COUNT ELSE 0 END ) 1c6ab9714c4a4a85a2c0868d2f23fb5f,
+		MAX( CASE deptId WHEN 'e4568d64fc41409d80663eb2c1003480' THEN COUNT ELSE 0 END ) e4568d64fc41409d80663eb2c1003480
+		FROM
+			(
+				SELECT
+					ccr1.cyear cyear,
+					ccr1.cmonth cmonth,
+					ccr1.deptId deptId,
+					ccr1.count COUNT,
+					ccr2.total total
+				FROM
+					(
+						SELECT
+							YEAR (crt_time) cyear,
+							MONTH (crt_time) cmonth,
+							dept_id deptId,
+							COUNT(*) COUNT
+						FROM
+							cle_case_registration
+					
+					
+					
+						GROUP BY
+							cyear,
+							cmonth,
+							deptId
+					) ccr1
+				LEFT JOIN (
+					SELECT
+						YEAR (crt_time) cyear,
+						MONTH (crt_time) cmonth,
+						COUNT(*) total
+					FROM
+						cle_case_registration
+					GROUP BY
+						cyear,
+						cmonth
+				) ccr2 ON ccr1.cyear = ccr2.cyear
+				AND ccr1.cmonth = ccr2.cmonth
+			) temp
+		GROUP BY
+			cyear,
+			cmonth,
+			total
 	</select>
 </mapper>
