@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.cgp.rest;
 
 import java.util.Date;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -8,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -306,5 +308,42 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         caseRegistrationJObj.put("startTime", startTime);
         caseRegistrationJObj.put("endTime", endTime);
         return this.baseBiz.getStatisZhDuiCase(caseRegistrationJObj, startTime, endTime);
+    }
+
+    /**
+     * 案件违法统计
+     * 
+     * @return
+     */
+    @ApiOperation("案件违法统计")
+    @GetMapping("/statis/inspectItem")
+    @ResponseBody
+    public TableResultResponse<Map<String, Object>> getInspectItem(
+        @RequestParam(defaultValue = "") @ApiParam("业务条线") String bizType,
+        @RequestParam(defaultValue = "") @ApiParam("案件处理类型") String dealType,
+        @RequestParam(defaultValue = "") @ApiParam("网格范围") String gridIds,
+        @RequestParam(defaultValue = "") @ApiParam("案件来源类型") String caseSourceType,
+        @RequestParam(defaultValue = "") @ApiParam("执法分队") String deptId,
+        @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
+        @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime,
+        @RequestParam(defaultValue = "0") @ApiParam("页码") Integer page,
+        @RequestParam(defaultValue = "10") @ApiParam("页容量") Integer limit) {
+
+        CaseRegistration caseRegistration = new CaseRegistration();
+        caseRegistration.setCaseSourceType(caseSourceType);
+        caseRegistration.setDealType(dealType);
+        caseRegistration.setDeptId(deptId);
+        caseRegistration.setBizType(bizType);
+
+        if (StringUtils.isNotBlank(endTime)) {
+            Date _end = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
+            _end = DateUtils.addDays(_end, 1);
+            endTime = DateUtil.dateFromDateToStr(_end, "yyyy-MM-dd HH:mm:ss");
+        }
+
+        TableResultResponse<Map<String, Object>> result =
+            this.baseBiz.getInspectItem(caseRegistration, startTime, endTime, gridIds, page, limit);
+
+        return result;
     }
 }

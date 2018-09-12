@@ -1,6 +1,8 @@
 package com.bjzhianjia.scp.cgp.rest;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -290,35 +292,34 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
     @ApiOperation("事件量趋势统计")
     @RequestMapping(value = "/statis/caseInfo", method = RequestMethod.GET)
     @ResponseBody
-    public ObjectRestResponse<JSONArray> getStatisCaseInfo(
+    public ObjectRestResponse<List<Map<String,Object>>> getStatisCaseInfo(
         @RequestParam(defaultValue = "") @ApiParam("业务条线") String bizList,
         @RequestParam(defaultValue = "") @ApiParam("事件类别") String eventTypeList,
         @RequestParam(defaultValue = "") @ApiParam("网格范围") String gridIds,
         @RequestParam(defaultValue = "") @ApiParam("事件级别") String caseLevel,
         @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
         @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime) {
-        ObjectRestResponse<JSONArray> result = new ObjectRestResponse<>();
         
         CaseInfo caseInfo = new CaseInfo();
         caseInfo.setBizList(bizList);
         caseInfo.setEventTypeList(eventTypeList);
         caseInfo.setCaseLevel(caseLevel);
-        if (StringUtils.isNotBlank(endTime)) {
-            Date _end = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
+        
+        Date _start = null;
+        Date _end = null;
+        if (StringUtils.isNotBlank(endTime) && StringUtils.isNotBlank(startTime)) {
+            _start = DateUtil.dateFromStrToDate(startTime, "yyyy-MM-dd HH:mm:ss");
+            _end = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
             _end = DateUtils.addDays(_end, 1);
-            endTime = DateUtil.dateFromDateToStr(_end, "yyyy-MM-dd HH:mm:ss");
         }
-        JSONArray data = caseInfoBiz.getStatisCaseInfo(caseInfo, startTime, endTime,gridIds);
-
-        if (data != null) {
-            result.setData(data);
-        } else {
-            result.setStatus(400);
-        }
-
+      
+        ObjectRestResponse<List<Map<String,Object>>> result = new ObjectRestResponse<>();
+        
+        List<Map<String,Object>>  data = caseInfoBiz.getStatisCaseInfo(caseInfo, _start, _end,gridIds);
+        result.setData(data);
+        
         return result;
     }
-
     /**
      *  业务条线分布
      * 
@@ -353,5 +354,41 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         }
         return result;
     }
+    
 
+    /**
+     * 网格事件统计
+     * 
+     * @return
+     */
+    @ApiOperation("网格事件统计")
+    @RequestMapping(value = "/statis/grid", method = RequestMethod.GET)
+    @ResponseBody
+    public TableResultResponse<Map<String,Object>> getGrid(
+        @RequestParam(defaultValue = "") @ApiParam("业务条线") String bizList,
+        @RequestParam(defaultValue = "") @ApiParam("事件类别") String eventTypeList,
+        @RequestParam(defaultValue = "") @ApiParam("网格等级") String gridLevel,
+        @RequestParam(defaultValue = "") @ApiParam("事件来源") String sourceType,
+        @RequestParam(defaultValue = "") @ApiParam("事件级别") String caseLevel,
+        @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
+        @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime,
+        @RequestParam(defaultValue = "0") @ApiParam("页码") Integer page,
+        @RequestParam(defaultValue = "10") @ApiParam("页容量") Integer limit) {
+
+        CaseInfo caseInfo = new CaseInfo();
+        caseInfo.setBizList(bizList);
+        caseInfo.setEventTypeList(eventTypeList);
+        caseInfo.setCaseLevel(caseLevel);
+        caseInfo.setSourceType(sourceType);
+        caseInfo.setCaseLevel(caseLevel);
+        
+        if (StringUtils.isNotBlank(endTime)) {
+            Date _end = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
+            _end = DateUtils.addDays(_end, 1);
+            endTime = DateUtil.dateFromDateToStr(_end, "yyyy-MM-dd HH:mm:ss");
+        }
+        TableResultResponse<Map<String,Object>> result  = caseInfoBiz.getGrid(caseInfo, gridLevel, startTime, endTime, page, limit);
+        return result;
+    }
+    
 }

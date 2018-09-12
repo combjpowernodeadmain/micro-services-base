@@ -249,4 +249,59 @@
 			cmonth,
 			total
 	</select>
+	
+	<!-- 案件违法类别统计 -->
+	<select id="selectInspectItem" resultType="java.util.Map">
+	SELECT
+	inspectItem,
+	code,
+	name,
+	total,
+	MAX( CASE dealType WHEN 'root_biz_caseDealType_zlgz' THEN dealTypeCount ELSE 0 END ) root_biz_caseDealType_zlgz,
+	MAX( CASE dealType WHEN 'root_biz_caseDealType_xccf' THEN dealTypeCount ELSE 0 END ) root_biz_caseDealType_xccf,
+	MAX( CASE dealType WHEN 'root_biz_caseDealType_ybcx' THEN dealTypeCount ELSE 0 END ) root_biz_caseDealType_ybcx,
+	MAX( CASE dealType WHEN 'root_biz_caseDealType_wfxwt' THEN dealTypeCount ELSE 0 END ) root_biz_caseDealType_wfxwt,
+	MAX( CASE dealType WHEN 'root_biz_caseDealType_ajys' THEN dealTypeCount ELSE 0 END ) root_biz_caseDealType_ajys
+	FROM
+		(
+			SELECT
+				detailG.inspectItem,
+				detailG.dealType,
+				detailG.dealTypeCount,
+				itemG.total,
+				items.code,
+				items.name
+			FROM
+				(
+					SELECT
+						inspect_item  inspectItem,
+						deal_type  dealType,
+						count(id)  dealTypeCount
+					FROM
+						cle_case_registration
+					WHERE
+					<include refid="isParamNull"/>
+					GROUP BY
+						inspect_item,
+						deal_type
+				) detailG
+			LEFT JOIN (
+				SELECT
+					inspect_item,
+					count(id) total
+				FROM
+					cle_case_registration
+				GROUP BY
+					inspect_item
+			) itemG ON detailG.inspectItem = itemG.inspect_item
+			LEFT JOIN inspect_items items ON items.id = detailG.inspectItem
+		) temp
+	GROUP BY
+	inspectItem,
+	total,
+	code,
+	name
+	ORDER BY
+	total DESC
+	</select>
 </mapper>

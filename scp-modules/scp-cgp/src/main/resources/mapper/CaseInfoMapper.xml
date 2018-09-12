@@ -103,25 +103,55 @@
 		GROUP BY
 		source_type
 	</select>
-
-	<!-- 事件量趋势统计 -->
 	<select id="getStatisCaseInfo" resultType="java.util.Map">
 		SELECT
-		YEAR (crt_time) AS year,
-		MONTH (crt_time) AS month,
-		case_level AS
-		caseLevel,
-		count(*) count
+		cyear,
+		cmonth,
+		total,
+		MAX( CASE caseLevel WHEN 'root_biz_eventLevel_teji' THEN count ELSE 0 END ) root_biz_eventLevel_teji,
+		MAX( CASE caseLevel WHEN 'root_biz_eventLevel_jinji' THEN count ELSE 0 END ) root_biz_eventLevel_jinji,
+		MAX( CASE caseLevel WHEN 'root_biz_eventLevel_normal' THEN count ELSE 0 END ) root_biz_eventLevel_normal
 		FROM
-		case_info
-		WHERE
-		<include refid="isParamNull" />
+			(
+				SELECT
+					caseInfo1.cyear cyear,
+					caseInfo1.cmonth cmonth,
+					caseInfo1.caseLevel caseLevel,
+					caseInfo1.count count,
+					caseInfo2.total total
+				FROM
+					(
+						SELECT
+							YEAR (crt_time) cyear,
+							MONTH (crt_time) cmonth,
+							case_level caseLevel,
+							count(*) count
+						FROM
+							case_info
+						WHERE
+						<include refid="isParamNull"/>
+						GROUP BY
+							cyear,
+							cmonth,
+							case_level
+					) caseInfo1
+				LEFT JOIN (
+					SELECT
+						YEAR (crt_time) cyear,
+						MONTH (crt_time) cmonth,
+						count(*) total
+					FROM
+						case_info
+					GROUP BY
+						cyear,
+						cmonth
+				) caseInfo2 ON caseInfo1.cyear = caseInfo2.cyear
+				AND caseInfo1.cmonth = caseInfo2.cmonth
+			) temp
 		GROUP BY
-		YEAR (crt_time),
-		MONTH (crt_time),
-		case_level
-		ORDER BY
-			YEAR DESC
+			cyear,
+			cmonth,
+			total
 	</select>
 
 	<!-- 事件超时数 -->
@@ -175,4 +205,93 @@
 		GROUP BY
 		biz_list
 	</select>
+	
+	<!-- 网格事件统计  -->
+	<select id="selectGrid" resultType="java.util.Map">
+		SELECT
+		grid,
+		gridCode,
+		gridName,
+		gridLevel,
+		ifnull(gridParentCode,'') gridParentCode,
+		ifnull(gridParentName,'') gridParentName,
+		total,
+		MAX(CASE isFinished WHEN '0' THEN count ELSE 0 END ) stateTodo,
+		MAX(CASE isFinished WHEN '1' THEN count ELSE 0 END ) stateFinish,
+		MAX(CASE isFinished WHEN '2' THEN count ELSE 0 END ) stateStop,
+		ifnull(overtimeCount,0) overtimeCount
+		FROM
+			(
+				SELECT
+					ag1.id grid,
+					ag1.grid_code gridCode,
+					ag1.grid_name gridName,
+					ag1.grid_level gridLevel,
+					ag2.grid_code gridParentCode,
+					ag2.grid_name gridParentName,
+					total,
+					is_finished isFinished,
+					count,
+					overtimeCount
+				FROM
+					(
+						SELECT
+							grid,
+							is_finished,
+							count(id) count
+						FROM
+							case_info
+						WHERE
+						<include refid="isParamNull"/>
+						GROUP BY
+							grid,
+							is_finished
+					) caseinfo1
+				LEFT JOIN (
+					SELECT
+						grid,
+						count(id) total
+					FROM
+						case_info
+					GROUP BY
+						grid
+				) caseinfo2 ON caseinfo1.grid = caseinfo2.grid
+				LEFT JOIN (
+					SELECT
+						grid,
+						count(id) overtimeCount
+					FROM
+						case_info
+					WHERE
+						dead_line IS NOT NULL
+					AND (
+						(
+							is_finished = 0
+							AND NOW() > dead_line
+						)
+						OR (
+							is_finished IN (1, 2)
+							AND finish_time > dead_line
+						)
+					)
+					GROUP BY
+						grid
+				) caseinfo3 ON caseinfo1.grid = caseinfo3.grid
+				LEFT JOIN area_grid ag1 ON caseinfo1.grid = ag1.id
+				LEFT JOIN area_grid ag2 ON ag2.id = ag1.grid_parent
+			) temp
+		GROUP BY
+			grid,
+			gridCode,
+			gridName,
+			gridLevel,
+			gridParentCode,
+			gridParentName,
+			total,
+			overtimeCount
+		ORDER BY
+			total desc
+	</select>
+	
+	
 </mapper>

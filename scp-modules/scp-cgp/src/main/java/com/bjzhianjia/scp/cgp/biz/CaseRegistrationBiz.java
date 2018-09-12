@@ -1228,4 +1228,30 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         restResponse.setData(resultJobj);
         return restResponse;
     }
+
+    /**
+     * 案件业务条线分布
+     * 
+     * @param caseRegistration
+     *            查询条件
+     * @param startTime
+     *            开始时间
+     * @param endTime
+     *            结束时间
+     * @param page
+     *            页码
+     * @param limit
+     *            页容量
+     * @return
+     */
+    public TableResultResponse<Map<String, Object>> getInspectItem(CaseRegistration caseRegistration, String startTime,
+        String endTime, String gridIds, Integer page, Integer limit) {
+        
+        Page<Object> result = PageHelper.startPage(page, limit);
+        List<Map<String, Object>> list = this.mapper.selectInspectItem(caseRegistration, startTime, endTime, gridIds);
+        if (BeanUtil.isEmpty(list)) {
+            return new TableResultResponse<Map<String, Object>>(0, null);
+        }
+        return new TableResultResponse<Map<String, Object>>(result.getTotal(), list);
+    }
 }
