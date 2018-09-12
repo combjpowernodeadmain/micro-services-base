@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.cgp.biz;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,7 +19,6 @@ import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.bjzhianjia.scp.cgp.constances.CommonConstances;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.CLEConcernedCompany;
 import com.bjzhianjia.scp.cgp.entity.CLEConcernedPerson;
@@ -1178,19 +1178,11 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
          * ========进行数据整合============开始=============
          */
 
-        /*
-         * ============
-         */
-        Date d1 = DateUtil.dateFromStrToDate(startTime, true);
-        Date d2 = DateUtil.dateFromStrToDate(endTime, true);
-        // 将结束日期定位到当月最后一天
-        d2 = DateUtil.theLastDatOfMonth(d2);
+        Date startDate = DateUtil.dateFromStrToDate(startTime, true);
+        Date endDate = DateUtil.dateFromStrToDate(endTime, true);
 
-        DateTime dd = new DateTime(d1.getTime());
-        // DateTime tt=new DateTime(d2.getTime());
+        DateTime dd = new DateTime(startDate.getTime());
         DateTime dl1 = new DateTime(dd.getYear(), dd.getMonthOfYear(), 1, 0, 0);
-        // DateTime dl2=new DateTime(tt.getYear(), tt.getMonthOfYear(), 1, 0,
-        // 0);
 
         int count = byDept.size();
 
@@ -1211,24 +1203,34 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 for(Map<String, String> deptMap:deptParam) {
                     fDate3.put(deptMap.get("deptName"), 0);
                 }
-
                 byDept.add(fDate3);
             }
             dl1 = dl1.plusMonths(1);
 
-        } while (dl1.getMillis() <= d2.getTime());
+        } while (dl1.getMillis() <= endDate.getTime());
         /*
          * ============
          */
-
+        byDept.sort(new Comparator<Object>() {
+            @Override
+            public int compare(Object o1, Object o2) {
+                JSONObject j1=(JSONObject)o1;
+                JSONObject j2=(JSONObject)o2;
+                
+                if((j1.getInteger("cyear")-j2.getInteger("cyear"))!=0) {
+                    return j1.getInteger("cyear")-j2.getInteger("cyear");
+                }else {
+                    return j1.getInteger("cmonth")-j2.getInteger("cmonth");
+                }
+            }
+        });
         resultJobj.put("byDept", byDept);
-        // resultJobj.put("byDealType", byDealType);
 
         restResponse.setStatus(200);
         restResponse.setData(resultJobj);
         return restResponse;
     }
-
+    
     /**
      * 案件业务条线分布
      * 
