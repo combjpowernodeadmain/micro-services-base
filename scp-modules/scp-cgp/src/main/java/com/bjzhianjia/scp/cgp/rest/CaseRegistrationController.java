@@ -1,7 +1,11 @@
 package com.bjzhianjia.scp.cgp.rest;
 
+import java.util.Date;
+
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,10 +15,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.CaseRegistrationBiz;
 import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
 import com.bjzhianjia.scp.cgp.entity.Result;
+import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
@@ -167,6 +173,119 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         } else {
             result.setStatus(400);
             result.setMessage("非法参数");
+        }
+        return result;
+    }
+
+    /**
+     * 案件处理类型分布
+     * 
+     * @return
+     */
+    @ApiOperation("案件处理类型分布")
+    @RequestMapping(value = "/statis/state", method = RequestMethod.GET)
+    @ResponseBody
+    public ObjectRestResponse<JSONArray> getStatisState(
+        @RequestParam(defaultValue = "") @ApiParam("业务条线") String bizType,
+        @RequestParam(defaultValue = "") @ApiParam("处理类型") String dealType,
+        @RequestParam(defaultValue = "") @ApiParam("网格范围") String gridIds,
+        @RequestParam(defaultValue = "") @ApiParam("案件来源类型") String caseSourceType,
+        @RequestParam(defaultValue = "") @ApiParam("执法分队") String deptId,
+        @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
+        @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime) {
+        ObjectRestResponse<JSONArray> result = new ObjectRestResponse<>();
+
+        CaseRegistration caseRegistration = new CaseRegistration();
+        caseRegistration.setBizType(bizType);
+        caseRegistration.setDealType(dealType);
+        caseRegistration.setCaseSourceType(caseSourceType);
+        caseRegistration.setDeptId(deptId);
+
+        if (StringUtils.isNotBlank(endTime)) {
+            Date _end = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
+            _end = DateUtils.addDays(_end, 1);
+            endTime = DateUtil.dateFromDateToStr(_end, "yyyy-MM-dd HH:mm:ss");
+        }
+
+        JSONArray data = this.baseBiz.getStatisState(caseRegistration, startTime, endTime, gridIds);
+        if (data != null && data.size() > 0) {
+            result.setData(data);
+        } else {
+            result.setStatus(400);
+        }
+        return result;
+    }
+
+    /**
+     * 案件来源分布
+     * 
+     * @return
+     */
+    @ApiOperation("案件来源分布")
+    @RequestMapping(value = "/statis/caseSource", method = RequestMethod.GET)
+    @ResponseBody
+    public ObjectRestResponse<JSONArray> getCaseSource(
+        @RequestParam(defaultValue = "") @ApiParam("业务条线") String bizType,
+        @RequestParam(defaultValue = "") @ApiParam("案件处理类型") String dealType,
+        @RequestParam(defaultValue = "") @ApiParam("网格范围") String gridIds,
+        @RequestParam(defaultValue = "") @ApiParam("执法分队") String deptId,
+        @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
+        @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime) {
+        ObjectRestResponse<JSONArray> result = new ObjectRestResponse<>();
+
+        CaseRegistration caseRegistration = new CaseRegistration();
+        caseRegistration.setBizType(bizType);
+        caseRegistration.setDealType(dealType);
+        caseRegistration.setDeptId(deptId);
+
+        if (StringUtils.isNotBlank(endTime)) {
+            Date _end = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
+            _end = DateUtils.addDays(_end, 1);
+            endTime = DateUtil.dateFromDateToStr(_end, "yyyy-MM-dd HH:mm:ss");
+        }
+
+        JSONArray data = this.baseBiz.getCaseSource(caseRegistration, startTime, endTime, gridIds);
+        if (data != null && data.size() > 0) {
+            result.setData(data);
+        } else {
+            result.setStatus(400);
+        }
+        return result;
+    }
+
+    /**
+     * 案件业务条线分布
+     * 
+     * @return
+     */
+    @ApiOperation("案件业务条线分布")
+    @RequestMapping(value = "/statis/bizType", method = RequestMethod.GET)
+    @ResponseBody
+    public ObjectRestResponse<JSONArray> getBizType(
+        @RequestParam(defaultValue = "") @ApiParam("案件来源类型") String caseSourceType,
+        @RequestParam(defaultValue = "") @ApiParam("案件处理类型") String dealType,
+        @RequestParam(defaultValue = "") @ApiParam("网格范围") String gridIds,
+        @RequestParam(defaultValue = "") @ApiParam("执法分队") String deptId,
+        @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
+        @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime) {
+        ObjectRestResponse<JSONArray> result = new ObjectRestResponse<>();
+
+        CaseRegistration caseRegistration = new CaseRegistration();
+        caseRegistration.setCaseSourceType(caseSourceType);
+        caseRegistration.setDealType(dealType);
+        caseRegistration.setDeptId(deptId);
+
+        if (StringUtils.isNotBlank(endTime)) {
+            Date _end = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
+            _end = DateUtils.addDays(_end, 1);
+            endTime = DateUtil.dateFromDateToStr(_end, "yyyy-MM-dd HH:mm:ss");
+        }
+
+        JSONArray data = this.baseBiz.getBizType(caseRegistration, startTime, endTime, gridIds);
+        if (data != null && data.size() > 0) {
+            result.setData(data);
+        } else {
+            result.setStatus(400);
         }
         return result;
     }
