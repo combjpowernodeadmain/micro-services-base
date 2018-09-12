@@ -638,8 +638,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         for (CaseRegistration caseRegistration : caseRegistrationList) {
             objResult = JSONObject.parseObject(JSON.toJSONString(caseRegistration));
             wfProcBackBean = wfProcBackBean_ID_Entity_Map.get(objResult.get("id"));
-            
-            //定位坐标
+
+            // 定位坐标
             objResult.put("mapInfo", "{\"lng\":\"" + caseRegistration.getCaseOngitude() + "\",\"lat\":\""
                 + caseRegistration.getCaseLatitude() + "\"}");
 
@@ -861,9 +861,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 if (inspectItems != null) {
                 }
                 result.put("inspectName", inspectItems.getName());
-                
-                
-                //举报人姓名
+
+                // 举报人姓名
                 JSONArray informerUser = iUserFeign.getByUserIds(caseRegistration.getCaseInformer());
                 String caseInformerName = "";
                 if (informerUser != null && !informerUser.isEmpty()) {
@@ -872,8 +871,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                     }
                 }
                 result.put("caseInformerName", caseInformerName);
-                
-                
+
                 // 执法者用户名
                 JSONArray userList = null;
                 try {
@@ -936,4 +934,150 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         return result;
     }
 
+    /**
+     * 案件处理类型统计
+     * 
+     * @param caseRegistration
+     *            查询条件
+     * @param startTime
+     *            开始时间
+     * @param endTime
+     *            结束时间
+     * @param gridIds
+     *            网格范围ids
+     * @return
+     */
+    public JSONArray getStatisState(CaseRegistration caseRegistration, String startTime, String endTime,
+        String gridIds) {
+        JSONArray result = new JSONArray();
+
+        Map<String, String> stateCode = dictFeign.getByCode(Constances.ROOT_BIZ_CASEDEALTYPE);
+        List<Map<String, Object>> caseList = this.mapper.selectState(caseRegistration, startTime, endTime,gridIds);
+
+        if (BeanUtil.isNotEmpty(caseList)) {
+            // 封装数据集
+            Map<String, Object> tempData = new HashMap<>();
+            Set<String> setKey = null;
+            Object count = null;
+            for (Map<String, Object> map : caseList) {
+                tempData.put(String.valueOf(map.get("dealType")), map.get("count"));
+            }
+            // 封装返回集
+            JSONObject obj = null;
+            if (stateCode != null && !stateCode.isEmpty()) {
+                setKey = stateCode.keySet();
+
+                for (String key : setKey) {
+                    obj = new JSONObject();
+                    // 类型code
+                    obj.put("code", key);
+                    // 类型名称
+                    obj.put("name", stateCode.get(key));
+                    // 类型数量
+                    count = tempData.get(key);
+                    obj.put("count", count == null ? 0 : count);
+                    result.add(obj);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 案件来源分布
+     * 
+     * @param caseRegistration
+     *            查询条件
+     * @param startTime
+     *            开始时间
+     * @param endTime
+     *            结束时间
+     * @return
+     */
+    public JSONArray getCaseSource(CaseRegistration caseRegistration, String startTime, String endTime,String gridIds) {
+        JSONArray result = new JSONArray();
+
+        Map<String, String> sourceType = dictFeign.getByCode(Constances.CASE_SOURCE_TYPE);
+        List<Map<String, Object>> caseList = this.mapper.selectCaseSource(caseRegistration, startTime, endTime,gridIds);
+
+        if (BeanUtil.isNotEmpty(caseList)) {
+            // 封装数据集
+            Map<String, Object> tempData = new HashMap<>();
+            Set<String> setKey = null;
+            Object count = null;
+            for (Map<String, Object> map : caseList) {
+                tempData.put(String.valueOf(map.get("caseSourceType")), map.get("count"));
+            }
+            // 封装返回集
+            JSONObject obj = null;
+            if (sourceType != null && !sourceType.isEmpty()) {
+                setKey = sourceType.keySet();
+
+                for (String key : setKey) {
+                    obj = new JSONObject();
+                    // 类型code
+                    obj.put("code", key);
+                    // 类型名称
+                    obj.put("name", sourceType.get(key));
+                    // 类型数量
+                    count = tempData.get(key);
+                    obj.put("count", count == null ? 0 : count);
+                    result.add(obj);
+                }
+            }
+        }
+        return result;
+    }
+    
+    /**
+     *  案件业务条线分布
+     * 
+     * @param caseRegistration
+     *            查询条件
+     * @param startTime
+     *            开始时间
+     * @param endTime
+     *            结束时间
+     * @return
+     */
+    public JSONArray getBizType(CaseRegistration caseRegistration, String startTime, String endTime,String gridIds) {
+        JSONArray result = new JSONArray();
+        
+        Map<String, String> bizType = dictFeign.getByCode(Constances.ROOT_BIZ_TYPE);
+        if (BeanUtil.isEmpty(bizType)) {
+            bizType = new HashMap<>();
+        }
+
+        JSONObject obj = null;
+        // 返回集初始化
+        Map<String, JSONObject> temp = new HashMap<>();
+        Set<String> setKey = bizType.keySet();
+        for (String key : setKey) {
+            obj = new JSONObject();
+            obj.put("bizType", key);
+            obj.put("count", 0);
+            obj.put("bitTypeName", bizType.get(key));
+            temp.put(key, obj);
+        }
+        // 封装数据库中的数据
+        List<Map<String, Object>> bizLineList =
+            this.mapper.selectBizLine(caseRegistration,startTime, endTime,gridIds);
+        if (BeanUtil.isNotEmpty(bizLineList)) {
+            for (Map<String, Object> bizLineMap : bizLineList) {
+                obj = new JSONObject();
+                String bitType = String.valueOf(bizLineMap.get("bizType"));
+                // 业务条线
+                obj.put("bizType", bitType);
+                obj.put("count", bizLineMap.get("count"));
+                obj.put("bitTypeName", bizType.get(bitType));
+                temp.put(bitType, obj);
+            }
+        }
+        // 封装返回集数据
+        setKey = temp.keySet();
+        for (String key : setKey) {
+            result.add(temp.get(key));
+        }
+        return result;
+     }
 }
