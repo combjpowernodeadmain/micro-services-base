@@ -2,6 +2,7 @@ package com.bjzhianjia.scp.cgp.biz;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -258,7 +259,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
      * 
      * @return
      */
-    public JSONObject getStatisCaseState(CaseInfo caseInfo, String startTime, String endTime,String grids) {
+    public JSONObject getStatisCaseState(CaseInfo caseInfo, String startTime, String endTime, String grids) {
         JSONObject result = new JSONObject();
         // 已终止、已完成、处理中、总数
         String[] stateKey = { "stop", "finish", "todo", "total" };
@@ -266,7 +267,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         // 超时统计
         Integer overtime = this.mapper.selectOvertime(caseInfo, startTime, endTime);
         // 处理状态统计
-        List<Map<String, Integer>> finishedState = this.mapper.selectState(caseInfo, startTime, endTime,grids);
+        List<Map<String, Integer>> finishedState = this.mapper.selectState(caseInfo, startTime, endTime, grids);
         String stateName = "";
         for (Map<String, Integer> state : finishedState) {
             switch (String.valueOf(state.get("state"))) {
@@ -308,10 +309,11 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
      * 事件来源分布统计
      * 
      */
-    public JSONArray getStatisEventSource(CaseInfo caseInfo, String startTime, String endTime,String gridIds) {
+    public JSONArray getStatisEventSource(CaseInfo caseInfo, String startTime, String endTime, String gridIds) {
         JSONArray result = new JSONArray();
 
-        List<Map<String, Object>> eventSourceList = this.mapper.getStatisEventSource(caseInfo, startTime, endTime,gridIds);
+        List<Map<String, Object>> eventSourceList =
+            this.mapper.getStatisEventSource(caseInfo, startTime, endTime, gridIds);
         Map<String, String> eventtypeMap = dictFeign.getByCode(Constances.ROOT_BIZ_EVENTTYPE);
         if (BeanUtil.isNotEmpty(eventtypeMap)) {
             // 事件来源数量
@@ -351,78 +353,57 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
      *            结束时间
      * @return
      */
-    public JSONArray getStatisCaseInfo(CaseInfo caseInfo, String startTime, String endTime,String gridIds) {
-        JSONArray result = new JSONArray();
+    public List<Map<String, Object>> getStatisCaseInfo(CaseInfo caseInfo, Date startTime, Date endTime,
+        String gridIds) {
 
-        List<Map<String, Object>> eventSourceList = this.mapper.getStatisCaseInfo(caseInfo, startTime, endTime,gridIds);
+        String _startTime = DateUtil.dateFromDateToStr(startTime, "yyyy-MM-dd HH:mm:ss");
+        String _endTime = DateUtil.dateFromDateToStr(endTime, "yyyy-MM-dd HH:mm:ss");
 
-        if (BeanUtil.isNotEmpty(eventSourceList)) {
+        List<Map<String, Object>> list = this.mapper.getStatisCaseInfo(caseInfo, _startTime, _endTime, gridIds);
 
-            // 数据筛选
-            Map<String, Map<String, Object>> eventSourceMap = new HashMap<>();
-            for (Map<String, Object> eventSource : eventSourceList) {
-
-                String year = String.valueOf(eventSource.get("year"));
-                String month = String.valueOf(eventSource.get("month"));
-                String key = year + "-" + month;
-
-                // 事件级别名称
-                String caseLevel = String.valueOf(eventSource.get("caseLevel"));
-
-                // 当前事件级别个数
-                Integer count = Integer.valueOf(String.valueOf(eventSource.get("count")));
-
-                // 是否已存在记录，存在则追加
-                Map<String, Object> _eventSource = eventSourceMap.get(key);
-                if (_eventSource != null) {
-                    _eventSource.put(caseLevel, eventSource.get("count"));
-
-                    // 计算总数
-                    Integer total = Integer.valueOf(String.valueOf(_eventSource.get("total")));
-                    total += count;
-
-                    _eventSource.put("total", total);
-
-                } else {
-                    eventSource.put(caseLevel, count);
-                    // 总数
-                    eventSource.put("total", count);
-                    // 删除多余字段
-                    eventSource.remove("caseLevel");
-                    eventSource.remove("count");
-
-                    eventSourceMap.put(key, eventSource);
-                }
+        if (BeanUtil.isNotEmpty(list)) {
+            Map<String, Map<String, Object>> tempData = new HashMap<>();
+            // 年月
+            String ymKey = "";
+            for (Map<String, Object> map : list) {
+                 ymKey = String.valueOf(map.get("cyear")) + String.valueOf(map.get("cmonth"));
+                tempData.put(ymKey, map);
             }
+            
+            // 初始化日期
+            Calendar calStart = Calendar.getInstance();
+            calStart.setTime(startTime);
+            int yearStart = calStart.get(Calendar.YEAR);
+            int monthStart = calStart.get(Calendar.MONTH) + 1;
 
-            // 封装插件需要的数据
-            Set<String> eventSourceKey = eventSourceMap.keySet();
-            // 回显数据的长度固定6条
-            int size = 6;
-            for (String key : eventSourceKey) {
-                JSONObject obj = JSONObject.parseObject(JSONObject.toJSONString(eventSourceMap.get(key)));
-                // 判断是否缺失回显数据个数，如果缺失默认给0
-                if (obj.size() == size) {
-                    result.add(obj);
-                } else {
-                    // 紧急
-                    if (obj.get(Constances.EventLevel.ROOT_BIZ_EVENTLEVEL_JINJI) == null) {
-                        obj.put(Constances.EventLevel.ROOT_BIZ_EVENTLEVEL_JINJI, 0);
+            Calendar calEnd = Calendar.getInstance();
+            calEnd.setTime(endTime);
+            int yearEnd = calEnd.get(Calendar.YEAR);
+            int monthEnd = calEnd.get(Calendar.MONTH) + 1;
+            
+            //封装返回集，并补充为空的数据
+            list.clear();
+            for (int i = yearStart; i <= yearEnd; i++) {
+                for (int j = monthStart; j <= monthEnd; j++) {
+                    ymKey = i+""+j;
+                    Map<String, Object> resultData = tempData.get(ymKey);
+                    //当月没有数据则初始化为0
+                    if(resultData == null) {
+                        resultData = new HashMap<>();
+                        resultData.put("cyear", i); //年
+                        resultData.put("cmonth", j); //月
+                        resultData.put("total", 0); //总数
+                        resultData.put("root_biz_eventLevel_teji", 0); //特急
+                        resultData.put("root_biz_eventLevel_jinji", 0);//紧急
+                        resultData.put("root_biz_eventLevel_normal", 0);//一般
                     }
-                    // 特急
-                    if (obj.get(Constances.EventLevel.ROOT_BIZ_EVENTLEVEL_TEJI) == null) {
-                        obj.put(Constances.EventLevel.ROOT_BIZ_EVENTLEVEL_TEJI, 0);
-                    }
-                    // 一般级别
-                    if (obj.get(Constances.EventLevel.ROOT_BIZ_EVENTLEVEL_NORMAL) == null) {
-                        obj.put(Constances.EventLevel.ROOT_BIZ_EVENTLEVEL_NORMAL, 0);
-                    }
-                    result.add(obj);
-                }
+                    list.add(resultData);
+                   }
             }
-
+        }else {
+            
         }
-        return result;
+        return list;
     }
 
     /**
@@ -443,9 +424,9 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
 
         // 网格等级
         List<AreaGrid> areaGridList = null;
-        //网格ids
+        // 网格ids
         StringBuilder gridIds = new StringBuilder();
-        if (StringUtils.isBlank(gridLevel)) {
+        if (StringUtils.isNotBlank(gridLevel)) {
             areaGridList = areaGridBiz.getByGridLevel(gridLevel);
             int size = areaGridList.size();
             for (int i = 0; i < size; i++) {
@@ -496,4 +477,52 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         return result;
     }
 
+    /**
+     * 网格事件统计
+     * 
+     * @param caseInfo
+     *            查询条件
+     * @param gridLevel
+     *            网格等级
+     * @param startTime
+     *            开始时间
+     * @param endTime
+     *            结束时间
+     * @return
+     */
+    public TableResultResponse<Map<String, Object>> getGrid(CaseInfo caseInfo, String gridLevel, String startTime,
+        String endTime, Integer page, Integer limit) {
+        // 网格等级
+        List<AreaGrid> areaGridList = null;
+        // 网格ids
+        StringBuilder gridIds = new StringBuilder();
+        if (StringUtils.isNotBlank(gridLevel)) {
+            areaGridList = areaGridBiz.getByGridLevel(gridLevel);
+            int size = areaGridList.size();
+            for (int i = 0; i < size; i++) {
+                AreaGrid areaGrid = areaGridList.get(i);
+                if (i == size - 1) {
+                    gridIds.append(areaGrid.getId());
+                } else {
+                    gridIds.append(areaGrid.getId()).append(",");
+                }
+            }
+        }
+
+        Map<String, String> level = dictFeign.getByCode(Constances.ROOT_BIZ_GRID_LEVEL);
+        if (BeanUtil.isEmpty(level)) {
+            level = new HashMap<>();
+        }
+        Page<Object> result = PageHelper.startPage(page, limit);
+        List<Map<String, Object>> list = this.mapper.selectGrid(caseInfo, startTime, endTime, gridIds.toString());
+        if (BeanUtil.isNotEmpty(list)) {
+            for (Map<String, Object> map : list) {
+                String levelName = level.get(map.get("gridLevel"));
+                map.put("gridLevelName", levelName);
+            }
+            return new TableResultResponse<Map<String, Object>>(result.getTotal(), list);
+        }
+        return new TableResultResponse<Map<String, Object>>(0, null);
+
+    }
 }
