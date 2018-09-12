@@ -99,19 +99,6 @@ public class DocUtil {
                                 for (Map.Entry<String, String> e : map.entrySet()) {
                                     if (cellTextString.contains(e.getKey())) {
 
-                                        // String replaceRegx = "\\$\\{" +
-                                        // e.getKey() + "\\}";
-                                        // Pattern pattern =
-                                        // Pattern.compile(replaceRegx);
-                                        // Matcher matcher =
-                                        // pattern.matcher(cellTextString);
-                                        //
-                                        // cellTextString =
-                                        // matcher.replaceAll(e.getValue());
-                                        //
-                                        // cell.removeParagraph(0);
-                                        // cell.setText(cellTextString);
-
                                         /*
                                          * =替换表格中的文字，把每个表格里的内容看作一个普通的段落进行处理
                                          * =当把表格里的cell看作一个整体去对待时，如果每个单元格里有换行(

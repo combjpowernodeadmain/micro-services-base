@@ -80,7 +80,44 @@
 		<result property="gridName" column="grid_name" />
 		<result property="eventTypeName" column="type_name" />
 	</resultMap>
-
+	<resultMap
+		type="com.bjzhianjia.scp.cgp.vo.CaseRegistrationVo" id="voResultMap">
+		<result property="id" column="id" />
+		<result property="concernedType" column="concerned_type" />
+		<result property="concernedId" column="concerned_id" />
+		<result property="bizType" column="biz_type" />
+		<result property="eventType" column="event_type" />
+		<result property="inspectItem" column="inspect_item" />
+		<result property="caseName" column="case_name" />
+		<result property="caseTime" column="case_time" />
+		<result property="caseEnd" column="case_end" />
+		<result property="caseSource" column="case_source" />
+		<result property="caseSourceTime" column="case_source_time" />
+		<result property="caseInformer" column="case_informer" />
+		<result property="caseInformerAddr" column="case_informer_addr" />
+		<result property="caseInformerPhone"
+			column="case_informer_phone" />
+		<result property="enforcers" column="enforcers" />
+		<result property="caseContent" column="case_content" />
+		<result property="caseAddress" column="case_address" />
+		<result property="girdId" column="gird_id" />
+		<result property="caseOngitude" column="case_ongitude" />
+		<result property="caseLatitude" column="case_latitude" />
+		<result property="dealType" column="deal_type" />
+		<result property="dealSuggest" column="deal_suggest" />
+		<result property="transferDepart" column="transfer_depart" />
+		<result property="isDeleted" column="is_deleted" />
+		<result property="crtTime" column="crt_time" />
+		<result property="crtUserId" column="crt_user_id" />
+		<result property="crtUserName" column="crt_user_name" />
+		<result property="updTime" column="upd_time" />
+		<result property="updUserId" column="upd_user_id" />
+		<result property="updUserName" column="upd_user_name" />
+		<result property="tenantId" column="tenant_id" />
+		<result property="deptId" column="dept_id" />
+		<result property="gridName" column="grid_name" />
+		<result property="eventTypeName" column="type_name" />
+	</resultMap>
 	<select id="getList" resultMap="voResultMap">
 		SELECT
 		cc.*,ag.`grid_name`,et.`type_name`
@@ -168,6 +205,67 @@
 		<include refid="isParamNull" />
 		GROUP BY
 		biz_type
+	</select>
+	
+	<select id="getList" resultMap="voResultMap">
+		SELECT
+		cc.*,ag.`grid_name`,et.`type_name`
+		FROM cle_case_registration cc
+		LEFT JOIN area_grid ag ON ag.id =cc.`gird_id`
+		LEFT JOIN event_type et
+		ON et.id=cc.`event_type`
+		WHERE cc.`id`
+		<foreach collection="ids" item="id" open="(" separator=","
+			close=")">
+			#{id}
+		</foreach>
+	</select>
+
+	<!-- 按处理方式对案件进行统计 -->
+	<select id="getStatisByDealType" parameterType="java.util.Map"
+		resultType="com.alibaba.fastjson.JSONObject">
+		SELECT MONTH(crt_time) month,YEAR(crt_time) year, COUNT(*) AS
+		count,deal_type dealType FROM cle_case_registration ccr
+		<where>
+			is_deleted='0'
+			<if test="bizType!=null and bizType!=''">
+				AND ccr.`biz_type`=#{bizType}
+			</if>
+			<if test="caseSourceType!=null and caseSourceType!=''">
+				AND ccr.`case_source_type`=#{caseSourceType}
+			</if>
+			<if test="gridIds !=null">
+				AND ccr.`gird_id` IN
+				(${gridIds})
+			</if>
+			<if test="startTime !=null and startTime != '' and endTime != null and endTime != ''">
+				AND ccr.`crt_time` BETWEEN #{startTime} AND #{endTime}
+			</if>
+		</where>
+		GROUP BY YEAR(crt_time),MONTH(crt_time),dealType
+	</select>
+
+	<!-- 按执法者对案件进行统计 -->
+	<select id="getStatisByDept" parameterType="java.util.Map"
+		resultType="com.alibaba.fastjson.JSONObject">
+		SELECT MONTH(crt_time) month,YEAR(crt_time) year, COUNT(*) AS
+		count,dept_id deptId FROM cle_case_registration ccr
+		<where>
+			is_deleted='0'
+			<if test="bizType!=null and bizType!=''">
+				AND ccr.`biz_type`=#{bizType}
+			</if>
+			<if test="caseSourceType!=null and caseSourceType!=''">
+				AND ccr.`case_source_type`=#{caseSourceType}
+			</if>
+			<if test="gridIds !=null">
+				AND ccr.`gird_id` IN (${gridIds})
+			</if>
+			<if test="startTime !=null and startTime != '' and endTime != null and endTime != ''">
+				AND ccr.`crt_time` BETWEEN #{startTime} AND #{endTime}
+			</if>
+		</where>
+		GROUP BY YEAR(crt_time),MONTH(crt_time),deptId
 	</select>
 
 </mapper>

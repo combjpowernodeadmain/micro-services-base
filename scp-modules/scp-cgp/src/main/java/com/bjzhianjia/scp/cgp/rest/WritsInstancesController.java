@@ -1,5 +1,7 @@
 package com.bjzhianjia.scp.cgp.rest;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -98,13 +100,13 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
     @RequestMapping(value = "/add/cache", method = RequestMethod.POST)
     @ApiOperation("添加文书暂存")
     public ObjectRestResponse<WritsInstances> addCache(
-        @RequestBody @ApiParam("待暂存对象实例") @Validated WritsInstances writsInstances, BindingResult bindingResult) {
+        @RequestBody @ApiParam("待暂存对象实例") @Validated JSONObject writsInstances, BindingResult bindingResult) {
         ObjectRestResponse<WritsInstances> restResult = new ObjectRestResponse<>();
         this.baseBiz.addCache(writsInstances);
         return restResult;
     }
 
-    @RequestMapping(value = "/writs/history")
+    @RequestMapping(value = "/writs/history",method=RequestMethod.GET)
     @ApiOperation("过程文书与附件")
     public ObjectRestResponse<JSONArray> writsAndAttachmentHistory(
         @RequestParam(value = "caseId", defaultValue = "") String caseId,
@@ -112,5 +114,17 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
         @RequestParam(value = "limit", defaultValue = "10") Integer limit) {
 
         return this.baseBiz.writsAndAttachmentHistory(caseId);
+    }
+    
+    /**
+     * @param writsInstancesList
+     * @param bindingResult
+     * @return
+     */
+    @RequestMapping(value="/add/list",method=RequestMethod.POST)
+    @ApiOperation("批量添加记录")
+    public ObjectRestResponse<WritsInstances> addList(@RequestBody @Validated @ApiParam("待添加对象实例集合")List<WritsInstances> writsInstancesList,BindingResult bindingResult){
+        ObjectRestResponse<WritsInstances> resetResult = this.baseBiz.addList(writsInstancesList);
+        return resetResult;
     }
 }

@@ -30,6 +30,7 @@ import com.bjzhianjia.scp.security.common.rest.BaseController;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+
 /**
  * 
  * CaseRegistrationController 案件登记.
@@ -43,7 +44,7 @@ import io.swagger.annotations.ApiParam;
  * </pre>
  * 
  *
- * @version 1.0 
+ * @version 1.0
  * @author chenshuai
  *
  */
@@ -173,7 +174,7 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         }
         return result;
     }
-    
+
     /**
      * 案件处理类型分布
      * 
@@ -191,28 +192,28 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
         @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime) {
         ObjectRestResponse<JSONArray> result = new ObjectRestResponse<>();
-        
+
         CaseRegistration caseRegistration = new CaseRegistration();
         caseRegistration.setBizType(bizType);
         caseRegistration.setDealType(dealType);
         caseRegistration.setCaseSourceType(caseSourceType);
         caseRegistration.setDeptId(deptId);
-        
+
         if (StringUtils.isNotBlank(endTime)) {
             Date _end = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
             _end = DateUtils.addDays(_end, 1);
             endTime = DateUtil.dateFromDateToStr(_end, "yyyy-MM-dd HH:mm:ss");
         }
-        
-        JSONArray data = this.baseBiz.getStatisState(caseRegistration, startTime, endTime,gridIds);
-        if (data != null && data.size()>0) {
+
+        JSONArray data = this.baseBiz.getStatisState(caseRegistration, startTime, endTime, gridIds);
+        if (data != null && data.size() > 0) {
             result.setData(data);
         } else {
             result.setStatus(400);
         }
         return result;
     }
-    
+
     /**
      * 案件来源分布
      * 
@@ -229,27 +230,27 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
         @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime) {
         ObjectRestResponse<JSONArray> result = new ObjectRestResponse<>();
-        
+
         CaseRegistration caseRegistration = new CaseRegistration();
         caseRegistration.setBizType(bizType);
         caseRegistration.setDealType(dealType);
         caseRegistration.setDeptId(deptId);
-        
+
         if (StringUtils.isNotBlank(endTime)) {
             Date _end = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
             _end = DateUtils.addDays(_end, 1);
             endTime = DateUtil.dateFromDateToStr(_end, "yyyy-MM-dd HH:mm:ss");
         }
-        
-        JSONArray data = this.baseBiz.getCaseSource(caseRegistration, startTime, endTime,gridIds);
-        if (data != null && data.size()>0) {
+
+        JSONArray data = this.baseBiz.getCaseSource(caseRegistration, startTime, endTime, gridIds);
+        if (data != null && data.size() > 0) {
             result.setData(data);
         } else {
             result.setStatus(400);
         }
         return result;
     }
-    
+
     /**
      * 案件业务条线分布
      * 
@@ -266,24 +267,42 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
         @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime) {
         ObjectRestResponse<JSONArray> result = new ObjectRestResponse<>();
-        
+
         CaseRegistration caseRegistration = new CaseRegistration();
         caseRegistration.setCaseSourceType(caseSourceType);
         caseRegistration.setDealType(dealType);
         caseRegistration.setDeptId(deptId);
-        
+
         if (StringUtils.isNotBlank(endTime)) {
             Date _end = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
             _end = DateUtils.addDays(_end, 1);
             endTime = DateUtil.dateFromDateToStr(_end, "yyyy-MM-dd HH:mm:ss");
         }
-        
-        JSONArray data = this.baseBiz.getBizType(caseRegistration, startTime, endTime,gridIds);
-        if (data != null && data.size()>0) {
+
+        JSONArray data = this.baseBiz.getBizType(caseRegistration, startTime, endTime, gridIds);
+        if (data != null && data.size() > 0) {
             result.setData(data);
         } else {
             result.setStatus(400);
         }
         return result;
+    }
+
+    @RequestMapping(value = "/statis/ZhDui", method = RequestMethod.GET)
+    @ApiOperation("执法中队案件量趋势分析")
+    public ObjectRestResponse<JSONObject> getStatisZhDuiCase(
+        @RequestParam(value = "bizType", defaultValue = "") String bizType,
+        @RequestParam(value = "caseSourceType", defaultValue = "") String caseSourceType,
+        @RequestParam(value = "gridIds", defaultValue = "") String gridIds,
+        @RequestParam(value = "startTime", defaultValue = "") String startTime,
+        @RequestParam(value = "endTime", defaultValue = "") String endTime) {
+
+        JSONObject caseRegistrationJObj = new JSONObject();
+        caseRegistrationJObj.put("bizType", bizType);
+        caseRegistrationJObj.put("caseSourceType", caseSourceType);
+        caseRegistrationJObj.put("gridIds", gridIds);
+        caseRegistrationJObj.put("startTime", startTime);
+        caseRegistrationJObj.put("endTime", endTime);
+        return this.baseBiz.getStatisZhDuiCase(caseRegistrationJObj, startTime, endTime);
     }
 }
