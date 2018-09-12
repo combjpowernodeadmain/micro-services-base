@@ -74,6 +74,7 @@ public class CaseInfo implements Serializable {
 	
 	    //业务条线集
     @Column(name = "biz_list")
+    @MergeField(key=Constances.ROOT_BIZ_TYPE,feign=DictFeign.class,method="getByCode")
     private String bizList;
 	
 	    //事件类别集

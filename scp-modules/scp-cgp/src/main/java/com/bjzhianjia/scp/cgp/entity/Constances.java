@@ -69,6 +69,22 @@ public class Constances {
 	public static final String ROOT_BIZ_CONLEVEL="root_biz_conLevel";
 	
 	/**
+	 * 事件级别
+	 */
+	public static final String ROOT_BIZ_EVENTLEVEL = "root_biz_eventLevel";
+	
+    /**
+     * 案件处理方式类型
+     */
+    public static final String ROOT_BIZ_CASEDEALTYPE="root_biz_caseDealType";
+    
+    /**
+     * 案件来源
+     */
+    public static final String CASE_SOURCE_TYPE = "root_biz_caseSourceT";
+    
+    
+	/**
 	 * 专项管理处理状态
 	 * @author 尚
 	 *
@@ -364,5 +380,24 @@ public class Constances {
 		 * 项目标识(综治)
 		 */
 		public static final String Z_Z="z_z";
+	}
+	/**
+	 * 
+	 * 个人证件类型.
+	 *
+	 */
+	public static class CredType {
+	    /**
+	     * 身份证
+	     */
+	    public static final String ROOT_BIZ_CREDTYPE_ID = "root_biz_credType_id";
+	    /**
+	     * 护照
+	     */
+	    public static final String ROOT_BIZ_CREDTYPE_PASSPORT = "root_biz_credType_passport";
+	    /**
+	     * 军官
+	     */
+	    public static final String ROOT_BIZ_CREDTYPE_OFFICER = "root_biz_credType_officer";
 	}
 }

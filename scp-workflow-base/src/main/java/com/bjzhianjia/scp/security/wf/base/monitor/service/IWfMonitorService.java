@@ -45,6 +45,8 @@ public interface IWfMonitorService {
 
     public PageInfo<WfProcBackBean> getUserToDoTasks(JSONObject objs) throws WorkflowException;
     
+    public PageInfo<WfProcBackBean> getUserAllToDoTasks(JSONObject objs) throws WorkflowException;
+    
     public PageInfo<WfProcBackBean> getAllToDoTasks(JSONObject objs) throws WorkflowException;
     
     public int getUserToDoTaskCount(JSONObject objs) throws WorkflowException;

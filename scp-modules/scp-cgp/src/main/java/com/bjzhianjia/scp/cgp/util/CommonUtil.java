@@ -1,7 +1,6 @@
 package com.bjzhianjia.scp.cgp.util;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
@@ -124,5 +123,24 @@ public class CommonUtil {
 			return dictValueMap.get(code);
 		}
 		return null;
+	}
+	
+	/**
+	 * 将sourceMap中key值用"${" "}"符号进行包围起来<br/>
+	 * 如sourceMap==key:value,则返回resultMap==${key}:value
+	 * @param sourceMap
+	 * @return resultMap==${key}:value
+	 */
+	public static Map<String, String> surroundKeyWith_$(Map<String, String> sourceMap){
+	    Map<String, String> resultMap=new HashMap<>();
+	    
+	    if(sourceMap!=null) {
+	        for(String key:sourceMap.keySet()) {
+	            resultMap.put("#{"+key+"}", sourceMap.get(key));
+	        }
+	        return resultMap;
+	    }else {
+	        return sourceMap;
+	    }
 	}
 }

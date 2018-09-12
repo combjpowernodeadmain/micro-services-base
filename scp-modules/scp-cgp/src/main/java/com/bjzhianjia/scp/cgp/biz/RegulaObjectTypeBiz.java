@@ -99,6 +99,21 @@ public class RegulaObjectTypeBiz extends BusinessBiz<RegulaObjectTypeMapper, Reg
 	}
 	
 	/**
+	 * 查询所有末删除的记录
+	 * @return
+	 */
+	public List<RegulaObjectType> getValidateList(){
+	    Example example=new Example(RegulaObjectType.class);
+        example.setOrderByClause("order_num desc");
+        Example.Criteria criteria=example.createCriteria();
+        
+        criteria.andEqualTo("isDeleted","0");
+        
+        List<RegulaObjectType> list = this.mapper.selectByExample(example);
+        return list;
+	}
+	
+	/**
 	 * 打量删除对象
 	 * @author 尚
 	 * @param ids

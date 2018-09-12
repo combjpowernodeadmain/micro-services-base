@@ -15,12 +15,22 @@ import com.github.pagehelper.PageHelper;
 
 import tk.mybatis.mapper.entity.Example;
 
+
 /**
- * 督办记录
+ * SuperviseRecordBiz 事件督办记录.
  *
+ *
+ * <pre>
+ * Modification History: 
+ * Date             Author      Version         Description 
+ * ------------------------------------------------------------------
+ * 2018年9月5日          chenshuai      1.0            ADD
+ * </pre>
+ * 
+ *
+ * @version 1.0 
  * @author chenshuai
- * @email 
- * @version 2018-08-26 09:02:29
+ *
  */
 @Service
 public class SuperviseRecordBiz extends BusinessBiz<SuperviseRecordMapper,SuperviseRecord> {
@@ -56,18 +66,20 @@ public class SuperviseRecordBiz extends BusinessBiz<SuperviseRecordMapper,Superv
 	 * 新增
 	 */
 	public void createSuperviseRecord(SuperviseRecord superviseRecord){
+	    //是否督办（0否| 1是）
+	    String isSupervise = "1";
 		//更新事件表督办状态
 		Integer caseInfoId = superviseRecord.getCaseInfoId();
 		CaseInfo caseInfo = caseInfoBiz.selectById(caseInfoId);
-		if(caseInfo == null) {
-			return;
+		if(caseInfo != null) {
+		    if(!isSupervise.equals(caseInfo.getIsSupervise())){ //没有记录督办时，修改督办状态
+	            caseInfo = new CaseInfo();
+	            caseInfo.setId(caseInfoId);
+	            caseInfo.setIsSupervise(isSupervise);
+	            caseInfoBiz.updateSelectiveById(caseInfo);
+	        }
+	        super.insertSelective(superviseRecord);
 		}
-		if(!"1".equals(caseInfo.getIsSupervise())){ //没有记录督办时，修改督办状态
-			caseInfo = new CaseInfo();
-			caseInfo.setId(caseInfoId);
-			caseInfo.setIsSupervise("1");
-			caseInfoBiz.updateSelectiveById(caseInfo);
-		}
-		super.insertSelective(superviseRecord);
+		
 	}
 }

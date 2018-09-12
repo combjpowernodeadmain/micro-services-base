@@ -28,6 +28,25 @@ public class WorkFlowConstances {
 		 */
 		public static final String LAWMEMBER_SUFFIX="LawMember";
 	}
+	/**
+	 *= 节点前缀名
+	 * @author 尚
+	 *
+	 */
+	public static class ProcessNodePreffix{
+	    /**
+	     *= 案件调查终结审批前缀
+	     */
+	    public static final String CASEFINISHAPPROVE_PREFFIX="caseFinishApprove";
+	    /**
+	     * =行政处罚决定审批前缀
+	     */
+	    public static final String PENALTYAPPROVE_PREFFIX="penaltyApprove";
+	    /**
+	     *=行政处罚处罚结案前缀
+	     */
+	    public static final String PUNISHMENTFINISH_PREFFIX="punishmentFinish";
+	}
 	
 	/**
 	 * 未在工作流中进行配置的文书模板<br/>

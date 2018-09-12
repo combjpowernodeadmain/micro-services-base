@@ -1,21 +1,4 @@
 
-/*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- */
-
 package com.bjzhianjia.scp.security.dict.biz;
 
 import com.alibaba.fastjson.JSON;
@@ -65,6 +48,8 @@ public class DictValueBiz extends BusinessBiz<DictValueMapper, DictValue> {
 		Example example = new Example(DictValue.class);
 		Example.Criteria criteria = example.createCriteria();
 		criteria.andIn("id", ids);
+	    //0没有删除，1 删除
+        criteria.andEqualTo("isDeleted","0");
 		example.setOrderByClause("order_num");// 按order_num升序排列
 
 		Map<String, String> result = new HashMap<>();
@@ -97,7 +82,8 @@ public class DictValueBiz extends BusinessBiz<DictValueMapper, DictValue> {
 		} else {
 			criteria.andEqualTo("code", code);
 		}
-
+	      //0没有删除，1 删除
+        criteria.andEqualTo("isDeleted","0");
 		example.setOrderByClause("order_num");// 按order_num升序排列
 
 		Map<String, String> result = new HashMap<>();
@@ -124,6 +110,8 @@ public class DictValueBiz extends BusinessBiz<DictValueMapper, DictValue> {
 		
 		Example example = new Example(DictValue.class);
 		Example.Criteria criteria = example.createCriteria();
+	    //0没有删除，1 删除
+        criteria.andEqualTo("isDeleted","0");
 		criteria.andLike("code", "%" + code + "%");
 		example.setOrderByClause("order_num");// 按order_num升序排列
 
@@ -159,6 +147,8 @@ public class DictValueBiz extends BusinessBiz<DictValueMapper, DictValue> {
     public int selByCode(String code) {
     	Example example = new Example(DictType.class);
     	Criteria criteria = example.createCriteria();
+        //0没有删除，1 删除
+        criteria.andEqualTo("isDeleted","0");
     	criteria.andEqualTo("code",code);
     	return dictValueMapper.selectCountByExample(example);
     }

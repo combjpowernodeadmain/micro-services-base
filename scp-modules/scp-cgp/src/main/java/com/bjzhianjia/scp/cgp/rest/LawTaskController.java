@@ -8,6 +8,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.LawTaskBiz;
 import com.bjzhianjia.scp.cgp.entity.LawTask;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
@@ -32,9 +33,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 
+
 /**
- * 执法任务
+ * LawTaskController 执法任务.
+ *
+ *
+ * <pre>
+ * Modification History: 
+ * Date             Author      Version         Description 
+ * ------------------------------------------------------------------
+ * 2018年9月9日          chenshuai      1.0            ADD
+ * </pre>
  * 
+ *
+ * @version 1.0 
  * @author chenshuai
  *
  */
@@ -148,7 +160,8 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
         @RequestParam(defaultValue = "") @ApiParam("结束时间") String endTime,
         @RequestParam(defaultValue = "") @ApiParam("任务要求") String info,
         @RequestParam(defaultValue = "") @ApiParam("业务条线") String bizTypeCode,
-        @RequestParam(defaultValue = "") @ApiParam("事件类别ids") String eventTypeId) {
+        @RequestParam(defaultValue = "") @ApiParam("事件类别ids") String eventTypeId,
+        @RequestParam(defaultValue = "") @ApiParam("执法任务名称") String lawTitle) {
 
         ObjectRestResponse<Void> result = new ObjectRestResponse<Void>();
 
@@ -168,7 +181,7 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
 
         try {
             lawTaskBiz.randomLawTask(objType, griIds, peopleNumber, regulaObjNumber, _startTime,
-                _endTimeTmp, info, bizTypeCode, eventTypeId);
+                _endTimeTmp, info, bizTypeCode, eventTypeId,lawTitle);
         } catch (Exception e) {
             result.setStatus(400);
             result.setMessage("分配异常");
@@ -176,4 +189,27 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
 
         return result;
     }
+    
+    /**
+     * 执法任务详情
+     * @param id
+     *      执法任务的id
+     * @return
+     */
+    @RequestMapping(value = "id/{id}", method = RequestMethod.GET)
+    @ApiOperation("执法任务详情")
+    public ObjectRestResponse<JSONObject> getById(@PathVariable("id") @ApiParam("执法任务的id") Integer id) {
+        ObjectRestResponse<JSONObject> result = new ObjectRestResponse<>();
+        result.setStatus(400);
+        if (id == null) {
+            return result;
+        }
+        JSONObject reslutObj =  lawTaskBiz.getById(id);
+        if(reslutObj != null) {
+            result.setData(reslutObj); 
+            result.setStatus(200);
+        }
+        return result;
+    }
+
 }

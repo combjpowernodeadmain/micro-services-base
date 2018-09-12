@@ -9,6 +9,7 @@ import com.bjzhianjia.scp.security.admin.entity.User;
 import com.bjzhianjia.scp.security.admin.vo.DepartTree;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
+import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreClientToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
@@ -100,4 +101,20 @@ public class DepartController extends BaseController<DepartBiz, Depart, String> 
 	public JSONObject getByDeptId(@PathVariable(value = "parentId") String parentId) {
 		return  JSONObject.parseObject(JSON.toJSONString(this.baseBiz.selectById(parentId)));
 	}
+	
+	/**
+	 * 查询执法分队
+	 * @return
+	 */
+	@IgnoreClientToken
+	@ApiOperation("查询执法分队")
+	@RequestMapping(value="/enforcersGroup",method=RequestMethod.GET)
+	public JSONArray getEnforcersGroup() {
+	    List<Depart> deptList =  this.baseBiz.getEnforcersGroup();
+	    if(deptList != null && !deptList.isEmpty()) {
+	        return JSONArray.parseArray(JSON.toJSONString(deptList));
+	    }
+	    return null;
+	}
+	
 }

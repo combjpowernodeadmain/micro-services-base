@@ -13,73 +13,107 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties
 public class PropertiesConfig {
 
-	/**
-	 * 现场检查
-	 */
-	@Value("${WritsTemplateIds.SPOT_CHECK}")
-	private String spotCheck;
-	@Value("${WritsTemplateIds.SPOT_CHECK_CODES}")
-	private String spotCheckCodes;
+    /**
+     * 现场检查
+     */
+    @Value("${WritsTemplateIds.SPOT_CHECK}")
+    private String spotCheck;
 
-	/**
-	 * 现场处罚
-	 */
-	@Value("${WritsTemplateIds.SPOT_PUNISHMENT}")
-	private String SpotPunishment;
-	@Value("${WritsTemplateIds.SPOT_PUNISHMENT_CODES}")
-	private String SpotPunishmentCodes;
+    @Value("${WritsTemplateIds.SPOT_CHECK_CODES}")
+    private String spotCheckCodes;
 
-	/**
-	 * 责令改正处理
-	 */
-	@Value("${WritsTemplateIds.RECTIFICATION}")
-	private String rectification;
-	@Value("${WritsTemplateIds.RECTIFICATION_CODES}")
-	private String rectificationCodes;
+    /**
+     * 现场处罚
+     */
+    @Value("${WritsTemplateIds.SPOT_PUNISHMENT}")
+    private String SpotPunishment;
 
-	/**
-	 * 责令改正处理
-	 */
-	@Value("${WritsTemplateIds.INFORM}")
-	private String inform;
-	@Value("${WritsTemplateIds.INFORM_CODES}")
-	private String informCode;
+    @Value("${WritsTemplateIds.SPOT_PUNISHMENT_CODES}")
+    private String SpotPunishmentCodes;
 
-	/**
-	 * 现场检查
-	 * 
-	 * @author 尚
-	 * @return
-	 */
-	public String getSpotCheck() {
-		return spotCheck;
-	}
+    /**
+     * 责令改正处理
+     */
+    @Value("${WritsTemplateIds.RECTIFICATION}")
+    private String rectification;
 
-	public String getSpotCheckCodes() {
-		return spotCheckCodes;
-	}
+    @Value("${WritsTemplateIds.RECTIFICATION_CODES}")
+    private String rectificationCodes;
 
-	public String getSpotPunishment() {
-		return SpotPunishment;
-	}
+    /**
+     * 责令改正处理
+     */
+    @Value("${WritsTemplateIds.INFORM}")
+    private String inform;
 
-	public String getSpotPunishmentCodes() {
-		return SpotPunishmentCodes;
-	}
+    @Value("${WritsTemplateIds.INFORM_CODES}")
+    private String informCode;
 
-	public String getRectification() {
-		return rectification;
-	}
+    /**
+     * 文件原文件路
+     */
+    @Value("${writsInstances.srcPath}")
+    private String srcPath;
 
-	public String getRectificationCodes() {
-		return rectificationCodes;
-	}
+    /**
+     * 目的文书名
+     */
+    @Value("${writsInstances.destFileName}")
+    private String destFileName;
 
-	public String getInform() {
-		return inform;
-	}
+    /**
+     * 目的文书路径
+     */
+    @Value("${writsInstances.destFilePath}")
+    private String destFilePath;
 
-	public String getInformCode() {
-		return informCode;
-	}
+    /**
+     * 现场检查
+     * 
+     * @author 尚
+     * @return
+     */
+    public String getSpotCheck() {
+        return spotCheck;
+    }
+
+    public String getSpotCheckCodes() {
+        return spotCheckCodes;
+    }
+
+    public String getSpotPunishment() {
+        return SpotPunishment;
+    }
+
+    public String getSpotPunishmentCodes() {
+        return SpotPunishmentCodes;
+    }
+
+    public String getRectification() {
+        return rectification;
+    }
+
+    public String getRectificationCodes() {
+        return rectificationCodes;
+    }
+
+    public String getInform() {
+        return inform;
+    }
+
+    public String getInformCode() {
+        return informCode;
+    }
+
+    public String getSrcPath() {
+        return srcPath;
+    }
+
+    public String getDestFileName() {
+        return destFileName;
+    }
+
+    public String getDestFilePath() {
+        return destFilePath;
+    }
 }

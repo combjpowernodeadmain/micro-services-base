@@ -269,7 +269,31 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
      * @return
      */
     public JSONArray getUserDetail(String userId) {
-        List<Map<String, String>> userDetail = mapper.getUserDetail(Arrays.asList(userId.split(",")));
+        List<Map<String, String>> userDetail = mapper.getUserDetail(userId);
         return JSONArray.parseArray(JSON.toJSONString(userDetail));
+    }
+    /**
+     * 通过用户ids查询
+     * @param userIds
+     * @return
+     */
+    public JSONArray getByUserIds(String userIds) {
+        JSONArray array = new JSONArray();
+        Example example=new Example(User.class);
+        
+        List<String> _userIds = Arrays.asList(userIds.split(","));
+        Example.Criteria criteria = example.createCriteria();
+        if(_userIds != null && !_userIds.isEmpty()) {
+            criteria.andIn("id", _userIds);
+        }
+        List<User> userList =  mapper.selectByExample(example);
+        if(userList != null && !userList.isEmpty()) {
+            JSONObject obj = null;
+            for(User user : userList) {
+                 obj = JSONObject.parseObject(JSONObject.toJSONString(user));
+                 array.add(obj);
+            }
+        }
+        return array;
     }
 }

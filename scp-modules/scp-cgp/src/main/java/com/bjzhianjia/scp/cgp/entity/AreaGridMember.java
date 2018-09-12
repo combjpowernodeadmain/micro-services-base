@@ -4,6 +4,9 @@ import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.*;
 
+import com.bjzhianjia.scp.cgp.feign.DictFeign;
+import com.bjzhianjia.scp.merge.annonation.MergeField;
+
 
 /**
  * 网格成员
@@ -30,6 +33,7 @@ public class AreaGridMember implements Serializable {
 	
 	    //成员所属岗位
     @Column(name = "grid_role")
+    @MergeField(key="root_biz_grid_role",feign=DictFeign.class,method="getByCode")
     private String gridRole;
 	
 	    //是否删除；1：是；0: 否

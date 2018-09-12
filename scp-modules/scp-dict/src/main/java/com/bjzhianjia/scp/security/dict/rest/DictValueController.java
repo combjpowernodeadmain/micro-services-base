@@ -1,22 +1,22 @@
 
-/*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- */
-
 package com.bjzhianjia.scp.security.dict.rest;
+
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
@@ -30,25 +30,9 @@ import com.bjzhianjia.scp.security.dict.entity.DictValue;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import io.swagger.annotations.ApiParam;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
-
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("dictValue")
@@ -66,7 +50,10 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 	@RequestMapping(value = "/type/{code}", method = RequestMethod.GET)
 	public TableResultResponse<DictValue> getDictValueByDictTypeCode(@PathVariable("code") String code) {
 		Example example = new Example(DictValue.class);
-		example.createCriteria().andLike("code", code + "%");
+		Criteria criteria = example.createCriteria();
+		criteria.andLike("code", code + "%");
+		  //0没有删除，1 删除
+        criteria.andEqualTo("isDeleted","0");
 		List<DictValue> dictValues = this.baseBiz.selectByExample(example).stream().sorted(new Comparator<DictValue>() {
 			@Override
 			public int compare(DictValue o1, DictValue o2) {
@@ -81,7 +68,10 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 	@RequestMapping(value = "/feign/{code}", method = RequestMethod.GET)
 	public Map<String, String> getDictValueByCode(@PathVariable("code") String code) {
 		Example example = new Example(DictValue.class);
-		example.createCriteria().andLike("code", code + "%");
+	    Criteria criteria = example.createCriteria();
+        criteria.andLike("code", code + "%");
+          //0没有删除，1 删除
+        criteria.andEqualTo("isDeleted","0");
 
 		// 按order_num升序排列=============By尚
 		example.setOrderByClause("order_num");
@@ -97,7 +87,10 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 	@RequestMapping(value = "/feign/ids/{code}", method = RequestMethod.GET)
 	public Map<String, String> getDictIdByCode(@PathVariable("code") String code) {
 		Example example = new Example(DictValue.class);
-		example.createCriteria().andLike("code", code + "%");
+	    Criteria criteria = example.createCriteria();
+        criteria.andLike("code", code + "%");
+          //0没有删除，1 删除
+        criteria.andEqualTo("isDeleted","0");
 
 		// 按order_num升序排列=============By尚
 		example.setOrderByClause("order_num");
@@ -120,14 +113,6 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 	@IgnoreUserToken
 	@RequestMapping(value = "/feign/id/{id}", method = RequestMethod.GET)
 	public Map<String, String> getDictIdById(@PathVariable("id") String id) {
-//    	DictValue dictValue = this.baseBiz.selectById(id);
-//    	
-//    	if(dictValue!=null) {
-//    		Map<String, String> result=new HashMap<>();
-//    		result.put(dictValue.getId(), JSON.toJSONString(dictValue));
-//    		return result;
-//    	}
-//    	return null;
 		return this.baseBiz.getDictValues(id);
 	}
 	
@@ -156,8 +141,10 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 	@RequestMapping(value = "/feign/code/{code}", method = RequestMethod.GET)
 	public Map<String, String> getByCode(@PathVariable("code") String code) {
 		Example example = new Example(DictValue.class);
-		example.createCriteria().andLike("code", code + "%");
-
+		Criteria criteria = example.createCriteria();
+        criteria.andLike("code", code + "%");
+          //0没有删除，1 删除
+        criteria.andEqualTo("isDeleted","0");
 		example.setOrderByClause("order_num");
 
 		List<DictValue> dictValues = this.baseBiz.selectByExample(example);
@@ -194,7 +181,8 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 			codeSet.add(string);
 		}
 		criteria.andIn("code", codeSet);
-		
+	    //0没有删除，1 删除
+	    criteria.andEqualTo("isDeleted","0");
 		example.setOrderByClause("order_num");
 		List<DictValue> dictValues = this.baseBiz.selectByExample(example);
 		
@@ -256,9 +244,9 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
         return result;
     }
     
+    @ApiOperation("删除单个对象")
     @RequestMapping(value = "delete/{id}",method = RequestMethod.DELETE)
     @ResponseBody
-    @ApiOperation("删除单个对象")
     public ObjectRestResponse<DictValue> del(@PathVariable("id") String id){
     	ObjectRestResponse<DictValue> result =  new ObjectRestResponse<>();
     	if(StringUtils.isNotBlank(id)) {
@@ -274,4 +262,24 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
     	}
         return result;
     }
+    
+    @ApiOperation("通过类型id")
+    @RequestMapping(value = "/typeId/{typeId}",method = RequestMethod.GET)
+    @ResponseBody
+    public List<DictValue> list(@PathVariable(value="typeId") @ApiParam("类型id") String typeId){
+        if(StringUtils.isBlank(typeId)) {
+            return null;
+        }
+        Example example=new Example(DictValue.class);
+        Criteria criteria = example.createCriteria();
+        //查询列表数据
+        criteria.andEqualTo("typeId",typeId);
+        //0没有删除，1 删除
+        criteria.andEqualTo("isDeleted","0");
+        example.setOrderByClause("order_num");
+        List<DictValue> dictValues = this.baseBiz.selectByExample(example);
+        return dictValues;
+    }
+  
+    
 }
