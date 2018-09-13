@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.cgp.biz;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -265,7 +266,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         String[] stateKey = { "stop", "finish", "todo", "total" };
 
         // 超时统计
-        Integer overtime = this.mapper.selectOvertime(caseInfo, startTime, endTime);
+        Integer overtime = this.mapper.selectOvertime(caseInfo, startTime, endTime,grids);
         // 处理状态统计
         List<Map<String, Integer>> finishedState = this.mapper.selectState(caseInfo, startTime, endTime, grids);
         String stateName = "";
@@ -366,42 +367,45 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             // 年月
             String ymKey = "";
             for (Map<String, Object> map : list) {
-                 ymKey = String.valueOf(map.get("cyear")) + String.valueOf(map.get("cmonth"));
+                ymKey = String.valueOf(map.get("cyear")) + String.valueOf(map.get("cmonth"));
                 tempData.put(ymKey, map);
             }
-            
-            // 初始化日期
+
+            // 封装返回集，并补充为空的数据
+            list.clear();
+
+            // 开始日期
             Calendar calStart = Calendar.getInstance();
             calStart.setTime(startTime);
-            int yearStart = calStart.get(Calendar.YEAR);
-            int monthStart = calStart.get(Calendar.MONTH) + 1;
-
+            // 结束日期
             Calendar calEnd = Calendar.getInstance();
             calEnd.setTime(endTime);
-            int yearEnd = calEnd.get(Calendar.YEAR);
-            int monthEnd = calEnd.get(Calendar.MONTH) + 1;
-            
-            //封装返回集，并补充为空的数据
-            list.clear();
-            for (int i = yearStart; i <= yearEnd; i++) {
-                for (int j = monthStart; j <= monthEnd; j++) {
-                    ymKey = i+""+j;
-                    Map<String, Object> resultData = tempData.get(ymKey);
-                    //当月没有数据则初始化为0
-                    if(resultData == null) {
-                        resultData = new HashMap<>();
-                        resultData.put("cyear", i); //年
-                        resultData.put("cmonth", j); //月
-                        resultData.put("total", 0); //总数
-                        resultData.put(Constances.EventLevel.ROOT_BIZ_EVENTLEVEL_TEJI, 0); //特急
-                        resultData.put(Constances.EventLevel.ROOT_BIZ_EVENTLEVEL_JINJI, 0);//紧急
-                        resultData.put(Constances.EventLevel.ROOT_BIZ_EVENTLEVEL_NORMAL, 0);//一般
-                    }
-                    list.add(resultData);
-                   }
-            }
-        }else {
-            
+
+            int startYear = 0;
+            int startMonth = 0;
+            do {
+                startYear = calStart.get(Calendar.YEAR);
+                startMonth = calStart.get(Calendar.MONTH) + 1;
+
+                ymKey = startYear + "" + startMonth;
+                Map<String, Object> resultData = tempData.get(ymKey);
+                // 当月没有数据则初始化为0
+                if (resultData == null) {
+                    resultData = new HashMap<>();
+                    resultData.put("cyear", startYear); // 年
+                    resultData.put("cmonth", startMonth); // 月
+                    resultData.put("total", 0); // 总数
+                    resultData.put(Constances.EventLevel.ROOT_BIZ_EVENTLEVEL_TEJI, 0); // 特急
+                    resultData.put(Constances.EventLevel.ROOT_BIZ_EVENTLEVEL_JINJI, 0);// 紧急
+                    resultData.put(Constances.EventLevel.ROOT_BIZ_EVENTLEVEL_NORMAL, 0);// 一般
+                }
+                list.add(resultData);
+
+                calStart.add(Calendar.MONTH, 1);
+            } while (calStart.before(calEnd));
+
+        } else {
+            list = new ArrayList<>();
         }
         return list;
     }
