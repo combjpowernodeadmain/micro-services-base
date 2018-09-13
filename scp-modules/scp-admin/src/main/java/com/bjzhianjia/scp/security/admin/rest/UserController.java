@@ -172,9 +172,8 @@ public class UserController extends BaseController<UserBiz, User, String> {
 	@ApiOperation("根据人名进行模糊查询")
 	@RequestMapping(value = "/getByName", method = RequestMethod.GET)
 	@IgnoreClientToken
-	public JSONObject getUsersByName(@RequestParam(value = "name") String name,
-			@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int limit) {
-		return userService.getUsersByName(name, page, limit);
+	public JSONArray getUsersByName(@RequestParam(value = "name") String name) {
+		return userService.getUsersByName(name);
 	}
 	
 	/**
