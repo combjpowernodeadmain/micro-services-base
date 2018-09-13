@@ -203,7 +203,7 @@
 		total,
 		
 		<foreach collection="deptParam" item="item"  separator=",">
-			MAX( CASE deptId WHEN #{item.deptId} THEN COUNT ELSE 0 END ) #{item.deptName}
+			MAX( CASE deptId WHEN #{item.deptId} THEN COUNT ELSE 0 END ) #{item.deptId}
 		</foreach>
 		FROM
 			(

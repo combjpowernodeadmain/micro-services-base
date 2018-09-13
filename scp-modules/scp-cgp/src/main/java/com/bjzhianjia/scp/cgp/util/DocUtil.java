@@ -201,6 +201,7 @@ public class DocUtil {
     private static String copyFile(String srcPath, String destPath) {
         String copyPath =
             srcPath.substring(0, srcPath.lastIndexOf(".")) + "_copy" + srcPath.substring(srcPath.lastIndexOf("."));
+        log.debug("创建文书模板copy文件，路径为:"+copyPath);
 
         InputStream is = null;
         OutputStream os = null;
