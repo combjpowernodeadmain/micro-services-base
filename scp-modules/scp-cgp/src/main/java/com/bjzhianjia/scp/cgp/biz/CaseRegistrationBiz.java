@@ -668,7 +668,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         }
 
         // 查询案件类别
-        Map<String, String> eventTypeMap = new HashMap<>();
+        Map<String, String> eventType_ID_NAME_Map = new HashMap<>();
         String eventTypeName = "";
         if (eventTypeIdStrList != null && !eventTypeIdStrList.isEmpty()) {
             List<EventType> eventTypeList = new ArrayList<>();
@@ -678,7 +678,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 if (StringUtils.isNotBlank(eventType.getTypeName())) {
                     eventTypeNameList.add(eventType.getTypeName());
                 }
-                eventTypeMap.put(String.valueOf(eventType.getId()), eventType.getTypeName());
+                eventType_ID_NAME_Map.put(String.valueOf(eventType.getId()), eventType.getTypeName());
             }
             eventTypeName = String.join(",", eventTypeNameList);
         }
@@ -712,7 +712,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             // 业务条线
             objResult.put("bizListName", getRootBizTypeName(caseRegistration.getBizType(), rootBizList));
             // 事件类别
-            objResult.put("eventTypeListName", eventTypeName);
+            objResult.put("eventTypeListName",
+                getEventTypeName(eventType_ID_NAME_Map, caseRegistration.getEventType()));
             // 事件来源
             objResult.put("sourceTypeName", getRootBizTypeName(caseRegistration.getCaseSourceType(), rootBizList));
             // 具体来源id
@@ -741,6 +742,19 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             result.add(objResult);
         }
         return new TableResultResponse<>(bizResult.getData().getTotal(), result);
+    }
+
+    private String getEventTypeName(Map<String, String> eventType_ID_NAME_Map, String eventTypeList) {
+        if (eventTypeList != null) {
+            List<String> nameList = new ArrayList<>();
+            String[] split = eventTypeList.split(",");
+            for (String string : split) {
+                nameList.add(eventType_ID_NAME_Map.get(string));
+            }
+
+            return String.join(",", nameList);
+        }
+        return "";
     }
 
     /**
@@ -1135,6 +1149,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
     public ObjectRestResponse<JSONObject> getStatisZhDuiCase(JSONObject caseRegistrationJObj, String startTime,
         String endTime) {
+
+        // 转化查询条件
         CaseRegistration caseRegistration = new CaseRegistration();
         caseRegistration.setBizType(caseRegistrationJObj.getString("bizType"));
         caseRegistration.setCaseSourceType(caseRegistrationJObj.getString("caseSourceType"));
@@ -1145,6 +1161,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         /*
          * ========进行查询操作============开始=============
          */
+        // 转化按风格范围查询的条件
         if (StringUtils.isNotBlank(caseRegistrationJObj.getString("gridIds"))) {
             StringBuffer buffer = new StringBuffer();
             buffer.append("'").append(caseRegistrationJObj.getString("gridIds").replaceAll(",", "','")).append("'");
@@ -1152,24 +1169,28 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         } else {
             caseRegistrationJObj.put("gridIds", null);
         }
-        
+
+        // 收集执法中队，用于动态生成SQL
         JSONArray enforcersGroup = adminFeign.getEnforcersGroup();
-        Map<String, String> enforcersMap = new HashMap<>();
-        List<Map<String, String>> deptParam=new ArrayList<>();
+
+        Map<String, String> dept_ID_NAME_Map = new HashMap<>();
+        List<Map<String, String>> deptParam = new ArrayList<>();// 添补动态SQL的参数
+        List<String> deptIdList = new ArrayList<>();// 用于数据整合时判断结果集里的某一条key是否为部门ID
         for (int i = 0; i < enforcersGroup.size(); i++) {
             JSONObject enforcersJObj = enforcersGroup.getJSONObject(i);
-            enforcersMap.put(enforcersJObj.getString("id"), enforcersJObj.getString("name"));
-            
-            Map<String, String> deptParamTmp=new HashMap<>();
+            dept_ID_NAME_Map.put(enforcersJObj.getString("id"), enforcersJObj.getString("name"));
+
+            Map<String, String> deptParamTmp = new HashMap<>();
             deptParamTmp.put("deptId", enforcersJObj.getString("id"));
             deptParamTmp.put("deptName", enforcersJObj.getString("name"));
             deptParam.add(deptParamTmp);
+
+            deptIdList.add(enforcersJObj.getString("id"));
         }
-        
-        
+
         JSONArray byDept =
-            this.mapper.getStatisByDept(caseRegistration, startTime, endTime,
-                caseRegistrationJObj.getString("gridIds"),deptParam);
+            this.mapper.getStatisByDept(caseRegistration, startTime, endTime, caseRegistrationJObj.getString("gridIds"),
+                deptParam);
         /*
          * ========进行查询操作============结束=============
          */
@@ -1177,6 +1198,21 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         /*
          * ========进行数据整合============开始=============
          */
+        for (int i = 0; i < byDept.size(); i++) {
+            JSONObject deptJObj = byDept.getJSONObject(i);
+            JSONArray deptJArray = new JSONArray();
+            for (String deptIdKey : deptJObj.keySet()) {
+                if (deptIdList.contains(deptIdKey)) {
+                    // 说明该deptIdkey为部门ID
+                    JSONObject deptInner = new JSONObject();
+                    deptInner.put("deptId", deptIdKey);
+                    deptInner.put("deptName", dept_ID_NAME_Map.get(deptIdKey));
+                    deptInner.put("count", deptJObj.getInteger(deptIdKey));
+                    deptJArray.add(deptInner);
+                }
+            }
+            deptJObj.put("zhd", deptJArray);
+        }
 
         Date startDate = DateUtil.dateFromStrToDate(startTime, true);
         Date endDate = DateUtil.dateFromStrToDate(endTime, true);
@@ -1200,9 +1236,23 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 fDate3.put("cyear", dl1.getYear());
                 fDate3.put("cmonth", dl1.getMonthOfYear());
                 fDate3.put("total", 0);
-                for(Map<String, String> deptMap:deptParam) {
-                    fDate3.put(deptMap.get("deptName"), 0);
+
+                for (int i = 0; i < byDept.size(); i++) {
+                    JSONArray deptJArray = new JSONArray();
+                    JSONObject deptJObj = byDept.getJSONObject(i);
+                    for (String deptIdKey : deptJObj.keySet()) {
+                        if (deptIdList.contains(deptIdKey)) {
+                            // 说明该deptIdkey为部门ID
+                            JSONObject deptInner = new JSONObject();
+                            deptInner.put("deptId", deptIdKey);
+                            deptInner.put("deptName", dept_ID_NAME_Map.get(deptIdKey));
+                            deptInner.put("count", 0);
+                            deptJArray.add(deptInner);
+                            fDate3.put("zhd", deptJArray);
+                        }
+                    }
                 }
+
                 byDept.add(fDate3);
             }
             dl1 = dl1.plusMonths(1);
@@ -1212,15 +1262,16 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
          * ============
          */
         byDept.sort(new Comparator<Object>() {
+
             @Override
             public int compare(Object o1, Object o2) {
-                JSONObject j1=(JSONObject)o1;
-                JSONObject j2=(JSONObject)o2;
-                
-                if((j1.getInteger("cyear")-j2.getInteger("cyear"))!=0) {
-                    return j1.getInteger("cyear")-j2.getInteger("cyear");
-                }else {
-                    return j1.getInteger("cmonth")-j2.getInteger("cmonth");
+                JSONObject j1 = (JSONObject) o1;
+                JSONObject j2 = (JSONObject) o2;
+
+                if ((j1.getInteger("cyear") - j2.getInteger("cyear")) != 0) {
+                    return j1.getInteger("cyear") - j2.getInteger("cyear");
+                } else {
+                    return j1.getInteger("cmonth") - j2.getInteger("cmonth");
                 }
             }
         });
@@ -1230,7 +1281,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         restResponse.setData(resultJobj);
         return restResponse;
     }
-    
+
     /**
      * 案件业务条线分布
      * 
@@ -1248,7 +1299,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      */
     public TableResultResponse<Map<String, Object>> getInspectItem(CaseRegistration caseRegistration, String startTime,
         String endTime, String gridIds, Integer page, Integer limit) {
-        
+
         Page<Object> result = PageHelper.startPage(page, limit);
         List<Map<String, Object>> list = this.mapper.selectInspectItem(caseRegistration, startTime, endTime, gridIds);
         if (BeanUtil.isEmpty(list)) {

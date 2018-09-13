@@ -79,7 +79,7 @@ public class RegulaObjectTypeBiz extends BusinessBiz<RegulaObjectTypeMapper, Reg
 	 */
 	public TableResultResponse<RegulaObjectType> getList(int page,int limit,RegulaObjectType regulaObjectType){
 		Example example=new Example(RegulaObjectType.class);
-		example.setOrderByClause("order_num desc");
+		example.setOrderByClause("order_num asc");
 		Example.Criteria criteria=example.createCriteria();
 		
 		criteria.andEqualTo("isDeleted","0");
@@ -104,7 +104,7 @@ public class RegulaObjectTypeBiz extends BusinessBiz<RegulaObjectTypeMapper, Reg
 	 */
 	public List<RegulaObjectType> getValidateList(){
 	    Example example=new Example(RegulaObjectType.class);
-        example.setOrderByClause("order_num desc");
+        example.setOrderByClause("order_num asc");
         Example.Criteria criteria=example.createCriteria();
         
         criteria.andEqualTo("isDeleted","0");
