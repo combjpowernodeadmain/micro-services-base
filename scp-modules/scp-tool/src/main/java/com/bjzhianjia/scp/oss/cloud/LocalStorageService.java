@@ -42,4 +42,10 @@ public class LocalStorageService extends CloudStorageService {
 		return null;
 	}
 
+	@Override
+	public boolean remove(String key) {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
 }
