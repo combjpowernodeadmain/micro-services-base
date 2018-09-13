@@ -761,7 +761,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 
 			// 写入流程业务数据
 			insertWfProcess(wfProcBean);
-
+			
 			// 写入流程任务数据
 			insertWfProcessTasks(wfProcTaskBeans);
 
@@ -773,6 +773,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		} catch (WorkflowException wfe) {
 			throw wfe;
 		} catch (Exception e) {
+		    e.printStackTrace();
 			throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020199, e);
 		} finally {
 			log.info("启动流程--启动业务流程(" + processInstance.getId() + "),业务ID("
