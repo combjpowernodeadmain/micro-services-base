@@ -266,7 +266,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         String[] stateKey = { "stop", "finish", "todo", "total" };
 
         // 超时统计
-        Integer overtime = this.mapper.selectOvertime(caseInfo, startTime, endTime);
+        Integer overtime = this.mapper.selectOvertime(caseInfo, startTime, endTime,grids);
         // 处理状态统计
         List<Map<String, Integer>> finishedState = this.mapper.selectState(caseInfo, startTime, endTime, grids);
         String stateName = "";

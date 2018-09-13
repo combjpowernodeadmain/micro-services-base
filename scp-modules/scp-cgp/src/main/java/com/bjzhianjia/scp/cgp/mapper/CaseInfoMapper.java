@@ -61,7 +61,7 @@ public interface CaseInfoMapper extends CommonMapper<CaseInfo> {
      * @return 超时的事件个数
      */
     public Integer selectOvertime(@Param("caseInfo") CaseInfo caseInfo, @Param("startTime") String startTime,
-        @Param("endTime") String endTime);
+        @Param("endTime") String endTime , @Param("gridIds") String gridIds);
 
     /**
      * 事件处理状态统计
