@@ -138,7 +138,7 @@ public class EnforceCertificateService {
 
                     JSONObject userJObjForRetrn = new JSONObject();
                     userJObjForRetrn.put("id", enforceCertificate.getUsrId());
-                    userJObjForRetrn.put("telPhone", userJObj.getString("telPhone"));
+                    userJObjForRetrn.put("telPhone", userJObj != null ? userJObj.getString("telPhone") : "");
                     enforceCertificate.setUsrId(userJObjForRetrn.toJSONString());
                 }
             }

@@ -170,7 +170,7 @@
 		</foreach>
 	</select>
 
-	<!-- 按处理方式对案件进行统计 -->
+<!-- 按处理方式对案件进行统计 -->
 	<select id="getStatisByDealType" parameterType="java.util.Map"
 		resultType="com.alibaba.fastjson.JSONObject">
 		SELECT MONTH(crt_time) month,YEAR(crt_time) year, COUNT(*) AS
@@ -197,24 +197,111 @@
 	<!-- 按执法者对案件进行统计 -->
 	<select id="getStatisByDept" parameterType="java.util.Map"
 		resultType="com.alibaba.fastjson.JSONObject">
-		SELECT MONTH(crt_time) month,YEAR(crt_time) year, COUNT(*) AS
-		count,dept_id deptId FROM cle_case_registration ccr
-		<where>
-			is_deleted='0'
-			<if test="bizType!=null and bizType!=''">
-				AND ccr.`biz_type`=#{bizType}
-			</if>
-			<if test="caseSourceType!=null and caseSourceType!=''">
-				AND ccr.`case_source_type`=#{caseSourceType}
-			</if>
-			<if test="gridIds !=null">
-				AND ccr.`gird_id` IN (${gridIds})
-			</if>
-			<if test="startTime !=null and startTime != '' and endTime != null and endTime != ''">
-				AND ccr.`crt_time` BETWEEN #{startTime} AND #{endTime}
-			</if>
-		</where>
-		GROUP BY YEAR(crt_time),MONTH(crt_time),deptId
+		SELECT
+		cyear,
+		cmonth,
+		total,
+		
+		<foreach collection="deptParam" item="item"  separator=",">
+			MAX( CASE deptId WHEN #{item.deptId} THEN COUNT ELSE 0 END ) #{item.deptName}
+		</foreach>
+		FROM
+			(
+				SELECT
+					ccr1.cyear cyear,
+					ccr1.cmonth cmonth,
+					ccr1.deptId deptId,
+					ccr1.count COUNT,
+					ccr2.total total
+				FROM
+					(
+						SELECT
+							YEAR (crt_time) cyear,
+							MONTH (crt_time) cmonth,
+							dept_id deptId,
+							COUNT(*) COUNT
+						FROM
+							cle_case_registration
+					
+					WHERE
+					<include refid="isParamNull" />
+					
+						GROUP BY
+							cyear,
+							cmonth,
+							deptId
+					) ccr1
+				LEFT JOIN (
+					SELECT
+						YEAR (crt_time) cyear,
+						MONTH (crt_time) cmonth,
+						COUNT(*) total
+					FROM
+						cle_case_registration
+					GROUP BY
+						cyear,
+						cmonth
+				) ccr2 ON ccr1.cyear = ccr2.cyear
+				AND ccr1.cmonth = ccr2.cmonth
+			) temp
+		GROUP BY
+			cyear,
+			cmonth,
+			total
 	</select>
-
+	
+	<!-- 案件违法类别统计 -->
+	<select id="selectInspectItem" resultType="java.util.Map">
+	SELECT
+	inspectItem,
+	code,
+	name,
+	total,
+	MAX( CASE dealType WHEN 'root_biz_caseDealType_zlgz' THEN dealTypeCount ELSE 0 END ) root_biz_caseDealType_zlgz,
+	MAX( CASE dealType WHEN 'root_biz_caseDealType_xccf' THEN dealTypeCount ELSE 0 END ) root_biz_caseDealType_xccf,
+	MAX( CASE dealType WHEN 'root_biz_caseDealType_ybcx' THEN dealTypeCount ELSE 0 END ) root_biz_caseDealType_ybcx,
+	MAX( CASE dealType WHEN 'root_biz_caseDealType_wfxwt' THEN dealTypeCount ELSE 0 END ) root_biz_caseDealType_wfxwt,
+	MAX( CASE dealType WHEN 'root_biz_caseDealType_ajys' THEN dealTypeCount ELSE 0 END ) root_biz_caseDealType_ajys
+	FROM
+		(
+			SELECT
+				detailG.inspectItem,
+				detailG.dealType,
+				detailG.dealTypeCount,
+				itemG.total,
+				items.code,
+				items.name
+			FROM
+				(
+					SELECT
+						inspect_item  inspectItem,
+						deal_type  dealType,
+						count(id)  dealTypeCount
+					FROM
+						cle_case_registration
+					WHERE
+					<include refid="isParamNull"/>
+					GROUP BY
+						inspect_item,
+						deal_type
+				) detailG
+			LEFT JOIN (
+				SELECT
+					inspect_item,
+					count(id) total
+				FROM
+					cle_case_registration
+				GROUP BY
+					inspect_item
+			) itemG ON detailG.inspectItem = itemG.inspect_item
+			LEFT JOIN inspect_items items ON items.id = detailG.inspectItem
+		) temp
+	GROUP BY
+	inspectItem,
+	total,
+	code,
+	name
+	ORDER BY
+	total DESC
+	</select>
 </mapper>

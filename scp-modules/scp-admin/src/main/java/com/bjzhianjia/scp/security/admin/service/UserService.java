@@ -11,8 +11,6 @@ import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.bjzhianjia.scp.security.admin.biz.DepartBiz;
-import com.bjzhianjia.scp.security.admin.biz.PositionBiz;
 import com.bjzhianjia.scp.security.admin.biz.UserBiz;
 import com.bjzhianjia.scp.security.admin.entity.User;
 import com.bjzhianjia.scp.security.admin.mapper.PositionMapper;
@@ -24,24 +22,15 @@ public class UserService {
 	@Autowired
 	private UserBiz userBiz;
 	@Autowired
-	private DepartBiz departBiz;
-	@Autowired
 	private PositionMapper positionMapper;
-	@Autowired
-	private PositionBiz positionBiz;
 
-	public JSONObject getUsersByName(String name, int page, int limit) {
-		TableResultResponse<User> result = userBiz.getUsersByFakeName(name, page, limit);
-		TableResultResponse<User>.TableData<User> data = result.getData();
-		List<User> rows = data.getRows();
-		long total = data.getTotal();
-
+	public JSONArray getUsersByName(String name) {
+	    List<User> rows = userBiz.getUsersByFakeName(name);
 		JSONArray jsonArray = bindPositionToUser(rows);
-
-		JSONObject jsonObject = new JSONObject();
-		jsonObject.put("total", total);
-		jsonObject.put("rows", jsonArray);
-		return jsonObject;
+		if(jsonArray == null) {
+		    jsonArray = new JSONArray();
+		}
+		return jsonArray;
 	}
 
 	/**

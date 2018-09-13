@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.cgp.biz;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,7 +19,6 @@ import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.bjzhianjia.scp.cgp.constances.CommonConstances;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.CLEConcernedCompany;
 import com.bjzhianjia.scp.cgp.entity.CLEConcernedPerson;
@@ -32,6 +32,8 @@ import com.bjzhianjia.scp.cgp.entity.InspectItems;
 import com.bjzhianjia.scp.cgp.entity.LawTask;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.WritsInstances;
+import com.bjzhianjia.scp.cgp.entity.WritsTemplates;
+import com.bjzhianjia.scp.cgp.exception.BizException;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.feign.IUserFeign;
@@ -114,6 +116,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     @Autowired
     private WfProcTaskServiceImpl wfProcTaskService;
 
+    @Autowired
+    private WritsTemplatesBiz writsTemplatesBiz;
+
     /**
      * 添加立案记录<br/>
      * 如果 有当事人，则一并添加<br/>
@@ -157,9 +162,22 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      */
     private void addWritsInstances(JSONObject caseRegJObj, String caseId) {
         JSONArray writsInstancesJArray = caseRegJObj.getJSONArray("writsInstances");
-        
-        List<WritsInstances> writsInstanceList = JSONArray.parseArray(writsInstancesJArray.toJSONString(), WritsInstances.class);
-        
+
+        String tcode = "";
+        for (int i = 0; i < writsInstancesJArray.size(); i++) {
+            tcode = writsInstancesJArray.getJSONObject(i).getString("tcode");
+        }
+
+        WritsTemplates writsTemplates = new WritsTemplates();
+        List<WritsTemplates> templateList = writsTemplatesBiz.getByTcodes(tcode);
+        if (BeanUtil.isNotEmpty(templateList)) {
+            // 传入一个tcode值，则得到的结果也一定是一个
+            writsTemplates = templateList.get(0);
+        }
+
+        List<WritsInstances> writsInstanceList =
+            JSONArray.parseArray(writsInstancesJArray.toJSONString(), WritsInstances.class);
+
         if (writsInstanceList == null) {
             writsInstanceList = new ArrayList<>();
         }
@@ -168,30 +186,47 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
          * ===================以下代码暂时不要删=================
          */
         // 生成某一文号执法种类下某一年中文号序号
-//        WritsInstances theNextWenHao =
-//            writsInstancesBiz.theNextWenHao(writsInstances.getCaseId(), writsInstances.getTemplateId(),
-//                writsInstances.getRefEnforceType());
-//        String refNo =
-//            caseRegJObj.getString("squadronLeader") + String.format("%03d", Integer.valueOf(theNextWenHao.getRefNo()));
-//        writsInstances.setRefNo(refNo);
-//        writsInstances.setRefYear(String.valueOf(new LocalDate().getYear()));
+        // WritsInstances theNextWenHao =
+        // writsInstancesBiz.theNextWenHao(writsInstances.getCaseId(),
+        // writsInstances.getTemplateId(),
+        // writsInstances.getRefEnforceType());
+        // String refNo =
+        // caseRegJObj.getString("squadronLeader") + String.format("%03d",
+        // Integer.valueOf(theNextWenHao.getRefNo()));
+        // writsInstances.setRefNo(refNo);
+        // writsInstances.setRefYear(String.valueOf(new LocalDate().getYear()));
 
         // TODO By尚 可能需要将fillContext进行合并
-//        writsInstances.setFillContext(
-//            getWritsFillContext(caseRegJObj, writsInstances.getFillContext(), writsInstances.getRefNo()));
+        // writsInstances.setFillContext(
+        // getWritsFillContext(caseRegJObj, writsInstances.getFillContext(),
+        // writsInstances.getRefNo()));
         /*
          * =================以上代码暂时不要删====================
          */
         // 关联该文书相关的案件
 
         for (WritsInstances writsInstances : writsInstanceList) {
+            // 无法判断传入的文书是否进行暂存过，需要进行逐条验证
+
             writsInstances.setCaseId(caseId);
             // 判断文书是否进行过暂存(如果请求参数中有文书ID表明暂存过)
             if (BeanUtil.isEmpty(writsInstances.getId())) {
-                // 没有暂存过，进行一次添加操作
+                /*
+                 * 没有暂存过，进行一次添加操作<br/>
+                 * 前端并没有办法获取文书ID，然后入的是文书的code值，
+                 */
+                if (StringUtils.isBlank(tcode)) {
+                    /*
+                     * 如果程序执行到这里，总该有一条记录里tcode不为空，如果tcode为空，
+                     * 说明没有进行暂存的那条记录也没有传tcode进来
+                     */
+                    throw new BizException("请指定模板ID或模板tcode");
+                }
+                writsInstances.setTemplateId(writsTemplates.getId());
                 writsInstancesBiz.insertSelective(writsInstances);
             } else {
                 // 暂存过，进行更新操作
+                writsInstances.setTemplateId(writsTemplates.getId());
                 writsInstancesBiz.updateById(writsInstances);
             }
         }
@@ -967,7 +1002,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         JSONArray result = new JSONArray();
 
         Map<String, String> stateCode = dictFeign.getByCode(Constances.ROOT_BIZ_CASEDEALTYPE);
-        List<Map<String, Object>> caseList = this.mapper.selectState(caseRegistration, startTime, endTime,gridIds);
+        List<Map<String, Object>> caseList = this.mapper.selectState(caseRegistration, startTime, endTime, gridIds);
 
         if (BeanUtil.isNotEmpty(caseList)) {
             // 封装数据集
@@ -1009,11 +1044,13 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      *            结束时间
      * @return
      */
-    public JSONArray getCaseSource(CaseRegistration caseRegistration, String startTime, String endTime,String gridIds) {
+    public JSONArray getCaseSource(CaseRegistration caseRegistration, String startTime, String endTime,
+        String gridIds) {
         JSONArray result = new JSONArray();
 
         Map<String, String> sourceType = dictFeign.getByCode(Constances.CASE_SOURCE_TYPE);
-        List<Map<String, Object>> caseList = this.mapper.selectCaseSource(caseRegistration, startTime, endTime,gridIds);
+        List<Map<String, Object>> caseList =
+            this.mapper.selectCaseSource(caseRegistration, startTime, endTime, gridIds);
 
         if (BeanUtil.isNotEmpty(caseList)) {
             // 封装数据集
@@ -1043,9 +1080,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         }
         return result;
     }
-    
+
     /**
-     *  案件业务条线分布
+     * 案件业务条线分布
      * 
      * @param caseRegistration
      *            查询条件
@@ -1055,9 +1092,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      *            结束时间
      * @return
      */
-    public JSONArray getBizType(CaseRegistration caseRegistration, String startTime, String endTime,String gridIds) {
+    public JSONArray getBizType(CaseRegistration caseRegistration, String startTime, String endTime, String gridIds) {
         JSONArray result = new JSONArray();
-        
+
         Map<String, String> bizType = dictFeign.getByCode(Constances.ROOT_BIZ_TYPE);
         if (BeanUtil.isEmpty(bizType)) {
             bizType = new HashMap<>();
@@ -1076,7 +1113,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         }
         // 封装数据库中的数据
         List<Map<String, Object>> bizLineList =
-            this.mapper.selectBizLine(caseRegistration,startTime, endTime,gridIds);
+            this.mapper.selectBizLine(caseRegistration, startTime, endTime, gridIds);
         if (BeanUtil.isNotEmpty(bizLineList)) {
             for (Map<String, Object> bizLineMap : bizLineList) {
                 obj = new JSONObject();
@@ -1094,56 +1131,129 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             result.add(temp.get(key));
         }
         return result;
-     }
-       @SuppressWarnings({ "unchecked", "rawtypes" })
+    }
+
     public ObjectRestResponse<JSONObject> getStatisZhDuiCase(JSONObject caseRegistrationJObj, String startTime,
         String endTime) {
-        DateTime startDateTime=new DateTime(DateUtil.dateFromStrToDate(startTime, CommonConstances.DATE_FORMAT_FULL));
-        DateTime _endDateTime=new DateTime(DateUtil.dateFromStrToDate(endTime, CommonConstances.DATE_FORMAT_FULL));
-        DateTime endDateTime = _endDateTime.plusDays(1);
-        
+        CaseRegistration caseRegistration = new CaseRegistration();
+        caseRegistration.setBizType(caseRegistrationJObj.getString("bizType"));
+        caseRegistration.setCaseSourceType(caseRegistrationJObj.getString("caseSourceType"));
+
         ObjectRestResponse<JSONObject> restResponse = new ObjectRestResponse<>();
         JSONObject resultJobj = new JSONObject();
 
+        /*
+         * ========进行查询操作============开始=============
+         */
         if (StringUtils.isNotBlank(caseRegistrationJObj.getString("gridIds"))) {
             StringBuffer buffer = new StringBuffer();
             buffer.append("'").append(caseRegistrationJObj.getString("gridIds").replaceAll(",", "','")).append("'");
             caseRegistrationJObj.put("gridIds", buffer.toString());
-        }else {
+        } else {
             caseRegistrationJObj.put("gridIds", null);
         }
-
-        JSONArray byDealType = this.mapper.getStatisByDealType((Map) caseRegistrationJObj);
-        JSONArray byDept = this.mapper.getStatisByDept((Map) caseRegistrationJObj);
         
-        do {
+        JSONArray enforcersGroup = adminFeign.getEnforcersGroup();
+        Map<String, String> enforcersMap = new HashMap<>();
+        List<Map<String, String>> deptParam=new ArrayList<>();
+        for (int i = 0; i < enforcersGroup.size(); i++) {
+            JSONObject enforcersJObj = enforcersGroup.getJSONObject(i);
+            enforcersMap.put(enforcersJObj.getString("id"), enforcersJObj.getString("name"));
             
-        }while(false);
+            Map<String, String> deptParamTmp=new HashMap<>();
+            deptParamTmp.put("deptId", enforcersJObj.getString("id"));
+            deptParamTmp.put("deptName", enforcersJObj.getString("name"));
+            deptParam.add(deptParamTmp);
+        }
         
         
-        List<Integer> yearList=new ArrayList<>();
-        for(int i=startDateTime.getYear();i<=endDateTime.getYear();i++) {
-            if(i==startDateTime.getYear()) {
-                //遍历到起始年
-                for(int j=0;j<byDept.size();j++) {
-                    
+        JSONArray byDept =
+            this.mapper.getStatisByDept(caseRegistration, startTime, endTime,
+                caseRegistrationJObj.getString("gridIds"),deptParam);
+        /*
+         * ========进行查询操作============结束=============
+         */
+
+        /*
+         * ========进行数据整合============开始=============
+         */
+
+        Date startDate = DateUtil.dateFromStrToDate(startTime, true);
+        Date endDate = DateUtil.dateFromStrToDate(endTime, true);
+
+        DateTime dd = new DateTime(startDate.getTime());
+        DateTime dl1 = new DateTime(dd.getYear(), dd.getMonthOfYear(), 1, 0, 0);
+
+        int count = byDept.size();
+
+        List<String> dateTimeIn = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            JSONObject deptJObj = byDept.getJSONObject(i);
+            dateTimeIn.add(deptJObj.getString("cyear") + deptJObj.getString("cmonth"));
+        }
+
+        do {
+            String sample = String.valueOf(dl1.getYear()) + String.valueOf(dl1.getMonthOfYear());
+            if (!dateTimeIn.contains(sample)) {
+                // 说明该年该月下没有数据
+                JSONObject fDate3 = new JSONObject();
+                fDate3.put("cyear", dl1.getYear());
+                fDate3.put("cmonth", dl1.getMonthOfYear());
+                fDate3.put("total", 0);
+                for(Map<String, String> deptMap:deptParam) {
+                    fDate3.put(deptMap.get("deptName"), 0);
+                }
+                byDept.add(fDate3);
+            }
+            dl1 = dl1.plusMonths(1);
+
+        } while (dl1.getMillis() <= endDate.getTime());
+        /*
+         * ============
+         */
+        byDept.sort(new Comparator<Object>() {
+            @Override
+            public int compare(Object o1, Object o2) {
+                JSONObject j1=(JSONObject)o1;
+                JSONObject j2=(JSONObject)o2;
+                
+                if((j1.getInteger("cyear")-j2.getInteger("cyear"))!=0) {
+                    return j1.getInteger("cyear")-j2.getInteger("cyear");
+                }else {
+                    return j1.getInteger("cmonth")-j2.getInteger("cmonth");
                 }
             }
-        }
-        
-        //格式化数据
-        for(int i=0;i<byDealType.size();i++) {
-            
-        }
-        for(int i=0;i<byDept.size();i++) {
-            
-        }
-
+        });
         resultJobj.put("byDept", byDept);
-        resultJobj.put("byDealType", byDealType);
 
         restResponse.setStatus(200);
         restResponse.setData(resultJobj);
         return restResponse;
+    }
+    
+    /**
+     * 案件业务条线分布
+     * 
+     * @param caseRegistration
+     *            查询条件
+     * @param startTime
+     *            开始时间
+     * @param endTime
+     *            结束时间
+     * @param page
+     *            页码
+     * @param limit
+     *            页容量
+     * @return
+     */
+    public TableResultResponse<Map<String, Object>> getInspectItem(CaseRegistration caseRegistration, String startTime,
+        String endTime, String gridIds, Integer page, Integer limit) {
+        
+        Page<Object> result = PageHelper.startPage(page, limit);
+        List<Map<String, Object>> list = this.mapper.selectInspectItem(caseRegistration, startTime, endTime, gridIds);
+        if (BeanUtil.isEmpty(list)) {
+            return new TableResultResponse<Map<String, Object>>(0, null);
+        }
+        return new TableResultResponse<Map<String, Object>>(result.getTotal(), list);
     }
 }

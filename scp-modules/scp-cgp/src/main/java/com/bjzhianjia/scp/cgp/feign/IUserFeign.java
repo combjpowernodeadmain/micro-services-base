@@ -20,7 +20,6 @@ package com.bjzhianjia.scp.cgp.feign;
 import java.util.List;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,8 +27,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.alibaba.fastjson.JSONArray;
 import com.bjzhianjia.scp.security.auth.client.config.FeignApplyConfiguration;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
-
-import io.swagger.annotations.ApiOperation;
 
 /**
  * @author scp
@@ -44,9 +41,8 @@ public interface IUserFeign {
     @RequestMapping(value="/user/dataDepart",method = RequestMethod.GET)
     List<String> getUserDataDepartIds(@RequestParam("userId") String userId);
     
-    @RequestMapping(value="/user/getByName/{name}",method = RequestMethod.GET)
-    JSONArray getUsersByFakeName(@PathVariable("name")String name);
-    
+    @RequestMapping(value = "user/getByName", method = RequestMethod.GET)
+    public JSONArray getUsersByFakeName(@RequestParam(value = "name") String name);
     
     /**
      * 获取当前用户工作流的岗位Id列表

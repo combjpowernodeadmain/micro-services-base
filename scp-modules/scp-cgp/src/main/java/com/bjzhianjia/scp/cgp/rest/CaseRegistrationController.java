@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.cgp.rest;
 
 import java.util.Date;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -8,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -55,13 +57,15 @@ import io.swagger.annotations.ApiParam;
 @Api(tags = "综合执法 - 案件登记")
 public class CaseRegistrationController extends BaseController<CaseRegistrationBiz, CaseRegistration, String> {
 
-    @RequestMapping(value = "/add", method = RequestMethod.POST)
+    @RequestMapping(value="/add",method=RequestMethod.POST)
     @ApiOperation("业务--添加单个对象")
     public ObjectRestResponse<Void> addCase(
-        @RequestBody @ApiParam(name = "待添加对象实例") @Validated JSONObject caseRegJObj) {
+        @RequestBody @ApiParam(name = "待添加对象实例") @Validated JSONObject objs) {
         ObjectRestResponse<Void> restResult = new ObjectRestResponse<>();
 
-        Result<Void> result = this.baseBiz.addCase(caseRegJObj);
+        JSONObject caseRegiJObj = objs.getJSONObject("bizData");
+        
+        Result<Void> result = this.baseBiz.addCase(caseRegiJObj);
         if (!result.getIsSuccess()) {
             restResult.setStatus(400);
             restResult.setMessage(result.getMessage());
@@ -291,11 +295,11 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
     @RequestMapping(value = "/statis/ZhDui", method = RequestMethod.GET)
     @ApiOperation("执法中队案件量趋势分析")
     public ObjectRestResponse<JSONObject> getStatisZhDuiCase(
-        @RequestParam(value = "bizType", defaultValue = "") String bizType,
-        @RequestParam(value = "caseSourceType", defaultValue = "") String caseSourceType,
-        @RequestParam(value = "gridIds", defaultValue = "") String gridIds,
-        @RequestParam(value = "startTime", defaultValue = "") String startTime,
-        @RequestParam(value = "endTime", defaultValue = "") String endTime) {
+        @RequestParam(value = "bizType", defaultValue = "") @ApiParam("业务条线") String bizType,
+        @RequestParam(value = "caseSourceType", defaultValue = "") @ApiParam("案件来源类型") String caseSourceType,
+        @RequestParam(value = "gridIds", defaultValue = "") @ApiParam("网格范围") String gridIds,
+        @RequestParam(value = "startTime", defaultValue = "") @ApiParam("开始日期") String startTime,
+        @RequestParam(value = "endTime", defaultValue = "") @ApiParam("结束日期") String endTime) {
 
         JSONObject caseRegistrationJObj = new JSONObject();
         caseRegistrationJObj.put("bizType", bizType);
@@ -304,5 +308,42 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         caseRegistrationJObj.put("startTime", startTime);
         caseRegistrationJObj.put("endTime", endTime);
         return this.baseBiz.getStatisZhDuiCase(caseRegistrationJObj, startTime, endTime);
+    }
+
+    /**
+     * 案件违法统计
+     * 
+     * @return
+     */
+    @ApiOperation("案件违法统计")
+    @GetMapping("/statis/inspectItem")
+    @ResponseBody
+    public TableResultResponse<Map<String, Object>> getInspectItem(
+        @RequestParam(defaultValue = "") @ApiParam("业务条线") String bizType,
+        @RequestParam(defaultValue = "") @ApiParam("案件处理类型") String dealType,
+        @RequestParam(defaultValue = "") @ApiParam("网格范围") String gridIds,
+        @RequestParam(defaultValue = "") @ApiParam("案件来源类型") String caseSourceType,
+        @RequestParam(defaultValue = "") @ApiParam("执法分队") String deptId,
+        @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
+        @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime,
+        @RequestParam(defaultValue = "0") @ApiParam("页码") Integer page,
+        @RequestParam(defaultValue = "10") @ApiParam("页容量") Integer limit) {
+
+        CaseRegistration caseRegistration = new CaseRegistration();
+        caseRegistration.setCaseSourceType(caseSourceType);
+        caseRegistration.setDealType(dealType);
+        caseRegistration.setDeptId(deptId);
+        caseRegistration.setBizType(bizType);
+
+        if (StringUtils.isNotBlank(endTime)) {
+            Date _end = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
+            _end = DateUtils.addDays(_end, 1);
+            endTime = DateUtil.dateFromDateToStr(_end, "yyyy-MM-dd HH:mm:ss");
+        }
+
+        TableResultResponse<Map<String, Object>> result =
+            this.baseBiz.getInspectItem(caseRegistration, startTime, endTime, gridIds, page, limit);
+
+        return result;
     }
 }

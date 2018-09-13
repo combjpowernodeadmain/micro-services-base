@@ -4,6 +4,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.joda.time.DateTime;
+
+import com.bjzhianjia.scp.cgp.constances.CommonConstances;
+
 /**
  * 
  * @author 尚
@@ -18,7 +22,7 @@ public class DateUtil {
 	 * @return
 	 */
 	public static Date dateFromStrToDate(String dateStr) {
-		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd");
+		SimpleDateFormat format=new SimpleDateFormat(CommonConstances.DATE_FORMAT);
 		Date date =null;
 		try {
 			date = format.parse(dateStr);
@@ -26,6 +30,19 @@ public class DateUtil {
 			e.printStackTrace();
 		}
 		return date;
+	}
+	
+	/**
+	 * 将字符串类型日期转化为Date类型，默认格式为"yyyy-MM-dd"
+	 * @author 尚
+	 * @param dateStr
+	 * @return
+	 */
+	public static Date dateFromStrToDate(String dateStr,boolean isFullDateTime) {
+	    if(isFullDateTime) {
+	        return dateFromStrToDate(dateStr, CommonConstances.DATE_FORMAT_FULL);
+	    }
+	    return dateFromStrToDate(dateStr);
 	}
 	
 	/**
@@ -57,4 +74,19 @@ public class DateUtil {
 		SimpleDateFormat format=new SimpleDateFormat(formater);
 		return format.format(date);
 	}
+	
+	/**
+     * 获取date所在月和最后一天
+     * 
+     * @param date
+     * @return
+     */
+    public static Date theLastDatOfMonth(Date date) {
+        DateTime dateTime = new DateTime(date.getTime());// date
+        DateTime plusMonths = dateTime.plusMonths(1);// date的后一个月
+        DateTime withDayOfMonth = plusMonths.withDayOfMonth(1);// date后一个月的第一天
+        DateTime minusDays = withDayOfMonth.minusDays(1);// date所在月的最后一天
+
+        return new Date(minusDays.getMillis());
+    }
 }
