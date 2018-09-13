@@ -53,6 +53,12 @@ public class OauthUserDetailsService implements UserDetailsService {
         if (StringUtils.isEmpty(data.get("id"))) {
             throw new UsernameNotFoundException("用户名不合法");
         }
+        //1禁用用户 0正常
+        String isDisabled =  data.get("isDisabled");
+        if(StringUtils.isEmpty(isDisabled) && "1".equals(isDisabled)) {
+            throw new UsernameNotFoundException("用户被禁用");
+        }
+        
         Set<GrantedAuthority> authorities = new HashSet<GrantedAuthority>();
         authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
         return new OauthUser(data.get("id"), data.get("username"), data.get("password"), data.get("name"), data.get("departId"), data.get("tenantId"),
