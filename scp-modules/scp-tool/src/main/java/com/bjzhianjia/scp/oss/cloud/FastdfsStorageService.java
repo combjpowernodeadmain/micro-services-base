@@ -85,6 +85,46 @@ public class FastdfsStorageService extends CloudStorageService {
 	
 	
 	@Override
+	public boolean remove(String key) {
+
+		try {
+			this.storageClient = new StorageClient(trackerServer, storageServer);
+			String[] groupNameFromPath = getGroupNameFromPath(key);
+			log.info("delete file info : {}, {}", groupNameFromPath[0], groupNameFromPath[1]);
+			int deleteFileFlag = storageClient.delete_file(groupNameFromPath[0], groupNameFromPath[1]);
+			if (deleteFileFlag == 0) {
+				return true;
+			}
+			log.info("delete file result: {} ", deleteFileFlag);
+		} catch (IOException | MyException e) {
+			log.warn("删除文件出错{}", e);
+			e.printStackTrace();
+			return false;
+		} 
+		return false;
+	}
+	
+	/**
+	 *   移除文件前缀
+	 * @param filePath
+	 * @return
+	 */
+	private static String[] getGroupNameFromPath(String filePath) {
+		if(StringUtils.isEmpty(filePath)) {
+			// 如果为空，返回一个空字符串
+			return new String[] {StringUtils.EMPTY,StringUtils.EMPTY};
+		}
+		
+		int indexOf = StringUtils.indexOf(filePath, "/");
+		if(indexOf == 0) {
+			filePath = StringUtils.removeStart(filePath, "/");
+			indexOf = StringUtils.indexOf(filePath, "/");
+		}
+		return new String[] {StringUtils.substring(filePath, 0, indexOf),
+				StringUtils.substring(filePath, indexOf + 1, filePath.length())};
+	}
+	
+	@Override
 	public String upload(byte[] data, String path) {
 		log.info("This upload method is not implemented");
 		return null;
@@ -131,5 +171,6 @@ public class FastdfsStorageService extends CloudStorageService {
 		log.info("This uploadSuffix by inputstream method is not implemented");
 		return null;
 	}
+
 
 }

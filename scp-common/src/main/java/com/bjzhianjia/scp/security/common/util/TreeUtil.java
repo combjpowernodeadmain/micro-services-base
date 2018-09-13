@@ -55,6 +55,9 @@ public class TreeUtil<T extends TreeNodeVO> {
                 treeNode.getChildren().sort(comparator);
             }
         }
+        if (comparator != null && trees.size() > 1) {
+			trees.sort(comparator);
+		}
         return trees;
     }
 
