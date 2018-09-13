@@ -123,6 +123,7 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
      */
     @RequestMapping(value="/add/list",method=RequestMethod.POST)
     @ApiOperation("批量添加记录")
+    @Deprecated
     public ObjectRestResponse<WritsInstances> addList(@RequestBody @Validated @ApiParam("待添加对象实例集合")JSONArray writsInstancesList,BindingResult bindingResult){
         ObjectRestResponse<WritsInstances> resetResult = this.baseBiz.addList(writsInstancesList);
         return resetResult;

@@ -519,11 +519,10 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
      * @param writsInstancesList
      * @return
      */
+    @Deprecated
     public ObjectRestResponse<WritsInstances> addList(JSONArray writsInstancesJArray) {
         List<WritsInstances> writsInstanceList =
             JSONArray.parseArray(writsInstancesJArray.toJSONString(), WritsInstances.class);
-
-        // TODO 用tcode去换模板ID
 
         ObjectRestResponse<WritsInstances> restResult = new ObjectRestResponse<>();
 
