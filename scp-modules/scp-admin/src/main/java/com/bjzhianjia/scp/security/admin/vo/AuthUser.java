@@ -36,6 +36,9 @@ public class AuthUser implements Serializable{
     private String departId;
 
     private String tenantId;
+    
+    private String isDisabled;
+
 
     public AuthUser() {
     }
@@ -86,5 +89,12 @@ public class AuthUser implements Serializable{
 
     public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
+    }
+    public String getIsDisabled() {
+        return isDisabled;
+    }
+    
+    public void setIsDisabled(String isDisabled) {
+        this.isDisabled = isDisabled;
     }
 }

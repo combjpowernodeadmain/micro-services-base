@@ -97,13 +97,35 @@ public class UserController extends BaseController<UserBiz, User, String> {
 		BeanUtils.copyProperties(baseBiz.getUserByUsername(username), user);
 		return new ObjectRestResponse<AuthUser>().data(user);
 	}
-
+	
 	@ApiOperation("账户修改密码")
 	@RequestMapping(value = "/changePassword", method = RequestMethod.POST)
 	public ObjectRestResponse<Boolean> changePassword(String oldPass, String newPass) {
 		return new ObjectRestResponse<Boolean>().data(baseBiz.changePassword(oldPass, newPass));
 	}
-
+	/**
+	 * 管理员重置密码
+	 * @param username 用户账号
+	 * @param newPass 用户新密码
+	 * @return
+	 */
+    @ApiOperation("管理员重置密码")
+    @RequestMapping(value = "/resetPassword", method = RequestMethod.POST)
+    public ObjectRestResponse<Boolean> resetPassword(String username,String newPass) {
+        ObjectRestResponse<Boolean> result = new ObjectRestResponse<>();
+        if(StringUtils.isBlank(username)){
+            result.setMessage("非法参数");
+            result.setStatus(400);
+            return result;
+        }
+        if(StringUtils.isBlank(newPass)){
+            result.setMessage("请输入密码!");
+            result.setStatus(400);
+            return result;
+        }
+        return baseBiz.resetPassword(username,newPass);
+    }
+	   
 	@ApiOperation("获取用户信息接口")
 	@RequestMapping(value = "/front/info", method = RequestMethod.GET)
 	@ResponseBody
