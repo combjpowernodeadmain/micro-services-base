@@ -197,7 +197,7 @@ public class UserController extends BaseController<UserBiz, User, String> {
     @IgnoreClientToken
     public JSONArray getByUserIds(@RequestParam(value="userIds") @ApiParam("待查询人员Ids") String userIds) {
         if(StringUtils.isBlank(userIds)) {
-            return null;
+            return new JSONArray();
         }
         return this.baseBiz.getByUserIds(userIds);
     }
