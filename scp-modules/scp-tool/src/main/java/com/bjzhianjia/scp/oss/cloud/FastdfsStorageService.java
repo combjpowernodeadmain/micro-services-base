@@ -90,6 +90,7 @@ public class FastdfsStorageService extends CloudStorageService {
 		try {
 			this.storageClient = new StorageClient(trackerServer, storageServer);
 			String[] groupNameFromPath = getGroupNameFromPath(key);
+			log.info("delete file info : {}, {}", groupNameFromPath[0], groupNameFromPath[1]);
 			int deleteFileFlag = storageClient.delete_file(groupNameFromPath[0], groupNameFromPath[1]);
 			if (deleteFileFlag == 0) {
 				return true;
