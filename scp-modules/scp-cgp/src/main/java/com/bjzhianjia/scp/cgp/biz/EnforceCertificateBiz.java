@@ -95,10 +95,10 @@ public class EnforceCertificateBiz extends BusinessBiz<EnforceCertificateMapper,
 	    
 	    criteria.andEqualTo("isDeleted", "0");
 	    if(StringUtils.isNotBlank(enforceCertificate.getHolderName())){
-	    	criteria.andEqualTo("holderName", enforceCertificate.getHolderName());
+	    	criteria.andLike("holderName", "%"+enforceCertificate.getHolderName()+"%");
 	    }
 	    if(StringUtils.isNotBlank(enforceCertificate.getCertCode())){
-	    	criteria.andEqualTo("certCode", enforceCertificate.getCertCode());
+	    	criteria.andLike("certCode", "%"+enforceCertificate.getCertCode()+"%");
 	    }
 	    
 	    example.setOrderByClause("id desc");

@@ -114,7 +114,7 @@ public class DepartController extends BaseController<DepartBiz, Depart, String> 
 	    if(deptList != null && !deptList.isEmpty()) {
 	        return JSONArray.parseArray(JSON.toJSONString(deptList));
 	    }
-	    return null;
+	    return new JSONArray();
 	}
 	
 }

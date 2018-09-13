@@ -83,6 +83,10 @@ public class Constances {
      */
     public static final String CASE_SOURCE_TYPE = "root_biz_caseSourceT";
     
+    /**
+     * 网格等级
+     */
+    public static final String ROOT_BIZ_GRID_LEVEL = "root_biz_grid_level";
     
 	/**
 	 * 专项管理处理状态

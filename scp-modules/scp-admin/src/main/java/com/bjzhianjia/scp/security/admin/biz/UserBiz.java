@@ -16,6 +16,7 @@
 
 package com.bjzhianjia.scp.security.admin.biz;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -217,13 +218,15 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
      * @param name
      * @return
      */
-    public TableResultResponse<User> getUsersByFakeName(String name,int page,int limit){
+    public List<User> getUsersByFakeName(String name){
     	Example example=new Example(User.class);
     	Example.Criteria criteria=example.createCriteria();
     	criteria.andLike("name", "%"+name+"%");
-    	Page<Object> result =PageHelper.startPage(page, limit);
     	List<User> userList = mapper.selectByExample(example);
-    	return new TableResultResponse<User>(result.getTotal(), userList);
+    	if(userList == null) {
+    	   userList = new ArrayList<>();
+    	}    	    
+    	return userList;
     }
     
     /***********************************************

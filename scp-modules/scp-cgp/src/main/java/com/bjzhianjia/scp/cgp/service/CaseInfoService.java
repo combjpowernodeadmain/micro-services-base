@@ -316,7 +316,7 @@ public class CaseInfoService {
         }
 
         Set<Integer> bizIds = new HashSet<>();
-        List<String> eventTypeIdStrList = new ArrayList<>();
+        Set<String> eventTypeIdStrSet = new HashSet<>();
 
         Set<String> rootBizIdSet = new HashSet<>();
 
@@ -341,7 +341,7 @@ public class CaseInfoService {
             rootBizIdSet.add(caseInfo.getBizList());
             rootBizIdSet.add(caseInfo.getSourceType());
             rootBizIdSet.add(caseInfo.getCaseLevel());
-            eventTypeIdStrList.add(caseInfo.getEventTypeList());
+            eventTypeIdStrSet.add(caseInfo.getEventTypeList());
         }
 
         /*
@@ -353,17 +353,17 @@ public class CaseInfoService {
         }
 
         // 查询事件类别
-        Map<String, String> eventTypeMap = new HashMap<>();
+        Map<String, String> eventType_ID_NAME_Map = new HashMap<>();
         String eventTypeName = "";
-        if (eventTypeIdStrList != null && !eventTypeIdStrList.isEmpty()) {
+        if (eventTypeIdStrSet != null && !eventTypeIdStrSet.isEmpty()) {
             List<EventType> eventTypeList = new ArrayList<>();
-            eventTypeList = eventTypeMapper.selectByIds(String.join(",", eventTypeIdStrList));
+            eventTypeList = eventTypeMapper.selectByIds(String.join(",", eventTypeIdStrSet));
             List<String> eventTypeNameList = new ArrayList<>();
             for (EventType eventType : eventTypeList) {
                 if (StringUtils.isNotBlank(eventType.getTypeName())) {
                     eventTypeNameList.add(eventType.getTypeName());
                 }
-                eventTypeMap.put(String.valueOf(eventType.getId()), eventType.getTypeName());
+                eventType_ID_NAME_Map.put(String.valueOf(eventType.getId()), eventType.getTypeName());
             }
             eventTypeName = String.join(",", eventTypeNameList);
         }
@@ -373,7 +373,7 @@ public class CaseInfoService {
             JSONObject wfJObject = JSONObject.parseObject(JSON.toJSONString(caseInfo));
 
             wfJObject.put("bizListName", getRootBizTypeName(caseInfo.getBizList(), rootBizList));
-            wfJObject.put("eventTypeListName", eventTypeName);
+            wfJObject.put("eventTypeListName", getEventTypeName(eventType_ID_NAME_Map,caseInfo.getEventTypeList()));
             wfJObject.put("sourceTypeName", getRootBizTypeName(caseInfo.getSourceType(), rootBizList));
             wfJObject.put("caseLevelName", getRootBizTypeName(caseInfo.getCaseLevel(), rootBizList));
 
@@ -415,6 +415,19 @@ public class CaseInfoService {
         }
 
         return new TableResultResponse<>(tableResult.getData().getTotal(), jObjList);
+    }
+
+    private String getEventTypeName(Map<String, String> eventType_ID_NAME_Map, String eventTypeList) {
+        if(eventTypeList!=null) {
+            List<String> nameList=new ArrayList<>();
+            String[] split = eventTypeList.split(",");
+            for (String string : split) {
+                nameList.add(eventType_ID_NAME_Map.get(string));
+            }
+            
+            return String.join(",", nameList);
+        }
+        return "";
     }
 
     private void sourceTypeHistoryAssist(JSONObject wfJObject, CaseInfo caseInfo) {
@@ -523,8 +536,6 @@ public class CaseInfoService {
             resultJObjct.put("crtUserTel", userJObj.getString("mobilePhone"));
         }
 
-        // JSONObject sourceTypeJsonStr =
-        // JSONObject.parseObject(resultJObjct.toJSONString());
         wfJObject.put("sourceTypeHistory", resultJObjct);
     }
 
@@ -533,10 +544,7 @@ public class CaseInfoService {
             String[] split = ids.split(",");
             List<String> nameList = new ArrayList<>();
             for (String string : split) {
-                // JSONObject obj =
-                // JSONObject.parseObject(rootBizList.get(string));
                 nameList.add(rootBizList.get(string));
-                // nameList.add(obj.getString("labelDefault"));
             }
 
             return String.join(",", nameList);

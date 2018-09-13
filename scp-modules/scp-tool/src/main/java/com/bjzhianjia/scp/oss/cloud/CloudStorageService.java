@@ -82,5 +82,14 @@ public abstract class CloudStorageService {
      * @return             返回http地址
      */
     public abstract String uploadSuffix(InputStream inputStream, String suffix);
+    
+    
+    /**
+     * Delete by the key 
+     * 
+     * @param key the file key
+     * @return
+     */
+    public abstract boolean remove(String key);
 
 }

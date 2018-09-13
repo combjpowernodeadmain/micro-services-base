@@ -61,7 +61,7 @@ public interface CaseInfoMapper extends CommonMapper<CaseInfo> {
      * @return 超时的事件个数
      */
     public Integer selectOvertime(@Param("caseInfo") CaseInfo caseInfo, @Param("startTime") String startTime,
-        @Param("endTime") String endTime);
+        @Param("endTime") String endTime , @Param("gridIds") String gridIds);
 
     /**
      * 事件处理状态统计
@@ -85,4 +85,16 @@ public interface CaseInfoMapper extends CommonMapper<CaseInfo> {
      */
     public List<Map<String ,Object>> selectBizLine(@Param("caseInfo") CaseInfo caseInfo,@Param("gridIds")String gridIds,
         @Param("startTime") String startTime, @Param("endTime") String endTime);
+    
+    /**
+     * 网格事件统计 
+     * @param caseInfo 查询条件
+     * @param gridIds 网格ids
+     * @param startTime  开始时间
+     * @param endTime   结束时间
+     * @return
+     */
+    public List<Map<String ,Object>> selectGrid(@Param("caseInfo") CaseInfo caseInfo,@Param("startTime") String startTime, 
+        @Param("endTime") String endTime,@Param("gridIds")String gridIds);
+    
 }

@@ -39,10 +39,14 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
         switch (bizType) {
             case PROC_APPROVE:
                 // 审批操作
-                writsInstanceBiz.updateOrInsert(JSONObject.parseObject(JSON.toJSONString(procBizData)));
+                writsInstanceBiz.addWritsInstances(JSONObject.parseObject(JSON.toJSONString(procBizData)));
                 break;
             case PROC_CLAIM:
                 // 签收操作
+                break;
+
+            case PROC_UNCLAIM:
+                // 取消签收
                 break;
             case PROC_END:
                 // 流程走向结束
@@ -63,6 +67,7 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
         caseRegistration.setExeStatus(CaseRegistration.EXESTATUS_STATE_STOP);
         caseRegistrationBiz.updateSelectiveById(caseRegistration);
     }
+
     private void terminationCase(Map<String, Object> procBizData) {
         String caseId = (String) procBizData.get("procBizId");
         CaseRegistration caseRegistration = new CaseRegistration();
