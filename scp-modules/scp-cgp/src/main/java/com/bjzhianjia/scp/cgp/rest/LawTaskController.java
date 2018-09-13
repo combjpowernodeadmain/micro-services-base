@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiParam;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.LawTaskBiz;
 import com.bjzhianjia.scp.cgp.entity.LawTask;
+import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 
@@ -180,13 +181,17 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
         }
 
         try {
-            lawTaskBiz.randomLawTask(objType, griIds, peopleNumber, regulaObjNumber, _startTime,
+            Result<Void>  _result = lawTaskBiz.randomLawTask(objType, griIds, peopleNumber, regulaObjNumber, _startTime,
                 _endTimeTmp, info, bizTypeCode, eventTypeId,lawTitle);
+            //错误反馈
+            if(!_result.getIsSuccess()) {
+                result.setStatus(400);
+                result.setMessage(_result.getMessage());
+            }
         } catch (Exception e) {
             result.setStatus(400);
             result.setMessage("分配异常");
         }
-
         return result;
     }
     

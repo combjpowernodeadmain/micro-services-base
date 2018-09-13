@@ -325,7 +325,7 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
         List<RegulaObject> regulaObjects = regulaObjectBiz.selectByTypeAndGri(objType, griIds);
         if (regulaObjects == null || regulaObjects.isEmpty()) {
             result.setIsSuccess(false);
-            result.setMessage("当前网格没有监管对象！");
+            result.setMessage("监管对象类型或者网格中，不存在监管对象！");
             return result;
         }
 
