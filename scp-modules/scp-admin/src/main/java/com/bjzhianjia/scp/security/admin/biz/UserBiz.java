@@ -37,6 +37,7 @@ import com.bjzhianjia.scp.security.admin.entity.User;
 import com.bjzhianjia.scp.security.admin.mapper.DepartMapper;
 import com.bjzhianjia.scp.security.admin.mapper.UserMapper;
 import com.bjzhianjia.scp.security.common.biz.BaseBiz;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.util.BooleanUtil;
 import com.bjzhianjia.scp.security.common.util.EntityUtils;
@@ -86,6 +87,36 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
         }
         return false;
     }
+    /**
+     * 管理员重置用户密码
+     * @param oldPass
+     * @param newPass
+     * @return
+     */
+    public ObjectRestResponse<Boolean> resetPassword(String username , String newPass) {
+        ObjectRestResponse<Boolean> result = new ObjectRestResponse<>();
+        result.setStatus(400);
+        result.setData(false);
+        
+        // 如果非超级管理员,无法重置用户的密码
+        if (BooleanUtil.BOOLEAN_FALSE.equals(mapper.selectByPrimaryKey(BaseContextHandler.getUserID()).getIsSuperAdmin())) {
+            result.setMessage("当前用户没有权限！");
+            return result;
+        }
+        
+        User user = this.getByUsername(username);
+        if (user != null && StringUtils.isNotBlank(user.getPassword())) {
+            String password = encoder.encode(newPass);
+            user.setPassword(password);
+            this.updateSelectiveById(user);
+            
+            result.setStatus(200);
+            result.setData(true);
+            return result;
+        }
+        return result;
+    }
+    
 
     @Override
     public void insertSelective(User entity) {
@@ -153,6 +184,7 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
      *
      * @param username
      * @return
+     *      去除删除用户和禁用用户
      */
     public User getUserByUsername(String username) {
         User user = new User();
@@ -161,7 +193,21 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
         user.setIsDisabled(BooleanUtil.BOOLEAN_FALSE);
         return mapper.selectOne(user);
     }
-
+    
+    /**
+     * 根据用户名获取用户信息
+     *
+     * @param username
+     * @return
+     *     去除删除用户
+     */
+    public User getByUsername(String username) {
+        User user = new User();
+        user.setUsername(username);
+        user.setIsDeleted(BooleanUtil.BOOLEAN_FALSE);
+        return mapper.selectOne(user);
+    }
+    
     @Override
     public void query2criteria(Query query, Example example) {
         if (query.entrySet().size() > 0) {
