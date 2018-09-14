@@ -512,6 +512,24 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                     }
                     obj.put("isSupervise", isUrge);
                     obj.put("isUrge", isSupervise);
+                    //完成期限
+                    Date caseEnd = caseRegistration.getCaseEnd();
+                    String exeStatus = caseRegistration.getExeStatus();
+                    //默认没有超时
+                    boolean isOvertime = false;
+                    if(caseEnd != null) {
+                        //处理结束
+                        if(CaseRegistration.EXESTATUS_STATE_STOP.equals(exeStatus) || CaseRegistration.EXESTATUS_STATE_FINISH.equals(exeStatus) ) {
+                            //结案时间
+                            Date finishTime = caseRegistration.getUpdTime();
+                            isOvertime = caseEnd.before(finishTime);
+                        }else {
+                            //处理中
+                            isOvertime = caseEnd.before(new Date());
+                        }
+                    }
+                    //是否超时
+                    obj.put("isOvertime", isOvertime);
                     result.add(obj);
                 }
                 return new TableResultResponse<>(tableResult.getData().getTotal(), result);
@@ -675,18 +693,18 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
         // 查询案件类别
         Map<String, String> eventType_ID_NAME_Map = new HashMap<>();
-        String eventTypeName = "";
+//        String eventTypeName = "";
         if (eventTypeIdStrList != null && !eventTypeIdStrList.isEmpty()) {
             List<EventType> eventTypeList = new ArrayList<>();
             eventTypeList = eventTypeMapper.selectByIds(String.join(",", eventTypeIdStrList));
-            List<String> eventTypeNameList = new ArrayList<>();
+//            List<String> eventTypeNameList = new ArrayList<>();
             for (EventType eventType : eventTypeList) {
-                if (StringUtils.isNotBlank(eventType.getTypeName())) {
-                    eventTypeNameList.add(eventType.getTypeName());
-                }
+//                if (StringUtils.isNotBlank(eventType.getTypeName())) {
+//                    eventTypeNameList.add(eventType.getTypeName());
+//                }
                 eventType_ID_NAME_Map.put(String.valueOf(eventType.getId()), eventType.getTypeName());
             }
-            eventTypeName = String.join(",", eventTypeNameList);
+//            eventTypeName = String.join(",", eventTypeNameList);
         }
 
         JSONObject objResult = null;
@@ -744,7 +762,24 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             objResult.put("sourceTitle", sourceTitle);
             objResult.put("isUrge", "0".equals(caseRegistration.getIsUrge()) ? false : true);
             objResult.put("isSupervise", "0".equals(caseRegistration.getIsSupervise()) ? false : true);
-
+            //完成期限
+            Date caseEnd = caseRegistration.getCaseEnd();
+            String exeStatus = caseRegistration.getExeStatus();
+            //默认没有超时
+            boolean isOvertime = false;
+            if(caseEnd != null) {
+                //处理结束
+                if(CaseRegistration.EXESTATUS_STATE_STOP.equals(exeStatus) || CaseRegistration.EXESTATUS_STATE_FINISH.equals(exeStatus) ) {
+                    //结案时间
+                    Date finishTime = caseRegistration.getUpdTime();
+                    isOvertime = caseEnd.before(finishTime);
+                }else {
+                    //处理中
+                    isOvertime = caseEnd.before(new Date());
+                }
+            }
+            //是否超时
+            objResult.put("isOvertime", isOvertime);
             result.add(objResult);
         }
         return new TableResultResponse<>(bizResult.getData().getTotal(), result);
