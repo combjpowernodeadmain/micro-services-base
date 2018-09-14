@@ -786,7 +786,6 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             for (String string : split) {
                 nameList.add(eventType_ID_NAME_Map.get(string));
             }
-
             return String.join(",", nameList);
         }
         return "";
@@ -814,9 +813,10 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
         String isSupervise = queryData.getString("isSupervise");
         String isUrge = queryData.getString("isUrge");
+        String isOverTime = queryData.getString("isOverTime");
         String exeStatus = queryData.getString("procCtaskname");// 1:已结案2:已终止
         String caseSourceType = queryData.getString("caseSourceType");// 来源类型
-        String caseSource = queryData.getString("caseSource");// 来源id
+//        String caseSource = queryData.getString("caseSource");// 来源id
 
         Example example = new Example(CaseRegistration.class);
         Criteria criteria = example.createCriteria();
@@ -853,6 +853,14 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         if (StringUtils.isNotBlank(isUrge) && "1".equals(isUrge)) {
             criteria.andEqualTo("isUrge", caseRegistration.getIsUrge());
         }
+        // 超时时间 (1:是|0:否)
+        if (StringUtils.isNotBlank(isOverTime) && "1".equals(isOverTime)) {
+            String date = DateUtil.dateFromDateToStr(new Date(), "yyyy-MM-dd HH:mm:ss");
+            // 处理中，当前日期和期限日期进行判断， 结束，则判断完成日期和期限日期
+            criteria.andCondition("("+date+"case_end AND exe_status = 0) OR ( case_end < upd_time AND exe_status IN (1, 2))");
+        }
+        
+        
         // 处理状态：0处理中|1:已结案2:已终止
         if (StringUtils.isNotBlank(exeStatus) && !CaseRegistration.EXESTATUS_STATE_TODO.equals(exeStatus)) {
             // 只查询1:已结案2:已终止
