@@ -114,6 +114,7 @@ public class LeadershipAssignService {
 
 		CaseInfo maxOne = caseInfoBiz.getMaxOne();
 
+		
 		int nextId = maxOne.getId() == null ? 1 : (maxOne.getId() + 1);
 
 		// 立案单事件编号

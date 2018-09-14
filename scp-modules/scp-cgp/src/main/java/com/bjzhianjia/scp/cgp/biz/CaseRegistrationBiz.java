@@ -1248,7 +1248,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                             deptInner.put("deptName", dept_ID_NAME_Map.get(deptIdKey));
                             deptInner.put("count", 0);
                             deptJArray.add(deptInner);
-                            fDate3.put("zhd", deptJArray);
+                            fDate3.put("zhd", deptJArray); 
                         }
                     }
                 }
