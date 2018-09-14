@@ -118,7 +118,7 @@ public class CaseRegistrationService {
 
                     if (nameJObj != null) {
                         procHistoryJObj.put("procTaskAssigneeName", nameJObj.getString("name"));
-                        procHistoryJObj.put("procTaskAssigneeTel", nameJObj.getString("telPhone"));
+                        procHistoryJObj.put("procTaskAssigneeTel", nameJObj.getString("mobilePhone"));
                     }
                 }
             }
