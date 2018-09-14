@@ -3,7 +3,6 @@ package com.bjzhianjia.scp.cgp.vo;
 import java.io.Serializable;
 import java.util.Date;
 
-
 import org.springframework.format.annotation.DateTimeFormat;
 
 public class Regula_EnterPriseVo implements Serializable{
@@ -68,6 +67,11 @@ public class Regula_EnterPriseVo implements Serializable{
     private Float realWages;
     private Float averageSalary;
     private Float socialInsuranceCount;
+    private String leadPerson;
+    private String leadDuties;
+    private String leadPhone;
+    private String address;
+    
 	public Integer getRegulaObjectId() {
 		return regulaObjectId;
 	}
@@ -362,4 +366,28 @@ public class Regula_EnterPriseVo implements Serializable{
 	public void setGridName(String gridName) {
 		this.gridName = gridName;
 	}
+    public String getLeadPerson() {
+        return leadPerson;
+    }
+    public void setLeadPerson(String leadPerson) {
+        this.leadPerson = leadPerson;
+    }
+    public String getLeadDuties() {
+        return leadDuties;
+    }
+    public void setLeadDuties(String leadDuties) {
+        this.leadDuties = leadDuties;
+    }
+    public String getLeadPhone() {
+        return leadPhone;
+    }
+    public void setLeadPhone(String leadPhone) {
+        this.leadPhone = leadPhone;
+    }
+    public String getAddress() {
+        return address;
+    }
+    public void setAddress(String address) {
+        this.address = address;
+    }
 }
