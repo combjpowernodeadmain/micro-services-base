@@ -22,6 +22,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.CLEConcernedCompany;
 import com.bjzhianjia.scp.cgp.entity.CLEConcernedPerson;
+import com.bjzhianjia.scp.cgp.entity.CaseAttachments;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
 import com.bjzhianjia.scp.cgp.entity.ConcernedCompany;
@@ -37,6 +38,7 @@ import com.bjzhianjia.scp.cgp.exception.BizException;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.feign.IUserFeign;
+import com.bjzhianjia.scp.cgp.mapper.CaseAttachmentsMapper;
 import com.bjzhianjia.scp.cgp.mapper.CaseRegistrationMapper;
 import com.bjzhianjia.scp.cgp.mapper.EventTypeMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
@@ -118,6 +120,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
     @Autowired
     private WritsTemplatesBiz writsTemplatesBiz;
+    @Autowired
+    private CaseAttachmentsBiz caseAttachmentsBiz;
 
     /**
      * 添加立案记录<br/>
@@ -146,12 +150,33 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         // 添加文书
         addWritsInstances(caseRegJObj, caseId);
 
+        // 添加附件
+        addAttachments(caseRegJObj, caseId);
+
         this.insertSelective(caseRegistration);
         // 将生成的立案ID装入procBizData带回工作流，在工作流中会对procBizId属性进行是否为“-1”的判断，如果是“-1”，将用该ID替换“-1”
         caseRegJObj.put("procBizId", caseId);
 
         result.setIsSuccess(true);
         return result;
+    }
+
+    /**
+     * 如果请求信息中有附件信息，则将其保存到数据库中
+     * @param caseRegJObj
+     * @param caseId
+     */
+    private void addAttachments(JSONObject caseRegJObj, String caseId) {
+        // 附件信息以JSON数组形式封装在attachments中
+        JSONArray attachmentsJArray = caseRegJObj.getJSONArray("attachments");
+        List<CaseAttachments> attachmentsList =new ArrayList<>();
+        if(BeanUtil.isNotEmpty(attachmentsJArray)) {
+            attachmentsList = attachmentsJArray.toJavaList(CaseAttachments.class);
+        }
+        
+        if(BeanUtil.isNotEmpty(attachmentsList)) {
+            caseAttachmentsBiz.add(attachmentsList);
+        }
     }
 
     /**
@@ -163,70 +188,51 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     private void addWritsInstances(JSONObject caseRegJObj, String caseId) {
         JSONArray writsInstancesJArray = caseRegJObj.getJSONArray("writsInstances");
 
-        String tcode = "";
+        // 收集前端传入的模板tcode值，可能没有传入，如果没传，则该操作为更新操作
+        List<String> tcodeList = new ArrayList<>();
         for (int i = 0; i < writsInstancesJArray.size(); i++) {
-            tcode = writsInstancesJArray.getJSONObject(i).getString("tcode");
+            String tcode = writsInstancesJArray.getJSONObject(i).getString("tcode");
+            if (StringUtils.isNotBlank(tcode)) {
+                tcodeList.add(tcode);
+            }
         }
 
-        WritsTemplates writsTemplates = new WritsTemplates();
-        List<WritsTemplates> templateList = writsTemplatesBiz.getByTcodes(tcode);
-        if (BeanUtil.isNotEmpty(templateList)) {
-            // 传入一个tcode值，则得到的结果也一定是一个
-            writsTemplates = templateList.get(0);
+        Map<String, Integer> template_TCODE_ID_Map = new HashMap<>();
+        if (BeanUtil.isNotEmpty(tcodeList)) {
+            // 如果tcodeList集合为空，说明目前上审批状态，没有要添加新文书的操作，以下将进行更新操作
+            List<WritsTemplates> templateList = writsTemplatesBiz.getByTcodes(String.join(",", tcodeList));
+            if (BeanUtil.isNotEmpty(templateList)) {
+                template_TCODE_ID_Map =
+                    templateList.stream().collect(Collectors.toMap(WritsTemplates::getTcode, WritsTemplates::getId));
+            }
         }
 
-        List<WritsInstances> writsInstanceList =
-            JSONArray.parseArray(writsInstancesJArray.toJSONString(), WritsInstances.class);
-
-        if (writsInstanceList == null) {
-            writsInstanceList = new ArrayList<>();
-        }
-
-        /*
-         * ===================以下代码暂时不要删=================
-         */
-        // 生成某一文号执法种类下某一年中文号序号
-        // WritsInstances theNextWenHao =
-        // writsInstancesBiz.theNextWenHao(writsInstances.getCaseId(),
-        // writsInstances.getTemplateId(),
-        // writsInstances.getRefEnforceType());
-        // String refNo =
-        // caseRegJObj.getString("squadronLeader") + String.format("%03d",
-        // Integer.valueOf(theNextWenHao.getRefNo()));
-        // writsInstances.setRefNo(refNo);
-        // writsInstances.setRefYear(String.valueOf(new LocalDate().getYear()));
-
-        // TODO By尚 可能需要将fillContext进行合并
-        // writsInstances.setFillContext(
-        // getWritsFillContext(caseRegJObj, writsInstances.getFillContext(),
-        // writsInstances.getRefNo()));
-        /*
-         * =================以上代码暂时不要删====================
-         */
         // 关联该文书相关的案件
-
-        for (WritsInstances writsInstances : writsInstanceList) {
-            // 无法判断传入的文书是否进行暂存过，需要进行逐条验证
-
+        for (int i = 0; i < writsInstancesJArray.size(); i++) {
+            JSONObject writsJObj = writsInstancesJArray.getJSONObject(i);
+            WritsInstances writsInstances = writsJObj.toJavaObject(WritsInstances.class);
             writsInstances.setCaseId(caseId);
-            // 判断文书是否进行过暂存(如果请求参数中有文书ID表明暂存过)
+
+            /*
+             * 判断文书是否进行过暂存(如果请求参数中有文书ID表明暂存过)<br/>
+             * 或是一个更新操作（如果请求参数中有文书ID表明是更新操作）
+             */
             if (BeanUtil.isEmpty(writsInstances.getId())) {
                 /*
                  * 没有暂存过，进行一次添加操作<br/>
                  * 前端并没有办法获取文书ID，然后入的是文书的code值，
                  */
-                if (StringUtils.isBlank(tcode)) {
+                if (BeanUtil.isEmpty(template_TCODE_ID_Map)) {
                     /*
                      * 如果程序执行到这里，总该有一条记录里tcode不为空，如果tcode为空，
                      * 说明没有进行暂存的那条记录也没有传tcode进来
                      */
                     throw new BizException("请指定模板ID或模板tcode");
                 }
-                writsInstances.setTemplateId(writsTemplates.getId());
+                writsInstances.setTemplateId(template_TCODE_ID_Map.get(writsJObj.getString("tcode")));
                 writsInstancesBiz.insertSelective(writsInstances);
             } else {
-                // 暂存过，进行更新操作
-                writsInstances.setTemplateId(writsTemplates.getId());
+                // 暂存过，进行更新操作，此时传入的参数中包含文书模板
                 writsInstancesBiz.updateById(writsInstances);
             }
         }
@@ -1291,7 +1297,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                             deptInner.put("deptName", dept_ID_NAME_Map.get(deptIdKey));
                             deptInner.put("count", 0);
                             deptJArray.add(deptInner);
-                            fDate3.put("zhd", deptJArray); 
+                            fDate3.put("zhd", deptJArray);
                         }
                     }
                 }

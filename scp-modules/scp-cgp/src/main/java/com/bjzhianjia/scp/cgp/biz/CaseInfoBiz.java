@@ -229,7 +229,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         if (StringUtils.isNotBlank(isFinished) && !CaseInfo.FINISHED_STATE_TODO.equals(isFinished)) {
             // 只查询1:已结案2:已终止
             if (CaseInfo.FINISHED_STATE_FINISH.equals(queryData.getString("procCtaskname"))
-                && CaseInfo.FINISHED_STATE_STOP.equals(queryData.getString("procCtaskname"))) {
+                || CaseInfo.FINISHED_STATE_STOP.equals(queryData.getString("procCtaskname"))) {
                 criteria.andEqualTo("isFinished", isFinished);
             }
         }

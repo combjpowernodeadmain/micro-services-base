@@ -28,4 +28,163 @@
 		<result property="updUserName" column="upd_user_name" />
 		<result property="tenantId" column="tenant_id" />
 	</resultMap>
+	
+	<!--批量插入文书-->
+<insert id="insertWritsInstancesList" parameterType="java.util.List">
+    insert into `cle_writs_instances` (
+	case_id,
+	proc_task_id,
+	template_id,
+	fill_context,
+	ref_unit_abbrev,
+	ref_enforce_type,
+	ref_abbrev,
+	ref_year,
+	ref_no,
+	iorder,
+	is_deleted,
+	crt_time,
+	crt_user_id,
+	crt_user_name,
+	upd_time,
+	upd_user_id,
+	upd_user_name,
+	tenant_id	
+	)
+    values
+    <foreach collection="writsInstancesList" index="index" item="item" separator=",">
+    (
+            #{item.caseId},
+            <choose>
+                <when test="item.procTaskId != null and item.procTaskId !=''">
+                    #{item.procTaskId},
+                </when>
+                <otherwise>
+                    '',
+                </otherwise>
+            </choose>
+            #{item.templateId},
+            <choose>
+                <when test="item.fillContext != null and item.fillContext !=''">
+                    #{item.fillContext},
+                </when>
+                <otherwise>
+                    '',
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.refUnitAbbrev != null and item.refUnitAbbrev !=''">
+                    #{item.refUnitAbbrev},
+                </when>
+                <otherwise>
+                    '',
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.refEnforceType != null and item.refEnforceType !=''">
+                    #{item.refEnforceType},
+                </when>
+                <otherwise>
+                    '',
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.refAbbrev != null and item.refAbbrev !=''">
+                    #{item.refAbbrev},
+                </when>
+                <otherwise>
+                    '',
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.refYear != null and item.refYear !=''">
+                    #{item.refYear},
+                </when>
+                <otherwise>
+                    '',
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.refNo != null">
+                    #{item.refNo},
+                </when>
+                <otherwise>
+                    '',
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.iorder != null">
+                    #{item.iorder},
+                </when>
+                <otherwise>
+                    '',
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.isDeleted != null and item.isDeleted !=''">
+                    #{item.isDeleted},
+                </when>
+                <otherwise>
+                    '0',
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.crtTime != null">
+                    #{item.crtTime},
+                </when>
+                <otherwise>
+                    '',
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.crtUserId != null and item.crtUserId !=''">
+                    #{item.crtUserId},
+                </when>
+                <otherwise>
+                    '',
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.crtUserName != null and item.crtUserName !=''">
+                    #{item.crtUserName},
+                </when>
+                <otherwise>
+                    '',
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.updTime != null">
+                    #{item.updTime},
+                </when>
+                <otherwise>
+                    '',
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.updUserId != null and item.updUserId !=''">
+                    #{item.updUserId},
+                </when>
+                <otherwise>
+                    '',
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.updUserName != null and item.updUserName !=''">
+                    #{item.updUserName},
+                </when>
+                <otherwise>
+                    '',
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.tenantId != null and item.tenantId !=''">
+                    #{item.tenantId}
+                </when>
+                <otherwise>
+                    ''
+                </otherwise>
+            </choose>
+            )
+    </foreach>
+</insert>
 </mapper>

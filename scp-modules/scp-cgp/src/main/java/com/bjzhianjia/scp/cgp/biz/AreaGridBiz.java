@@ -32,125 +32,131 @@ import tk.mybatis.mapper.entity.Example;
  */
 @Service
 @Slf4j
-public class AreaGridBiz extends BusinessBiz<AreaGridMapper,AreaGrid> {
-	@Autowired
-	private MergeCore mergeCore;
-	
-	/**
-	 * 按条件查询未被删除的网格
-	 * @author 尚
-	 * @param gridCde
-	 * @return
-	 */
-	public List<AreaGrid> getByMap(Map<String, String> conditions) {
-		Example example=new Example(AreaGrid.class);
-		Example.Criteria criteria=example.createCriteria();
-		
-		criteria.andEqualTo("isDeleted","0");
-		
-		Set<String> keySet = conditions.keySet();
-		for (String string : keySet) {
-			criteria.andEqualTo(string,conditions.get(string));
-		}
-		
-		List<AreaGrid> gridAreaList = mapper.selectByExample(example);
-		
-		return gridAreaList;
-	}
-	
-	/**
-	 * 分页按条件获取网格数据
-	 * @author 尚
-	 * @param page
-	 * @param limit
-	 * @param areaGrid
-	 * @return
-	 */
-	public TableResultResponse<AreaGridVo> getList(int page,int limit,AreaGrid areaGrid){
-		Example example=new Example(AreaGrid.class);
-		Example.Criteria criteria=example.createCriteria();
-		
-		criteria.andEqualTo("isDeleted","0");
-		
-		if(StringUtils.isNotBlank(areaGrid.getGridName())) {
-			criteria.andLike("gridName", "%"+areaGrid.getGridName()+"%");
-		}
-		if(StringUtils.isNotBlank(areaGrid.getGridLevel())) {
-			criteria.andEqualTo("gridLevel", areaGrid.getGridLevel());
-		}
-		
-		example.setOrderByClause("crt_time desc");
-		
-		Page<Object> result = PageHelper.startPage(page, limit);
-		List<AreaGrid> list = this.mapper.selectByExample(example);
-		
-		try {
-			mergeCore.mergeResult(AreaGrid.class, list);
-		} catch(Exception ex) {
-			log.error("merge data exception", ex);
-		}
-		
-		List<AreaGridVo> voList=new ArrayList<>();
-		for (AreaGrid tmp : list) {
-			AreaGridVo vo = BeanUtil.copyBean_New(tmp, new AreaGridVo());
-			voList.add(vo);
-		}
-		return new TableResultResponse<>(result.getTotal(), voList);
-	}
-	
-	/**
-	 * 按网格等级获取网格列表
-	 * @author 尚
-	 * @param areaGrid
-	 * @return
-	 */
-	public List<AreaGrid> getByGridLevel(String gridLevel){
-		Example example=new Example(AreaGrid.class);
-		Example.Criteria criteria=example.createCriteria();
-		
-		criteria.andEqualTo("isDeleted","0");
-		
-		String[] split = gridLevel.split(",");
-		List<String> gridLevelList = Arrays.asList(split);
-		criteria.andIn("gridLevel", gridLevelList);
-		
-		example.setOrderByClause("id desc");
-		
-		List<AreaGrid> list = this.mapper.selectByExample(example);
-		return list;
-	}
-	
-	/**
-	 * 按ID集合查询记录
-	 * @author 尚
-	 * @param ids
-	 * @return
-	 */
-	public List<AreaGrid> getByIds(List<Integer> ids ){
-		Example example=new Example(AreaGrid.class);
-		Example.Criteria criteria=example.createCriteria();
-		
-		criteria.andEqualTo("isDeleted","0");
-		criteria.andIn("id", ids);
-		List<AreaGrid> result = this.mapper.selectByExample(example);
-		
-		
-		return result;
-	}
-	
-	/**
-	 * 获取ID最大的记录
-	 * @author 尚
-	 * @return
-	 */
-	public AreaGrid getMaxGrid() {
-		Example example=new Example(AreaGrid.class);
-		example.setOrderByClause("id desc");
-		PageHelper.startPage(1, 1);
-		List<AreaGrid> areaGrid = this.mapper.selectByExample(example);
-		if(areaGrid!=null&&!areaGrid.isEmpty()) {
-			return areaGrid.get(0);
-		}
-		return null;
-	}
+public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
+
+    @Autowired
+    private MergeCore mergeCore;
+
+    /**
+     * 按条件查询未被删除的网格
+     * 
+     * @author 尚
+     * @param gridCde
+     * @return
+     */
+    public List<AreaGrid> getByMap(Map<String, String> conditions) {
+        Example example = new Example(AreaGrid.class);
+        Example.Criteria criteria = example.createCriteria();
+
+        criteria.andEqualTo("isDeleted", "0");
+
+        Set<String> keySet = conditions.keySet();
+        for (String string : keySet) {
+            criteria.andEqualTo(string, conditions.get(string));
+        }
+
+        List<AreaGrid> gridAreaList = mapper.selectByExample(example);
+
+        return gridAreaList;
+    }
+
+    /**
+     * 分页按条件获取网格数据
+     * 
+     * @author 尚
+     * @param page
+     * @param limit
+     * @param areaGrid
+     * @return
+     */
+    public TableResultResponse<AreaGridVo> getList(int page, int limit, AreaGrid areaGrid) {
+        Example example = new Example(AreaGrid.class);
+        Example.Criteria criteria = example.createCriteria();
+
+        criteria.andEqualTo("isDeleted", "0");
+
+        if (StringUtils.isNotBlank(areaGrid.getGridName())) {
+            criteria.andLike("gridName", "%" + areaGrid.getGridName() + "%");
+        }
+        if (StringUtils.isNotBlank(areaGrid.getGridLevel())) {
+            criteria.andEqualTo("gridLevel", areaGrid.getGridLevel());
+        }
+
+        // 网格按正序排列，20180914
+        // example.setOrderByClause("crt_time desc");
+
+        Page<Object> result = PageHelper.startPage(page, limit);
+        List<AreaGrid> list = this.mapper.selectByExample(example);
+
+        try {
+            mergeCore.mergeResult(AreaGrid.class, list);
+        } catch (Exception ex) {
+            log.error("merge data exception", ex);
+        }
+
+        List<AreaGridVo> voList = new ArrayList<>();
+        for (AreaGrid tmp : list) {
+            AreaGridVo vo = BeanUtil.copyBean_New(tmp, new AreaGridVo());
+            voList.add(vo);
+        }
+        return new TableResultResponse<>(result.getTotal(), voList);
+    }
+
+    /**
+     * 按网格等级获取网格列表
+     * 
+     * @author 尚
+     * @param areaGrid
+     * @return
+     */
+    public List<AreaGrid> getByGridLevel(String gridLevel) {
+        Example example = new Example(AreaGrid.class);
+        Example.Criteria criteria = example.createCriteria();
+
+        criteria.andEqualTo("isDeleted", "0");
+
+        String[] split = gridLevel.split(",");
+        List<String> gridLevelList = Arrays.asList(split);
+        criteria.andIn("gridLevel", gridLevelList);
+
+        example.setOrderByClause("id desc");
+
+        List<AreaGrid> list = this.mapper.selectByExample(example);
+        return list;
+    }
+
+    /**
+     * 按ID集合查询记录
+     * 
+     * @author 尚
+     * @param ids
+     * @return
+     */
+    public List<AreaGrid> getByIds(List<Integer> ids) {
+        Example example = new Example(AreaGrid.class);
+        Example.Criteria criteria = example.createCriteria();
+
+        criteria.andEqualTo("isDeleted", "0");
+        criteria.andIn("id", ids);
+        List<AreaGrid> result = this.mapper.selectByExample(example);
+
+        return result;
+    }
+
+    /**
+     * 获取ID最大的记录
+     * 
+     * @author 尚
+     * @return
+     */
+    public AreaGrid getMaxGrid() {
+        Example example = new Example(AreaGrid.class);
+        example.setOrderByClause("id desc");
+        PageHelper.startPage(1, 1);
+        List<AreaGrid> areaGrid = this.mapper.selectByExample(example);
+        if (areaGrid != null && !areaGrid.isEmpty()) {
+            return areaGrid.get(0);
+        }
+        return null;
+    }
 }
