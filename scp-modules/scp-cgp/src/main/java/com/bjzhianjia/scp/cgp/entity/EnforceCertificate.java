@@ -8,6 +8,8 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.alibaba.fastjson.annotation.JSONField;
+import com.bjzhianjia.scp.cgp.constances.CommonConstances;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.merge.annonation.MergeField;
 
@@ -47,11 +49,13 @@ public class EnforceCertificate implements Serializable {
 	    //证件有效期起始
     @Column(name = "valid_start")
     @DateTimeFormat(pattern="yyyy-MM-dd")
+    @JSONField(format=CommonConstances.DATE_FORMAT)
     private Date validStart;
 	
 	    //证件有效期终止
     @Column(name = "valid_end")
     @DateTimeFormat(pattern="yyyy-MM-dd")
+    @JSONField(format=CommonConstances.DATE_FORMAT)
     private Date validEnd;
 	
 	    //持证人ID
