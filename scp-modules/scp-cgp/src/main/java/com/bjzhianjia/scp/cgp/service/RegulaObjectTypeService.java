@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.cgp.service;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -203,6 +204,10 @@ public class RegulaObjectTypeService {
 	public TableResultResponse<RegulaObjectTypeVo> getList(int page, int limit, RegulaObjectType regulaObjectType) {
 		TableResultResponse<RegulaObjectType> tableResult = regulaObjectTypeBiz.getList(page, limit, regulaObjectType);
 		List<RegulaObjectType> list = tableResult.getData().getRows();
+		
+		if(BeanUtil.isEmpty(list)) {
+		    return new TableResultResponse<>(0, new ArrayList<RegulaObjectTypeVo>());
+		}
 
 		/*
 		 * 进行数据聚和
@@ -230,7 +235,10 @@ public class RegulaObjectTypeService {
 		List<String> parentIdList = voList.stream().map(o -> o.getParentObjectTypeId() + "").distinct()
 				.collect(Collectors.toList());
 
-		List<RegulaObjectType> byParentInstance = regulaObjectTypeBiz.selectByIds(String.join(",", parentIdList));
+		List<RegulaObjectType> byParentInstance = new ArrayList<>();
+		if(BeanUtil.isNotEmpty(parentIdList)) {
+		    byParentInstance = regulaObjectTypeBiz.selectByIds(String.join(",", parentIdList));
+		}
 		Map<Integer, String> type_ID_NAME_Map = byParentInstance.stream()
 				.collect(Collectors.toMap(RegulaObjectType::getId, RegulaObjectType::getObjectTypeName));
 
