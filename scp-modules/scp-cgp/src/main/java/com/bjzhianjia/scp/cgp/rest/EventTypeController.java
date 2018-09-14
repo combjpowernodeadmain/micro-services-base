@@ -50,12 +50,14 @@ public class EventTypeController extends BaseController<EventTypeBiz,EventType,I
     				,@RequestParam(defaultValue = "1") @ApiParam(name="当前页") int page
     				,@RequestParam(defaultValue = "") @ApiParam(name="事件类别名称") String typeName
     				,@RequestParam(defaultValue = "") @ApiParam(name="所属业务条线") String bizType
-    				,@RequestParam(defaultValue = "") @ApiParam(name="是否可用") String isEnable) {
+    				,@RequestParam(defaultValue = "") @ApiParam(name="是否可用") String isEnable
+    				,@RequestParam(defaultValue = "") @ApiParam(name="是否常用") String isCommonly) {
 	    
 		EventType eventType = new EventType();
 		eventType.setTypeName(typeName);
 		eventType.setBizType(bizType);
 		eventType.setIsEnable(isEnable);
+		eventType.setIsCommonly(isCommonly);
 	    return eventTypeService.getList(page, limit, eventType);
 	    
     }
