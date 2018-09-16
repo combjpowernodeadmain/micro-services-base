@@ -2,8 +2,10 @@ package com.bjzhianjia.scp.cgp.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -114,6 +116,7 @@ public class LeadershipAssignService {
 
 		CaseInfo maxOne = caseInfoBiz.getMaxOne();
 
+		
 		int nextId = maxOne.getId() == null ? 1 : (maxOne.getId() + 1);
 
 		// 立案单事件编号
@@ -275,7 +278,7 @@ public class LeadershipAssignService {
 		 */
 
 		// 解析监管对象
-		List<String> reguylaObjIdList = new ArrayList<>();
+		Set<String> reguylaObjIdList = new HashSet<>();
 		for (LeadershipAssignVo tmp : voList) {
 			if (StringUtils.isNotBlank(tmp.getRegulaObjList())) {
 				reguylaObjIdList.add(tmp.getRegulaObjList());
@@ -315,6 +318,7 @@ public class LeadershipAssignService {
 			Example caseInfoExample = new Example(CaseInfo.class);
 			Example.Criteria criteria = caseInfoExample.createCriteria();
 
+			criteria.andEqualTo("isDeleted","0");
 			criteria.andEqualTo("sourceType", Constances.BizEventType.ROOT_BIZ_EVENTTYPE_LEADER);
 			criteria.andIn("sourceCode", collect);
 			List<CaseInfo> caseInfoListInDB = caseInfoBiz.selectByExample(caseInfoExample);

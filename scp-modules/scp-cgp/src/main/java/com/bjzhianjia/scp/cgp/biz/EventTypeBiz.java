@@ -140,7 +140,9 @@ public class EventTypeBiz extends BusinessBiz<EventTypeMapper, EventType> {
         if (StringUtils.isNotBlank(eventType.getIsEnable())) {
             criteria.andEqualTo("isEnable", eventType.getIsEnable());
         }
-
+        if (StringUtils.isNotBlank(eventType.getIsCommonly())) {
+            criteria.andEqualTo("isCommonly", eventType.getIsCommonly());
+        }
         // 按创建时间倒序
         example.setOrderByClause("id desc");
 

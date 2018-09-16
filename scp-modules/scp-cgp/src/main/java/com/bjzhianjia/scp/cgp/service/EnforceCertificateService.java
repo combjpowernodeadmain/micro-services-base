@@ -138,7 +138,7 @@ public class EnforceCertificateService {
 
                     JSONObject userJObjForRetrn = new JSONObject();
                     userJObjForRetrn.put("id", enforceCertificate.getUsrId());
-                    userJObjForRetrn.put("telPhone", userJObj != null ? userJObj.getString("telPhone") : "");
+                    userJObjForRetrn.put("telPhone", userJObj != null ? userJObj.getString("mobilePhone") : "");
                     enforceCertificate.setUsrId(userJObjForRetrn.toJSONString());
                 }
             }
@@ -165,11 +165,11 @@ public class EnforceCertificateService {
         }
 
         List<JSONObject> resultJObjList = new ArrayList<>();
-        if (lawMap != null && !lawMap.isEmpty()) {
-            for (int i = 0; i < resultJArray.size(); i++) {
-                JSONObject jsonObject = resultJArray.getJSONObject(i);
-                JSONObject uTmpJObj = JSONObject.parseObject(jsonObject.getString("usrId"));
-                if (uTmpJObj != null) {
+        for (int i = 0; i < resultJArray.size(); i++) {
+            JSONObject jsonObject = resultJArray.getJSONObject(i);
+            JSONObject uTmpJObj = JSONObject.parseObject(jsonObject.getString("usrId"));
+            if (uTmpJObj != null) {
+                if (lawMap != null && !lawMap.isEmpty()) {
                     jsonObject.put("mapInfo", lawMap.get(uTmpJObj.getString("id")));
                 }
                 resultJObjList.add(jsonObject);

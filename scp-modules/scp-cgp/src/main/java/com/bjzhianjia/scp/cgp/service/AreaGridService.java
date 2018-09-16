@@ -344,6 +344,10 @@ public class AreaGridService {
 
         List<AreaGridVo> rows = tableResult.getData().getRows();
 
+        if (BeanUtil.isEmpty(rows)) {
+            return tableResult;
+        }
+
         queryAssist(rows);
 
         return tableResult;
@@ -356,13 +360,15 @@ public class AreaGridService {
         if (gridParentIdList != null && !gridParentIdList.isEmpty()) {
             // 查询上一级网格集合
             List<AreaGrid> areaGridParentList = areaGridBiz.getByIds(gridParentIdList);
+            Map<Integer, String> parent_ID_NAME_Map = new HashMap<>();
+            if (BeanUtil.isNotEmpty(areaGridParentList)) {
+                parent_ID_NAME_Map =
+                    areaGridParentList.stream().collect(Collectors.toMap(AreaGrid::getId, AreaGrid::getGridName));
+            }
             for (AreaGridVo tmp1 : rows) {
-                for (AreaGrid areaGridParent : areaGridParentList) {
-                    if (tmp1.getGridParent().equals(areaGridParent.getId())) {
-                        // 当前网格的上一级网格ID与刚查询到的上一级网格集合中某一个相同，由进行聚和
-                        tmp1.setGridParentName(areaGridParent.getGridName());
-                        break;
-                    }
+                String parentName = parent_ID_NAME_Map.get(tmp1.getGridParent());
+                if (StringUtils.isNotBlank(parentName)) {
+                    tmp1.setGridParentName(parentName);
                 }
             }
         }

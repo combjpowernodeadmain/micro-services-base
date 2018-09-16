@@ -3,6 +3,7 @@ package com.bjzhianjia.scp.cgp.biz;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,8 +23,8 @@ import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.mapper.AreaGridMapper;
 import com.bjzhianjia.scp.cgp.mapper.AreaGridMemberMapper;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.CommonUtil;
-import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
@@ -165,8 +166,7 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
      * @param limit
      * @return
      */
-    public TableResultResponse<JSONObject> getList(AreaGridMember areaGridMember, int page,
-        int limit) {
+    public TableResultResponse<JSONObject> getList(AreaGridMember areaGridMember, int page, int limit) {
         // 返回信息中有需要进行数据聚和的字段，用JSONObject对象封装
         TableResultResponse<JSONObject> restResult = new TableResultResponse<>();
 
@@ -216,33 +216,64 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
 
         // 聚和所属网格
         List<String> gridIdList =
-            rows.stream().map(o -> String.valueOf(o.getGridId())).distinct()
-                .collect(Collectors.toList());
+            rows.stream().map(o -> String.valueOf(o.getGridId())).distinct().collect(Collectors.toList());
         Map<Integer, String> areaGrid_ID_NAME_Map = new HashMap<>();
+        Map<Integer, Integer> areaGrid_ID_PARENTID_Map = new HashMap<>();
         if (gridIdList != null && !gridIdList.isEmpty()) {
+            List<AreaGrid> allGrid = new ArrayList<>();
             List<AreaGrid> gridList = this.areaGridMapper.selectByIds(String.join(",", gridIdList));
-            areaGrid_ID_NAME_Map =
-                gridList.stream().collect(Collectors.toMap(AreaGrid::getId, AreaGrid::getGridName));
+
+            // 查询父级网格
+            List<String> gridParentIdList =
+                gridList.stream().map(o -> String.valueOf(o.getGridParent())).distinct().collect(Collectors.toList());
+            List<AreaGrid> gridParentList = new ArrayList<>();
+            if (BeanUtil.isNotEmpty(gridParentIdList)) {
+                gridParentList = this.areaGridMapper.selectByIds(String.join(",", gridParentIdList));
+            }
+
+            allGrid.addAll(gridList);
+            allGrid.addAll(gridParentList);
+
+            // TODO去除allGrid中重复的元素
+            Set<Integer> idSet = new HashSet<>();
+            for (int i = 0; i < allGrid.size(); i++) {
+                if (idSet.contains(allGrid.get(i).getId())) {
+                    allGrid.remove(i);
+                    i--;
+                } else {
+                    idSet.add(allGrid.get(i).getId());
+                }
+            }
+
+            if (BeanUtil.isNotEmpty(allGrid)) {
+                areaGrid_ID_NAME_Map =
+                    allGrid.stream().collect(Collectors.toMap(AreaGrid::getId, AreaGrid::getGridName));
+                areaGrid_ID_PARENTID_Map =
+                    allGrid.stream().collect(Collectors.toMap(AreaGrid::getId, AreaGrid::getGridParent));
+            }
         }
 
+        // 将结果集转化为List<JSONObject>并在其中添加gridName字段
         for (int i = 0; i < jArray.size(); i++) {
             JSONObject jsonObject = jArray.getJSONObject(i);
             jsonObject.put("gridName", areaGrid_ID_NAME_Map.get(jsonObject.getInteger("gridId")));
+
+            jsonObject.put("gridParentName",
+                areaGrid_ID_NAME_Map.get(areaGrid_ID_PARENTID_Map.get(jsonObject.getInteger("gridId"))));
             jListResult.add(jsonObject);
         }
 
         // 收集网格员ID
-        List<String> gridMemIds =
-            rows.stream().map(o -> o.getGridMember()).distinct().collect(Collectors.toList());
+        List<String> gridMemIds = rows.stream().map(o -> o.getGridMember()).distinct().collect(Collectors.toList());
 
         // 网格员名称与联系方式
         Map<String, String> userMap = adminFeign.getUser(String.join(",", gridMemIds));
         if (userMap != null && !userMap.isEmpty()) {
             for (JSONObject tmpJObj : jListResult) {
-                tmpJObj.put("gridMemberName", CommonUtil
-                    .getValueFromJObjStr(userMap.get(tmpJObj.getString("gridMember")), "name"));
-                tmpJObj.put("gridMemberPhone", CommonUtil
-                    .getValueFromJObjStr(userMap.get(tmpJObj.getString("gridMember")), "mobilePhone"));
+                tmpJObj.put("gridMemberName",
+                    CommonUtil.getValueFromJObjStr(userMap.get(tmpJObj.getString("gridMember")), "name"));
+                tmpJObj.put("gridMemberPhone",
+                    CommonUtil.getValueFromJObjStr(userMap.get(tmpJObj.getString("gridMember")), "mobilePhone"));
             }
         }
 
@@ -301,22 +332,37 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
         List<String> roleList = new ArrayList<>();
 
         if (gridMemList != null && !gridMemList.isEmpty()) {
-            gridIdList =
-                gridMemList.stream().map(o -> o.getGridId()).distinct()
-                    .collect(Collectors.toList());
-            roleList =
-                gridMemList.stream().map(o -> o.getGridRole()).distinct()
-                    .collect(Collectors.toList());
+            gridIdList = gridMemList.stream().map(o -> o.getGridId()).distinct().collect(Collectors.toList());
+            roleList = gridMemList.stream().map(o -> o.getGridRole()).distinct().collect(Collectors.toList());
         }
 
         // 所属网格
         List<String> gridNameList = new ArrayList<>();
+        
         if (gridIdList != null && !gridIdList.isEmpty()) {
             List<AreaGrid> gridList = areaGridBiz.getByIds(gridIdList);
             if (gridList != null && !gridList.isEmpty()) {
-                gridNameList =
-                    gridList.stream().map(o -> o.getGridName()).distinct()
-                        .collect(Collectors.toList());
+                // 查询父级网格名称
+                List<Integer> parentIdList =
+                    gridList.stream().map(o -> o.getGridParent()).distinct().collect(Collectors.toList());
+                List<AreaGrid> parentAreaGridList = new ArrayList<>();
+                if(BeanUtil.isNotEmpty(parentIdList)) {
+                    parentAreaGridList = areaGridBiz.getByIds(parentIdList);
+                }
+                
+                Map<Integer, String> parent_ID_NAME_Map=new HashMap<>();
+                if (BeanUtil.isNotEmpty(parentAreaGridList)) {
+                    parent_ID_NAME_Map=parentAreaGridList.stream().collect(Collectors.toMap(AreaGrid::getId,AreaGrid::getGridName));
+                }
+                
+                for(AreaGrid tmp:gridList) {
+                    if(tmp.getGridParent()!=-1) {
+                        gridNameList.add(parent_ID_NAME_Map.get(tmp.getGridParent())+"("+tmp.getGridName()+")");
+                    }else {
+                        gridNameList.add(tmp.getGridName());
+                    }
+                    
+                }
             }
         }
 
@@ -335,7 +381,7 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
 
         jsonObject.put("gridName", String.join(",", gridNameList));
         jsonObject.put("gridRoleName", String.join(",", roleNameList));
-        jsonObject.put("mapInfo", mapInfoAndTime.isEmpty()?null:mapInfoAndTime);
+        jsonObject.put("mapInfo", mapInfoAndTime.isEmpty() ? null : mapInfoAndTime);
 
         restResult.setStatus(200);
         restResult.setData(jsonObject);

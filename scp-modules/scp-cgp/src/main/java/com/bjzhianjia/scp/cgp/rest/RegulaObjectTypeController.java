@@ -219,4 +219,10 @@ public class RegulaObjectTypeController
             regulaObjectTypeService.getByRelation(page, limit);
         return restResult;
     }
+    
+    @RequestMapping(value="/names",method=RequestMethod.GET)
+    @ApiOperation("/获取监管对象类型名称列表")
+    public List<RegulaObjectType> getNames(){
+        return this.baseBiz.getNames();
+    }
 }

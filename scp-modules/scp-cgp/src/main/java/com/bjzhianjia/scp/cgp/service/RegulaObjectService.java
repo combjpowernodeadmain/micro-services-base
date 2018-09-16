@@ -357,7 +357,10 @@ public class RegulaObjectService {
 				}
 			}
 			List<RegulaObjectType> third = regulaObjectTypeBiz.getBySecondCategory(secondCategoryId);// 根据二级类型查出 的三级类型
-			List<Integer> collect = third.stream().map(o -> o.getId()).distinct().collect(Collectors.toList());
+			List<Integer> collect = new ArrayList<>();
+			if(BeanUtil.isNotEmpty(third)) {
+			    collect = third.stream().map(o -> o.getId()).distinct().collect(Collectors.toList());
+			}
 
 			tableResult = regulaObjectBiz.getList(regulaObject, page, limit, collect);
 		} else {

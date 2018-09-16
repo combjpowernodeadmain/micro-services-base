@@ -49,7 +49,7 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
 			BindingResult bindingResult) {
 		RegulaObject regulaObject = BeanUtil.copyBean_New(vo, new RegulaObject());
 		EnterpriseInfo enterpriseInfo = BeanUtil.copyBean_New(vo, new EnterpriseInfo());
-
+		enterpriseInfo.setAddress(regulaObject!=null?regulaObject.getObjAddress():"");
 		ObjectRestResponse<JSONObject> restResult = new ObjectRestResponse<>();
 
 		if (bindingResult.hasErrors()) {
