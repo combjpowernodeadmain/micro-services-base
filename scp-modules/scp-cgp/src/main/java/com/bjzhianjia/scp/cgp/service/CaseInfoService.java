@@ -843,7 +843,7 @@ public class CaseInfoService {
          */
         JSONObject baseInfoJObj = new JSONObject();
         baseInfoJObj.put("caseCode", caseInfo.getCaseCode());
-        baseInfoJObj.put("caesTitle", caseInfo.getCaseTitle());
+        baseInfoJObj.put("caseTitle", caseInfo.getCaseTitle());
         baseInfoJObj.put("caseLevel", caseInfo.getCaseLevel());
         if (caseInfo.getCaseLevel() != null) {
             // Map<String, String> dictValueMap =
