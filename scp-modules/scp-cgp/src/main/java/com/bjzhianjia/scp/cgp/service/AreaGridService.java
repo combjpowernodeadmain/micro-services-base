@@ -362,12 +362,13 @@ public class AreaGridService {
             List<AreaGrid> areaGridParentList = areaGridBiz.getByIds(gridParentIdList);
             Map<Integer, String> parent_ID_NAME_Map = new HashMap<>();
             if (BeanUtil.isNotEmpty(areaGridParentList)) {
-                parent_ID_NAME_Map=areaGridParentList.stream().collect(Collectors.toMap(AreaGrid::getId, AreaGrid::getGridName));
+                parent_ID_NAME_Map =
+                    areaGridParentList.stream().collect(Collectors.toMap(AreaGrid::getId, AreaGrid::getGridName));
             }
             for (AreaGridVo tmp1 : rows) {
                 String parentName = parent_ID_NAME_Map.get(tmp1.getGridParent());
                 if (StringUtils.isNotBlank(parentName)) {
-                    tmp1.setGridName(parentName + "(" + tmp1.getGridName() + ")");
+                    tmp1.setGridParentName(parentName);
                 }
             }
         }
