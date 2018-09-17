@@ -392,7 +392,6 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
                 startMonth = calStart.get(Calendar.MONTH) + 1;
 
                 ymKey = startYear + "" + startMonth;
-                System.out.println("ymKey :"+ ymKey);
                 Map<String, Object> resultData = tempData.get(ymKey);
                 // 当月没有数据则初始化为0
                 if (resultData == null) {
