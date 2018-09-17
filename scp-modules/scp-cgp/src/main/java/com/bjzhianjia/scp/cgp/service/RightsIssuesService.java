@@ -1,10 +1,13 @@
 package com.bjzhianjia.scp.cgp.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +18,9 @@ import com.bjzhianjia.scp.cgp.entity.EventType;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.RightsIssues;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
+import com.bjzhianjia.scp.cgp.mapper.EventTypeMapper;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
+import com.bjzhianjia.scp.cgp.vo.RightsIssuesVo;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 
@@ -39,6 +45,8 @@ public class RightsIssuesService {
     private MergeCore mergeCore;
 	@Autowired
 	private DictFeign dictFeign;
+	@Autowired
+	private EventTypeMapper eventTypeMapper;
 	
 	/**
 	 * 分页查询
@@ -47,12 +55,16 @@ public class RightsIssuesService {
 	 * @param rightsIssues 查询条件
 	 * @return
 	 */
-	public TableResultResponse<RightsIssues> getList(int page, int limit, RightsIssues rightsIssues) {
+	public TableResultResponse<RightsIssuesVo> getList(int page, int limit, RightsIssues rightsIssues) {
 		
 		List<EventType> eventTypes = eventTypeBiz.getByBizType(rightsIssues.getBizType());
 		List<Integer> eventIds = eventTypes.stream().map(e -> e.getId()).collect(Collectors.toList());
 		TableResultResponse<RightsIssues> tableResult = rightsIssuesBiz.getList(page, limit, eventIds, rightsIssues);
 		List<RightsIssues> list = tableResult.getData().getRows();
+		
+		if(BeanUtil.isEmpty(list)) {
+		    return new TableResultResponse<RightsIssuesVo>(0, new ArrayList<RightsIssuesVo>());
+		}
 		
 		try {
 			mergeCore.mergeResult(RightsIssues.class, list);
@@ -60,10 +72,28 @@ public class RightsIssuesService {
 			log.error("merge data exception", ex);
 		}
 		
-		return tableResult;
+		List<RightsIssuesVo> voList = queryAssist(list);
+		
+		return new TableResultResponse<>(tableResult.getData().getTotal(), voList);
 	}
 	
-	/**
+	private List<RightsIssuesVo> queryAssist(List<RightsIssues> list) {
+	    List<RightsIssuesVo> voList = BeanUtil.copyBeanList_New(list, RightsIssuesVo.class);
+	    List<String> eventTypeIdList = voList.stream().map(o->String.valueOf(o.getType())).distinct().collect(Collectors.toList());
+	    if(BeanUtil.isNotEmpty(eventTypeIdList)) {
+	        List<EventType> eventTypeList = eventTypeMapper.selectByIds(String.join(",", eventTypeIdList));
+	        if(BeanUtil.isNotEmpty(eventTypeList)) {
+	            Map<Integer, String> eventType_ID_NAME_Map = eventTypeList.stream().collect(Collectors.toMap(EventType::getId, EventType::getTypeName));
+	            for (RightsIssuesVo vo : voList) {
+                    vo.setEventTypeName(eventType_ID_NAME_Map.get(vo.getType()));
+                }
+	        }
+	    }
+	    
+	    return voList;
+	}
+
+    /**
 	 * 创建权利事项
 	 * @param rightsIssues
 	 * @return
