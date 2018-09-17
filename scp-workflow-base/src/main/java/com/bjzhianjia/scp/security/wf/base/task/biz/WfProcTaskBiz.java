@@ -294,8 +294,10 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			insertWfProcess(wfProcBean);
 			insertWfProcessTask(wfProcTaskBean);
 		} catch (WorkflowException wfe) {
+		    wfe.printStackTrace();
 			throw wfe;
 		} catch (Exception e) {
+		    e.printStackTrace();
 		    log.error("Start Process Error: {}", e);
 			throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020199, e);
 		} finally {
@@ -771,6 +773,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			// 发送流程新任务到达通知
 			wfProcTaskNotify.notify(wfProcBean, wfNextTasksBean);
 		} catch (WorkflowException wfe) {
+		    wfe.printStackTrace();
 			throw wfe;
 		} catch (Exception e) {
 		    e.printStackTrace();
@@ -1009,8 +1012,10 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			// 更新流程任务数据，将流程任务设置为已签收
 			updateWfProcTask(wfProcTaskBean);
 		} catch (WorkflowException wfe) {
+		    wfe.printStackTrace();
 			throw wfe;
 		} catch (Exception e) {
+		    e.printStackTrace();
 			throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020199, e);
 		} finally {
 			log.info("签收流程--签收业务流程(" + procTask.getProcInstId() + "),流程任务("
@@ -1919,8 +1924,10 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 				// 发送流程任务通知
 				notify(wfProcBean, wfNextTasksBean, allNotifyProcess, taskProperties);
 			} catch (WorkflowException wfe) {
+			    wfe.printStackTrace();
 				throw wfe;
 			} catch (Exception e) {
+			    e.printStackTrace();
 				throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020599, e);
 			}
 		} finally {
@@ -3634,8 +3641,10 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		try {
 			return getProcApprovedHistory(procData.getProcInstId(), authData.getProcTenantId());
 		} catch (WorkflowException wfe) {
+		    wfe.printStackTrace();
 			throw wfe;
 		} catch (Exception e) {
+		    e.printStackTrace();
 			throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020799, e);
 		} finally {
 			log.info("流程历史查询--查询流程(" + procData.getProcTaskId() + ")审批历史结束.");
