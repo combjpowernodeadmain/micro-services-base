@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -47,6 +49,9 @@ public class PersonalCenterController {
 
     @Autowired
     private WfMonitorBiz wfMonitorBiz;
+    
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     /**
      * 获取当前用户任务统计
@@ -99,6 +104,20 @@ public class PersonalCenterController {
             
             result.setData(resultData);
         }
+        return result;
+    }
+    /**
+     * 获取当前在线人数
+     * @return
+     */
+    @ApiOperation("获取当前在线人数")
+    @GetMapping("/userCount")
+    @ResponseBody
+    public ObjectRestResponse<Integer> getByUserCount(){
+        ObjectRestResponse<Integer> result = new  ObjectRestResponse<>();
+        String auth = "AG:OAUTH:auth:*";
+        Set<String> key = redisTemplate.keys(auth);
+        result.setData(key == null ? 0:key.size());
         return result;
     }
 }
