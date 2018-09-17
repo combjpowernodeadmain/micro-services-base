@@ -422,7 +422,10 @@ public class CaseInfoService {
             List<String> nameList=new ArrayList<>();
             String[] split = eventTypeList.split(",");
             for (String string : split) {
-                nameList.add(eventType_ID_NAME_Map.get(string));
+                
+                if(StringUtils.isNotBlank(eventType_ID_NAME_Map.get(string))) {
+                    nameList.add(eventType_ID_NAME_Map.get(string));
+                }
             }
             
             return String.join(",", nameList);
