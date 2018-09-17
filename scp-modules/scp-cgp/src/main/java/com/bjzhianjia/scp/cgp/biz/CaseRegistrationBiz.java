@@ -868,7 +868,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         if (StringUtils.isNotBlank(isOverTime) && "1".equals(isOverTime)) {
             String date = DateUtil.dateFromDateToStr(new Date(), "yyyy-MM-dd HH:mm:ss");
             // 处理中，当前日期和期限日期进行判断， 结束，则判断完成日期和期限日期
-            criteria.andCondition("("+date+"case_end AND exe_status = 0) OR ( case_end < upd_time AND exe_status IN (1, 2))");
+            criteria.andCondition("('"+date+"' < case_end AND exe_status = 0) OR ( case_end < upd_time AND exe_status IN (1, 2))");
         }
         
         
