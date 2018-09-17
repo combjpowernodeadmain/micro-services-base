@@ -170,6 +170,11 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         // 附件信息以JSON数组形式封装在attachments中
         JSONArray attachmentsJArray = caseRegJObj.getJSONArray("attachments");
         List<CaseAttachments> attachmentsList =new ArrayList<>();
+        
+        for (CaseAttachments caseAttachments : attachmentsList) {
+            caseAttachments.setCaseId(caseId);
+        }
+        
         if(BeanUtil.isNotEmpty(attachmentsJArray)) {
             attachmentsList = attachmentsJArray.toJavaList(CaseAttachments.class);
         }
