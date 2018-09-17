@@ -170,6 +170,7 @@ public class UserController extends BaseController<UserBiz, User, String> {
 
 	@ApiOperation("批量获取人员信息")
 	@RequestMapping(value = "/getByPK/{id}", method = RequestMethod.GET)
+	@IgnoreUserToken
 	public Map<String, String> getUser(@PathVariable String id) {
 		return this.baseBiz.getUsers(id);
 	}
@@ -181,6 +182,7 @@ public class UserController extends BaseController<UserBiz, User, String> {
 	 */
 	@ApiOperation("根据部门获取人员列表")
 	@RequestMapping(value = "/getByDept", method = RequestMethod.GET)
+	@IgnoreUserToken
 	public JSONObject getUserByDept(@RequestParam(defaultValue = "1") int page,
 			@RequestParam(defaultValue = "10") int limit, @RequestParam(value = "id") String deptId) {
 		return userService.getUserByDept(deptId, page, limit);
@@ -194,6 +196,7 @@ public class UserController extends BaseController<UserBiz, User, String> {
 	@ApiOperation("根据人名进行模糊查询")
 	@RequestMapping(value = "/getByName", method = RequestMethod.GET)
 	@IgnoreClientToken
+	@IgnoreUserToken
 	public JSONArray getUsersByName(@RequestParam(value = "name") String name) {
 		return userService.getUsersByName(name);
 	}
