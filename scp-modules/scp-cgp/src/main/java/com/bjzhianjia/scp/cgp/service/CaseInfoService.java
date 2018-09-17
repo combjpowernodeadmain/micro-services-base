@@ -129,6 +129,7 @@ public class CaseInfoService {
 
     @Autowired
     private MergeCore mergeCore;
+    
 
     /**
      * 更新单个对象
@@ -621,7 +622,13 @@ public class CaseInfoService {
         if (concernedCompanyJObj != null) {
             ConcernedCompany concernedCompany =
                 JSONObject.parseObject(concernedCompanyJObj.toJSONString(), ConcernedCompany.class);
-            concernedCompanyService.created(concernedCompany);
+            
+            if(concernedCompany.getId() != null) {
+                concernedCompanyBiz.updateSelectiveById(concernedCompany);
+            }else {
+                concernedCompanyService.created(concernedCompany);
+            }
+                       
             caseInfo.setConcernedPerson(String.valueOf(concernedCompany.getId()));
             // 当事人类型为"root_biz_concernedT_org"
             caseInfo.setConcernedType(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG);//
