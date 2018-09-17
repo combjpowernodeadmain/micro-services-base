@@ -10,9 +10,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
+import com.bjzhianjia.scp.cgp.entity.Point;
 import com.bjzhianjia.scp.cgp.mapper.AreaGridMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
+import com.bjzhianjia.scp.cgp.util.SpatialRelationUtil;
 import com.bjzhianjia.scp.cgp.vo.AreaGridVo;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
@@ -23,12 +26,22 @@ import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
 import tk.mybatis.mapper.entity.Example;
 
+
 /**
- * 网格
+ * AreaGridBiz 网格.
  *
+ *
+ * <pre>
+ * Modification History: 
+ * Date             Author      Version         Description 
+ * ------------------------------------------------------------------
+ * 2018年7月4日          bo      1.0            ADD
+ * </pre>
+ * 
+ *
+ * @version 1.0 
  * @author bo
- * @email 576866311@qq.com
- * @version 2018-07-04 00:41:37
+ *
  */
 @Service
 @Slf4j
@@ -159,4 +172,29 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         }
         return null;
     }
+    
+    /**
+     *  通过经纬度获取指定网格信息
+     * @param point
+     * @return
+     */
+    public AreaGrid isPolygonContainsPoint(Point point) {
+        AreaGrid result = null;
+        
+        List<AreaGrid> areaGridList = this.mapper.selectAll();
+        AreaGrid areaGrid = null;
+        if(BeanUtil.isNotEmpty(areaGridList)) {
+            for (int i = 0; i < areaGridList.size(); i++) {
+                areaGrid = areaGridList.get(i);
+                JSONArray array = JSONArray.parseArray(areaGrid.getMapInfo());
+                List<Point> listPoint = array.toJavaList(Point.class);
+                if(SpatialRelationUtil.isPolygonContainsPoint(listPoint, point)) {
+                    result = areaGrid;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+    
 }
