@@ -73,7 +73,7 @@ public class PersonalCenterController {
 
         List<Map<String, Object>> resultData = null;
 
-        if (BeanUtil.isNotEmpty(data)) {
+        if (data != null) {
             resultData = new ArrayList<>();
             
             Map<String, Map<String, Object>> maps = new HashMap<>();
