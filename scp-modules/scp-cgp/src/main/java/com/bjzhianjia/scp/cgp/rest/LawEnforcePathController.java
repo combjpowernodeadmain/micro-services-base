@@ -71,18 +71,12 @@ public class LawEnforcePathController extends BaseController<LawEnforcePathBiz,L
     @ResponseBody
     @ApiOperation(value="添加执法轨迹")
     public ObjectRestResponse<Void> add(
-        @RequestBody @Validated @ApiParam(value="执法轨迹") LawEnforcePathVo lawEnforcePathVo,
-        BindingResult bindingResult) {
+        @RequestBody  @ApiParam(value="执法轨迹") LawEnforcePathVo lawEnforcePathVo) {
 
         ObjectRestResponse<Void> restResult = new ObjectRestResponse<>();
         restResult.setStatus(400);
         restResult.setMessage("非法参数");
 
-        // 参数验证
-        if (bindingResult.hasErrors()) {
-            restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
-            return restResult;
-        }
         if (StringUtils.isBlank(lawEnforcePathVo.getMapInfo())) {
             return restResult;
         }
