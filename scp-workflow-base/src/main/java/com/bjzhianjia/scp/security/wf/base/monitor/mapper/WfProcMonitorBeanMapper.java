@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.security.wf.base.monitor.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Repository;
 
@@ -17,6 +18,14 @@ public interface WfProcMonitorBeanMapper {
      * @return
      */
     List<WfProcBackBean> getUserToDoTasks(JSONObject objs);
+    
+    /**
+     * 个人完成量统计
+     * @param objs
+     * @return
+     */
+    List<Map<String,Object>> selectUserStatisTask(JSONObject objs);
+    
     
     /**
      *  查询所有待办流程任务列表
