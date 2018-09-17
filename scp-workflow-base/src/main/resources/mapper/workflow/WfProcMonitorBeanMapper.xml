@@ -156,8 +156,8 @@
 								'%Y/%m/%d'
 							) cmonth
 						FROM
-							scp_wf_proc swp1
-						LEFT JOIN scp_wf_proc_task swpt1 ON swp1.PROC_INST_ID = swpt1.PROC_INST_ID
+							SCP_WF_PROC swp1
+						LEFT JOIN SCP_WF_PROC_TASK swpt1 ON swp1.PROC_INST_ID = swpt1.PROC_INST_ID
 						WHERE
 							swp1.PROC_STATUS IN (4, 6)
 						AND swpt1.PROC_TASK_ASSIGNEE = #{procTaskAssignee}
