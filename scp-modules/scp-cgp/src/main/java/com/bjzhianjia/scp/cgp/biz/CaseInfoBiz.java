@@ -384,11 +384,15 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
 
             int startYear = 0;
             int startMonth = 0;
-            do {
+            
+            
+            
+            while (calStart.before(calEnd) || (calStart.get(Calendar.MONTH) == calEnd.get(Calendar.MONTH))){
                 startYear = calStart.get(Calendar.YEAR);
                 startMonth = calStart.get(Calendar.MONTH) + 1;
 
                 ymKey = startYear + "" + startMonth;
+                System.out.println("ymKey :"+ ymKey);
                 Map<String, Object> resultData = tempData.get(ymKey);
                 // 当月没有数据则初始化为0
                 if (resultData == null) {
@@ -403,7 +407,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
                 list.add(resultData);
 
                 calStart.add(Calendar.MONTH, 1);
-            } while (calStart.before(calEnd));
+            }
 
         } else {
             list = new ArrayList<>();
