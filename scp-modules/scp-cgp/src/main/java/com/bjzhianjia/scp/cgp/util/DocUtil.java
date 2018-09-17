@@ -176,7 +176,7 @@ public class DocUtil {
         } else {
             return null;
         }
-        return destFullPath;
+        return destFileName;
     }
 
     private static void replaceParagraphChar(Map<String, String> map, XWPFParagraph paragraph) {
