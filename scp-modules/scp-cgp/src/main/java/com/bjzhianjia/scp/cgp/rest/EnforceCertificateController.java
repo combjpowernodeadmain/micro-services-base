@@ -29,6 +29,23 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 
+
+/**
+ * EnforceCertificateController 类描述.
+ *
+ *
+ * <pre>
+ * Modification History: 
+ * Date             Author      Version         Description 
+ * ------------------------------------------------------------------
+ * 2018年9月16日          chenshuai      1.0            ADD
+ * </pre>
+ * 
+ *
+ * @version 1.0 
+ * @author chenshuai
+ *
+ */
 @RestController
 @RequestMapping("enforceCertificate")
 @CheckClientToken
@@ -129,8 +146,30 @@ public class EnforceCertificateController extends BaseController<EnforceCertific
     }
 	
 	@RequestMapping(value="/get/certificater")
-	@ApiOperation("获取执法人员详情")
+	@ApiOperation("获取执法人员个人详情")
 	public ObjectRestResponse<JSONObject> getDetailOfCertificater(@RequestParam(value="userId",defaultValue="")String userId){
         return enforceCertificateService.getDetailOfCertificater(userId);
 	}
+	/**
+	 * 通过用户id获取执法人员详情
+	 * @param userId
+	 *        用户id
+	 * @return
+	 */
+	@ApiOperation("通过用户id获取执法人员详情")
+    @RequestMapping(value="/userId/{userId}")
+	public ObjectRestResponse<EnforceCertificate> getEnforceCertificateByUserId(@PathVariable("userId") String userId) {
+	    ObjectRestResponse<EnforceCertificate> result = new ObjectRestResponse<>();
+	    
+	    EnforceCertificate enforceCertificate = enforceCertificateBiz.getEnforceCertificateByUserId(userId);
+	    if(enforceCertificate != null) {
+	        result.setData(enforceCertificate);
+	        result.setStatus(200);
+	    }else {
+	        result.setMessage("当前用户，没有执法证！");
+            result.setStatus(400);
+	    }
+	    return result; 
+	}
+	
 }

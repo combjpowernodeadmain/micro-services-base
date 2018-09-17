@@ -428,25 +428,25 @@ public class PatrolTaskService {
 		Result<Void> restResult = new Result<Void>();
 		restResult.setIsSuccess(true);
 	
-		if (!StringUtils.isNotBlank(patrolTask.getPatrolName()) && patrolTask.getPatrolName().length() > 127) {
+		if (StringUtils.isBlank(patrolTask.getPatrolName()) && patrolTask.getPatrolName().length() > 127) {
 			restResult.setIsSuccess(false);
 			restResult.setMessage("事件名称不能为空！");
 			return restResult;
 		}
 	
-		if (!StringUtils.isNotBlank(patrolTask.getPatrolLevel())) {
+		if (StringUtils.isBlank(patrolTask.getPatrolLevel())) {
 			restResult.setIsSuccess(false);
 			restResult.setMessage("事件级别不能为空！");
 			return restResult;
 		}
 	
-		if (!StringUtils.isNotBlank(patrolTask.getAddress()) && !StringUtils.isNotBlank(patrolTask.getMapInfo())) {
+		if (StringUtils.isBlank(patrolTask.getAddress()) && StringUtils.isBlank(patrolTask.getMapInfo())) {
 			restResult.setIsSuccess(false);
 			restResult.setMessage("当前位置不能为空！");
 			return restResult;
 		}
 	
-		if (!StringUtils.isNotBlank(patrolTask.getContent()) && patrolTask.getContent().length() > 1024) {
+		if (StringUtils.isBlank(patrolTask.getContent()) && patrolTask.getContent().length() > 1024) {
 			restResult.setIsSuccess(false);
 			restResult.setMessage("巡查事项内容不能为空！");
 			return restResult;

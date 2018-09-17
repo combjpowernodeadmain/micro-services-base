@@ -22,7 +22,6 @@ import com.bjzhianjia.scp.cgp.entity.LawEnforcePath;
  */
 public class LawEnforcePathVo extends LawEnforcePath{
     //{"lng":"xx","lat":"xxx"}
-    @NotBlank
     private String mapInfo;
     
     /**

@@ -139,4 +139,16 @@ public class EnforceCertificateBiz extends BusinessBiz<EnforceCertificateMapper,
 		  List<EnforceCertificate> list = enforceCertificateMapper.selectAllUserInfo();
 		  return list;
 	}
+	/**
+	 * 通过用户id查询执法证管理者
+	 * @param userId
+	 *        用户接入
+	 * @return
+	 */
+	public EnforceCertificate getEnforceCertificateByUserId(String userId) {
+	    EnforceCertificate enforceCertificate = new EnforceCertificate();
+	    enforceCertificate.setUsrId(userId);
+	    enforceCertificate = enforceCertificateMapper.selectOne(enforceCertificate);
+	    return enforceCertificate;
+	}
 }

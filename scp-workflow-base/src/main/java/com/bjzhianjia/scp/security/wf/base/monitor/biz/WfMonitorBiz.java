@@ -13,6 +13,7 @@
 package com.bjzhianjia.scp.security.wf.base.monitor.biz;
 
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,6 +112,21 @@ public class WfMonitorBiz extends WfBaseBiz {
             return iqbWfMyProcBeanMapper.getUserToDoTasks(objs);
         } finally {
             logger.info("用户待办任务查询--查询用户待办任务完成.");
+        }
+    }
+    
+    /**
+     * 用户统计
+     * @param objs
+     * @return
+     */
+    public List<Map<String,Object>> getUserStatisTask(JSONObject objs) throws WorkflowException {
+        logger.info("用户统计查询--开始查询用户统计...");
+
+        try {
+            return iqbWfMyProcBeanMapper.selectUserStatisTask(objs);
+        } finally {
+            logger.info("用户统计查询--查询用户统计查询完成.");
         }
     }
     
