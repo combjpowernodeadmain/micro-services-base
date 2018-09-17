@@ -1,8 +1,9 @@
 package com.bjzhianjia.scp.cgp.rest;
 
-import java.util.List;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,8 +16,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.WritsInstancesBiz;
 import com.bjzhianjia.scp.cgp.entity.WritsInstances;
-import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
-import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
+import com.bjzhianjia.scp.cgp.util.DocDownUtil;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
@@ -24,16 +24,18 @@ import com.bjzhianjia.scp.security.common.rest.BaseController;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.extern.log4j.Log4j;
 
 @RestController
 @RequestMapping("writsInstances")
-@CheckClientToken
-@CheckUserToken
 @Api(tags = "综合执法 - 案件登记文书记录")
+@Log4j
 public class WritsInstancesController extends BaseController<WritsInstancesBiz, WritsInstances, Integer> {
 
     @Autowired
     private WritsInstancesBiz writsInstancesBiz;
+    @Autowired
+    private DocDownUtil springBootUtil;
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     @ApiOperation("查询文书列表")
@@ -127,5 +129,15 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
     public ObjectRestResponse<WritsInstances> addList(@RequestBody @Validated @ApiParam("待添加对象实例集合")JSONArray writsInstancesList,BindingResult bindingResult){
         ObjectRestResponse<WritsInstances> resetResult = this.baseBiz.addList(writsInstancesList);
         return resetResult;
+    }
+    
+    @RequestMapping(value="/true/instance",method=RequestMethod.GET)
+    public ResponseEntity<?> getWritsInstances(@RequestParam(value="fileName")String fileName, HttpServletResponse response) {
+        log.info("请求文书实例，文书名："+fileName);
+        
+        response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        
+        ResponseEntity<?> file = springBootUtil.getFile(fileName);
+        return file;
     }
 }
