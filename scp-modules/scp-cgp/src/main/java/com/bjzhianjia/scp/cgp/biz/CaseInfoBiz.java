@@ -223,7 +223,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             // 任务没有结束，当前日期和期限日期进行判断，任务结束，则判断完成日期和期限日期
             String date = DateUtil.dateFromDateToStr(new Date(), "yyyy-MM-dd HH:mm:ss");
             criteria.andCondition(
-                "(dead_line > '" + date + "' and is_finished=0) or (dead_line > finish_time and is_finished in(1,2))");
+                "(dead_line < '" + date + "' and is_finished=0) or (dead_line < finish_time and is_finished in(1,2))");
         }
         // 处理状态：已结案(0:未完成|1:已结案2:已终止)
         if (StringUtils.isNotBlank(isFinished) && !CaseInfo.FINISHED_STATE_TODO.equals(isFinished)) {
