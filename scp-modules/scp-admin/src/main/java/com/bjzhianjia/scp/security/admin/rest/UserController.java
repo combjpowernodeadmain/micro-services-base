@@ -52,6 +52,7 @@ import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
+import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
 
 import io.swagger.annotations.Api;
@@ -196,10 +197,24 @@ public class UserController extends BaseController<UserBiz, User, String> {
 	@ApiOperation("根据人名进行模糊查询")
 	@RequestMapping(value = "/getByName", method = RequestMethod.GET)
 	@IgnoreClientToken
-	@IgnoreUserToken
 	public JSONArray getUsersByName(@RequestParam(value = "name") String name) {
 		return userService.getUsersByName(name);
 	}
+	
+	/**
+	 * 根据人名进行模糊查询，翻页
+     * @param name
+     * @return
+     */
+    @ApiOperation("根据人名进行模糊查询")
+    @RequestMapping(value = "/userNames", method = RequestMethod.GET)
+    @IgnoreClientToken
+    public TableResultResponse<Map<String,Object>>  getUsersByName(@RequestParam(value = "name",defaultValue="") String name,
+        @RequestParam(value="page", defaultValue="1") Integer page,
+        @RequestParam(value="limit", defaultValue="10") Integer limit) {
+       return this.baseBiz.getUsersByFakeName(name, page, limit);
+    }
+	
 	
 	/**
 	 * 

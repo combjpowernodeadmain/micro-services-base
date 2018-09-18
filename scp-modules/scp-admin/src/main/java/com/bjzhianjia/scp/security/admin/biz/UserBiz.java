@@ -35,7 +35,9 @@ import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.admin.entity.User;
 import com.bjzhianjia.scp.security.admin.mapper.DepartMapper;
+import com.bjzhianjia.scp.security.admin.mapper.PositionMapper;
 import com.bjzhianjia.scp.security.admin.mapper.UserMapper;
+import com.bjzhianjia.scp.security.admin.vo.PositionVo;
 import com.bjzhianjia.scp.security.common.biz.BaseBiz;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
@@ -62,7 +64,9 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
     private MergeCore mergeCore;
     @Autowired
     private DepartMapper departMapper;
-
+    @Autowired
+    private PositionMapper positionMapper;
+    
     private Sha256PasswordEncoder encoder = new Sha256PasswordEncoder();
 
 
@@ -273,6 +277,70 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
     	   userList = new ArrayList<>();
     	}    	    
     	return userList;
+    }
+    
+    /**
+     * 按人名进行模糊查询，翻页
+     * @param name 用户名称
+     * @param page 页面
+     * @param limit 页容量
+     * @return
+     */
+    public TableResultResponse<Map<String, Object>> getUsersByFakeName(String name, int page, int limit) {
+        Example example = new Example(User.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andLike("name", "%" + name + "%");
+        Page<Object> pageList = PageHelper.startPage(page, limit);
+        List<User> userList = mapper.selectByExample(example);
+        if (userList == null) {
+            userList = new ArrayList<>();
+        }
+        List<Map<String, Object>> data = this.bindPositionToUser(userList);
+        if(data == null) {
+            data = new ArrayList<>();
+        }
+        return new TableResultResponse<>(pageList.getTotal(),data);
+    }
+    /**
+     * 将人员与其所在的职位进行绑定
+     * 
+     * @author 尚
+     * @param userList
+     * @return
+     */
+    private List<Map<String , Object>> bindPositionToUser(List<User> userList) {
+        List<Map<String , Object>> result = new ArrayList<>();
+        List<String> userIdList = userList.stream().map((o) -> o.getId()).distinct().collect(Collectors.toList());
+
+        String join = String.join(",", userIdList);
+        join = "'" + join.replaceAll(",", "','") + "'";
+
+        List<PositionVo> positionMapList = positionMapper.selectPositionByUser(join);
+        
+        //封装用户职务
+        //数据格式：userId：username1，username2
+        Map<String , String> positionMap = new HashMap<>();
+        if(positionMapList != null) {
+            for(PositionVo positionVo : positionMapList) {
+                String userName = positionMap.get(positionVo.getUserId());
+                if(StringUtils.isNotBlank(userName)) {
+                    positionMap.put(positionVo.getUserId(), userName+","+positionVo.getName());
+                }else {
+                    positionMap.put(positionVo.getUserId(), positionVo.getName());
+                }
+            }
+        }
+        if(userList != null) {
+            Map<String , Object> data = null;
+            for(User user : userList) {
+                data = new HashMap<>();
+                data.put("userId", user.getId());
+                data.put("userName", user.getName());
+                data.put("position", positionMap.get(user.getId()));
+                result.add(data);
+            }
+        }
+        return result;
     }
     
     /***********************************************
