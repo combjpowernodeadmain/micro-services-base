@@ -171,12 +171,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         JSONArray attachmentsJArray = caseRegJObj.getJSONArray("attachments");
         List<CaseAttachments> attachmentsList =new ArrayList<>();
         
-        for (CaseAttachments caseAttachments : attachmentsList) {
-            caseAttachments.setCaseId(caseId);
-        }
-        
         if(BeanUtil.isNotEmpty(attachmentsJArray)) {
             attachmentsList = attachmentsJArray.toJavaList(CaseAttachments.class);
+        }
+        
+        for (CaseAttachments caseAttachments : attachmentsList) {
+            caseAttachments.setCaseId(caseId);
         }
         
         if(BeanUtil.isNotEmpty(attachmentsList)) {
