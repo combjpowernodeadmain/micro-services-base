@@ -306,6 +306,7 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 
         // 模板与模板下的文书结合
         List<JSONObject> templateJObjList = new ArrayList<>();
+        int count = 1;
         for (WritsTemplates tmpT : temTemplatesList) {
             JSONObject templateJObj = new JSONObject();
             templateJObj.put("writsTemplatesId", tmpT.getId());
@@ -316,12 +317,15 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
                 if (tmpT.getId().equals(tmpW.getTemplateId())) {
                     JSONObject writsInstancesJObj = new JSONObject();// 用于封装回传前端的文书信息，减少回传数据量
                     writsInstancesJObj.put("writsInstancesId", tmpW.getId());
-                    writsInstancesJObj.put("writsInstancesName", tmpW.getRefAbbrev());
+                    writsInstancesJObj.put("writsInstancesName",
+                        StringUtils.isEmpty(tmpW.getRefAbbrev()) ? "实例" + count : tmpW.getRefAbbrev());
                     innerWritsInstancesList.add(writsInstancesJObj);
                 }
                 templateJObj.put("writsInstances", innerWritsInstancesList);
             }
             templateJObjList.add(templateJObj);
+
+            count++;
         }
         return new TableResultResponse<>(0, templateJObjList);
     }
@@ -605,7 +609,7 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
                     mergeFillContext(null, writsInstances.getFillContext(),
                         JSONObject.parseObject(writsInstanceInDB.getFillContext()), null, null);
                 writsInstances.setFillContext(mergeFillContext.toJSONString());
-                this.updateById(writsInstances);
+                this.updateSelectiveById(writsInstances);
             }
         }
     }

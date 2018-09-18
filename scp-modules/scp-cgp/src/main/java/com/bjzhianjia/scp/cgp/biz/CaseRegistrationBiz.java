@@ -120,6 +120,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
     @Autowired
     private WritsTemplatesBiz writsTemplatesBiz;
+
     @Autowired
     private CaseAttachmentsBiz caseAttachmentsBiz;
 
@@ -163,23 +164,24 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
     /**
      * 如果请求信息中有附件信息，则将其保存到数据库中
+     * 
      * @param caseRegJObj
      * @param caseId
      */
     private void addAttachments(JSONObject caseRegJObj, String caseId) {
         // 附件信息以JSON数组形式封装在attachments中
         JSONArray attachmentsJArray = caseRegJObj.getJSONArray("attachments");
-        List<CaseAttachments> attachmentsList =new ArrayList<>();
-        
-        if(BeanUtil.isNotEmpty(attachmentsJArray)) {
+        List<CaseAttachments> attachmentsList = new ArrayList<>();
+
+        if (BeanUtil.isNotEmpty(attachmentsJArray)) {
             attachmentsList = attachmentsJArray.toJavaList(CaseAttachments.class);
         }
-        
+
         for (CaseAttachments caseAttachments : attachmentsList) {
             caseAttachments.setCaseId(caseId);
         }
-        
-        if(BeanUtil.isNotEmpty(attachmentsList)) {
+
+        if (BeanUtil.isNotEmpty(attachmentsList)) {
             caseAttachmentsBiz.add(attachmentsList);
         }
     }
@@ -461,14 +463,14 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         List<JSONObject> result = new ArrayList<>();
 
         CaseRegistration queryCaseRegistration = new CaseRegistration();
-        //查询条件
+        // 查询条件
         JSONObject queryData = objs.getJSONObject("queryData");
-        if(queryData == null) {
+        if (queryData == null) {
             queryData = new JSONObject();
         }
         queryCaseRegistration.setIsSupervise(queryData.getString("isSupervise"));
         queryCaseRegistration.setIsUrge(queryData.getString("isUrge"));
-        
+
         // 工作流查询条件
         JSONObject bizData = objs.getJSONObject("bizData");
         // 事件工作流的定义代码
@@ -492,8 +494,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             // 业务ids
             Set<String> bizIds = this.getBizIds(wfProcBackBeanList);
             // 查询与工作流任务对应的业务
-            TableResultResponse<CaseRegistration> tableResult =
-                this.getList(queryCaseRegistration, bizIds, queryData);
+            TableResultResponse<CaseRegistration> tableResult = this.getList(queryCaseRegistration, bizIds, queryData);
             List<CaseRegistration> caseRegistrationList = tableResult.getData().getRows();
             if (caseRegistrationList != null && !caseRegistrationList.isEmpty()) {
                 // 封装业务数据
@@ -523,25 +524,26 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                         isUrge = caseRegistration.getIsSupervise();
                         isSupervise = caseRegistration.getIsUrge();
                     }
-                    obj.put("isSupervise", isUrge.equals("0")?false:true);
-                    obj.put("isUrge", isSupervise.equals("0")?false:true);
-                    //完成期限
+                    obj.put("isSupervise", isUrge.equals("0") ? false : true);
+                    obj.put("isUrge", isSupervise.equals("0") ? false : true);
+                    // 完成期限
                     Date caseEnd = caseRegistration.getCaseEnd();
                     String exeStatus = caseRegistration.getExeStatus();
-                    //默认没有超时
+                    // 默认没有超时
                     boolean isOvertime = false;
-                    if(caseEnd != null) {
-                        //处理结束
-                        if(CaseRegistration.EXESTATUS_STATE_STOP.equals(exeStatus) || CaseRegistration.EXESTATUS_STATE_FINISH.equals(exeStatus) ) {
-                            //结案时间
+                    if (caseEnd != null) {
+                        // 处理结束
+                        if (CaseRegistration.EXESTATUS_STATE_STOP.equals(exeStatus)
+                            || CaseRegistration.EXESTATUS_STATE_FINISH.equals(exeStatus)) {
+                            // 结案时间
                             Date finishTime = caseRegistration.getUpdTime();
                             isOvertime = caseEnd.before(finishTime);
-                        }else {
-                            //处理中
+                        } else {
+                            // 处理中
                             isOvertime = caseEnd.before(new Date());
                         }
                     }
-                    //是否超时
+                    // 是否超时
                     obj.put("isOvertime", isOvertime);
                     result.add(obj);
                 }
@@ -769,23 +771,24 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             objResult.put("sourceTitle", sourceTitle);
             objResult.put("isUrge", "0".equals(caseRegistration.getIsUrge()) ? false : true);
             objResult.put("isSupervise", "0".equals(caseRegistration.getIsSupervise()) ? false : true);
-            //完成期限
+            // 完成期限
             Date caseEnd = caseRegistration.getCaseEnd();
             String exeStatus = caseRegistration.getExeStatus();
-            //默认没有超时
+            // 默认没有超时
             boolean isOvertime = false;
-            if(caseEnd != null) {
-                //处理结束
-                if(CaseRegistration.EXESTATUS_STATE_STOP.equals(exeStatus) || CaseRegistration.EXESTATUS_STATE_FINISH.equals(exeStatus) ) {
-                    //结案时间
+            if (caseEnd != null) {
+                // 处理结束
+                if (CaseRegistration.EXESTATUS_STATE_STOP.equals(exeStatus)
+                    || CaseRegistration.EXESTATUS_STATE_FINISH.equals(exeStatus)) {
+                    // 结案时间
                     Date finishTime = caseRegistration.getUpdTime();
                     isOvertime = caseEnd.before(finishTime);
-                }else {
-                    //处理中
+                } else {
+                    // 处理中
                     isOvertime = caseEnd.before(new Date());
                 }
             }
-            //是否超时
+            // 是否超时
             objResult.put("isOvertime", isOvertime);
             result.add(objResult);
         }
@@ -829,7 +832,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         String isOverTime = queryData.getString("isOverTime");
         String exeStatus = queryData.getString("procCtaskname");// 1:已结案2:已终止
         String caseSourceType = queryData.getString("caseSourceType");// 来源类型
-//        String caseSource = queryData.getString("caseSource");// 来源id
+        // String caseSource = queryData.getString("caseSource");// 来源id
 
         Example example = new Example(CaseRegistration.class);
         Criteria criteria = example.createCriteria();
@@ -870,9 +873,10 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         if (StringUtils.isNotBlank(isOverTime) && "1".equals(isOverTime)) {
             String date = DateUtil.dateFromDateToStr(new Date(), "yyyy-MM-dd HH:mm:ss");
             // 处理中，当前日期和期限日期进行判断， 结束，则判断完成日期和期限日期
-            criteria.andCondition("('"+date+"' > case_end AND exe_status = 0) OR ( case_end < upd_time AND exe_status IN (1, 2))");
+            criteria.andCondition(
+                "('" + date + "' > case_end AND exe_status = 0) OR ( case_end < upd_time AND exe_status IN (1, 2))");
         }
-        
+
         // 处理状态：0处理中|1:已结案2:已终止
         if (StringUtils.isNotBlank(exeStatus) && !CaseRegistration.EXESTATUS_STATE_TODO.equals(exeStatus)) {
             // 只查询1:已结案2:已终止
