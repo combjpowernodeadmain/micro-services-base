@@ -384,12 +384,14 @@ public class CaseInfoService {
             Date deadLine = caseInfo.getDeadLine();
             Date finishTime = caseInfo.getFinishTime();
             boolean isOvertime = false;
-            if (CaseInfo.FINISHED_STATE_TODO.equals(caseInfo.getIsFinished())) {
-                // 任务未完成判断是否超时
-                isOvertime = deadLine == null ? false : (deadLine.compareTo(new Date()) > 0 ? true : false);
-            } else {
-                // 完成任务判断是否超时
-                isOvertime = deadLine == null ? false : (deadLine.compareTo(finishTime) > 0 ? true : false);
+            if(deadLine != null) {
+                if (CaseInfo.FINISHED_STATE_TODO.equals(caseInfo.getIsFinished())) {
+                    // 任务未完成判断是否超时
+                    isOvertime = deadLine.compareTo(new Date()) > 0 ? false : true;
+                } else {
+                    // 完成任务判断是否超时
+                    isOvertime = deadLine.compareTo(finishTime) > 0 ? false : true;
+                }
             }
             // 是否超时
             wfJObject.put("isOvertime", isOvertime);

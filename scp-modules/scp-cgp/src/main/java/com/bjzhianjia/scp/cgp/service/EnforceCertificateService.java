@@ -107,15 +107,15 @@ public class EnforceCertificateService {
                         continue;
                     }
                     String[] split = bizLists.split(",");
-                    List<String> bizListsTmp = new ArrayList<>();
-                    for (String string : split) {
-                        Map<String, String> mapTmp = new HashMap<>();
-                        mapTmp.put("id", string);
-                        mapTmp.put("labelDefault", bizTypeMap.get(string));
-                        bizListsTmp.add(JSON.toJSONString(mapTmp));
-
+                    StringBuilder dictList = new StringBuilder();
+                    for(int i=0 ; split != null && i < split.length ; i++) {
+                        if(i == split.length-1) {
+                            dictList.append(bizTypeMap.get(split[i]));
+                        }else {
+                            dictList.append(bizTypeMap.get(split[i])).append(",");
+                        }
                     }
-                    tmp.setBizLists(bizListsTmp.toString());
+                    tmp.setBizLists(dictList.toString());
                 }
             }
 
@@ -167,14 +167,11 @@ public class EnforceCertificateService {
         List<JSONObject> resultJObjList = new ArrayList<>();
         for (int i = 0; i < resultJArray.size(); i++) {
             JSONObject jsonObject = resultJArray.getJSONObject(i);
-            JSONObject uTmpJObj = JSONObject.parseObject(jsonObject.getString("usrId"));
-            if (uTmpJObj != null) {
                 if (lawMap != null && !lawMap.isEmpty()) {
-                    jsonObject.put("mapInfo", lawMap.get(uTmpJObj.getString("id")));
+                    jsonObject.put("mapInfo", lawMap.get(jsonObject.getString("usrId")));
                 }
                 resultJObjList.add(jsonObject);
             }
-        }
 
         return new TableResultResponse<>(tableResult.getData().getTotal(), resultJObjList);
     }
