@@ -334,8 +334,8 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
             Map<String , Object> data = null;
             for(User user : userList) {
                 data = new HashMap<>();
-                data.put("userId", user.getId());
-                data.put("userName", user.getName());
+                data.put("id", user.getId());
+                data.put("name", user.getName());
                 data.put("position", positionMap.get(user.getId()));
                 result.add(data);
             }
