@@ -461,6 +461,14 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         List<JSONObject> result = new ArrayList<>();
 
         CaseRegistration queryCaseRegistration = new CaseRegistration();
+        //查询条件
+        JSONObject queryData = objs.getJSONObject("queryData");
+        if(queryData == null) {
+            queryData = new JSONObject();
+        }
+        queryCaseRegistration.setIsSupervise(queryData.getString("isSupervise"));
+        queryCaseRegistration.setIsUrge(queryData.getString("isUrge"));
+        
         // 工作流查询条件
         JSONObject bizData = objs.getJSONObject("bizData");
         // 事件工作流的定义代码
@@ -485,7 +493,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             Set<String> bizIds = this.getBizIds(wfProcBackBeanList);
             // 查询与工作流任务对应的业务
             TableResultResponse<CaseRegistration> tableResult =
-                this.getList(queryCaseRegistration, bizIds, objs.getJSONObject("queryData"));
+                this.getList(queryCaseRegistration, bizIds, queryData);
             List<CaseRegistration> caseRegistrationList = tableResult.getData().getRows();
             if (caseRegistrationList != null && !caseRegistrationList.isEmpty()) {
                 // 封装业务数据
@@ -698,18 +706,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
         // 查询案件类别
         Map<String, String> eventType_ID_NAME_Map = new HashMap<>();
-//        String eventTypeName = "";
         if (eventTypeIdStrList != null && !eventTypeIdStrList.isEmpty()) {
             List<EventType> eventTypeList = new ArrayList<>();
             eventTypeList = eventTypeMapper.selectByIds(String.join(",", eventTypeIdStrList));
-//            List<String> eventTypeNameList = new ArrayList<>();
             for (EventType eventType : eventTypeList) {
-//                if (StringUtils.isNotBlank(eventType.getTypeName())) {
-//                    eventTypeNameList.add(eventType.getTypeName());
-//                }
                 eventType_ID_NAME_Map.put(String.valueOf(eventType.getId()), eventType.getTypeName());
             }
-//            eventTypeName = String.join(",", eventTypeNameList);
         }
 
         JSONObject objResult = null;
