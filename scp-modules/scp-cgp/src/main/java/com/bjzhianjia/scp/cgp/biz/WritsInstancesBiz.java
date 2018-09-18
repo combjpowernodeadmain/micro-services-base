@@ -300,12 +300,15 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         List<WritsTemplates> temTemplatesList = writsTemplatesBiz.getByTcodes(templateCodes);
         List<Integer> templateIdList =
             temTemplatesList.stream().map(o -> o.getId()).distinct().collect(Collectors.toList());
-        criteria.andIn("templateId", templateIdList);
+        if(BeanUtil.isNotEmpty(templateCodes)) {
+            criteria.andIn("templateId", templateIdList);
+        }
 
         List<WritsInstances> writsInstancesLis = this.selectByExample(example);
 
         // 模板与模板下的文书结合
         List<JSONObject> templateJObjList = new ArrayList<>();
+        int count = 1;
         for (WritsTemplates tmpT : temTemplatesList) {
             JSONObject templateJObj = new JSONObject();
             templateJObj.put("writsTemplatesId", tmpT.getId());
@@ -316,12 +319,15 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
                 if (tmpT.getId().equals(tmpW.getTemplateId())) {
                     JSONObject writsInstancesJObj = new JSONObject();// 用于封装回传前端的文书信息，减少回传数据量
                     writsInstancesJObj.put("writsInstancesId", tmpW.getId());
-                    writsInstancesJObj.put("writsInstancesName", tmpW.getRefAbbrev());
+                    writsInstancesJObj.put("writsInstancesName",
+                        StringUtils.isEmpty(tmpW.getRefAbbrev()) ? "实例" + count : tmpW.getRefAbbrev());
                     innerWritsInstancesList.add(writsInstancesJObj);
                 }
                 templateJObj.put("writsInstances", innerWritsInstancesList);
             }
             templateJObjList.add(templateJObj);
+
+            count++;
         }
         return new TableResultResponse<>(0, templateJObjList);
     }
@@ -520,11 +526,11 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
      */
     @Deprecated
     public ObjectRestResponse<WritsInstances> addList(JSONArray writsInstancesJArray) {
-        List<WritsInstances> writsInstanceList =new ArrayList<>();
-        if(BeanUtil.isNotEmpty(writsInstancesJArray)) {
-            writsInstanceList=writsInstancesJArray.toJavaList(WritsInstances.class);
+        List<WritsInstances> writsInstanceList = new ArrayList<>();
+        if (BeanUtil.isNotEmpty(writsInstancesJArray)) {
+            writsInstanceList = writsInstancesJArray.toJavaList(WritsInstances.class);
         }
-        
+
         ObjectRestResponse<WritsInstances> restResult = new ObjectRestResponse<>();
         for (WritsInstances writsInstances : writsInstanceList) {
             writsInstances.setCrtUserId(BaseContextHandler.getUserID());
@@ -546,13 +552,17 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
      * @param caseId
      */
     public void addWritsInstances(JSONObject caseRegJObj) {
-        /*
-         * =文书ID用writsId作为变量名传入，以增强可读性<br/>
-         * =文书ID用writsId作为变量名，因为不能直接parseObject给WritsInstances中的ID的属性，需要手动指定
-         */
-        String caseId = caseRegJObj.getString("writsId");
+        String caseId = caseRegJObj.getString("procBizId");
 
         JSONArray writsInstancesJArray = caseRegJObj.getJSONArray("writsInstances");
+        for (int i = 0; i < writsInstancesJArray.size(); i++) {
+            /*
+             * =文书ID用writsId作为变量名传入，以增强可读性<br/>
+             * =文书ID用writsId作为变量名，因为不能直接parseObject给WritsInstances中的ID的属性，需要手动指定
+             */
+            JSONObject writsJObj = writsInstancesJArray.getJSONObject(i);
+            writsJObj.put("id", writsJObj.getString("writsId"));
+        }
 
         String tcode = "";
         for (int i = 0; i < writsInstancesJArray.size(); i++) {
@@ -595,8 +605,13 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
                 this.insertSelective(writsInstances);
             } else {
                 // 暂存过，进行更新操作
-                writsInstances.setTemplateId(writsTemplates.getId());
-                this.updateById(writsInstances);
+                WritsInstances writsInstanceInDB = this.selectById(writsInstances.getId());
+                // writsInstances.setTemplateId(writsTemplates.getId());
+                JSONObject mergeFillContext =
+                    mergeFillContext(null, writsInstances.getFillContext(),
+                        JSONObject.parseObject(writsInstanceInDB.getFillContext()), null, null);
+                writsInstances.setFillContext(mergeFillContext.toJSONString());
+                this.updateSelectiveById(writsInstances);
             }
         }
     }

@@ -15,6 +15,7 @@ import com.bjzhianjia.scp.cgp.biz.RightsIssuesBiz;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.RightsIssues;
 import com.bjzhianjia.scp.cgp.service.RightsIssuesService;
+import com.bjzhianjia.scp.cgp.vo.RightsIssuesVo;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
@@ -42,7 +43,7 @@ public class RightsIssuesController extends BaseController<RightsIssuesBiz, Righ
     @ResponseBody
     @ApiOperation("终端查询分页列表")
 
-    public TableResultResponse<RightsIssues> page(@RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
+    public TableResultResponse<RightsIssuesVo> page(@RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
         @RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
         @RequestParam(defaultValue = "") @ApiParam(name = "权利事项编号") String code,
         @RequestParam(defaultValue = "") @ApiParam(name = "业务条线") String bizType,
