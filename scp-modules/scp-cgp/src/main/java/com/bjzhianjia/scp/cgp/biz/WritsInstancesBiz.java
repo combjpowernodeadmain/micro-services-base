@@ -232,7 +232,7 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             String destPath = propertiesConfig.getDestFilePath() + destFileNameBuffer.toString();
 
             if (DocUtil.exists(destPath)) {
-                writsPath = destPath;
+                writsPath = destFileNameBuffer.toString();
             } else {
                 // 说明可能已存在过旧文件，将所有旧文件进行删除，将生成的新文件进行生成并返回路径
                 List<String> ignoreFileNameList = new ArrayList<>();
