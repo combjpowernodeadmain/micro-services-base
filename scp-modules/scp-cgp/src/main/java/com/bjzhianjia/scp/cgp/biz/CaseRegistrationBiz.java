@@ -515,8 +515,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                         isUrge = caseRegistration.getIsSupervise();
                         isSupervise = caseRegistration.getIsUrge();
                     }
-                    obj.put("isSupervise", isUrge);
-                    obj.put("isUrge", isSupervise);
+                    obj.put("isSupervise", isUrge.equals("0")?false:true);
+                    obj.put("isUrge", isSupervise.equals("0")?false:true);
                     //完成期限
                     Date caseEnd = caseRegistration.getCaseEnd();
                     String exeStatus = caseRegistration.getExeStatus();
