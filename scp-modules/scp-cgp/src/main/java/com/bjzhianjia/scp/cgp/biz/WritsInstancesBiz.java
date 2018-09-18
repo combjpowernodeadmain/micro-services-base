@@ -300,7 +300,7 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         List<WritsTemplates> temTemplatesList = writsTemplatesBiz.getByTcodes(templateCodes);
         List<Integer> templateIdList =
             temTemplatesList.stream().map(o -> o.getId()).distinct().collect(Collectors.toList());
-        if(BeanUtil.isNotEmpty(templateCodes)) {
+        if(BeanUtil.isNotEmpty(templateIdList)) {
             criteria.andIn("templateId", templateIdList);
         }
 
