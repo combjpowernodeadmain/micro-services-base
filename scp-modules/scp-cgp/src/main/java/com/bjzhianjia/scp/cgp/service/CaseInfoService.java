@@ -355,7 +355,7 @@ public class CaseInfoService {
 
         // 查询事件类别
         Map<String, String> eventType_ID_NAME_Map = new HashMap<>();
-        String eventTypeName = "";
+//        String eventTypeName = "";
         if (eventTypeIdStrSet != null && !eventTypeIdStrSet.isEmpty()) {
             List<EventType> eventTypeList = new ArrayList<>();
             eventTypeList = eventTypeMapper.selectByIds(String.join(",", eventTypeIdStrSet));
@@ -366,7 +366,7 @@ public class CaseInfoService {
                 }
                 eventType_ID_NAME_Map.put(String.valueOf(eventType.getId()), eventType.getTypeName());
             }
-            eventTypeName = String.join(",", eventTypeNameList);
+//            eventTypeName = String.join(",", eventTypeNameList);
         }
 
         for (CaseInfo caseInfo : caseInfoList) {
@@ -395,15 +395,7 @@ public class CaseInfoService {
             }
             // 是否超时
             wfJObject.put("isOvertime", isOvertime);
-
-            wfJObject.put("caseInfoId", caseInfo.getId());
-            if (CaseInfo.FINISHED_STATE_FINISH.equals(caseInfo.getIsFinished())) {
-                wfJObject.put("procCtaskname", "已结案");
-            }
-
-            if (CaseInfo.FINISHED_STATE_STOP.equals(caseInfo.getIsFinished())) {
-                wfJObject.put("procCtaskname", "已终止");
-            }
+            
             WfProcBackBean wfProcBackBean = wfProcBackBean_ID_Entity_Map.get(String.valueOf(caseInfo.getId()));
             if (wfProcBackBean != null) {
                 wfJObject.put("procCtaskname", wfProcBackBean.getProcCtaskname());
@@ -414,6 +406,16 @@ public class CaseInfoService {
                 wfJObject.put("procTaskStatus", wfProcBackBean.getProcTaskStatus());
                 wfJObject.put("procCtaskcode", wfProcBackBean.getProcCtaskcode());
             }
+            
+            wfJObject.put("caseInfoId", caseInfo.getId());
+            if (CaseInfo.FINISHED_STATE_FINISH.equals(caseInfo.getIsFinished())) {
+                wfJObject.put("procCtaskname", "已结案");
+            }
+
+            if (CaseInfo.FINISHED_STATE_STOP.equals(caseInfo.getIsFinished())) {
+                wfJObject.put("procCtaskname", "已终止");
+            }
+         
             jObjList.add(wfJObject);
         }
 
