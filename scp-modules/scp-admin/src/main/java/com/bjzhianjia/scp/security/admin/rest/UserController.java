@@ -171,6 +171,7 @@ public class UserController extends BaseController<UserBiz, User, String> {
 	@ApiOperation("批量获取人员信息")
 	@RequestMapping(value = "/getByPK/{id}", method = RequestMethod.GET)
 	@IgnoreUserToken
+	@IgnoreClientToken
 	public Map<String, String> getUser(@PathVariable String id) {
 		return this.baseBiz.getUsers(id);
 	}
