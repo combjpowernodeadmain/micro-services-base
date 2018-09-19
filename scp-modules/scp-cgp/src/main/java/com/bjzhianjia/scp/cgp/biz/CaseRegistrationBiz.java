@@ -240,7 +240,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 writsInstancesBiz.insertSelective(writsInstances);
             } else {
                 // 暂存过，进行更新操作，此时传入的参数中包含文书模板
-                writsInstancesBiz.updateById(writsInstances);
+                writsInstancesBiz.updateSelectiveById(writsInstances);
             }
         }
     }

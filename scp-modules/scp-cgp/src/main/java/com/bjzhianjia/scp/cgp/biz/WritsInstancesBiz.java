@@ -555,6 +555,15 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         String caseId = caseRegJObj.getString("procBizId");
 
         JSONArray writsInstancesJArray = caseRegJObj.getJSONArray("writsInstances");
+        
+        for (int i = 0; i < writsInstancesJArray.size(); i++) {
+            /*
+             * =文书ID用writsId作为变量名传入，以增强可读性<br/>
+             * =文书ID用writsId作为变量名，因为不能直接parseObject给WritsInstances中的ID的属性，需要手动指定
+             */
+            JSONObject writsJObj = writsInstancesJArray.getJSONObject(i);
+            writsJObj.put("id", writsJObj.getString("writsId"));
+        }
 
         // 收集前端传入的模板tcode值，可能没有传入，如果没传，则该操作为更新操作
         List<String> tcodeList = new ArrayList<>();
@@ -600,8 +609,14 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
                 writsInstances.setTemplateId(template_TCODE_ID_Map.get(writsJObj.getString("tcode")));
                 this.insertSelective(writsInstances);
             } else {
-                // 暂存过，进行更新操作，此时传入的参数中包含文书模板
-                this.updateById(writsInstances);
+             // 暂存过，进行更新操作
+                WritsInstances writsInstanceInDB = this.selectById(writsInstances.getId());
+                // writsInstances.setTemplateId(writsTemplates.getId());
+                JSONObject mergeFillContext =
+                    mergeFillContext(null, writsInstances.getFillContext(),
+                        JSONObject.parseObject(writsInstanceInDB.getFillContext()), null, null);
+                writsInstances.setFillContext(mergeFillContext.toJSONString());
+                this.updateSelectiveById(writsInstances);
             }
         }
     }
