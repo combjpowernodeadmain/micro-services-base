@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.rest;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 
@@ -300,14 +301,27 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         @RequestParam(value = "gridIds", defaultValue = "") @ApiParam("网格范围") String gridIds,
         @RequestParam(value = "startTime", defaultValue = "") @ApiParam("开始日期") String startTime,
         @RequestParam(value = "endTime", defaultValue = "") @ApiParam("结束日期") String endTime) {
-
+        
+        
+        
         JSONObject caseRegistrationJObj = new JSONObject();
         caseRegistrationJObj.put("bizType", bizType);
         caseRegistrationJObj.put("caseSourceType", caseSourceType);
         caseRegistrationJObj.put("gridIds", gridIds);
-        caseRegistrationJObj.put("startTime", startTime);
-        caseRegistrationJObj.put("endTime", endTime);
-        return this.baseBiz.getStatisZhDuiCase(caseRegistrationJObj, startTime, endTime);
+        
+        String _startTime = startTime;
+        String _endTime = endTime;
+        if (StringUtils.isBlank(startTime) || StringUtils.isBlank(endTime)) {
+            Calendar calendar =  Calendar.getInstance();
+            //当年当月
+            _endTime = DateUtil.dateFromDateToStr(calendar.getTime(),DateUtil.DEFAULT_DATE_FORMAT);
+            //当年第一月第一天
+            calendar.set(Calendar.MONTH, 0);
+            calendar.set(Calendar.DAY_OF_MONTH, 1);
+            _startTime = DateUtil.dateFromDateToStr(calendar.getTime(),DateUtil.DEFAULT_DATE_FORMAT);
+        }
+        
+        return this.baseBiz.getStatisZhDuiCase(caseRegistrationJObj, _startTime, _endTime);
     }
 
     /**

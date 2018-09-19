@@ -15,6 +15,11 @@ import com.bjzhianjia.scp.cgp.constances.CommonConstances;
  */
 public class DateUtil {
 	
+    /**
+     * 默认时间格式
+     */
+    public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    
 	/**
 	 * 将字符串类型日期转化为Date类型，默认格式为"yyyy-MM-dd"
 	 * @author 尚
@@ -33,7 +38,7 @@ public class DateUtil {
 	}
 	
 	/**
-	 * 将字符串类型日期转化为Date类型，默认格式为"yyyy-MM-dd"
+	 * 将字符串类型日期转化为Date类型，默认格式为
 	 * @author 尚
 	 * @param dateStr
 	 * @return

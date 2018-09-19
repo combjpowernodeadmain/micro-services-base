@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.rest;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -305,17 +306,27 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         caseInfo.setEventTypeList(eventTypeList);
         caseInfo.setCaseLevel(caseLevel);
         
-        Date _start = null;
-        Date _end = null;
-        if (StringUtils.isNotBlank(endTime) && StringUtils.isNotBlank(startTime)) {
-            _start = DateUtil.dateFromStrToDate(startTime, "yyyy-MM-dd HH:mm:ss");
-            _end = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
-            _end = DateUtils.addDays(_end, 1);
+        Calendar calendar =  Calendar.getInstance();
+        String _startTime = startTime;
+        String _endTime = endTime;
+        //没有日期时，则默认设置为当年1月1日到当月-当日
+        if (StringUtils.isBlank(startTime) || StringUtils.isBlank(endTime)) {
+            //当年当月
+            _endTime = DateUtil.dateFromDateToStr(calendar.getTime(),DateUtil.DEFAULT_DATE_FORMAT);
+            //当年第一月第一天
+            calendar.set(Calendar.MONTH, 0);
+            calendar.set(Calendar.DAY_OF_MONTH, 1);
+            _startTime = DateUtil.dateFromDateToStr(calendar.getTime(),DateUtil.DEFAULT_DATE_FORMAT);
+        }
+        //默认结束日期增加1天
+        if (StringUtils.isNotBlank(startTime) || StringUtils.isNotBlank(endTime)) {
+            calendar.setTime(DateUtil.dateFromStrToDate(startTime, DateUtil.DEFAULT_DATE_FORMAT));
+            calendar.add(Calendar.DATE, 1); 
         }
       
         ObjectRestResponse<List<Map<String,Object>>> result = new ObjectRestResponse<>();
         
-        List<Map<String,Object>>  data = caseInfoBiz.getStatisCaseInfo(caseInfo, _start, _end,gridIds);
+        List<Map<String,Object>>  data = caseInfoBiz.getStatisCaseInfo(caseInfo, _startTime, _endTime,gridIds);
         result.setData(data);
         
         return result;
