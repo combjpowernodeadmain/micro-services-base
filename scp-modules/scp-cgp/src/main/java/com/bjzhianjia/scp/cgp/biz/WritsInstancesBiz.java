@@ -28,7 +28,6 @@ import com.bjzhianjia.scp.cgp.entity.WritsTemplates;
 import com.bjzhianjia.scp.cgp.exception.BizException;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.mapper.WritsInstancesMapper;
-import com.bjzhianjia.scp.cgp.mapper.WritsTemplatesMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.util.DocUtil;
@@ -63,9 +62,6 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 
     @Autowired
     private WritsTemplatesBiz writsTemplatesBiz;
-
-    @Autowired
-    private WritsTemplatesMapper writsTemplatesMapper;
 
     @Autowired
     private PropertiesConfig propertiesConfig;
@@ -142,12 +138,6 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         String fillContext = writsInstances.getFillContext();
 
         if (writsInstances.getId() == null) {
-
-            // WritsInstances theNextWenHao =
-            // theNextWenHao(writsInstances.getCaseId(),
-            // writsInstances.getTemplateId(),
-            // writsInstances.getRefEnforceType());
-
             // 还没有插入过对象
             JSONObject jObjInDB = mergeFillContext(procNode, fillContext, null, writsInstances.getCaseId(), null);
 
@@ -194,9 +184,7 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 
         if (StringUtils.isNotBlank(fillContext)) {
             JSONObject tmpFillContext = JSONObject.parseObject(fillContext);
-            // tmpFillContext.put("ZiHao",
-            // tmpFillContext.getString("ZiHao") == null ? "" :
-            // tmpFillContext.getString("ZiHao") + refNo);
+
             jObjInDB.putAll(tmpFillContext);
         }
 
@@ -217,56 +205,60 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         ObjectRestResponse<String> restResult = new ObjectRestResponse<>();
 
         WritsInstances writsInstances = this.selectById(id);
+        if (writsInstances == null) {
+            restResult.setMessage("文书ID" + id + "下不存在文书实例");
+            restResult.setStatus(400);
+            return restResult;
+        }
+
         WritsTemplates writsTemplate = writsTemplatesBiz.selectById(writsInstances.getTemplateId());
 
         String writsPath = "";
 
-        if (writsInstances != null) {
-            String fillContext = writsInstances.getFillContext();
+        String fillContext = writsInstances.getFillContext();
 
-            // 生成与fillContext相对应的文件名
-            StringBuffer destFileNameBuffer = new StringBuffer();
-            destFileNameBuffer.append(WritsConstances.WRITS_PREFFIX).append(writsInstances.getCaseId()).append("_")
-                .append(fillContext.hashCode()).append(".docx");
+        // 生成与fillContext相对应的文件名
+        StringBuffer destFileNameBuffer = new StringBuffer();
+        destFileNameBuffer.append(WritsConstances.WRITS_PREFFIX).append(writsInstances.getCaseId()).append("_")
+            .append(fillContext.hashCode()).append(".docx");
 
-            String destPath = propertiesConfig.getDestFilePath() + destFileNameBuffer.toString();
+        String destPath = propertiesConfig.getDestFilePath() + destFileNameBuffer.toString();
 
-            if (DocUtil.exists(destPath)) {
-                writsPath = destFileNameBuffer.toString();
-            } else {
-                // 说明可能已存在过旧文件，将所有旧文件进行删除，将生成的新文件进行生成并返回路径
-                List<String> ignoreFileNameList = new ArrayList<>();
-                ignoreFileNameList.add(destFileNameBuffer.toString());
+        if (DocUtil.exists(destPath)) {
+            writsPath = destFileNameBuffer.toString();
+        } else {
+            // 说明可能已存在过旧文件，将所有旧文件进行删除，将生成的新文件进行生成并返回路径
+            List<String> ignoreFileNameList = new ArrayList<>();
+            ignoreFileNameList.add(destFileNameBuffer.toString());
 
-                DocUtil.deletePrefix(WritsConstances.WRITS_PREFFIX + writsInstances.getCaseId() + "_",
-                    WritsConstances.WRITS_SUFFIX, propertiesConfig.getDestFilePath(), ignoreFileNameList);
+            DocUtil.deletePrefix(WritsConstances.WRITS_PREFFIX + writsInstances.getCaseId() + "_",
+                WritsConstances.WRITS_SUFFIX, propertiesConfig.getDestFilePath(), ignoreFileNameList);
 
-                // 将fillContext内的内容添加到文书模板上
-                JSONObject fillJObj = JSONObject.parseObject(fillContext);
+            // 将fillContext内的内容添加到文书模板上
+            JSONObject fillJObj = JSONObject.parseObject(fillContext);
 
-                StringBuffer ziHao = new StringBuffer();
-                ziHao.append(writsInstances.getRefEnforceType()).append("[").append(writsInstances.getRefYear())
-                    .append("]").append(writsInstances.getRefNo());
-                fillJObj.put("ZiHao", ziHao.toString());
+            StringBuffer ziHao = new StringBuffer();
+            ziHao.append(writsInstances.getRefEnforceType()).append("[").append(writsInstances.getRefYear()).append("]")
+                .append(writsInstances.getRefNo());
+            fillJObj.put("ZiHao", ziHao.toString());
 
-                @SuppressWarnings({ "unchecked", "rawtypes" })
-                Map<String, String> map = (Map) fillJObj;
+            @SuppressWarnings({ "unchecked", "rawtypes" })
+            Map<String, String> map = (Map) fillJObj;
 
-                try {
-                    writsPath =
-                        DocUtil.getDestUrlAfterReplaceWord(writsTemplate.getDocUrl(), destFileNameBuffer.toString(),
-                            propertiesConfig.getDestFilePath(), map);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    restResult.setStatus(400);
-                    restResult.setMessage(e.getMessage());
-                    return restResult;
-                }
+            try {
+                writsPath =
+                    DocUtil.getDestUrlAfterReplaceWord(writsTemplate.getDocUrl(), destFileNameBuffer.toString(),
+                        propertiesConfig.getDestFilePath(), map);
+            } catch (Exception e) {
+                e.printStackTrace();
+                restResult.setStatus(400);
+                restResult.setMessage(e.getMessage());
+                return restResult;
             }
         }
 
         restResult.setData(writsPath);
-        // restResult.setData("http://www.xdocin.com/demo/demo.docx");
+        // restResult.setData("http://www.xdocin.com/demo/demo.docx");//测试时用
         return restResult;
     }
 
@@ -283,11 +275,6 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             restResult.setMessage("请指定任务ID");
             return restResult;
         }
-        // if (StringUtils.isBlank(procTaskId)) {
-        // restResult.setStatus(400);
-        // restResult.setMessage("请指定流程任务ID");
-        // return restResult;
-        // }
         if (StringUtils.isBlank(templateCodes)) {
             restResult.setStatus(400);
             restResult.setMessage("请指定模板tcode");
@@ -327,8 +314,6 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
                         writsInstancesJObj.put("writsInstancesName", tmpW.getRefAbbrev());
                     }
                     innerWritsInstancesList.add(writsInstancesJObj);
-
-                    count++;
                 }
                 templateJObj.put("writsInstances", innerWritsInstancesList);
             }
@@ -350,9 +335,6 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         Example example = new Example(WritsInstances.class);
 
         Criteria criteria = example.createCriteria();
-        // criteria.andEqualTo("isDeleted", "0");
-        // criteria.andEqualTo("caseId", caseId);
-        // criteria.andEqualTo("templateId", caseId);
         criteria.andEqualTo("refEnforceType", refEnforceType);
         criteria.andEqualTo("refYear", new LocalDate().getYear());
 
