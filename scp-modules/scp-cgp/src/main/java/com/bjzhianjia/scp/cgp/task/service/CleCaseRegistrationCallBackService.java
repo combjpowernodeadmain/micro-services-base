@@ -2,6 +2,7 @@ package com.bjzhianjia.scp.cgp.task.service;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -62,6 +63,12 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
 
     private void endCase(Map<String, Object> procBizData) {
         String caseId = (String) procBizData.get("procBizId");
+        
+        if(StringUtils.isBlank(caseId)) {
+            log.info("进行流程结束操作，但并未指定案件ID");
+            throw new BizException("进行流程结束操作，但并未指定案件ID");
+        }
+        
         CaseRegistration caseRegistration = new CaseRegistration();
         caseRegistration.setId(caseId);
         caseRegistration.setExeStatus(CaseRegistration.EXESTATUS_STATE_STOP);
@@ -70,6 +77,12 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
 
     private void terminationCase(Map<String, Object> procBizData) {
         String caseId = (String) procBizData.get("procBizId");
+        
+        if(StringUtils.isBlank(caseId)) {
+            log.info("进行流程中止操作，但并未指定案件ID");
+            throw new BizException("进行流程中止操作，但并未指定案件ID");
+        }
+        
         CaseRegistration caseRegistration = new CaseRegistration();
         caseRegistration.setId(caseId);
         caseRegistration.setExeStatus(CaseRegistration.EXESTATUS_STATE_STOP);
