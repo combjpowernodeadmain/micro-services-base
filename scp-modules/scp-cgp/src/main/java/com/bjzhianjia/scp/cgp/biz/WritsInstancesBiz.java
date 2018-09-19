@@ -300,7 +300,7 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         List<WritsTemplates> temTemplatesList = writsTemplatesBiz.getByTcodes(templateCodes);
         List<Integer> templateIdList =
             temTemplatesList.stream().map(o -> o.getId()).distinct().collect(Collectors.toList());
-        if(BeanUtil.isNotEmpty(templateIdList)) {
+        if (BeanUtil.isNotEmpty(templateIdList)) {
             criteria.andIn("templateId", templateIdList);
         }
 
@@ -555,63 +555,53 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         String caseId = caseRegJObj.getString("procBizId");
 
         JSONArray writsInstancesJArray = caseRegJObj.getJSONArray("writsInstances");
+
+        // 收集前端传入的模板tcode值，可能没有传入，如果没传，则该操作为更新操作
+        List<String> tcodeList = new ArrayList<>();
         for (int i = 0; i < writsInstancesJArray.size(); i++) {
-            /*
-             * =文书ID用writsId作为变量名传入，以增强可读性<br/>
-             * =文书ID用writsId作为变量名，因为不能直接parseObject给WritsInstances中的ID的属性，需要手动指定
-             */
-            JSONObject writsJObj = writsInstancesJArray.getJSONObject(i);
-            writsJObj.put("id", writsJObj.getString("writsId"));
+            String tcode = writsInstancesJArray.getJSONObject(i).getString("tcode");
+            if (StringUtils.isNotBlank(tcode)) {
+                tcodeList.add(tcode);
+            }
         }
 
-        String tcode = "";
-        for (int i = 0; i < writsInstancesJArray.size(); i++) {
-            tcode = writsInstancesJArray.getJSONObject(i).getString("tcode");
-        }
-
-        WritsTemplates writsTemplates = new WritsTemplates();
-        List<WritsTemplates> templateList = writsTemplatesBiz.getByTcodes(tcode);
-        if (BeanUtil.isNotEmpty(templateList)) {
-            // 传入一个tcode值，则得到的结果也一定是一个
-            writsTemplates = templateList.get(0);
-        }
-
-        List<WritsInstances> writsInstanceList =
-            JSONArray.parseArray(writsInstancesJArray.toJSONString(), WritsInstances.class);
-
-        if (writsInstanceList == null) {
-            writsInstanceList = new ArrayList<>();
+        Map<String, Integer> template_TCODE_ID_Map = new HashMap<>();
+        if (BeanUtil.isNotEmpty(tcodeList)) {
+            // 如果tcodeList集合为空，说明目前上审批状态，没有要添加新文书的操作，以下将进行更新操作
+            List<WritsTemplates> templateList = writsTemplatesBiz.getByTcodes(String.join(",", tcodeList));
+            if (BeanUtil.isNotEmpty(templateList)) {
+                template_TCODE_ID_Map =
+                    templateList.stream().collect(Collectors.toMap(WritsTemplates::getTcode, WritsTemplates::getId));
+            }
         }
 
         // 关联该文书相关的案件
-        for (WritsInstances writsInstances : writsInstanceList) {
-            // 无法判断传入的文书是否进行暂存过，需要进行逐条验证
-
+        for (int i = 0; i < writsInstancesJArray.size(); i++) {
+            JSONObject writsJObj = writsInstancesJArray.getJSONObject(i);
+            WritsInstances writsInstances = writsJObj.toJavaObject(WritsInstances.class);
             writsInstances.setCaseId(caseId);
-            // 判断文书是否进行过暂存(如果请求参数中有文书ID表明暂存过)
+
+            /*
+             * 判断文书是否进行过暂存(如果请求参数中有文书ID表明暂存过)<br/>
+             * 或是一个更新操作（如果请求参数中有文书ID表明是更新操作）
+             */
             if (BeanUtil.isEmpty(writsInstances.getId())) {
                 /*
                  * 没有暂存过，进行一次添加操作<br/>
                  * 前端并没有办法获取文书ID，然后入的是文书的code值，
                  */
-                if (StringUtils.isBlank(tcode)) {
+                if (BeanUtil.isEmpty(template_TCODE_ID_Map)) {
                     /*
                      * 如果程序执行到这里，总该有一条记录里tcode不为空，如果tcode为空，
                      * 说明没有进行暂存的那条记录也没有传tcode进来
                      */
                     throw new BizException("请指定模板ID或模板tcode");
                 }
-                writsInstances.setTemplateId(writsTemplates.getId());
+                writsInstances.setTemplateId(template_TCODE_ID_Map.get(writsJObj.getString("tcode")));
                 this.insertSelective(writsInstances);
             } else {
-                // 暂存过，进行更新操作
-                WritsInstances writsInstanceInDB = this.selectById(writsInstances.getId());
-                // writsInstances.setTemplateId(writsTemplates.getId());
-                JSONObject mergeFillContext =
-                    mergeFillContext(null, writsInstances.getFillContext(),
-                        JSONObject.parseObject(writsInstanceInDB.getFillContext()), null, null);
-                writsInstances.setFillContext(mergeFillContext.toJSONString());
-                this.updateSelectiveById(writsInstances);
+                // 暂存过，进行更新操作，此时传入的参数中包含文书模板
+                this.updateById(writsInstances);
             }
         }
     }

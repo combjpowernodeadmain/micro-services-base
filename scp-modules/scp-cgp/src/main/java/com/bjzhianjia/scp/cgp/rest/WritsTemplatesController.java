@@ -1,5 +1,7 @@
 package com.bjzhianjia.scp.cgp.rest;
 
+import java.util.List;
+
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -57,5 +59,16 @@ public class WritsTemplatesController extends BaseController<WritsTemplatesBiz,W
 			@RequestParam(value="limit",defaultValue="10") @ApiParam("頁容量")Integer limit){
 		TableResultResponse<WritsTemplates> list = this.baseBiz.getListByNode(node, page, limit);
 		return list;
+	}
+	
+	@RequestMapping(value="/templates/tcode")
+	@ApiOperation("按模板tcode获取列表")
+	public List<WritsTemplates> getByCodes(
+	    @RequestParam(value="tcode",defaultValue="") @ApiParam(name="模板tcode")String tcode,
+        @RequestParam(value="page",defaultValue="1") @ApiParam("当前页")Integer page,
+        @RequestParam(value="limit",defaultValue="10") @ApiParam("頁容量")Integer limit
+	    ){
+	    List<WritsTemplates> byTcodes = this.baseBiz.getByTcodes(tcode);
+	    return byTcodes;
 	}
 }
