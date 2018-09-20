@@ -13,6 +13,7 @@ import com.bjzhianjia.scp.cgp.entity.AttendanceInfo;
 import com.bjzhianjia.scp.cgp.service.AttendanceInfoService;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.cgp.vo.AttendanceVo;
+import com.bjzhianjia.scp.core.context.BaseContextHandler;
 
 import org.springframework.web.bind.annotation.RestController;
 
@@ -95,7 +96,7 @@ public class AttendanceInfoController extends BaseController<AttendanceInfoBiz, 
 			restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
 			return restResult;
 		}
-		
+		attendanceInfo.setCrtUserName(BaseContextHandler.getUsername());
 		attendanceInfoBiz.insertSelective(attendanceInfo);
 	
 		restResult.setMessage("成功");
