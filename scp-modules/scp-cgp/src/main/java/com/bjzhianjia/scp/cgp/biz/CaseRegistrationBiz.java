@@ -911,7 +911,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         if (StringUtils.isNotBlank(caseSourceType)) {
             criteria.andEqualTo("caseSourceType", caseSourceType);
         }
-
+        
+        example.setOrderByClause("crt_time desc");
+        
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<CaseRegistration> list = this.mapper.selectByExample(example);
 
