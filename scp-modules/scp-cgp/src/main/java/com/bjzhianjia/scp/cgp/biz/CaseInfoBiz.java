@@ -238,6 +238,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             criteria.andEqualTo("sourceType", sourceType);
             criteria.andEqualTo("sourceCode", sourceCode);
         }
+        example.setOrderByClause("crt_time desc");
 
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<CaseInfo> list = this.mapper.selectByExample(example);
