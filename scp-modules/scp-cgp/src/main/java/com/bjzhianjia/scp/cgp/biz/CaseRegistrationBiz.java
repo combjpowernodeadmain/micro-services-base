@@ -198,10 +198,28 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         // 收集前端传入的模板tcode值，可能没有传入，如果没传，则该操作为更新操作
         List<String> tcodeList = new ArrayList<>();
         for (int i = 0; i < writsInstancesJArray.size(); i++) {
-            String tcode = writsInstancesJArray.getJSONObject(i).getString("tcode");
+            JSONObject fillContextJObj = writsInstancesJArray.getJSONObject(i);
+            String tcode = fillContextJObj.getString("tcode");
             if (StringUtils.isNotBlank(tcode)) {
                 tcodeList.add(tcode);
             }
+
+            /*
+             * 三级审批信息===================开始===============
+             */
+            fillContextJObj.put("SquadronLeaderSuggest", caseRegJObj.getString("SquadronLeaderSuggest") == null ? ""
+                : caseRegJObj.getString("SquadronLeaderSuggest"));
+            fillContextJObj.put("SquadronLeader",
+                caseRegJObj.getString("SquadronLeader") == null ? "" : caseRegJObj.getString("SquadronLeader"));
+            fillContextJObj.put("TownLeaderSuggest",
+                caseRegJObj.getString("TownLeaderSuggest") == null ? "" : caseRegJObj.getString("TownLeaderSuggest"));
+            fillContextJObj.put("TownLeaderSuggest",
+                caseRegJObj.getString("TownLeaderSuggest") == null ? "" : caseRegJObj.getString("TownLeaderSuggest"));
+            fillContextJObj.put("remark",
+                caseRegJObj.getString("remark") == null ? "" : caseRegJObj.getString("remark"));
+            /*
+             * 三级审批信息===================结束===============
+             */
         }
 
         Map<String, Integer> template_TCODE_ID_Map = new HashMap<>();
