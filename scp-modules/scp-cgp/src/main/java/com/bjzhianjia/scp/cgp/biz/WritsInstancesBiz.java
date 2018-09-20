@@ -28,6 +28,7 @@ import com.bjzhianjia.scp.cgp.entity.WritsTemplates;
 import com.bjzhianjia.scp.cgp.exception.BizException;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.mapper.WritsInstancesMapper;
+import com.bjzhianjia.scp.cgp.mapper.WritsTemplatesMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.util.DocUtil;
@@ -64,6 +65,9 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
     private WritsTemplatesBiz writsTemplatesBiz;
 
     @Autowired
+    private WritsTemplatesMapper writstTemplateMapper;
+
+    @Autowired
     private PropertiesConfig propertiesConfig;
 
     @Autowired
@@ -81,7 +85,7 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
      * @param limit
      * @return
      */
-    public TableResultResponse<WritsInstances> getList(JSONObject queryJObj, int page, int limit) {
+    public TableResultResponse<JSONObject> getList(JSONObject queryJObj, int page, int limit) {
         Example example = new Example(WritsInstances.class);
         Example.Criteria criteria = example.createCriteria();
 
@@ -106,7 +110,40 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<WritsInstances> list = this.selectByExample(example);
 
-        return new TableResultResponse<>(pageInfo.getTotal(), list);
+        List<JSONObject> jObjList = queryAssist(list);
+
+        return new TableResultResponse<>(pageInfo.getTotal(), jObjList);
+    }
+
+    private List<JSONObject> queryAssist(List<WritsInstances> list) {
+        List<String> templateIdList =
+            list.stream().map(o -> String.valueOf(o.getTemplateId())).distinct().collect(Collectors.toList());
+
+        List<WritsTemplates> templateList = writstTemplateMapper.selectByIds(String.join(",", templateIdList));
+        Map<Integer, String> template_ID_NAME_Map = new HashMap<>();
+        if (BeanUtil.isNotEmpty(templateList)) {
+            template_ID_NAME_Map =
+                templateList.stream().collect(Collectors.toMap(WritsTemplates::getId, WritsTemplates::getName));
+        }
+
+        List<JSONObject> result = new ArrayList<>();
+
+        int count = 1;
+        for (WritsInstances writTmp : list) {
+            JSONObject tmpJObj = new JSONObject();
+            tmpJObj.put("id", writTmp.getId());
+
+            if (StringUtils.isBlank(writTmp.getRefAbbrev())) {
+                tmpJObj.put("refAbbrev", "实例" + count);
+                count++;
+            } else {
+                tmpJObj.put("refAbbrev", writTmp.getRefAbbrev());
+            }
+
+            tmpJObj.put("templateName", template_ID_NAME_Map.get(writTmp.getTemplateId()));
+            result.add(tmpJObj);
+        }
+        return result;
     }
 
     /**
