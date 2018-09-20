@@ -238,6 +238,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             criteria.andEqualTo("sourceType", sourceType);
             criteria.andEqualTo("sourceCode", sourceCode);
         }
+        example.setOrderByClause("crt_time desc");
 
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<CaseInfo> list = this.mapper.selectByExample(example);
@@ -355,13 +356,9 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
      *            结束时间
      * @return
      */
-    public List<Map<String, Object>> getStatisCaseInfo(CaseInfo caseInfo, Date startTime, Date endTime,
+    public List<Map<String, Object>> getStatisCaseInfo(CaseInfo caseInfo, String startTime, String endTime,
         String gridIds) {
-
-        String _startTime = DateUtil.dateFromDateToStr(startTime, "yyyy-MM-dd HH:mm:ss");
-        String _endTime = DateUtil.dateFromDateToStr(endTime, "yyyy-MM-dd HH:mm:ss");
-
-        List<Map<String, Object>> list = this.mapper.getStatisCaseInfo(caseInfo, _startTime, _endTime, gridIds);
+        List<Map<String, Object>> list = this.mapper.getStatisCaseInfo(caseInfo, startTime, endTime, gridIds);
 
         if (BeanUtil.isNotEmpty(list)) {
             Map<String, Map<String, Object>> tempData = new HashMap<>();
@@ -377,10 +374,10 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
 
             // 开始日期
             Calendar calStart = Calendar.getInstance();
-            calStart.setTime(startTime);
+            calStart.setTime(DateUtil.dateFromStrToDate(startTime, DateUtil.DEFAULT_DATE_FORMAT));
             // 结束日期
             Calendar calEnd = Calendar.getInstance();
-            calEnd.setTime(endTime);
+            calEnd.setTime(DateUtil.dateFromStrToDate(endTime, DateUtil.DEFAULT_DATE_FORMAT));
 
             int startYear = 0;
             int startMonth = 0;

@@ -186,8 +186,14 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         if(BeanUtil.isNotEmpty(areaGridList)) {
             for (int i = 0; i < areaGridList.size(); i++) {
                 areaGrid = areaGridList.get(i);
+                if(StringUtils.isBlank(areaGrid.getMapInfo())) {
+                    continue;
+                }
                 JSONArray array = JSONArray.parseArray(areaGrid.getMapInfo());
                 List<Point> listPoint = array.toJavaList(Point.class);
+                if(listPoint == null) {
+                    continue;
+                }
                 if(SpatialRelationUtil.isPolygonContainsPoint(listPoint, point)) {
                     result = areaGrid;
                     break;

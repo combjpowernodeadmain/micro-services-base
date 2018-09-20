@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.rest;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 
@@ -7,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +24,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.CaseRegistrationBiz;
 import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
 import com.bjzhianjia.scp.cgp.entity.Result;
+import com.bjzhianjia.scp.cgp.service.CaseRegistrationService;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
@@ -56,15 +59,16 @@ import io.swagger.annotations.ApiParam;
 @CheckUserToken
 @Api(tags = "综合执法 - 案件登记")
 public class CaseRegistrationController extends BaseController<CaseRegistrationBiz, CaseRegistration, String> {
+    @Autowired
+    private CaseRegistrationService caseRegistrationService;
 
-    @RequestMapping(value="/add",method=RequestMethod.POST)
+    @RequestMapping(value = "/add", method = RequestMethod.POST)
     @ApiOperation("业务--添加单个对象")
-    public ObjectRestResponse<Void> addCase(
-        @RequestBody @ApiParam(name = "待添加对象实例") @Validated JSONObject objs) {
+    public ObjectRestResponse<Void> addCase(@RequestBody @ApiParam(name = "待添加对象实例") @Validated JSONObject objs) {
         ObjectRestResponse<Void> restResult = new ObjectRestResponse<>();
 
         JSONObject caseRegiJObj = objs.getJSONObject("bizData");
-        
+
         Result<Void> result = this.baseBiz.addCase(caseRegiJObj);
         if (!result.getIsSuccess()) {
             restResult.setStatus(400);
@@ -300,14 +304,27 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         @RequestParam(value = "gridIds", defaultValue = "") @ApiParam("网格范围") String gridIds,
         @RequestParam(value = "startTime", defaultValue = "") @ApiParam("开始日期") String startTime,
         @RequestParam(value = "endTime", defaultValue = "") @ApiParam("结束日期") String endTime) {
-
+        
+        
+        
         JSONObject caseRegistrationJObj = new JSONObject();
         caseRegistrationJObj.put("bizType", bizType);
         caseRegistrationJObj.put("caseSourceType", caseSourceType);
         caseRegistrationJObj.put("gridIds", gridIds);
-        caseRegistrationJObj.put("startTime", startTime);
-        caseRegistrationJObj.put("endTime", endTime);
-        return this.baseBiz.getStatisZhDuiCase(caseRegistrationJObj, startTime, endTime);
+        
+        String _startTime = startTime;
+        String _endTime = endTime;
+        if (StringUtils.isBlank(startTime) || StringUtils.isBlank(endTime)) {
+            Calendar calendar =  Calendar.getInstance();
+            //当年当月
+            _endTime = DateUtil.dateFromDateToStr(calendar.getTime(),DateUtil.DEFAULT_DATE_FORMAT);
+            //当年第一月第一天
+            calendar.set(Calendar.MONTH, 0);
+            calendar.set(Calendar.DAY_OF_MONTH, 1);
+            _startTime = DateUtil.dateFromDateToStr(calendar.getTime(),DateUtil.DEFAULT_DATE_FORMAT);
+        }
+        
+        return this.baseBiz.getStatisZhDuiCase(caseRegistrationJObj, _startTime, _endTime);
     }
 
     /**
@@ -345,5 +362,26 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
             this.baseBiz.getInspectItem(caseRegistration, startTime, endTime, gridIds, page, limit);
 
         return result;
+    }
+
+    /**
+     * 查询流程历史
+     * 
+     * @return
+     */
+    @RequestMapping(value = "/proc/history", method = RequestMethod.POST)
+    @ApiOperation("查询流程历史")
+    public JSONArray procHistory(@RequestBody(required=true) JSONObject objs) {
+        /*
+         * 请求参数格式
+         * {"bizData":{},
+         * "procData":{"procInstId":"627501"},
+         * "authData":{"procAuthType":"2"},
+         * "variableData":{},
+         * "queryData":{}
+         * }
+         */
+        JSONArray procApproveHistory = caseRegistrationService.getProcApproveHistory(objs);
+        return procApproveHistory;
     }
 }

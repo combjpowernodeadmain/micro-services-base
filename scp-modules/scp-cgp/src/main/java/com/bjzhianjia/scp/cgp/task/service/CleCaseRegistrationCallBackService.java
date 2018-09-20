@@ -50,6 +50,8 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
                 // 取消签收
                 break;
             case PROC_END:
+                //将文书提交后流程走向结束
+                writsInstanceBiz.addWritsInstances(JSONObject.parseObject(JSON.toJSONString(procBizData)));
                 // 流程走向结束
                 endCase(procBizData);
             case "termination":
@@ -71,7 +73,7 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
         
         CaseRegistration caseRegistration = new CaseRegistration();
         caseRegistration.setId(caseId);
-        caseRegistration.setExeStatus(CaseRegistration.EXESTATUS_STATE_STOP);
+        caseRegistration.setExeStatus(CaseRegistration.EXESTATUS_STATE_FINISH);
         caseRegistrationBiz.updateSelectiveById(caseRegistration);
     }
 

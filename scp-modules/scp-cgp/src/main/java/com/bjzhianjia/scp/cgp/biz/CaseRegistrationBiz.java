@@ -45,6 +45,7 @@ import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.cgp.vo.CaseRegistrationVo;
+import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
@@ -124,6 +125,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     @Autowired
     private CaseAttachmentsBiz caseAttachmentsBiz;
 
+    @Autowired
+    private MergeCore mergeCore;
+
     /**
      * 添加立案记录<br/>
      * 如果 有当事人，则一并添加<br/>
@@ -198,10 +202,28 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         // 收集前端传入的模板tcode值，可能没有传入，如果没传，则该操作为更新操作
         List<String> tcodeList = new ArrayList<>();
         for (int i = 0; i < writsInstancesJArray.size(); i++) {
-            String tcode = writsInstancesJArray.getJSONObject(i).getString("tcode");
+            JSONObject fillContextJObj = writsInstancesJArray.getJSONObject(i);
+            String tcode = fillContextJObj.getString("tcode");
             if (StringUtils.isNotBlank(tcode)) {
                 tcodeList.add(tcode);
             }
+
+            /*
+             * 三级审批信息===================开始===============
+             */
+            fillContextJObj.put("SquadronLeaderSuggest", caseRegJObj.getString("SquadronLeaderSuggest") == null ? ""
+                : caseRegJObj.getString("SquadronLeaderSuggest"));
+            fillContextJObj.put("SquadronLeader",
+                caseRegJObj.getString("SquadronLeader") == null ? "" : caseRegJObj.getString("SquadronLeader"));
+            fillContextJObj.put("TownLeaderSuggest",
+                caseRegJObj.getString("TownLeaderSuggest") == null ? "" : caseRegJObj.getString("TownLeaderSuggest"));
+            fillContextJObj.put("TownLeaderSuggest",
+                caseRegJObj.getString("TownLeaderSuggest") == null ? "" : caseRegJObj.getString("TownLeaderSuggest"));
+            fillContextJObj.put("remark",
+                caseRegJObj.getString("remark") == null ? "" : caseRegJObj.getString("remark"));
+            /*
+             * 三级审批信息===================结束===============
+             */
         }
 
         Map<String, Integer> template_TCODE_ID_Map = new HashMap<>();
@@ -889,7 +911,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         if (StringUtils.isNotBlank(caseSourceType)) {
             criteria.andEqualTo("caseSourceType", caseSourceType);
         }
-
+        
+        example.setOrderByClause("crt_time desc");
+        
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<CaseRegistration> list = this.mapper.selectByExample(example);
 
@@ -925,6 +949,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         JSONObject result = null;
         JSONObject queryData = objs.getJSONObject("queryData");
         CaseRegistration caseRegistration = this.selectById(queryData.get("caseRegistrationId"));
+
         if (caseRegistration != null) {
 
             result = JSONObject.parseObject(JSONObject.toJSONString(caseRegistration));
@@ -934,23 +959,23 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 JSONObject concernedResult = null;
                 // 当事人：单位
                 if (Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG.equals(caseRegistration.getConcernedType())) {
-                    ConcernedCompany concernedCompany =
-                        concernedCompanyBiz.selectById(Integer.valueOf(caseRegistration.getConcernedId()));
+                    CLEConcernedCompany concernedCompany =
+                        cLEConcernedCompanyBiz.selectById(Integer.valueOf(caseRegistration.getConcernedId()));
                     if (concernedCompany != null) {
                         concernedResult = JSONObject.parseObject(JSONObject.toJSONString(concernedCompany));
                     }
                 }
                 // 当事人：个人
                 if (Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON.equals(caseRegistration.getConcernedType())) {
-                    ConcernedPerson concernedPerson =
-                        concernedPersonBiz.selectById(Integer.valueOf(caseRegistration.getConcernedId()));
+                    CLEConcernedPerson concernedPerson =
+                        cLEConcernedPersonBiz.selectById(Integer.valueOf(caseRegistration.getConcernedId()));
                     if (concernedPerson != null) {
                         concernedResult = JSONObject.parseObject(JSONObject.toJSONString(concernedPerson));
                         Map<String, String> credMap =
-                            dictFeign.getByCodeIn(concernedPerson.getCredType() + "," + concernedPerson.getSex());
+                            dictFeign.getByCodeIn(concernedPerson.getCertType() + "," + concernedPerson.getGender());
                         if (credMap != null && !credMap.isEmpty()) {
-                            concernedResult.put("credTypeName", credMap.get(concernedPerson.getCredType()));
-                            concernedResult.put("sexName", credMap.get(concernedPerson.getSex()));
+                            concernedResult.put("credTypeName", credMap.get(concernedPerson.getCertType()));
+                            concernedResult.put("sexName", credMap.get(concernedPerson.getGender()));
                         }
                     }
                     concernedType = "person";
@@ -961,32 +986,43 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 result.put("concernedResult", concernedResult);
 
                 // 业务条线
-                Map<String, String> bizMap = dictFeign.getByCode(caseRegistration.getBizType());
-                if (bizMap != null && !bizMap.isEmpty()) {
-                    result.put("bizName", bizMap.get(caseRegistration.getBizType()));
+                if (StringUtils.isNotBlank(caseRegistration.getBizType())) {
+                    Map<String, String> bizMap = dictFeign.getByCode(caseRegistration.getBizType());
+                    if (bizMap != null && !bizMap.isEmpty()) {
+                        result.put("bizName", bizMap.get(caseRegistration.getBizType()));
+                    }
                 }
 
                 // 事件类别
-                EventType eventType = eventTypeBiz.selectById(Integer.valueOf(caseRegistration.getEventType()));
-                if (eventType != null) {
-                    result.put("eventTypeName", eventType.getTypeName());
+                if (StringUtils.isNotBlank(caseRegistration.getEventType())) {
+                    EventType eventType = eventTypeBiz.selectById(Integer.valueOf(caseRegistration.getEventType()));
+                    if (eventType != null) {
+                        result.put("eventTypeName", eventType.getTypeName());
+                    }
                 }
 
                 // 案件来源
-                Map<String, String> caseSourceMap = dictFeign.getByCode(caseRegistration.getCaseSource());
-                if (caseSourceMap != null && !caseSourceMap.isEmpty()) {
-                    result.put("caseSourceName", caseSourceMap.get(caseRegistration.getCaseSource()));
+                if (StringUtils.isNotBlank(caseRegistration.getCaseSource())) {
+                    Map<String, String> caseSourceMap = dictFeign.getByCode(caseRegistration.getCaseSource());
+                    if (caseSourceMap != null && !caseSourceMap.isEmpty()) {
+                        result.put("caseSourceName", caseSourceMap.get(caseRegistration.getCaseSource()));
+                    }
                 }
 
                 // 违法行为
-                InspectItems inspectItems =
-                    inspectItemsBiz.selectById(Integer.valueOf(caseRegistration.getInspectItem()));
-                if (inspectItems != null) {
+                if (BeanUtil.isNotEmpty(caseRegistration.getInspectItem())) {
+                    InspectItems inspectItems =
+                        inspectItemsBiz.selectById(Integer.valueOf(caseRegistration.getInspectItem()));
+                    if (inspectItems != null) {
+                        result.put("inspectName", inspectItems.getName());
+                    }
                 }
-                result.put("inspectName", inspectItems.getName());
 
                 // 举报人姓名
-                JSONArray informerUser = iUserFeign.getByUserIds(caseRegistration.getCaseInformer());
+                JSONArray informerUser = new JSONArray();
+                if (StringUtils.isNotBlank(caseRegistration.getCaseInformer())) {
+                    informerUser = iUserFeign.getByUserIds(caseRegistration.getCaseInformer());
+                }
                 String caseInformerName = "";
                 if (informerUser != null && !informerUser.isEmpty()) {
                     for (int i = 0; i < informerUser.size(); i++) {
@@ -998,7 +1034,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 // 执法者用户名
                 JSONArray userList = null;
                 try {
-                    userList = iUserFeign.getByUserIds(caseRegistration.getEnforcers());
+                    if (StringUtils.isNotBlank(caseRegistration.getEnforcers())) {
+                        userList = iUserFeign.getByUserIds(caseRegistration.getEnforcers());
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

@@ -34,19 +34,20 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
 
     @Autowired
     private WritsInstancesBiz writsInstancesBiz;
+
     @Autowired
     private DocDownUtil springBootUtil;
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     @ApiOperation("查询文书列表")
-    public TableResultResponse<WritsInstances> getList(
+    public TableResultResponse<JSONObject> getList(
         @RequestParam(value = "page", defaultValue = "1") @ApiParam(name = "当前页") Integer page,
         @RequestParam(value = "limit", defaultValue = "10") @ApiParam(name = "页容量") Integer limit,
         @RequestParam(value = "templatedId", required = false) @ApiParam(name = "文书模板") Integer templatedId,
         @RequestParam(value = "templateCodes", defaultValue = "") @ApiParam(name = "文书模板Code集合，多个用逗号隔开") String templateCodes,
         @RequestParam(value = "procTaskId", defaultValue = "") @ApiParam(name = "流程任务ID") String procTaskId,
         @RequestParam(value = "caseId", defaultValue = "") @ApiParam(name = "案件 ID") String caseId) {
-        TableResultResponse<WritsInstances> restResult = new TableResultResponse<>();
+        TableResultResponse<JSONObject> restResult = new TableResultResponse<>();
 
         JSONObject queryJObj = new JSONObject();
         queryJObj.put("templatedId", templatedId);
@@ -108,7 +109,7 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
         return restResult;
     }
 
-    @RequestMapping(value = "/writs/history",method=RequestMethod.GET)
+    @RequestMapping(value = "/writs/history", method = RequestMethod.GET)
     @ApiOperation("过程文书与附件")
     public ObjectRestResponse<JSONArray> writsAndAttachmentHistory(
         @RequestParam(value = "caseId", defaultValue = "") String caseId,
@@ -117,26 +118,28 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
 
         return this.baseBiz.writsAndAttachmentHistory(caseId);
     }
-    
+
     /**
      * @param writsInstancesList
      * @param bindingResult
      * @return
      */
-    @RequestMapping(value="/add/list",method=RequestMethod.POST)
+    @RequestMapping(value = "/add/list", method = RequestMethod.POST)
     @ApiOperation("批量添加记录")
     @Deprecated
-    public ObjectRestResponse<WritsInstances> addList(@RequestBody @Validated @ApiParam("待添加对象实例集合")JSONArray writsInstancesList,BindingResult bindingResult){
+    public ObjectRestResponse<WritsInstances> addList(
+        @RequestBody @Validated @ApiParam("待添加对象实例集合") JSONArray writsInstancesList, BindingResult bindingResult) {
         ObjectRestResponse<WritsInstances> resetResult = this.baseBiz.addList(writsInstancesList);
         return resetResult;
     }
-    
-    @RequestMapping(value="/true/instance",method=RequestMethod.GET)
-    public ResponseEntity<?> getWritsInstances(@RequestParam(value="fileName")String fileName, HttpServletResponse response) {
-        log.info("请求文书实例，文书名："+fileName);
-        
+
+    @RequestMapping(value = "/true/instance", method = RequestMethod.GET)
+    public ResponseEntity<?> getWritsInstances(@RequestParam(value = "fileName") String fileName,
+        HttpServletResponse response) {
+        log.info("请求文书实例，文书名：" + fileName);
+
         response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-        
+
         ResponseEntity<?> file = springBootUtil.getFile(fileName);
         return file;
     }
