@@ -109,6 +109,9 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<WritsInstances> list = this.selectByExample(example);
+        if (BeanUtil.isEmpty(list)) {
+            return new TableResultResponse<JSONObject>(0, new ArrayList<JSONObject>());
+        }
 
         List<JSONObject> jObjList = queryAssist(list);
 
