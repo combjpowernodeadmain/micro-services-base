@@ -1,14 +1,20 @@
 package com.bjzhianjia.scp.cgp.biz;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.LeadershipAssign;
 import com.bjzhianjia.scp.cgp.entity.MayorHotline;
+import com.bjzhianjia.scp.cgp.entity.Result;
+import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.mapper.LeadershipAssignMapper;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
@@ -29,6 +35,9 @@ import tk.mybatis.mapper.entity.Example.Criteria;
  */
 @Service
 public class LeadershipAssignBiz extends BusinessBiz<LeadershipAssignMapper, LeadershipAssign> {
+
+    @Autowired
+    private DictFeign dictFeign;
 
     /**
      * 获取目前ID最大的那条记录
@@ -97,7 +106,30 @@ public class LeadershipAssignBiz extends BusinessBiz<LeadershipAssignMapper, Lea
      * @author 尚
      * @param ids
      */
-    public void remove(Integer[] ids) {
+    public Result<Void> remove(Integer[] ids) {
+        Result<Void> result = new Result<>();
+        List<String> idStrList = new ArrayList<>();
+        for (int id : ids) {
+            idStrList.add(String.valueOf(id));
+        }
+
+        List<LeadershipAssign> leadershipListInDB = this.mapper.selectByIds(String.join(",", idStrList));
+        for (LeadershipAssign leadershipAssign : leadershipListInDB) {
+            if (!Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_TODO.equals(leadershipAssign.getExeStatus())) {
+                // 待删除的对象中包含有不是未发起状态的记录
+                Map<String, String> todoNameMap =
+                    dictFeign.getByCode(Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_TODO);
+                result.setIsSuccess(false);
+                result.setMessage(
+                    "不能删除非【" + todoNameMap.get(Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_TODO) + "】的事件");
+                return result;
+            }
+        }
+
         this.mapper.deleteByIds(ids, BaseContextHandler.getUserID(), BaseContextHandler.getUsername(), new Date());
+
+        result.setIsSuccess(true);
+        result.setMessage("成功");
+        return result;
     }
 }
