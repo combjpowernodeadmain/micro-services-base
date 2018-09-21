@@ -233,7 +233,7 @@ public class Constances {
 		/**
 		 *  处理中
 		 */
-		public static final String ROOT_BIZ_PARTOLTASKT_DOING = "root_biz_partoltaskT_doing";
+		public static final String ROOT_BIZ_PARTOLTASKT_DOING = "root_biz_partolTaskT_doing";
 		
 		
 		/**

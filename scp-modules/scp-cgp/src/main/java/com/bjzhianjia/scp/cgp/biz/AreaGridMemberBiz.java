@@ -338,7 +338,7 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
 
         // 所属网格
         List<String> gridNameList = new ArrayList<>();
-        
+
         if (gridIdList != null && !gridIdList.isEmpty()) {
             List<AreaGrid> gridList = areaGridBiz.getByIds(gridIdList);
             if (gridList != null && !gridList.isEmpty()) {
@@ -346,22 +346,23 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
                 List<Integer> parentIdList =
                     gridList.stream().map(o -> o.getGridParent()).distinct().collect(Collectors.toList());
                 List<AreaGrid> parentAreaGridList = new ArrayList<>();
-                if(BeanUtil.isNotEmpty(parentIdList)) {
+                if (BeanUtil.isNotEmpty(parentIdList)) {
                     parentAreaGridList = areaGridBiz.getByIds(parentIdList);
                 }
-                
-                Map<Integer, String> parent_ID_NAME_Map=new HashMap<>();
+
+                Map<Integer, String> parent_ID_NAME_Map = new HashMap<>();
                 if (BeanUtil.isNotEmpty(parentAreaGridList)) {
-                    parent_ID_NAME_Map=parentAreaGridList.stream().collect(Collectors.toMap(AreaGrid::getId,AreaGrid::getGridName));
+                    parent_ID_NAME_Map =
+                        parentAreaGridList.stream().collect(Collectors.toMap(AreaGrid::getId, AreaGrid::getGridName));
                 }
-                
-                for(AreaGrid tmp:gridList) {
-                    if(tmp.getGridParent()!=-1) {
-                        gridNameList.add(parent_ID_NAME_Map.get(tmp.getGridParent())+"("+tmp.getGridName()+")");
-                    }else {
+
+                for (AreaGrid tmp : gridList) {
+                    if (tmp.getGridParent() != -1) {
+                        gridNameList.add(parent_ID_NAME_Map.get(tmp.getGridParent()) + "(" + tmp.getGridName() + ")");
+                    } else {
                         gridNameList.add(tmp.getGridName());
                     }
-                    
+
                 }
             }
         }
@@ -387,4 +388,49 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
         restResult.setData(jsonObject);
         return restResult;
     }
+
+    /**
+     * 通过用户id查询网信息
+     * 
+     * @param userId 用户id
+     * @return
+     *         网格id、网格名称
+     */
+    public List<Map<String, Object>> getGridByUserId(String userId) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        Map<String, Object> resultMap = new HashMap<>();
+        
+        AreaGridMember areaGridMember = new AreaGridMember();
+        areaGridMember.setIsDeleted("0");
+        areaGridMember.setIsDisabled("0");
+        areaGridMember.setGridMember(userId);
+        List<AreaGridMember> list = this.mapper.select(areaGridMember);
+        
+        if (BeanUtil.isNotEmpty(list)) {
+            Set<Integer> grids = new HashSet<>();
+            for(AreaGridMember _areaGridMember : list) {
+                grids.add(_areaGridMember.getGridId());
+            }
+            
+            AreaGrid areaGrid = null;
+            for(Integer grid: grids) {
+                areaGrid = new AreaGrid();
+                areaGrid.setId(grid);
+                areaGrid = areaGridMapper.selectOne(areaGrid);
+                if(areaGrid == null) {
+                   continue;
+                }
+                resultMap = new HashMap<>();
+                resultMap.put("gridName",areaGrid.getGridName());
+                resultMap.put("gridId", grid);
+                result.add(resultMap);
+            }
+        }else {
+            resultMap.put("gridId", -1);
+            resultMap.put("gridName", "您当前没有所属网格！");
+            result.add(resultMap);
+        }
+        return result;
+    }
+
 }
