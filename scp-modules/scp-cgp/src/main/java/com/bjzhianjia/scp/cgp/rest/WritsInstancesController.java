@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.WritsInstancesBiz;
+import com.bjzhianjia.scp.cgp.config.PropertiesConfig;
+import com.bjzhianjia.scp.cgp.constances.WritsConstances;
 import com.bjzhianjia.scp.cgp.entity.WritsInstances;
 import com.bjzhianjia.scp.cgp.util.DocDownUtil;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
@@ -37,6 +39,9 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
 
     @Autowired
     private DocDownUtil docDownUtil;
+
+    @Autowired
+    private PropertiesConfig propertiesConfig;
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     @ApiOperation("查询文书列表")
@@ -137,18 +142,20 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
     @ApiOperation("生成文书实例，并返回文书实例名称")
     public ResponseEntity<?> getWritsInstances(@RequestParam(value = "fileName") String fileName,
         HttpServletResponse response) {
+
         log.info("请求文书实例，文书名：" + fileName);
 
         response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
 
-        ResponseEntity<?> file = docDownUtil.getFile(fileName);
+        ResponseEntity<?> file = docDownUtil.getFile(propertiesConfig.getDestFilePath(), fileName);
         return file;
+
     }
 
-    @RequestMapping(value = "/true/instance/id", method = RequestMethod.GET)
+    @RequestMapping(value = "/true/instance/writsId", method = RequestMethod.GET)
     @ApiOperation("生成文书实例，并返回文书实例对应的word文档")
     public ResponseEntity<?> getTrueWritsInstancesById(
-        @RequestParam(value = "writsId", required = false) Integer writsId, HttpServletResponse response) {
+        @RequestParam(value = "writsId") Integer writsId, HttpServletResponse response) {
         /*
          * 采用com.bjzhianjia.scp.cgp.rest.WritsInstancesController.
          * getWritsInstances(String,
@@ -165,7 +172,7 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
         // 设置响应头为响应一个word文档
         response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
 
-        ResponseEntity<?> file = docDownUtil.getFile(_fileNameRest.getData());
+        ResponseEntity<?> file = docDownUtil.getFile(propertiesConfig.getDestFilePath(), _fileNameRest.getData());
         return file;
     }
 }
