@@ -474,7 +474,12 @@ public class RegulaObjectService {
         Example example = new Example(EnterpriseInfo.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("regulaObjId", id);
-        EnterpriseInfo enterpriseInfo = enterpriseInfoBiz.selectByExample(example).get(0);
+        
+        List<EnterpriseInfo>  list = enterpriseInfoBiz.selectByExample(example);
+        EnterpriseInfo enterpriseInfo = new EnterpriseInfo();
+        if(BeanUtil.isNotEmpty(list)) {
+            enterpriseInfo = list.get(0);
+        }
 
         // List<RegulaObject> list=new ArrayList<>();
         // list.add(regulaObject);
