@@ -32,4 +32,10 @@
     		#{id}
     	</foreach>
     </update>
+    
+    <select id="selectIdAll" resultMap="regulaObjectTypeMap">
+   	 select id,parent_object_type_id from regula_object_type
+    </select>
+    
+    
 </mapper>

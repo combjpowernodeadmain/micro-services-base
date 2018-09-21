@@ -3,6 +3,7 @@ package com.bjzhianjia.scp.cgp.biz;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.RegulaObject;
+import com.bjzhianjia.scp.cgp.entity.RegulaObjectType;
 import com.bjzhianjia.scp.cgp.mapper.EnterpriseInfoMapper;
 import com.bjzhianjia.scp.cgp.mapper.PatrolTaskMapper;
 import com.bjzhianjia.scp.cgp.mapper.RegulaObjectMapper;
@@ -29,11 +31,20 @@ import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
 
 /**
- * 监管对象
+ * RegulaObjectBiz 监管对象
  *
+ *
+ * <pre>
+ * Modification History: 
+ * Date             Author      Version         Description 
+ * ------------------------------------------------------------------
+ * 2018年7月7日          bo      1.0            ADD
+ * </pre>
+ * 
+ *
+ * @version 1.0
  * @author bo
- * @email 576866311@qq.com
- * @version 2018-07-07 16:48:26
+ *
  */
 @Service
 @Transactional
@@ -44,6 +55,9 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 
     @Autowired
     private EnterpriseInfoMapper enterpriseInfoMapper;
+
+    @Autowired
+    private RegulaObjectTypeBiz regulaObjectTypeBiz;
 
     @Autowired
     private PatrolTaskMapper patrolTaskMapper;
@@ -88,7 +102,19 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 
         // 是否输入了按监管对象类型查询
         if (regulaObject.getObjType() != null) {
-            criteria.andEqualTo("objType", regulaObject.getObjType());
+            // 监管对象类型集
+            List<RegulaObjectType> objectTypeList = regulaObjectTypeBiz.selectIdAll();
+            if (BeanUtil.isNotEmpty(objectTypeList)) {
+                // 当前对象类型子集
+                Set<Integer> ids = new HashSet<>();
+                this.getSonId(objectTypeList, ids, regulaObject.getObjType());
+                if (!ids.isEmpty()) {
+                    criteria.andIn("objType", ids);
+                } else {
+                    criteria.andEqualTo("objType", regulaObject.getObjType());
+                }
+            }
+
         }
 
         // 是否输入了按监管对象所属业务条线查询
@@ -105,6 +131,30 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
         Page<Object> result = PageHelper.startPage(page, limit);
         List<RegulaObject> list = this.mapper.selectByExample(example);
         return new TableResultResponse<RegulaObject>(result.getTotal(), list);
+    }
+
+    /**
+     * 递归查询子id集合
+     * 
+     * @param objectTypeList
+     *            监管对象类型集
+     * @param ids
+     *            监管对象类型子集
+     * @param id
+     *            当前节点id
+     */
+    private void getSonId(List<RegulaObjectType> objectTypeList, Set<Integer> ids, Integer id) {
+        Integer tempId;
+        RegulaObjectType regulaObjectType = null;
+        for (int i = 0; i < objectTypeList.size(); i++) {
+            regulaObjectType = objectTypeList.get(i);
+            if (id.equals(regulaObjectType.getParentObjectTypeId())) {
+                tempId = regulaObjectType.getId();
+                ids.add(tempId);
+                objectTypeList.remove(i);
+                this.getSonId(objectTypeList, ids, tempId);
+            }
+        }
     }
 
     public void remove(Integer[] ids) {
