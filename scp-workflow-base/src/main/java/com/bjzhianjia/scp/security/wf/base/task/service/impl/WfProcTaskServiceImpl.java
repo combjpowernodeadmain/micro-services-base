@@ -21,6 +21,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.wf.base.auth.biz.WfProcUserAuthBiz;
 import com.bjzhianjia.scp.security.wf.base.constant.WorkflowEnumResults;
 import com.bjzhianjia.scp.security.wf.base.constant.Constants.WfRequestDataTypeAttr;
+import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.exception.WorkflowException;
 import com.bjzhianjia.scp.security.wf.base.task.biz.WfProcTaskBiz;
 import com.bjzhianjia.scp.security.wf.base.task.entity.WfProcTaskBean;
@@ -98,10 +99,11 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
             
 			return wfProcTaskBiz.startAndCompleteProcessInstanceByKey(procData,
 					procVarData, authData, bizData);
+        }catch(BizException biz){
+            throw biz;
         } catch (WorkflowException wfe) {
             throw wfe;
-        }
-        catch (Exception e) {
+        }catch (Exception e) {
         	log.error(e.getMessage(), e);
             throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020199, e);
         }
