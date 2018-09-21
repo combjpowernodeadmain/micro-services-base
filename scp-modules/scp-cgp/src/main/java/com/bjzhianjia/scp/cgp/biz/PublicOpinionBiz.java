@@ -37,122 +37,127 @@ import tk.mybatis.mapper.entity.Example.Criteria;
  */
 @Service
 public class PublicOpinionBiz extends BusinessBiz<PublicOpinionMapper, PublicOpinion> {
-	@Autowired
-	private DictFeign dictFeign;
-	
-	/**
-	 * 获取目前ID最大的那条记录
-	 * 
-	 * @author 尚
-	 * @return
-	 */
-	public PublicOpinion getMaxOne() {
-		Example example = new Example(MayorHotline.class);
-		example.setOrderByClause("id desc");
 
-		PageHelper.startPage(1, 1);
-		List<PublicOpinion> publicOpinionList = this.mapper.selectByExample(example);
-		if (publicOpinionList == null || publicOpinionList.isEmpty()) {
-			return null;
-		}
-		return publicOpinionList.get(0);
-	}
+    @Autowired
+    private DictFeign dictFeign;
 
-	/**
-	 * 按条件查询
-	 * 
-	 * @author 尚
-	 * @param conditions
-	 * @return
-	 */
-	public List<PublicOpinion> getByMap(Map<String, Object> conditions) {
-		Example example = new Example(PublicOpinion.class);
-		Criteria criteria = example.createCriteria();
+    /**
+     * 获取目前ID最大的那条记录
+     * 
+     * @author 尚
+     * @return
+     */
+    public PublicOpinion getMaxOne() {
+        Example example = new Example(MayorHotline.class);
+        example.setOrderByClause("id desc");
 
-		Set<String> keySet = conditions.keySet();
-		for (String key : keySet) {
-			criteria.andEqualTo(key, conditions.get(key));
-		}
+        PageHelper.startPage(1, 1);
+        List<PublicOpinion> publicOpinionList = this.mapper.selectByExample(example);
+        if (publicOpinionList == null || publicOpinionList.isEmpty()) {
+            return null;
+        }
+        return publicOpinionList.get(0);
+    }
 
-		List<PublicOpinion> list = this.selectByExample(example);
-		return list;
-	}
+    /**
+     * 按条件查询
+     * 
+     * @author 尚
+     * @param conditions
+     * @return
+     */
+    public List<PublicOpinion> getByMap(Map<String, Object> conditions) {
+        Example example = new Example(PublicOpinion.class);
+        Criteria criteria = example.createCriteria();
 
-	/**
-	 * 分页获取对象
-	 * 
-	 * @author 尚
-	 * @param publicOpinion
-	 * @param page
-	 * @param limit
-	 * @param startTime
-	 * @param endTime
-	 * @return
-	 */
-	public TableResultResponse<PublicOpinion> getList(PublicOpinion publicOpinion, int page, int limit,
-			String startTime, String endTime) {
-		Example example = new Example(PublicOpinion.class);
-		Criteria criteria = example.createCriteria();
+        Set<String> keySet = conditions.keySet();
+        for (String key : keySet) {
+            criteria.andEqualTo(key, conditions.get(key));
+        }
 
-		criteria.andEqualTo("isDeleted", "0");
-		if(StringUtils.isNotBlank(publicOpinion.getOpinTitle())) {
-			criteria.andLike("opinTitle", publicOpinion.getOpinTitle());
-		}
-		if (StringUtils.isNotBlank(publicOpinion.getOpinCode())) {
-			criteria.andEqualTo("opinCode", publicOpinion.getOpinCode());
-		}
-		if (StringUtils.isNotBlank(publicOpinion.getOpinLevel())) {
-			criteria.andEqualTo("opinLevel", publicOpinion.getOpinLevel());
-		}
-		if (StringUtils.isNotBlank(publicOpinion.getOpinType())) {
-			criteria.andEqualTo("opinType", publicOpinion.getOpinType());
-		}
-		if (StringUtils.isNotBlank(publicOpinion.getExeStatus())) {
-			criteria.andEqualTo("exeStatus", publicOpinion.getExeStatus());
-		}
-		if (StringUtils.isNotBlank(startTime) && StringUtils.isNotBlank(endTime)) {
-			Date _startTime = DateUtil.dateFromStrToDate(startTime, "yyyy-MM-dd HH:mm:ss");
-			Date _endTimeTmp = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
-			//查询截止日期为次日00:00:00，即包括请求截止日期当天
-			Date _endDate = DateUtils.addDays(_endTimeTmp, 1);
+        List<PublicOpinion> list = this.selectByExample(example);
+        return list;
+    }
 
-			criteria.andBetween("crtTime", _startTime, _endDate);
-		}
+    /**
+     * 分页获取对象
+     * 
+     * @author 尚
+     * @param publicOpinion
+     * @param page
+     * @param limit
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    public TableResultResponse<PublicOpinion> getList(PublicOpinion publicOpinion, int page, int limit,
+        String startTime, String endTime) {
+        Example example = new Example(PublicOpinion.class);
+        Criteria criteria = example.createCriteria();
 
-		example.setOrderByClause("id desc");
-		Page<Object> pageInfo = PageHelper.startPage(page, limit);
-		List<PublicOpinion> result = this.selectByExample(example);
-		return new TableResultResponse<PublicOpinion>(pageInfo.getTotal(), result);
-	}
+        criteria.andEqualTo("isDeleted", "0");
+        if (StringUtils.isNotBlank(publicOpinion.getOpinTitle())) {
+            criteria.andLike("opinTitle", publicOpinion.getOpinTitle());
+        }
+        if (StringUtils.isNotBlank(publicOpinion.getOpinCode())) {
+            criteria.andEqualTo("opinCode", publicOpinion.getOpinCode());
+        }
+        if (StringUtils.isNotBlank(publicOpinion.getOpinLevel())) {
+            criteria.andEqualTo("opinLevel", publicOpinion.getOpinLevel());
+        }
+        if (StringUtils.isNotBlank(publicOpinion.getOpinType())) {
+            criteria.andEqualTo("opinType", publicOpinion.getOpinType());
+        }
+        if (StringUtils.isNotBlank(publicOpinion.getExeStatus())) {
+            criteria.andEqualTo("exeStatus", publicOpinion.getExeStatus());
+        }
+        if (StringUtils.isNotBlank(startTime) && StringUtils.isNotBlank(endTime)) {
+            Date _startTime = DateUtil.dateFromStrToDate(startTime, "yyyy-MM-dd HH:mm:ss");
+            Date _endTimeTmp = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
+            // 查询截止日期为次日00:00:00，即包括请求截止日期当天
+            Date _endDate = DateUtils.addDays(_endTimeTmp, 1);
 
-	/**
-	 * 打量删除对象
-	 * 
-	 * @author 尚
-	 * @param ids
-	 */
-	public Result<Void> remove(Integer[] ids) {
-		Result<Void> result = new Result<>();
+            criteria.andBetween("crtTime", _startTime, _endDate);
+        }
 
-		List<String> idList = new ArrayList<>();
-		for (Integer integer : ids) {
-			idList.add(integer + "");
-		}
+        example.setOrderByClause("id desc");
+        Page<Object> pageInfo = PageHelper.startPage(page, limit);
+        List<PublicOpinion> result = this.selectByExample(example);
+        return new TableResultResponse<PublicOpinion>(pageInfo.getTotal(), result);
+    }
 
-		String toExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_TODO);
-		
-		List<PublicOpinion> selectByIds = this.mapper.selectByIds(String.join(",", idList));
-		for (PublicOpinion tmp : selectByIds) {
-			if (!toExeStatus.equals(tmp.getExeStatus())) {
-				result.setIsSuccess(false);
-				result.setMessage("当前记录不能删除！");
-				return result;
-			}
-		}
+    /**
+     * 打量删除对象
+     * 
+     * @author 尚
+     * @param ids
+     */
+    public Result<Void> remove(Integer[] ids) {
+        Result<Void> result = new Result<>();
 
-		this.mapper.deleteByIds(ids, BaseContextHandler.getUserID(), BaseContextHandler.getUsername(), new Date());
-		result.setIsSuccess(true);
-		result.setMessage("成功");
-		return result;
-	}
+        List<String> idList = new ArrayList<>();
+        for (Integer integer : ids) {
+            idList.add(integer + "");
+        }
+
+        String toExeStatus =
+            CommonUtil.exeStatusUtil(dictFeign, Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_TODO);
+
+        List<PublicOpinion> selectByIds = this.mapper.selectByIds(String.join(",", idList));
+        for (PublicOpinion tmp : selectByIds) {
+            if (!toExeStatus.equals(tmp.getExeStatus())) {
+                Map<String, String> todoName =
+                    dictFeign.getByCode(Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_TODO);
+                result.setIsSuccess(false);
+                result.setMessage(
+                    "不能删除非【" + todoName.get(Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_TODO) + "】的事件");
+                return result;
+            }
+        }
+
+        this.mapper.deleteByIds(ids, BaseContextHandler.getUserID(), BaseContextHandler.getUsername(), new Date());
+        result.setIsSuccess(true);
+        result.setMessage("成功");
+        return result;
+    }
 }
