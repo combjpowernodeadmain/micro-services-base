@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.cgp.biz;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -227,7 +228,8 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 
     }
 
-    public TableResultResponse<JSONObject> getRegObjPatrolInfo(RegulaObject regulaObject, int page, int limit) {
+    public TableResultResponse<JSONObject> getRegObjPatrolInfo(RegulaObject regulaObject, String regObjIds, int page,
+        int limit) {
         Example example = new Example(RegulaObject.class);
         Criteria criteria = example.createCriteria();
         criteria.andEqualTo("isDeleted", "0");
@@ -239,6 +241,9 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
         List<RegulaObject> regulaObjectList = this.selectByExample(example);
         if (BeanUtil.isEmpty(regulaObject)) {
             return new TableResultResponse<>(0, new ArrayList<>());
+        }
+        if (BeanUtil.isNotEmpty(regObjIds)) {
+            criteria.andIn("id", Arrays.asList(regObjIds.split(",")));
         }
 
         List<JSONObject> resultList = queryAssist(regulaObjectList);

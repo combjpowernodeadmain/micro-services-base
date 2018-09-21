@@ -170,38 +170,6 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
         return result;
     }
 
-    // @RequestMapping(value="/upload/img",method=RequestMethod.POST)
-    // @ApiOperation("上传图片")
-    // public static List<String> uploadFileList(@RequestParam("files")
-    // @ApiParam(name="接收图片数组对象")MultipartFile files[], HttpServletRequest
-    // request)
-    // throws IllegalStateException, IOException{
-    // List<String> newFilePathList = new ArrayList<>();
-    // try {
-    // for (MultipartFile multipartFile : files) {
-    // // 文件的原始名称
-    // String originalFilename = multipartFile.getOriginalFilename();
-    // String newFileName = null;
-    // if (multipartFile != null && originalFilename != null &&
-    // originalFilename.length() > 0) {
-    //
-    // newFileName = UUID.randomUUID() + originalFilename;
-    // // 存储图片的物理路径
-    // String pic_path = Constances.RegulaObjImg.IMG_URL+newFileName;
-    // // 新图片路径
-    // File targetFile = new File(pic_path);
-    // // 内存数据读入磁盘
-    // multipartFile.transferTo(targetFile);
-    // newFilePathList.add(pic_path);
-    // }
-    // }
-    //
-    // } catch (IOException e) {
-    // throw new IOException("上传图片异常");
-    // }
-    // return newFilePathList;
-    // }
-
     @RequestMapping(value = "distance", method = { RequestMethod.GET })
     @ApiOperation("获取指定范围内的监管对象")
     public ObjectRestResponse<List<Map<String, Object>>> distance(
@@ -237,10 +205,12 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
     public TableResultResponse<JSONObject> getRegObjPatrolInfo(
         @RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
         @RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
-        @RequestParam(value = "regObjType", required = false) @ApiParam(name = "监管对象类型") Integer objType) {
+        @RequestParam(value = "regObjIds", required = false) @ApiParam(name = "监管对象Id") String regObjIds,
+        @RequestParam(value = "regObjType", required = false) @ApiParam(name = "监管对象类型") Integer objType
+        ) {
 
         RegulaObject regulaObject = new RegulaObject();
         regulaObject.setObjType(objType);
-        return this.baseBiz.getRegObjPatrolInfo(regulaObject, page, limit);
+        return this.baseBiz.getRegObjPatrolInfo(regulaObject,regObjIds, page, limit);
     }
 }

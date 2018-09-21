@@ -43,6 +43,7 @@ import com.bjzhianjia.scp.cgp.entity.RegulaObjectType;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.mapper.EventTypeMapper;
+import com.bjzhianjia.scp.cgp.mapper.PatrolTaskMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.vo.RegulaObjectVo;
 import com.bjzhianjia.scp.cgp.vo.Regula_EnterPriseVo;
@@ -97,6 +98,9 @@ public class RegulaObjectService {
 
     @Autowired
     private EventTypeMapper eventTypeMapper;
+
+    @Autowired
+    private PatrolTaskMapper patrolTaskMapper;
 
     /**
      * 添加监管对象-经营单位
@@ -427,9 +431,6 @@ public class RegulaObjectService {
                         if (!string.equals("-")) {
                             bizResultJObject.put("code", string);
                             bizResultJObject.put("labelDefault", bizTypeMap.get(string));
-                            // String bizType = bizTypeMap.get(string);
-                            // bizResultJObject =
-                            // JSONObject.parseObject(bizType);
                         }
                         bizResultJArray.add(bizResultJObject);
                     }
@@ -448,6 +449,22 @@ public class RegulaObjectService {
                 for (RegulaObjectVo tmp : voList) {
                     tmp.setObjTypeName(type_ID_NAME_Map.get(tmp.getObjType()));
                 }
+            }
+
+            // 整合每个监管对象被巡查的次数
+            List<Integer> regObjIdList = voList.stream().map(o -> o.getId()).distinct().collect(Collectors.toList());
+            // 以regObjIdList为基础，查询巡查记录表
+            List<JSONObject> regulaObjCount = patrolTaskMapper.regulaObjCount(regObjIdList);
+            // 将regulaObjCount转化为key-value形式
+            Map<Integer, Integer> regObj_ID_COUNT_Map = new HashMap<>();
+            if (BeanUtil.isNotEmpty(regulaObjCount)) {
+                for (JSONObject jsonObject : regulaObjCount) {
+                    regObj_ID_COUNT_Map.put(jsonObject.getInteger("regula_object_id"), jsonObject.getInteger("rcount"));
+                }
+            }
+            for (RegulaObjectVo tmp : voList) {
+                tmp.setPatrolCount(
+                    BeanUtil.isEmpty(regObj_ID_COUNT_Map.get(tmp.getId())) ? 0 : regObj_ID_COUNT_Map.get(tmp.getId()));
             }
         }
         return voList;
@@ -474,10 +491,10 @@ public class RegulaObjectService {
         Example example = new Example(EnterpriseInfo.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("regulaObjId", id);
-        
-        List<EnterpriseInfo>  list = enterpriseInfoBiz.selectByExample(example);
+
+        List<EnterpriseInfo> list = enterpriseInfoBiz.selectByExample(example);
         EnterpriseInfo enterpriseInfo = new EnterpriseInfo();
-        if(BeanUtil.isNotEmpty(list)) {
+        if (BeanUtil.isNotEmpty(list)) {
             enterpriseInfo = list.get(0);
         }
 
@@ -521,7 +538,7 @@ public class RegulaObjectService {
         // 业务条线
         List<String> bizListNameList = new ArrayList<>();
         for (String string : split) {
-            if (!"-".equals(string)) {
+            if (!"-".equals(string) && StringUtils.isNotBlank(string)) {
                 bizListNameList.add(map.get(string));
             }
         }
@@ -534,7 +551,7 @@ public class RegulaObjectService {
         Set<String> eventListId = new HashSet<>();
         String[] eventSplit1 = eventList.split(";");
         for (String string : eventSplit1) {
-            if (!"-".equals(string)) {
+            if (!"-".equals(string) && StringUtils.isNotBlank(string)) {
                 String[] eventSplit2 = string.split(",");
                 for (String string2 : eventSplit2) {
                     eventListId.add(string2);
@@ -549,7 +566,7 @@ public class RegulaObjectService {
             eventTypeList.stream().collect(Collectors.toMap(EventType::getId, EventType::getTypeName));
         List<String> eventTypeName1 = new ArrayList<>();
         for (String string : eventSplit1) {
-            if (!"-".equals(string)) {
+            if (!"-".equals(string) && StringUtils.isNotBlank(string)) {
                 String[] eventSplit2 = string.split(",");
                 List<String> eventTypeName2 = new ArrayList<>();
                 for (String string2 : eventSplit2) {
