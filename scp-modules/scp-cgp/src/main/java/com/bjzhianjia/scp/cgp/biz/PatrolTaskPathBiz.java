@@ -109,7 +109,7 @@ public class PatrolTaskPathBiz extends BusinessBiz<PatrolTaskPathMapper, PatrolT
         
         StringBuilder sql = new StringBuilder();
         sql.append("(('").append(_startTime).append("'").append("<=crt_time  and '").append(maxEndTime).append("'<=crt_time)");
-        sql.append(" OR crt_time<=").append("'").append(_endTime).append("')");
+        sql.append(" and crt_time<=").append("'").append(_endTime).append("')");
         
         criteria.andCondition(sql.toString());
         list = patrolTaskPathMapper.selectByExample(example);

@@ -108,7 +108,7 @@ public class LawEnforcePathBiz extends BusinessBiz<LawEnforcePathMapper,LawEnfor
         
         StringBuilder sql = new StringBuilder();
         sql.append("(('").append(_startTime).append("'").append("<=crt_time  and '").append(maxEndTime).append("'<=crt_time)");
-        sql.append(" OR crt_time<=").append("'").append(_endTime).append("')");
+        sql.append(" and crt_time<=").append("'").append(_endTime).append("')");
         
         criteria.andCondition(sql.toString());
         list = lawEnforcePathMapper.selectByExample(example);
