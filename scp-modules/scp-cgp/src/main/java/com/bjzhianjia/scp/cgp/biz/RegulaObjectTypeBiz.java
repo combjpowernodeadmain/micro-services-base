@@ -23,11 +23,20 @@ import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
 
 /**
- * 监管对象
+ * RegulaObjectTypeBiz 监管对象.
  *
+ *
+ * <pre>
+ * Modification History: 
+ * Date             Author      Version         Description 
+ * ------------------------------------------------------------------
+ * 2018年7月7日          bo      1.0            ADD
+ * </pre>
+ * 
+ *
+ * @version 1.0
  * @author bo
- * @email 576866311@qq.com
- * @version 2018-07-07 16:48:26
+ *
  */
 @Service
 public class RegulaObjectTypeBiz extends BusinessBiz<RegulaObjectTypeMapper, RegulaObjectType> {
@@ -213,4 +222,10 @@ public class RegulaObjectTypeBiz extends BusinessBiz<RegulaObjectTypeMapper, Reg
         return resultList;
     }
 
+    /**
+     * 查询所有监管对象类型id和父id
+     */
+    public List<RegulaObjectType> selectIdAll() {
+        return this.mapper.selectIdAll();
+    }
 }
