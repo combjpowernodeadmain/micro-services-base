@@ -79,4 +79,14 @@
 			)
 		</if>
 	</select>
+	
+	<!-- 获取regulaObjIdList集合中所包含的监管对象被巡查的次数 -->
+	<select id="regulaObjCount" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT patrol_task.`regula_object_id`, COUNT(*) rcount FROM patrol_task
+		WHERE patrol_task.`regula_object_id` IN
+		<foreach collection="regulaObjIdList" index="index" item="regulaObjId" open="(" separator="," close=")">
+			#{regulaObjId}
+		</foreach>
+		GROUP BY patrol_task.`regula_object_id`
+	</select>
 </mapper>

@@ -26,66 +26,66 @@ import com.github.pagehelper.PageHelper;
 @Service
 public class PatrolTaskBiz extends BusinessBiz<PatrolTaskMapper, PatrolTask> {
 
-	@Autowired
-	private PatrolTaskMapper patrolTaskMapper;
+    @Autowired
+    private PatrolTaskMapper patrolTaskMapper;
 
-	@Autowired
-	private DictFeign dictFeign;
-	
-	
-	/**
-	 * 根据查询条件搜索
-	 * 
-	 * @param patrolTask 巡查任务记录
-	 * @param speName    专项任务名称
-	 * @param startTime  开始时间
-	 * @param endTime    结束时间
-	 * @param page       页码
-	 * @param limit      页容量
-	 * @return
-	 */
-	public TableResultResponse<Map<String, Object>> selectPatrolTaskList(PatrolTask patrolTask, String speName,
-			Date startTime, Date endTime, int page, int limit) {
-		Page<Object> result = PageHelper.startPage(page, limit);
-		List<Map<String, Object>> list = patrolTaskMapper.selectPatrolTaskList(patrolTask, speName, startTime, endTime);
-		Set<String> codes = this.getCodes(list);
-		
-		if(codes == null) {
-			return new TableResultResponse<Map<String, Object>>(0, null);
-		}
-		
-		//获取数据字典：立案单状态值、来源类型
-		Map<String, String> dictData = dictFeign.getByCodeIn(String.join(",", codes));
-		Object sourceType = null;
-		Object status = null;
-		if(list != null && list.size() > 0) {
-			for(Map<String,Object> map: list) {
-				sourceType =  dictData.get(map.get("sourceType"));
-				status =  dictData.get(map.get("status"));
-				map.put("sourceType", sourceType);
-				map.put("status", status);
-			}
-		}
-		return new TableResultResponse<Map<String, Object>>(result.getTotal(), list);
-	}
-	
-	
-	/**
-	 *  获取数字字典codes
-	 * @param list
-	 * @return
-	 */
-	private Set<String> getCodes(List<Map<String, Object>> list){
-		Set<String> set = new HashSet<>();
-		if(list != null && list.size() > 0 ) {
-			for(Map<String , Object> map : list) {
-				set.add(map.get("sourceType").toString()); //来源类型
-				set.add(map.get("status").toString()); //立案单状态
-			}
-			return set;
-		}else {
-			return null;
-		}
-	}
+    @Autowired
+    private DictFeign dictFeign;
+    
+    
+    /**
+     * 根据查询条件搜索
+     * 
+     * @param patrolTask 巡查任务记录
+     * @param speName    专项任务名称
+     * @param startTime  开始时间
+     * @param endTime    结束时间
+     * @param page       页码
+     * @param limit      页容量
+     * @return
+     */
+    public TableResultResponse<Map<String, Object>> selectPatrolTaskList(PatrolTask patrolTask, String speName,
+            Date startTime, Date endTime, int page, int limit) {
+        Page<Object> result = PageHelper.startPage(page, limit);
+        List<Map<String, Object>> list = patrolTaskMapper.selectPatrolTaskList(patrolTask, speName, startTime, endTime);
+        Set<String> codes = this.getCodes(list);
+        
+        if(codes == null) {
+            return new TableResultResponse<Map<String, Object>>(0, null);
+        }
+        
+        //获取数据字典：立案单状态值、来源类型
+        Map<String, String> dictData = dictFeign.getByCodeIn(String.join(",", codes));
+        Object sourceType = null;
+        Object status = null;
+        if(list != null && list.size() > 0) {
+            for(Map<String,Object> map: list) {
+                sourceType =  dictData.get(map.get("sourceType"));
+                status =  dictData.get(map.get("status"));
+                map.put("sourceType", sourceType);
+                map.put("status", status);
+            }
+        }
+        return new TableResultResponse<Map<String, Object>>(result.getTotal(), list);
+    }
+    
+    
+    /**
+     *  获取数字字典codes
+     * @param list
+     * @return
+     */
+    private Set<String> getCodes(List<Map<String, Object>> list){
+        Set<String> set = new HashSet<>();
+        if(list != null && list.size() > 0 ) {
+            for(Map<String , Object> map : list) {
+                set.add(map.get("sourceType").toString()); //来源类型
+                set.add(map.get("status").toString()); //立案单状态
+            }
+            return set;
+        }else {
+            return null;
+        }
+    }
 
 }
