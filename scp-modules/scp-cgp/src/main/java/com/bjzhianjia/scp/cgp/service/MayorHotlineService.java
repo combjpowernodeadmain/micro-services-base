@@ -128,7 +128,6 @@ public class MayorHotlineService {
 			Result<MayorHotline> cHotlineResult = this.createdMayorHotlineCache(vo,
 					Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_DOING);
 			if (!cHotlineResult.getIsSuccess()) {
-				result.setMessage(cHotlineResult.getMessage());
 				throw new Exception(cHotlineResult.getMessage());
 			}
 		} else {
@@ -149,11 +148,8 @@ public class MayorHotlineService {
 			return result;
 		}
 
-//		int i=1/0;//模拟异常
 		caseInfoBiz.insertSelective(resultCaseInfo.getData());
 
-		result.setIsSuccess(true);
-		result.setMessage("成功");
 		return result;
 	}
 

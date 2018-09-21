@@ -182,21 +182,12 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService {
 			vo.setId(Integer.valueOf((String) procBizData.get("sourceCode")));
 		}
 
-		Result<Void> result = new Result<>();
 		try {
-			result = mayorHotlineService.createdMayorHotline(vo);
-			if (!result.getIsSuccess()) {
-				throw new BizException(result.getMessage());
-			}
+		    mayorHotlineService.createdMayorHotline(vo);
 			procBizData.put("procBizId", String.valueOf(vo.getCaseId()));
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new BizException(StringUtils.isBlank(result.getMessage()) ? e.getMessage() : result.getMessage());
-		}
-	}
-
-	private void addCacheDataToRedis(Map<String, Object> toCache) {
-
+			throw new BizException(e.getMessage());		}
 	}
 }
