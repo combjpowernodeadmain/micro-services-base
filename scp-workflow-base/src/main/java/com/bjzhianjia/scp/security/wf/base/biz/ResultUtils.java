@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 
 import com.bjzhianjia.scp.security.wf.base.constant.BaseEnumResults;
 import com.bjzhianjia.scp.security.wf.base.constant.EnumResultTemplate;
+import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.exception.WorkflowException;
 import com.bjzhianjia.scp.security.wf.base.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.wf.base.utils.Pagination;
@@ -161,7 +162,14 @@ public class ResultUtils<T> {
 		response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 
 		// 如果是自定义异常
-		if (e instanceof WorkflowException) {
+		if(e instanceof BizException) {
+            result.put("errorType", ERROR_CODE_FOR_SYSTEM);// 发生业务异常 - 有提示信息
+            result.put("errorCode", BaseEnumResults.BASE00000001.getRetCode());// 响应码
+            result.put("errorMessage", e.getMessage());// 实际异常信息
+            
+            response.setMessage(e.getMessage()); // 用户响应信息
+            response.setMetadata(result);
+        }else if (e instanceof WorkflowException) {
 		    EnumResultTemplate returnInfo = ((WorkflowException) e).getRetInfo();
 		    	
 			result.put("errorType", ERROR_CODE_FOR_BUSINESS);// 发生业务异常 - 有提示信息

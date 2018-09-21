@@ -40,190 +40,177 @@ import io.swagger.annotations.ApiParam;
 @CheckUserToken
 @Api(tags = "监管对象管理")
 public class RegulaObjectController extends BaseController<RegulaObjectBiz, RegulaObject, Integer> {
-	@Autowired
-	private RegulaObjectService regulaObjectService;
 
-	@RequestMapping(value = "/add", method = RequestMethod.POST)
-	@ApiOperation("新增单个对象")
-	public ObjectRestResponse<JSONObject> add(@RequestBody @Validated Regula_EnterPriseVo vo,
-			BindingResult bindingResult) {
-		RegulaObject regulaObject = BeanUtil.copyBean_New(vo, new RegulaObject());
-		EnterpriseInfo enterpriseInfo = BeanUtil.copyBean_New(vo, new EnterpriseInfo());
-		enterpriseInfo.setAddress(regulaObject!=null?regulaObject.getObjAddress():"");
-		ObjectRestResponse<JSONObject> restResult = new ObjectRestResponse<>();
+    @Autowired
+    private RegulaObjectService regulaObjectService;
 
-		if (bindingResult.hasErrors()) {
-			restResult.setStatus(400);
-			restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
-			return restResult;
-		}
+    @RequestMapping(value = "/add", method = RequestMethod.POST)
+    @ApiOperation("新增单个对象")
+    public ObjectRestResponse<JSONObject> add(@RequestBody @Validated Regula_EnterPriseVo vo,
+        BindingResult bindingResult) {
+        RegulaObject regulaObject = BeanUtil.copyBean_New(vo, new RegulaObject());
+        EnterpriseInfo enterpriseInfo = BeanUtil.copyBean_New(vo, new EnterpriseInfo());
+        enterpriseInfo.setAddress(regulaObject != null ? regulaObject.getObjAddress() : "");
+        ObjectRestResponse<JSONObject> restResult = new ObjectRestResponse<>();
 
-		Result<Void> result = regulaObjectService.createRegulaObject(regulaObject, enterpriseInfo);
-		if (!result.getIsSuccess()) {
-			restResult.setStatus(400);
-			restResult.setMessage(result.getMessage());
-			return restResult;
-		}
+        if (bindingResult.hasErrors()) {
+            restResult.setStatus(400);
+            restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            return restResult;
+        }
 
-		JSONObject r_JsonObject = JSONObject.parseObject(JSON.toJSONString(regulaObject));
-		JSONObject e_JsonObject = JSONObject.parseObject(JSON.toJSONString(enterpriseInfo));
+        Result<Void> result = regulaObjectService.createRegulaObject(regulaObject, enterpriseInfo);
+        if (!result.getIsSuccess()) {
+            restResult.setStatus(400);
+            restResult.setMessage(result.getMessage());
+            return restResult;
+        }
 
-		return restResult.data(BeanUtil.jsonObjectMergeOther(r_JsonObject, e_JsonObject));
-	}
+        JSONObject r_JsonObject = JSONObject.parseObject(JSON.toJSONString(regulaObject));
+        JSONObject e_JsonObject = JSONObject.parseObject(JSON.toJSONString(enterpriseInfo));
 
-	/**
-	 * 更新单个对象，须传入两个ID<br/>
-	 * "regulaObjectId":1, //监管对象ID<br/>
-	 * "enterpriseId":1//企业信息ID
-	 * 
-	 * @author 尚
-	 * @param vo
-	 * @param bindingResult
-	 * @return
-	 */
-	@RequestMapping(value = "/update", method = RequestMethod.PUT)
-	@ApiOperation("更新单个对象")
-	public ObjectRestResponse<JSONObject> update(
-			@RequestBody @Validated @ApiParam(name = "待更新对象实例") Regula_EnterPriseVo vo, BindingResult bindingResult) {
-		RegulaObject regulaObject = BeanUtil.copyBean_New(vo, new RegulaObject());
-		EnterpriseInfo enterpriseInfo = BeanUtil.copyBean_New(vo, new EnterpriseInfo());
+        return restResult.data(BeanUtil.jsonObjectMergeOther(r_JsonObject, e_JsonObject));
+    }
 
-		regulaObject.setId(vo.getRegulaObjId());
+    /**
+     * 更新单个对象，须传入两个ID<br/>
+     * "regulaObjectId":1, //监管对象ID<br/>
+     * "enterpriseId":1//企业信息ID
+     * 
+     * @author 尚
+     * @param vo
+     * @param bindingResult
+     * @return
+     */
+    @RequestMapping(value = "/update", method = RequestMethod.PUT)
+    @ApiOperation("更新单个对象")
+    public ObjectRestResponse<JSONObject> update(
+        @RequestBody @Validated @ApiParam(name = "待更新对象实例") Regula_EnterPriseVo vo, BindingResult bindingResult) {
+        RegulaObject regulaObject = BeanUtil.copyBean_New(vo, new RegulaObject());
+        EnterpriseInfo enterpriseInfo = BeanUtil.copyBean_New(vo, new EnterpriseInfo());
 
-		ObjectRestResponse<JSONObject> restResult = new ObjectRestResponse<>();
+        regulaObject.setId(vo.getRegulaObjId());
 
-		if (bindingResult.hasErrors()) {
-			restResult.setStatus(400);
-			restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
-			return restResult;
-		}
+        ObjectRestResponse<JSONObject> restResult = new ObjectRestResponse<>();
 
-		Result<Void> result = regulaObjectService.updateRegulaObject(regulaObject, enterpriseInfo);
-		if (!result.getIsSuccess()) {
-			restResult.setStatus(400);
-			restResult.setMessage(result.getMessage());
-			return restResult;
-		}
+        if (bindingResult.hasErrors()) {
+            restResult.setStatus(400);
+            restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            return restResult;
+        }
 
-		JSONObject r_JsonObject = JSONObject.parseObject(JSON.toJSONString(regulaObject));
-		JSONObject e_JsonObject = JSONObject.parseObject(JSON.toJSONString(enterpriseInfo));
-		return restResult.data(BeanUtil.jsonObjectMergeOther(r_JsonObject, e_JsonObject));
-	}
+        Result<Void> result = regulaObjectService.updateRegulaObject(regulaObject, enterpriseInfo);
+        if (!result.getIsSuccess()) {
+            restResult.setStatus(400);
+            restResult.setMessage(result.getMessage());
+            return restResult;
+        }
 
-	@RequestMapping(value = "/list", method = RequestMethod.GET)
-	@ApiOperation("分页获取对象")
-	public TableResultResponse<RegulaObjectVo> page(@RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
-			@RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
-			@ModelAttribute @ApiParam(name = "接收查询条件的实例") RegulaObject regulaObject) {
-		return regulaObjectService.getList(regulaObject, page, limit,false);
-	}
-	
-	@RequestMapping(value = "/list/objType", method = RequestMethod.GET)
-	@ApiOperation("获取公共机构及企业下的监管对象")
-	public TableResultResponse<RegulaObjectVo> page_ObjType(@RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
-			@RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
-			@ModelAttribute @ApiParam(name = "接收查询条件的实例") RegulaObject regulaObject) {
-		return regulaObjectService.getList(regulaObject, page, limit,true);
-	}
+        JSONObject r_JsonObject = JSONObject.parseObject(JSON.toJSONString(regulaObject));
+        JSONObject e_JsonObject = JSONObject.parseObject(JSON.toJSONString(enterpriseInfo));
+        return restResult.data(BeanUtil.jsonObjectMergeOther(r_JsonObject, e_JsonObject));
+    }
 
-	@RequestMapping(value = "/get/{id}", method = RequestMethod.GET)
-	@ApiOperation("获取单个对象")
-	public Regula_EnterPriseVo getById(@PathVariable(value = "id") @ApiParam(name = "待查询对象ID") Integer id) {
-		Regula_EnterPriseVo regulaObject = regulaObjectService.getById(id);
-		return regulaObject;
-	}
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @ApiOperation("分页获取对象")
+    public TableResultResponse<RegulaObjectVo> page(
+        @RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
+        @RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
+        @ModelAttribute @ApiParam(name = "接收查询条件的实例") RegulaObject regulaObject) {
+        return regulaObjectService.getList(regulaObject, page, limit, false);
+    }
 
-	@RequestMapping(value = "/remove/{ids}", method = RequestMethod.DELETE)
-	@ApiOperation("批量删除对象")
-	public ObjectRestResponse<RegulaObject> remove(
-			@PathVariable(value = "ids") @ApiParam(name = "待删除对象ID数组") Integer[] ids) {
-		ObjectRestResponse<RegulaObject> result = new ObjectRestResponse<>();
+    @RequestMapping(value = "/list/objType", method = RequestMethod.GET)
+    @ApiOperation("获取公共机构及企业下的监管对象")
+    public TableResultResponse<RegulaObjectVo> page_ObjType(
+        @RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
+        @RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
+        @ModelAttribute @ApiParam(name = "接收查询条件的实例") RegulaObject regulaObject) {
+        return regulaObjectService.getList(regulaObject, page, limit, true);
+    }
 
-		if (ids == null || ids.length == 0) {
-			result.setStatus(400);
-			result.setMessage("请选择要删除的项");
-			return result;
-		}
+    @RequestMapping(value = "/get/{id}", method = RequestMethod.GET)
+    @ApiOperation("获取单个对象")
+    public Regula_EnterPriseVo getById(@PathVariable(value = "id") @ApiParam(name = "待查询对象ID") Integer id) {
+        Regula_EnterPriseVo regulaObject = regulaObjectService.getById(id);
+        return regulaObject;
+    }
 
-		regulaObjectService.remove(ids);
-		return result;
-	}
+    @RequestMapping(value = "/remove/{ids}", method = RequestMethod.DELETE)
+    @ApiOperation("批量删除对象")
+    public ObjectRestResponse<RegulaObject> remove(
+        @PathVariable(value = "ids") @ApiParam(name = "待删除对象ID数组") Integer[] ids) {
+        ObjectRestResponse<RegulaObject> result = new ObjectRestResponse<>();
 
-	@RequestMapping(value = "/remove/one/{id}", method = RequestMethod.DELETE)
-	@ApiOperation("删除单个对象")
-	public ObjectRestResponse<RegulaObject> remove(@PathVariable(value = "id") @ApiParam(name = "待删除对象ID") Integer id) {
-		ObjectRestResponse<RegulaObject> result = new ObjectRestResponse<>();
+        if (ids == null || ids.length == 0) {
+            result.setStatus(400);
+            result.setMessage("请选择要删除的项");
+            return result;
+        }
 
-		if (id == null) {
-			result.setStatus(400);
-			result.setMessage("请选择要删除的项");
-			return result;
-		}
+        regulaObjectService.remove(ids);
+        return result;
+    }
 
-		Integer[] ids = new Integer[1];
-		ids[0] = id;
+    @RequestMapping(value = "/remove/one/{id}", method = RequestMethod.DELETE)
+    @ApiOperation("删除单个对象")
+    public ObjectRestResponse<RegulaObject> remove(@PathVariable(value = "id") @ApiParam(name = "待删除对象ID") Integer id) {
+        ObjectRestResponse<RegulaObject> result = new ObjectRestResponse<>();
 
-		regulaObjectService.remove(ids);
-		return result;
-	}
+        if (id == null) {
+            result.setStatus(400);
+            result.setMessage("请选择要删除的项");
+            return result;
+        }
 
-//	@RequestMapping(value="/upload/img",method=RequestMethod.POST)
-//	@ApiOperation("上传图片")
-//	public static List<String> uploadFileList(@RequestParam("files") @ApiParam(name="接收图片数组对象")MultipartFile files[], HttpServletRequest request)
-//			throws IllegalStateException, IOException{
-//		List<String> newFilePathList = new ArrayList<>();
-//		try {
-//			for (MultipartFile multipartFile : files) {
-//				// 文件的原始名称
-//				String originalFilename = multipartFile.getOriginalFilename();
-//				String newFileName = null;
-//				if (multipartFile != null && originalFilename != null && originalFilename.length() > 0) {
-//
-//					newFileName = UUID.randomUUID() + originalFilename;
-//					// 存储图片的物理路径
-//					String pic_path = Constances.RegulaObjImg.IMG_URL+newFileName;
-//					// 新图片路径
-//					File targetFile = new File(pic_path);
-//					// 内存数据读入磁盘
-//					multipartFile.transferTo(targetFile);
-//					newFilePathList.add(pic_path);
-//				}
-//			}
-//
-//		} catch (IOException e) {
-//			throw new IOException("上传图片异常");
-//		}
-//		return newFilePathList;
-//	}
-	
-	@RequestMapping(value="distance",method={RequestMethod.GET})
-	@ApiOperation("获取指定范围内的监管对象")
-	public ObjectRestResponse<List<Map<String, Object>>> distance(@RequestParam(value="longitude") @ApiParam("经度") Double longitude ,
-			@RequestParam(value="latitude") @ApiParam("纬度") Double latitude,
-			@RequestParam(value="objType") @ApiParam("监管对象类型id")Integer objType,
-			@RequestParam(value="size",defaultValue="500") @ApiParam("监管对象范围大小（单位：米）")Double size){
-		
-		ObjectRestResponse<List<Map<String, Object>>> result = new ObjectRestResponse<>();
-		
-		if(longitude == null) {
-			result.setStatus(400);
-			result.setMessage("经度不能为空！");
-			return result;
-		}
-		if(latitude == null) {
-			result.setStatus(400);
-			result.setMessage("纬度不能为空！");
-			return result;
-		}
-		if(objType == null) {
-			result.setStatus(400);
-			result.setMessage("监管对象类型id不能为空！");
-			return result;
-		}
-		List<Map<String, Object>> objs = regulaObjectService.getByDistance(longitude, latitude,objType,size);
-		result.setData(objs);
-		return result;
-	}
+        Integer[] ids = new Integer[1];
+        ids[0] = id;
 
+        regulaObjectService.remove(ids);
+        return result;
+    }
 
+    @RequestMapping(value = "distance", method = { RequestMethod.GET })
+    @ApiOperation("获取指定范围内的监管对象")
+    public ObjectRestResponse<List<Map<String, Object>>> distance(
+        @RequestParam(value = "longitude") @ApiParam("经度") Double longitude,
+        @RequestParam(value = "latitude") @ApiParam("纬度") Double latitude,
+        @RequestParam(value = "objType") @ApiParam("监管对象类型id") Integer objType,
+        @RequestParam(value = "size", defaultValue = "500") @ApiParam("监管对象范围大小（单位：米）") Double size) {
+
+        ObjectRestResponse<List<Map<String, Object>>> result = new ObjectRestResponse<>();
+
+        if (longitude == null) {
+            result.setStatus(400);
+            result.setMessage("经度不能为空！");
+            return result;
+        }
+        if (latitude == null) {
+            result.setStatus(400);
+            result.setMessage("纬度不能为空！");
+            return result;
+        }
+        if (objType == null) {
+            result.setStatus(400);
+            result.setMessage("监管对象类型id不能为空！");
+            return result;
+        }
+        List<Map<String, Object>> objs = regulaObjectService.getByDistance(longitude, latitude, objType, size);
+        result.setData(objs);
+        return result;
+    }
+
+    @RequestMapping(value = "/patrol/count", method = RequestMethod.GET)
+    @ApiOperation("查询监管对象被巡查次数信息")
+    public TableResultResponse<JSONObject> getRegObjPatrolInfo(
+        @RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
+        @RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
+        @RequestParam(value = "regObjIds", required = false) @ApiParam(name = "监管对象Id") String regObjIds,
+        @RequestParam(value = "regObjType", required = false) @ApiParam(name = "监管对象类型") Integer objType
+        ) {
+
+        RegulaObject regulaObject = new RegulaObject();
+        regulaObject.setObjType(objType);
+        return this.baseBiz.getRegObjPatrolInfo(regulaObject,regObjIds, page, limit);
+    }
 }

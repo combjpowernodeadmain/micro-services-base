@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.PatrolTask;
 import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 
@@ -31,4 +32,11 @@ public interface PatrolTaskMapper extends CommonMapper<PatrolTask> {
 			@Param("speName")String speName,
 			@Param("startTime")Date startTime,
 			@Param("endTime")Date endTime);
+	
+	/**
+	 * 获取regulaObjIdList集合中所包含的监管对象被巡查的次数
+	 * @param regulaObjIdList
+	 * @return
+	 */
+	public List<JSONObject> regulaObjCount(@Param("regulaObjIdList") List<Integer> regulaObjIdList);
 }

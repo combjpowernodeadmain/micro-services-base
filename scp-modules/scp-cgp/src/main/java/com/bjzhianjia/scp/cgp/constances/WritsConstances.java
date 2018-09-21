@@ -26,4 +26,9 @@ public class WritsConstances {
      * 文书名后缀
      */
     public static final String WRITS_SUFFIX="docx";
+    
+    /**
+     * 指定要下载的类型为文书模板
+     */
+    public static final String DOWNLOAD_WRI_TEMPLATE="template";
 }

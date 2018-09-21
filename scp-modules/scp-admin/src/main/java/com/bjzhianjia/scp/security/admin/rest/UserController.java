@@ -171,8 +171,6 @@ public class UserController extends BaseController<UserBiz, User, String> {
 
 	@ApiOperation("批量获取人员信息")
 	@RequestMapping(value = "/getByPK/{id}", method = RequestMethod.GET)
-	@IgnoreUserToken
-	@IgnoreClientToken
 	public Map<String, String> getUser(@PathVariable String id) {
 		return this.baseBiz.getUsers(id);
 	}
@@ -184,7 +182,6 @@ public class UserController extends BaseController<UserBiz, User, String> {
 	 */
 	@ApiOperation("根据部门获取人员列表")
 	@RequestMapping(value = "/getByDept", method = RequestMethod.GET)
-	@IgnoreUserToken
 	public JSONObject getUserByDept(@RequestParam(defaultValue = "1") int page,
 			@RequestParam(defaultValue = "10") int limit, @RequestParam(value = "id") String deptId) {
 		return userService.getUserByDept(deptId, page, limit);
@@ -197,7 +194,6 @@ public class UserController extends BaseController<UserBiz, User, String> {
 	 */
 	@ApiOperation("根据人名进行模糊查询")
 	@RequestMapping(value = "/getByName", method = RequestMethod.GET)
-	@IgnoreClientToken
 	public JSONArray getUsersByName(@RequestParam(value = "name") String name) {
 		return userService.getUsersByName(name);
 	}
@@ -209,7 +205,6 @@ public class UserController extends BaseController<UserBiz, User, String> {
      */
     @ApiOperation("根据人名进行模糊查询")
     @RequestMapping(value = "/userNames", method = RequestMethod.GET)
-    @IgnoreClientToken
     public TableResultResponse<Map<String,Object>>  getUsersByName(@RequestParam(value = "name",defaultValue="") String name,
         @RequestParam(value="page", defaultValue="1") Integer page,
         @RequestParam(value="limit", defaultValue="10") Integer limit) {
@@ -224,7 +219,6 @@ public class UserController extends BaseController<UserBiz, User, String> {
 	 */
 	@ApiOperation("获取用户详情，包括部门及岗位")
 	@RequestMapping(value="/get/user/detail",method=RequestMethod.GET)
-	@IgnoreClientToken
 	public JSONArray getUserDetail(@RequestParam(value="userId") @ApiParam("待查询人员ID") String userId) {
         return this.baseBiz.getUserDetail(userId);
 	}
@@ -235,7 +229,6 @@ public class UserController extends BaseController<UserBiz, User, String> {
      */
     @ApiOperation("通过用户ids查询")
     @RequestMapping(value="/ids",method=RequestMethod.GET)
-    @IgnoreClientToken
     public JSONArray getByUserIds(@RequestParam(value="userIds") @ApiParam("待查询人员Ids") String userIds) {
         if(StringUtils.isBlank(userIds)) {
             return new JSONArray();

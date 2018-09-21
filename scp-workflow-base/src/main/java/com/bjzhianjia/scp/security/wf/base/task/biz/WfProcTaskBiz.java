@@ -441,7 +441,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			}
 		}catch(BizException e) {
 			log.error("调用回调类" + service.getClass().getName() + "失败：", e);
-			throw new BizException(e.getMessage());
+			throw e;
 		}
 		catch (Exception e) {
 			log.error("调用回调类" + service.getClass().getName() + "失败：", e);
@@ -772,7 +772,9 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 
 			// 发送流程新任务到达通知
 			wfProcTaskNotify.notify(wfProcBean, wfNextTasksBean);
-		} catch (WorkflowException wfe) {
+		}catch(BizException bizException){
+		    throw bizException;
+		}catch (WorkflowException wfe) {
 		    wfe.printStackTrace();
 			throw wfe;
 		} catch (Exception e) {

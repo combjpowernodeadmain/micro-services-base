@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.codehaus.groovy.transform.TimedInterruptibleASTTransformation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -79,14 +80,15 @@ public class RegulaObjectTypeService {
 			Map<String, Object> conditions = new HashMap<>();
 			conditions.put("id", parentObjectTypeId);
 			List<RegulaObjectType> list = regulaObjectTypeBiz.getByMap(conditions, false);
+			RegulaObjectType parentIns = this.regulaObjectTypeBiz.selectById(parentObjectTypeId);
 			if (list == null || list.isEmpty()) {
 				result.setMessage("所属监管对象类型不存在");
 				return result;
 			}
 
-			if (checkHierarchy(list) >= 3) {
+			if (checkHierarchy(parentIns) >= 3) {
 				// 说明待添加对象的低级是三级，那么本对象不能进行添加
-				result.setMessage("所属监管对象类型应小于三级");
+				result.setMessage("所属监管对象类型应大于三级");
 				return result;
 			}
 
@@ -145,8 +147,12 @@ public class RegulaObjectTypeService {
 		return result;
 	}
 
-	private int checkHierarchy(List<RegulaObjectType> list) {
-		RegulaObjectType parentIns = list.get(0);
+	/**
+	 * 验证监管对象类型parentIns是第几级
+	 * @param parentIns
+	 * @return 监管对象类型parentIns的级数
+	 */
+	private int checkHierarchy(RegulaObjectType parentIns) {
 		List<RegulaObjectType> all = regulaObjectTypeBiz.getList(1, 2147483647, new RegulaObjectType()).getData()
 				.getRows();
 

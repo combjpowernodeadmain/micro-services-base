@@ -67,6 +67,9 @@ public class PropertiesConfig {
     @Value("${writsInstances.destFilePath}")
     private String destFilePath;
 
+    @Value("${writsTemplates.src}")
+    private String templateSrcPath;
+
     /**
      * 现场检查
      * 
@@ -115,5 +118,9 @@ public class PropertiesConfig {
 
     public String getDestFilePath() {
         return destFilePath;
+    }
+
+    public String getTemplateSrcPath() {
+        return templateSrcPath;
     }
 }

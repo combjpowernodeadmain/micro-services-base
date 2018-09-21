@@ -28,6 +28,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import com.bjzhianjia.scp.security.wf.base.biz.ResultUtils;
 import com.bjzhianjia.scp.security.wf.base.constant.Constants.WfProcessDataAttr;
+import com.bjzhianjia.scp.security.wf.base.exception.WorkflowException;
 import com.bjzhianjia.scp.security.wf.base.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.wf.base.task.entity.WfProcTaskBean;
 import com.bjzhianjia.scp.security.wf.base.task.service.IWfProcTaskService;
@@ -84,12 +85,15 @@ public class WfProcTaskRest {
     @ResponseBody
     @RequestMapping(value = { "/startAndCommitProcess"}, method = {RequestMethod.GET, RequestMethod.POST })
     public ObjectRestResponse<Map> startAndCommitProcess(@RequestBody JSONObject objs,HttpServletRequest request) {
-        log.debug("SCP信息---开始启动并提交工作流...");
-        String procInstId = wfProcTaskService.startAndCompleteProcessInstance(objs);
         Map<String, Object> resultData = new LinkedHashMap<String, Object>();
-        resultData.put(WfProcessDataAttr.PROC_INSTANCEID, procInstId);
-        
-        return ResultUtils.success(resultData);
+        log.debug("SCP信息---开始启动并提交工作流...");
+        try {
+            String procInstId = wfProcTaskService.startAndCompleteProcessInstance(objs);
+            resultData.put(WfProcessDataAttr.PROC_INSTANCEID, procInstId);
+            return ResultUtils.success(resultData);
+        }catch (WorkflowException wfe) {
+            return  ResultUtils.fail(wfe);
+        }
     }
     
     /**
