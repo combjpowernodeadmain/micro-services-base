@@ -80,6 +80,7 @@ public class EnforceCertificate implements Serializable {
 	
 	    //创建时间
     @Column(name = "crt_time")
+    @JSONField(format=CommonConstances.DATE_FORMAT_FULL)
     private Date crtTime;
 	
 	    //最后更新人
@@ -92,6 +93,7 @@ public class EnforceCertificate implements Serializable {
 	
 	    //最后更新时间
     @Column(name = "upd_time")
+    @JSONField(format=CommonConstances.DATE_FORMAT_FULL)
     private Date updTime;
 	
 	    //租户ID

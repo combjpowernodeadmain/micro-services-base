@@ -147,6 +147,7 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
     private void getSonId(List<RegulaObjectType> objectTypeList, Set<Integer> ids, Integer id) {
         Integer tempId;
         RegulaObjectType regulaObjectType = null;
+        ids.add(id);// 把父级先加进去  By尚
         for (int i = 0; i < objectTypeList.size(); i++) {
             regulaObjectType = objectTypeList.get(i);
             if (id.equals(regulaObjectType.getParentObjectTypeId())) {

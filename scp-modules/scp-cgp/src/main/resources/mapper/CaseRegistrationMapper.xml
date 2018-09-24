@@ -150,7 +150,7 @@
 		count(*) count
 		FROM
 		cle_case_registration
-		WHERE
+		WHERE biz_type is not null and
 		<include refid="isParamNull" />
 		GROUP BY
 		biz_type
