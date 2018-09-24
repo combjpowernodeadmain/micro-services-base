@@ -8,12 +8,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.bjzhianjia.scp.cgp.constances.CommonConstances;
 import com.bjzhianjia.scp.cgp.entity.LawEnforcePath;
 import com.bjzhianjia.scp.cgp.mapper.LawEnforcePathMapper;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
@@ -22,7 +22,6 @@ import com.github.pagehelper.PageHelper;
 
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
-
 
 /**
  * LawEnforcePathBiz 执法轨迹记录.
@@ -36,15 +35,16 @@ import tk.mybatis.mapper.entity.Example.Criteria;
  * </pre>
  * 
  *
- * @version 1.0 
+ * @version 1.0
  * @author admin
  *
  */
 @Service
-public class LawEnforcePathBiz extends BusinessBiz<LawEnforcePathMapper,LawEnforcePath> {
-    
+public class LawEnforcePathBiz extends BusinessBiz<LawEnforcePathMapper, LawEnforcePath> {
+
     @Autowired
     private LawEnforcePathMapper lawEnforcePathMapper;
+
     /**
      * 查询指定用户，指定时间段的行为轨迹
      * 
@@ -65,7 +65,8 @@ public class LawEnforcePathBiz extends BusinessBiz<LawEnforcePathMapper,LawEnfor
         JSONObject obj = null;
         for (LawEnforcePath lawEnforcePath : list) {
             obj = new JSONObject();
-            obj.put("mapInfo", "{\"lng\":\""+lawEnforcePath.getLng()+"\",\"lat\":\""+lawEnforcePath.getLat()+"\"}");
+            obj.put("mapInfo",
+                "{\"lng\":\"" + lawEnforcePath.getLng() + "\",\"lat\":\"" + lawEnforcePath.getLat() + "\"}");
             obj.put("time", lawEnforcePath.getCrtTime());
             array.add(obj);
         }
@@ -76,11 +77,11 @@ public class LawEnforcePathBiz extends BusinessBiz<LawEnforcePathMapper,LawEnfor
      * 查询指定用户，指定时间段的行为轨迹
      * 
      * @param userId
-      *            用户id
+     *            用户id
      * @param startTime
-      *            开始时间
+     *            开始时间
      * @param endTime
-      *            结束时间
+     *            结束时间
      * @return
      *         List<LawEnforcePath>
      */
@@ -98,52 +99,56 @@ public class LawEnforcePathBiz extends BusinessBiz<LawEnforcePathMapper,LawEnfor
 
         String _startTime = DateUtil.dateFromDateToStr(startTime, "yyyy-MM-dd HH:mm:ss");
         String _endTime = DateUtil.dateFromDateToStr(endTime, "yyyy-MM-dd HH:mm:ss");
-        
-        //结束日期往前推4天，最大查询4天的轨迹记录
+
+        // 结束日期往前推4天，最大查询4天的轨迹记录
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(endTime);
-        calendar.set(Calendar.DATE, calendar.get(Calendar.DATE)-4);
+        calendar.set(Calendar.DATE, calendar.get(Calendar.DATE) - 4);
         Date maxStartTime = calendar.getTime();
         String maxEndTime = DateUtil.dateFromDateToStr(maxStartTime, "yyyy-MM-dd HH:mm:ss");
-        
+
         StringBuilder sql = new StringBuilder();
-        sql.append("(('").append(_startTime).append("'").append("<=crt_time  and '").append(maxEndTime).append("'<=crt_time)");
+        sql.append("(('").append(_startTime).append("'").append("<=crt_time  and '").append(maxEndTime)
+            .append("'<=crt_time)");
         sql.append(" and crt_time<=").append("'").append(_endTime).append("')");
-        
+
         criteria.andCondition(sql.toString());
         list = lawEnforcePathMapper.selectByExample(example);
-        
-        return list != null ? list:new ArrayList<>();
+
+        return list != null ? list : new ArrayList<>();
     }
-    
+
     /**
      * 通过用户id查询定位
+     * 
      * @param userId
      * @return
      */
     public JSONObject getMapInfoByUserId(String userId) {
         JSONObject obj = new JSONObject();
         LawEnforcePath lawEnforcePath = this.getMaxOne(userId);
-        if(lawEnforcePath != null) {
-            obj.put("mapInfo", "{\"lng\":\""+lawEnforcePath.getLng()+"\",\"lat\":\""+lawEnforcePath.getLat()+"\"}");
+        if (lawEnforcePath != null) {
+            obj.put("mapInfo",
+                "{\"lng\":\"" + lawEnforcePath.getLng() + "\",\"lat\":\"" + lawEnforcePath.getLat() + "\"}");
             obj.put("time", lawEnforcePath.getCrtTime());
         }
         return obj;
     }
+
     /**
-     *      通过用户ID查询最新定位记录
+     * 通过用户ID查询最新定位记录
      * 
      * @return
      */
     public LawEnforcePath getMaxOne(String userId) {
-        if(StringUtils.isBlank(userId)) {
+        if (StringUtils.isBlank(userId)) {
             return null;
         }
         Example example = new Example(LawEnforcePath.class);
         example.setOrderByClause("id desc");
         Criteria criteria = example.createCriteria();
         criteria.andEqualTo("crtUserId", userId);
-        
+
         PageHelper.startPage(1, 1);
         List<LawEnforcePath> list = lawEnforcePathMapper.selectByExample(example);
         if (list == null || list.isEmpty()) {
@@ -151,28 +156,31 @@ public class LawEnforcePathBiz extends BusinessBiz<LawEnforcePathMapper,LawEnfor
         }
         return list.get(0);
     }
-    
+
     /**
      * 按用户ID查询记录，多个ID之间用逗号隔开
+     * 
      * @param userIds
      * @return
      */
-    public Map<String, JSONObject> getByUserIds(String userIds){
-        userIds="'"+userIds.replaceAll(",", "','")+"'";
+    public Map<String, JSONObject> getByUserIds(String userIds) {
+        userIds = "'" + userIds.replaceAll(",", "','") + "'";
         List<LawEnforcePath> list = this.mapper.getByUserIds(userIds);
-        
+
         if (list == null || list.isEmpty()) {
-            return new HashMap<String,JSONObject>();
+            return new HashMap<String, JSONObject>();
         }
-        
-        Map<String, JSONObject> result=new HashMap<>();
-        for(LawEnforcePath lawEnforcePath:list) {
+
+        Map<String, JSONObject> result = new HashMap<>();
+        for (LawEnforcePath lawEnforcePath : list) {
             JSONObject obj = new JSONObject();
-            if(lawEnforcePath != null) {
-                obj.put("mapInfo", "{\"lng\":\""+lawEnforcePath.getLng()+"\",\"lat\":\""+lawEnforcePath.getLat()+"\"}");
-                obj.put("time", lawEnforcePath.getCrtTime());
+            if (lawEnforcePath != null) {
+                obj.put("mapInfo",
+                    "{\"lng\":\"" + lawEnforcePath.getLng() + "\",\"lat\":\"" + lawEnforcePath.getLat() + "\"}");
+                obj.put("time",
+                    DateUtil.dateFromDateToStr(lawEnforcePath.getCrtTime(), CommonConstances.DATE_FORMAT_FULL));
             }
-            
+
             result.put(lawEnforcePath.getCrtUserId(), obj);
         }
         return result;
