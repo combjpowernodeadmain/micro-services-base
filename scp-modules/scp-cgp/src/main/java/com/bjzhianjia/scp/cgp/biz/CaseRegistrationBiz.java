@@ -448,6 +448,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             restResult.setMessage("请指定执法人员");
             return restResult;
         }
+        
+        if(BeanUtil.isEmpty(enforceCertificate)) {
+            restResult.getData().setTotal(0);
+            restResult.getData().setRows(new ArrayList<>());
+            return restResult;
+        }
 
         criteria.andEqualTo("isDeleted", "0");
         criteria.andLike("enforcers", String.valueOf(enforceCertificate.getId()));
@@ -726,12 +732,18 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         List<CaseRegistration> caseRegistrationList = bizResult.getData().getRows();
 
         // 数据字典code封装
-        List<String> eventTypeIdStrList = new ArrayList<>(); // 案件类别
+        Set<String> eventTypeIdStrList = new HashSet<>(); // 案件类别
         Set<String> rootBizIdSet = new HashSet<>(); // 数据字典code
         for (CaseRegistration caseRegistration : caseRegistrationList) {
-            rootBizIdSet.add(caseRegistration.getBizType());
-            rootBizIdSet.add(caseRegistration.getCaseSourceType());
-            eventTypeIdStrList.add(caseRegistration.getEventType());
+            if(StringUtils.isNotBlank(caseRegistration.getBizType())) {
+                rootBizIdSet.add(caseRegistration.getBizType());
+            }
+            if(StringUtils.isNotBlank(caseRegistration.getCaseSourceType())) {
+                rootBizIdSet.add(caseRegistration.getCaseSourceType());
+            }
+            if(StringUtils.isNotBlank(caseRegistration.getEventType())) {
+                eventTypeIdStrList.add(caseRegistration.getEventType());
+            }
         }
 
         // 查询业务条线，查询案件来源
