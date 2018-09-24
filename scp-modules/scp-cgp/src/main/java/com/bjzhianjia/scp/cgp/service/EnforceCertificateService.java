@@ -108,10 +108,10 @@ public class EnforceCertificateService {
                     }
                     String[] split = bizLists.split(",");
                     StringBuilder dictList = new StringBuilder();
-                    for(int i=0 ; split != null && i < split.length ; i++) {
-                        if(i == split.length-1) {
+                    for (int i = 0; split != null && i < split.length; i++) {
+                        if (i == split.length - 1) {
                             dictList.append(bizTypeMap.get(split[i]));
-                        }else {
+                        } else {
                             dictList.append(bizTypeMap.get(split[i])).append(",");
                         }
                     }
@@ -167,11 +167,13 @@ public class EnforceCertificateService {
         List<JSONObject> resultJObjList = new ArrayList<>();
         for (int i = 0; i < resultJArray.size(); i++) {
             JSONObject jsonObject = resultJArray.getJSONObject(i);
-                if (lawMap != null && !lawMap.isEmpty()) {
-                    jsonObject.put("mapInfo", lawMap.get(jsonObject.getString("usrId")));
-                }
-                resultJObjList.add(jsonObject);
+            if (lawMap != null && !lawMap.isEmpty()) {
+                jsonObject.put("mapInfo", lawMap.get(jsonObject.getJSONObject("usrId").getString("id")));
+                // jsonObject.put("mapInfo",
+                // lawMap.get(jsonObject.getString("usrId")));
             }
+            resultJObjList.add(jsonObject);
+        }
 
         return new TableResultResponse<>(tableResult.getData().getTotal(), resultJObjList);
     }
