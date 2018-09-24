@@ -25,9 +25,8 @@ import com.bjzhianjia.scp.cgp.entity.CLEConcernedPerson;
 import com.bjzhianjia.scp.cgp.entity.CaseAttachments;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
-import com.bjzhianjia.scp.cgp.entity.ConcernedCompany;
-import com.bjzhianjia.scp.cgp.entity.ConcernedPerson;
 import com.bjzhianjia.scp.cgp.entity.Constances;
+import com.bjzhianjia.scp.cgp.entity.EnforceCertificate;
 import com.bjzhianjia.scp.cgp.entity.EventType;
 import com.bjzhianjia.scp.cgp.entity.InspectItems;
 import com.bjzhianjia.scp.cgp.entity.LawTask;
@@ -38,7 +37,6 @@ import com.bjzhianjia.scp.cgp.exception.BizException;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.feign.IUserFeign;
-import com.bjzhianjia.scp.cgp.mapper.CaseAttachmentsMapper;
 import com.bjzhianjia.scp.cgp.mapper.CaseRegistrationMapper;
 import com.bjzhianjia.scp.cgp.mapper.EventTypeMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
@@ -127,6 +125,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
     @Autowired
     private MergeCore mergeCore;
+
+    @Autowired
+    private EnforceCertificateBiz enforceCertificateBiz;
 
     /**
      * 添加立案记录<br/>
@@ -437,8 +438,19 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         Example example = new Example(CaseRegistration.class);
         Criteria criteria = example.createCriteria();
 
+        // 获取具有执法证的人员在执法证管理表中的ID
+//        String _userId = CommonUtil.getValueFromJObjStr(userId, "id");
+        EnforceCertificate enforceCertificate = null;
+        if (StringUtils.isNotBlank(userId)) {
+            enforceCertificate = enforceCertificateBiz.getEnforceCertificateByUserId(userId);
+        } else {
+            restResult.setStatus(400);
+            restResult.setMessage("请指定执法人员");
+            return restResult;
+        }
+
         criteria.andEqualTo("isDeleted", "0");
-        criteria.andEqualTo("enforcers", userId);
+        criteria.andLike("enforcers", String.valueOf(enforceCertificate.getId()));
 
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<CaseRegistration> rows = this.selectByExample(example);
@@ -911,9 +923,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         if (StringUtils.isNotBlank(caseSourceType)) {
             criteria.andEqualTo("caseSourceType", caseSourceType);
         }
-        
+
         example.setOrderByClause("crt_time desc");
-        
+
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<CaseRegistration> list = this.mapper.selectByExample(example);
 
