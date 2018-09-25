@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -383,5 +384,12 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
          */
         JSONArray procApproveHistory = caseRegistrationService.getProcApproveHistory(objs);
         return procApproveHistory;
+    }
+    
+    @RequestMapping(value="/instance/{id}",method=RequestMethod.GET)
+    @ApiOperation("按ID查询案件详情，只涉及案件信息")
+    public ObjectRestResponse<JSONObject> caseRegistration(@PathVariable(value="id") @ApiParam("待查询对象ID") String id){
+        
+        return this.baseBiz.caseRegistration(id);
     }
 }

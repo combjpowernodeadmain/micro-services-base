@@ -120,7 +120,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
 
     @RequestMapping(value = "/get/{id}", method = RequestMethod.GET)
     @ApiOperation("获取单个对象")
-    public ObjectRestResponse<CaseInfo> get(@PathVariable("id") @ApiParam(name = "待查询对象ID") Integer id) {
+    public ObjectRestResponse<JSONObject> getInfo(@PathVariable("id") @ApiParam(name = "待查询对象ID") Integer id) {
         return caserInfoService.get(id);
     }
 

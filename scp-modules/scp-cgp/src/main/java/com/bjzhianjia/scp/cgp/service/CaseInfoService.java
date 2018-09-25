@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.service;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -7,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -47,6 +49,7 @@ import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.mapper.EventTypeMapper;
 import com.bjzhianjia.scp.cgp.mapper.RegulaObjectMapper;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.merge.core.MergeCore;
@@ -129,7 +132,6 @@ public class CaseInfoService {
 
     @Autowired
     private MergeCore mergeCore;
-    
 
     /**
      * 更新单个对象
@@ -169,9 +171,44 @@ public class CaseInfoService {
      * @param id
      * @return
      */
-    public ObjectRestResponse<CaseInfo> get(Integer id) {
+    public ObjectRestResponse<JSONObject> get(Integer id) {
+        ObjectRestResponse<JSONObject> restResult=new ObjectRestResponse<>();
         CaseInfo caseInfo = this.caseInfoBiz.selectById(id);
-        return new ObjectRestResponse<CaseInfo>().data(caseInfo);
+        
+        if(BeanUtil.isEmpty(caseInfo)) {
+            restResult.setData(new JSONObject());
+            return restResult;
+        }
+
+        List<CaseInfo> list = new ArrayList<>();
+        list.add(caseInfo);
+        try {
+            mergeCore.mergeResult(CaseInfo.class, list);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        
+        //整合办理信息
+        List<ExecuteInfo> exeInfoList = executeInfoBiz.getListByCaseInfoId(caseInfo.getId());
+        ExecuteInfo executeInfo=new ExecuteInfo();
+        if(BeanUtil.isNotEmpty(exeInfoList)) {
+            executeInfo=exeInfoList.get(0);
+        }
+        
+        JSONObject caseInfoJObj = JSONObject.parseObject(JSON.toJSONString(caseInfo));
+        if(BeanUtil.isNotEmpty(executeInfo)) {
+            caseInfoJObj.put("exePerson", executeInfo.getExePerson());
+            caseInfoJObj.put("exeFinishTime", executeInfo.getFinishTime());
+        }
+        
+        restResult.setData(caseInfoJObj);
+        return restResult;
     }
 
     /**
@@ -355,7 +392,7 @@ public class CaseInfoService {
 
         // 查询事件类别
         Map<String, String> eventType_ID_NAME_Map = new HashMap<>();
-//        String eventTypeName = "";
+        // String eventTypeName = "";
         if (eventTypeIdStrSet != null && !eventTypeIdStrSet.isEmpty()) {
             List<EventType> eventTypeList = new ArrayList<>();
             eventTypeList = eventTypeMapper.selectByIds(String.join(",", eventTypeIdStrSet));
@@ -366,7 +403,7 @@ public class CaseInfoService {
                 }
                 eventType_ID_NAME_Map.put(String.valueOf(eventType.getId()), eventType.getTypeName());
             }
-//            eventTypeName = String.join(",", eventTypeNameList);
+            // eventTypeName = String.join(",", eventTypeNameList);
         }
 
         for (CaseInfo caseInfo : caseInfoList) {
@@ -374,7 +411,7 @@ public class CaseInfoService {
             JSONObject wfJObject = JSONObject.parseObject(JSON.toJSONString(caseInfo));
 
             wfJObject.put("bizListName", getRootBizTypeName(caseInfo.getBizList(), rootBizList));
-            wfJObject.put("eventTypeListName", getEventTypeName(eventType_ID_NAME_Map,caseInfo.getEventTypeList()));
+            wfJObject.put("eventTypeListName", getEventTypeName(eventType_ID_NAME_Map, caseInfo.getEventTypeList()));
             wfJObject.put("sourceTypeName", getRootBizTypeName(caseInfo.getSourceType(), rootBizList));
             wfJObject.put("caseLevelName", getRootBizTypeName(caseInfo.getCaseLevel(), rootBizList));
 
@@ -384,7 +421,7 @@ public class CaseInfoService {
             Date deadLine = caseInfo.getDeadLine();
             Date finishTime = caseInfo.getFinishTime();
             boolean isOvertime = false;
-            if(deadLine != null) {
+            if (deadLine != null) {
                 if (CaseInfo.FINISHED_STATE_TODO.equals(caseInfo.getIsFinished())) {
                     // 任务未完成判断是否超时
                     isOvertime = deadLine.compareTo(new Date()) > 0 ? false : true;
@@ -395,7 +432,7 @@ public class CaseInfoService {
             }
             // 是否超时
             wfJObject.put("isOvertime", isOvertime);
-            
+
             WfProcBackBean wfProcBackBean = wfProcBackBean_ID_Entity_Map.get(String.valueOf(caseInfo.getId()));
             if (wfProcBackBean != null) {
                 wfJObject.put("procCtaskname", wfProcBackBean.getProcCtaskname());
@@ -406,7 +443,7 @@ public class CaseInfoService {
                 wfJObject.put("procTaskStatus", wfProcBackBean.getProcTaskStatus());
                 wfJObject.put("procCtaskcode", wfProcBackBean.getProcCtaskcode());
             }
-            
+
             wfJObject.put("caseInfoId", caseInfo.getId());
             if (CaseInfo.FINISHED_STATE_FINISH.equals(caseInfo.getIsFinished())) {
                 wfJObject.put("procCtaskname", "已结案");
@@ -415,7 +452,7 @@ public class CaseInfoService {
             if (CaseInfo.FINISHED_STATE_STOP.equals(caseInfo.getIsFinished())) {
                 wfJObject.put("procCtaskname", "已终止");
             }
-         
+
             jObjList.add(wfJObject);
         }
 
@@ -423,16 +460,16 @@ public class CaseInfoService {
     }
 
     private String getEventTypeName(Map<String, String> eventType_ID_NAME_Map, String eventTypeList) {
-        if(eventTypeList!=null) {
-            List<String> nameList=new ArrayList<>();
+        if (eventTypeList != null) {
+            List<String> nameList = new ArrayList<>();
             String[] split = eventTypeList.split(",");
             for (String string : split) {
-                
-                if(StringUtils.isNotBlank(eventType_ID_NAME_Map.get(string))) {
+
+                if (StringUtils.isNotBlank(eventType_ID_NAME_Map.get(string))) {
                     nameList.add(eventType_ID_NAME_Map.get(string));
                 }
             }
-            
+
             return String.join(",", nameList);
         }
         return "";
@@ -629,13 +666,13 @@ public class CaseInfoService {
         if (concernedCompanyJObj != null) {
             ConcernedCompany concernedCompany =
                 JSONObject.parseObject(concernedCompanyJObj.toJSONString(), ConcernedCompany.class);
-            
-            if(concernedCompany.getId() != null) {
+
+            if (concernedCompany.getId() != null) {
                 concernedCompanyBiz.updateSelectiveById(concernedCompany);
-            }else {
+            } else {
                 concernedCompanyService.created(concernedCompany);
             }
-                       
+
             caseInfo.setConcernedPerson(String.valueOf(concernedCompany.getId()));
             // 当事人类型为"root_biz_concernedT_org"
             caseInfo.setConcernedType(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG);//

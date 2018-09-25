@@ -439,13 +439,19 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         Criteria criteria = example.createCriteria();
 
         // 获取具有执法证的人员在执法证管理表中的ID
-//        String _userId = CommonUtil.getValueFromJObjStr(userId, "id");
+        // String _userId = CommonUtil.getValueFromJObjStr(userId, "id");
         EnforceCertificate enforceCertificate = null;
         if (StringUtils.isNotBlank(userId)) {
             enforceCertificate = enforceCertificateBiz.getEnforceCertificateByUserId(userId);
         } else {
             restResult.setStatus(400);
             restResult.setMessage("请指定执法人员");
+            return restResult;
+        }
+
+        if (BeanUtil.isEmpty(enforceCertificate)) {
+            restResult.getData().setTotal(0);
+            restResult.getData().setRows(new ArrayList<>());
             return restResult;
         }
 
@@ -726,12 +732,18 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         List<CaseRegistration> caseRegistrationList = bizResult.getData().getRows();
 
         // 数据字典code封装
-        List<String> eventTypeIdStrList = new ArrayList<>(); // 案件类别
+        Set<String> eventTypeIdStrList = new HashSet<>(); // 案件类别
         Set<String> rootBizIdSet = new HashSet<>(); // 数据字典code
         for (CaseRegistration caseRegistration : caseRegistrationList) {
-            rootBizIdSet.add(caseRegistration.getBizType());
-            rootBizIdSet.add(caseRegistration.getCaseSourceType());
-            eventTypeIdStrList.add(caseRegistration.getEventType());
+            if (StringUtils.isNotBlank(caseRegistration.getBizType())) {
+                rootBizIdSet.add(caseRegistration.getBizType());
+            }
+            if (StringUtils.isNotBlank(caseRegistration.getCaseSourceType())) {
+                rootBizIdSet.add(caseRegistration.getCaseSourceType());
+            }
+            if (StringUtils.isNotBlank(caseRegistration.getEventType())) {
+                eventTypeIdStrList.add(caseRegistration.getEventType());
+            }
         }
 
         // 查询业务条线，查询案件来源
@@ -1415,5 +1427,20 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             return new TableResultResponse<Map<String, Object>>(0, null);
         }
         return new TableResultResponse<Map<String, Object>>(result.getTotal(), list);
+    }
+
+    /**
+     * 按ID查询案件详情，只涉及案件信息
+     * 
+     * @param id
+     * @return
+     */
+    public ObjectRestResponse<JSONObject> caseRegistration(String id) {
+        ObjectRestResponse<JSONObject> restResult = new ObjectRestResponse<>();
+        CaseRegistration caseRegistration = this.selectById(id);
+
+        JSONObject resultJObj = JSONObject.parseObject(JSON.toJSONString(caseRegistration));
+        restResult.setData(resultJObj);
+        return restResult;
     }
 }
