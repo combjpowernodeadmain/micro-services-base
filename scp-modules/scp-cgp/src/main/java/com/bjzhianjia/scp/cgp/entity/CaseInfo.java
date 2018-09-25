@@ -41,6 +41,7 @@ public class CaseInfo implements Serializable {
 	
 	    //事件来源类型
     @Column(name = "source_type")
+    @MergeField(key="root_biz_eventType",feign=DictFeign.class,method="getByCode")
     private String sourceType;
 	
 	    //事件来源编号
