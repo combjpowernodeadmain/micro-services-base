@@ -520,14 +520,14 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         // 查询待办工作流任务
         PageInfo<WfProcBackBean> pageInfo = wfMonitorService.getUserAllToDoTasks(objs);
         List<WfProcBackBean> wfProcBackBeanList = pageInfo.getList();
-        
+
         /*
          * By尚
          */
-        if(BeanUtil.isEmpty(wfProcBackBeanList)) {
+        if (BeanUtil.isEmpty(wfProcBackBeanList)) {
             return new TableResultResponse<>(0, new ArrayList<JSONObject>());
         }
-        
+
         List<String> commiterList =
             wfProcBackBeanList.stream().map(o -> o.getProcTaskCommitter()).distinct().collect(Collectors.toList());
         Map<String, String> userMap = adminFeign.getUser(String.join(",", commiterList));
@@ -563,13 +563,13 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                     // 没有匹配业务数据，则跳过
                     if (caseRegistration == null) continue;
                     obj = JSONObject.parseObject(JSON.toJSONString(wfProcBackBean));
-                    
+
                     /*
                      * By尚
                      * 在返回结果中添加案件名称
                      */
                     obj.put("caseName", caseRegistration.getCaseName());
-                    
+
                     obj.put("procTaskCommitterName",
                         CommonUtil.getValueFromJObjStr(userMap.get(wfProcBackBean.getProcTaskCommitter()), "name"));
 
@@ -860,7 +860,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             List<String> nameList = new ArrayList<>();
             String[] split = eventTypeList.split(",");
             for (String string : split) {
-                nameList.add(eventType_ID_NAME_Map.get(string));
+                // 如果取出结果为null，则用空字符串填充，防止在前端出现"null"字样
+                nameList.add(eventType_ID_NAME_Map.get(string) == null ? "" : eventType_ID_NAME_Map.get(string));
             }
             return String.join(",", nameList);
         }
@@ -970,7 +971,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             String[] split = codes.split(",");
             List<String> nameList = new ArrayList<>();
             for (String string : split) {
-                nameList.add(rootBizList.get(string));
+                // 如果取出结果为null，则用空字符串填充，防止在前端出现"null"字样
+                nameList.add(rootBizList.get(string) == null ? "" : rootBizList.get(string));
             }
             return String.join(",", nameList);
         }

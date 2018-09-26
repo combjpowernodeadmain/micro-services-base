@@ -172,10 +172,10 @@ public class CaseInfoService {
      * @return
      */
     public ObjectRestResponse<JSONObject> get(Integer id) {
-        ObjectRestResponse<JSONObject> restResult=new ObjectRestResponse<>();
+        ObjectRestResponse<JSONObject> restResult = new ObjectRestResponse<>();
         CaseInfo caseInfo = this.caseInfoBiz.selectById(id);
-        
-        if(BeanUtil.isEmpty(caseInfo)) {
+
+        if (BeanUtil.isEmpty(caseInfo)) {
             restResult.setData(new JSONObject());
             return restResult;
         }
@@ -193,20 +193,20 @@ public class CaseInfoService {
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
-        
-        //整合办理信息
+
+        // 整合办理信息
         List<ExecuteInfo> exeInfoList = executeInfoBiz.getListByCaseInfoId(caseInfo.getId());
-        ExecuteInfo executeInfo=new ExecuteInfo();
-        if(BeanUtil.isNotEmpty(exeInfoList)) {
-            executeInfo=exeInfoList.get(0);
+        ExecuteInfo executeInfo = new ExecuteInfo();
+        if (BeanUtil.isNotEmpty(exeInfoList)) {
+            executeInfo = exeInfoList.get(0);
         }
-        
+
         JSONObject caseInfoJObj = JSONObject.parseObject(JSON.toJSONString(caseInfo));
-        if(BeanUtil.isNotEmpty(executeInfo)) {
+        if (BeanUtil.isNotEmpty(executeInfo)) {
             caseInfoJObj.put("exePerson", executeInfo.getExePerson());
             caseInfoJObj.put("exeFinishTime", executeInfo.getFinishTime());
         }
-        
+
         restResult.setData(caseInfoJObj);
         return restResult;
     }
@@ -291,7 +291,9 @@ public class CaseInfoService {
 
         if (list != null && !list.isEmpty()) {
             // 有待办任务
-            return queryAssist(queryCaseInfo, queryData, jObjList, pageInfo, objs);
+            TableResultResponse<JSONObject> restResult =
+                queryAssist(queryCaseInfo, queryData, jObjList, pageInfo, objs);
+            return restResult;
         } else {
             // 无待办任务
             return new TableResultResponse<>(0, jObjList);
@@ -336,7 +338,9 @@ public class CaseInfoService {
 
         if (list != null && !list.isEmpty()) {
             // 有待办任务
-            return queryAssist(queryCaseInfo, queryData, jObjList, pageInfo, objs);
+            TableResultResponse<JSONObject> restResult =
+                queryAssist(queryCaseInfo, queryData, jObjList, pageInfo, objs);
+            return restResult;
         } else {
             // 无待办任务
             return new TableResultResponse<>(0, jObjList);
