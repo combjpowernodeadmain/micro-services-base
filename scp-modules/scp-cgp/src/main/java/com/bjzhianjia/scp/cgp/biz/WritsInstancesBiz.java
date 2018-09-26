@@ -260,7 +260,7 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         // 生成与fillContext相对应的文件名
         StringBuffer destFileNameBuffer = new StringBuffer();
         destFileNameBuffer.append(WritsConstances.WRITS_PREFFIX).append(writsInstances.getCaseId()).append("_")
-            .append(fillContext.hashCode()).append(".docx");
+            .append(fillContext.hashCode()).append(WritsConstances.WRITS_SUFFIX_DOC);
 
         String destPath = propertiesConfig.getDestFilePath() + destFileNameBuffer.toString();
 
@@ -272,15 +272,15 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             ignoreFileNameList.add(destFileNameBuffer.toString());
 
             DocUtil.deletePrefix(WritsConstances.WRITS_PREFFIX + writsInstances.getCaseId() + "_",
-                WritsConstances.WRITS_SUFFIX, propertiesConfig.getDestFilePath(), ignoreFileNameList);
+                WritsConstances.WRITS_SUFFIX_DOC, propertiesConfig.getDestFilePath(), ignoreFileNameList);
 
             // 将fillContext内的内容添加到文书模板上
             JSONObject fillJObj = JSONObject.parseObject(fillContext);
 
-            StringBuffer ziHao = new StringBuffer();
-            ziHao.append(writsInstances.getRefEnforceType()).append("[").append(writsInstances.getRefYear()).append("]")
-                .append(writsInstances.getRefNo());
-            fillJObj.put("ZiHao", ziHao.toString());
+            // StringBuffer ziHao = new StringBuffer();
+            // ziHao.append(writsInstances.getRefEnforceType()).append("[").append(writsInstances.getRefYear()).append("]")
+            // .append(writsInstances.getRefNo());
+            // fillJObj.put("ZiHao", ziHao.toString());
 
             @SuppressWarnings({ "unchecked", "rawtypes" })
             Map<String, String> map = (Map) fillJObj;

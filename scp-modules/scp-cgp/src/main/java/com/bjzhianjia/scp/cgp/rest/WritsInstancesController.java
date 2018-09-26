@@ -1,5 +1,7 @@
 package com.bjzhianjia.scp.cgp.rest;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import com.bjzhianjia.scp.cgp.config.PropertiesConfig;
 import com.bjzhianjia.scp.cgp.constances.WritsConstances;
 import com.bjzhianjia.scp.cgp.entity.WritsInstances;
 import com.bjzhianjia.scp.cgp.util.DocDownUtil;
+import com.bjzhianjia.scp.cgp.util.DocUtil;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
@@ -145,7 +148,8 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
 
         log.info("请求文书实例，文书名：" + fileName);
 
-        response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        // response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        response.setContentType("application/msword");
 
         ResponseEntity<?> file = docDownUtil.getFile(propertiesConfig.getDestFilePath(), fileName);
         return file;
@@ -154,8 +158,8 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
 
     @RequestMapping(value = "/true/instance/writsId", method = RequestMethod.GET)
     @ApiOperation("生成文书实例，并返回文书实例对应的word文档")
-    public ResponseEntity<?> getTrueWritsInstancesById(
-        @RequestParam(value = "writsId") Integer writsId, HttpServletResponse response) {
+    public ResponseEntity<?> getTrueWritsInstancesById(@RequestParam(value = "writsId") Integer writsId,
+        HttpServletResponse response) {
         /*
          * 采用com.bjzhianjia.scp.cgp.rest.WritsInstancesController.
          * getWritsInstances(String,
@@ -169,10 +173,60 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
         log.info("请求文书实例，文书ID：" + writsId);
         // 生成文书实例
         ObjectRestResponse<String> _fileNameRest = this.baseBiz.getWritsInstance(writsId);
-        // 设置响应头为响应一个word文档
-        response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        // 设置响应头为响应一个word文档--doc
+        // response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        response.setContentType("application/msword");
 
         ResponseEntity<?> file = docDownUtil.getFile(propertiesConfig.getDestFilePath(), _fileNameRest.getData());
+        return file;
+    }
+
+    /**
+     * 根据文书ID获取PDF格式的文书
+     * 
+     * @param writsId
+     *            待获取的文书ID
+     * @param response
+     * @return
+     */
+    @RequestMapping(value = "/true/instance/pdf/writsId", method = RequestMethod.GET)
+    @ApiOperation("生成文书实例，并返回文书实例对应的word文档")
+    public ResponseEntity<?> getTruePDFWritsInstancesById(@RequestParam(value = "writsId") Integer writsId,
+        HttpServletResponse response) {
+        /*
+         * 采用com.bjzhianjia.scp.cgp.rest.WritsInstancesController.
+         * getWritsInstances(String,
+         * HttpServletResponse)进行文书下载时，会出现下载一个空word文档情况
+         * 所以提供该方法，直接提供下载
+         * 
+         * 该方法处理两个逻辑<br/>
+         * 1 生成文书实例<br/>
+         * 2 将文书实例对应的word文档返回到前端，以提供下载
+         */
+        log.info("请求文书PDF实例，文书ID：" + writsId);
+        // 生成文书实例
+        ObjectRestResponse<String> _fileNameRest = this.baseBiz.getWritsInstance(writsId);
+
+        String fullDocFileName = _fileNameRest.getData();
+        String fullPDFFileName =
+            fullDocFileName.substring(0, fullDocFileName.lastIndexOf(".")) + WritsConstances.WRITS_SUFFIX_PDF;
+
+        try {
+            // DocUtil.WordToPDF(propertiesConfig.getDestFilePath() +
+            // fullDocFileName,
+            // propertiesConfig.getDestFilePath() + fullPDFFileName,"C:\\Program
+            // Files (x86)\\OpenOffice
+            // 4\\program\\soffice.exe","127.0.0.1",8100);
+            DocUtil.WordToPDF(propertiesConfig.getDestFilePath() + fullDocFileName,
+                propertiesConfig.getDestFilePath() + fullPDFFileName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // 设置响应头为响应一个word文档
+        response.setContentType("application/pdf");
+
+        ResponseEntity<?> file = docDownUtil.getFile(propertiesConfig.getDestFilePath(), fullPDFFileName);
         return file;
     }
 }

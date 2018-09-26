@@ -1,8 +1,7 @@
 package com.bjzhianjia.scp.cgp.constances;
 
-
 /**
- * WritsConstances 类描述.     与文书相关的常量类
+ * WritsConstances 类描述. 与文书相关的常量类
  *
  *
  * <pre>
@@ -13,22 +12,34 @@ package com.bjzhianjia.scp.cgp.constances;
  * </pre>
  * 
  *
- * @version 1.0 
+ * @version 1.0
  * @author 尚
  *
  */
 public class WritsConstances {
+
     /**
      * 文书名前缀
      */
-    public static final String WRITS_PREFFIX="wri_";
+    public static final String WRITS_PREFFIX = "wri_";
+
     /**
-     * 文书名后缀
+     * 文书名后缀(.docx)
      */
-    public static final String WRITS_SUFFIX="docx";
-    
+    public static final String WRITS_SUFFIX_DOCX = ".docx";
+
+    /**
+     * 文书名后缀(.doc)
+     */
+    public static final String WRITS_SUFFIX_DOC = ".doc";
+
+    /**
+     * 文书名后缀(.pdf)
+     */
+    public static final String WRITS_SUFFIX_PDF = ".pdf";
+
     /**
      * 指定要下载的类型为文书模板
      */
-    public static final String DOWNLOAD_WRI_TEMPLATE="template";
+    public static final String DOWNLOAD_WRI_TEMPLATE = "template";
 }
