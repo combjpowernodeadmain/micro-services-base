@@ -2,93 +2,103 @@ package com.bjzhianjia.scp.cgp.vo;
 
 public class AttendanceVo {
 
-	private String account;
-	
-	private String name;
-	
-	private String depart;
-	
-	private String signInMapInfo;
-	
-	private String signInTime;
-	
-	private String signOutMapInfo;
-	
-	private String signOutTime;
-	
-	private String signInMap;
-	
-	private String signOutMap;
+    private String account;
 
-	public String getAccount() {
-		return account;
-	}
+    private String name;
 
-	public void setAccount(String account) {
-		this.account = account;
-	}
+    private String depart;
 
-	public String getName() {
-		return name;
-	}
+    private String signInMapInfo;
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    private String signInTime;
 
-	public String getDepart() {
-		return depart;
-	}
+    private String signOutMapInfo;
 
-	public void setDepart(String depart) {
-		this.depart = depart;
-	}
+    private String signOutTime;
 
-	public String getSignInMapInfo() {
-		return signInMapInfo;
-	}
+    private String signInMap;
 
-	public void setSignInMapInfo(String signInMapInfo) {
-		this.signInMapInfo = signInMapInfo;
-	}
+    private String signOutMap;
 
-	public String getSignInTime() {
-		return signInTime;
-	}
+    private String dateDay;// 打卡日期
 
-	public void setSignInTime(String signTime) {
-		this.signInTime = signTime;
-	}
+    public String getAccount() {
+        return account;
+    }
 
-	public String getSignOutMapInfo() {
-		return signOutMapInfo;
-	}
+    public void setAccount(String account) {
+        this.account = account;
+    }
 
-	public void setSignOutMapInfo(String signOutMapInfo) {
-		this.signOutMapInfo = signOutMapInfo;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public String getSignOutTime() {
-		return signOutTime;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public void setSignOutTime(String signOutTime) {
-		this.signOutTime = signOutTime;
-	}
+    public String getDepart() {
+        return depart;
+    }
 
-	public String getSignInMap() {
-		return signInMap;
-	}
+    public void setDepart(String depart) {
+        this.depart = depart;
+    }
 
-	public void setSignInMap(String signInMap) {
-		this.signInMap = signInMap;
-	}
+    public String getSignInMapInfo() {
+        return signInMapInfo;
+    }
 
-	public String getSignOutMap() {
-		return signOutMap;
-	}
+    public void setSignInMapInfo(String signInMapInfo) {
+        this.signInMapInfo = signInMapInfo;
+    }
 
-	public void setSignOutMap(String signOutMap) {
-		this.signOutMap = signOutMap;
-	}
+    public String getSignInTime() {
+        return signInTime;
+    }
+
+    public void setSignInTime(String signTime) {
+        this.signInTime = signTime;
+    }
+
+    public String getSignOutMapInfo() {
+        return signOutMapInfo;
+    }
+
+    public void setSignOutMapInfo(String signOutMapInfo) {
+        this.signOutMapInfo = signOutMapInfo;
+    }
+
+    public String getSignOutTime() {
+        return signOutTime;
+    }
+
+    public void setSignOutTime(String signOutTime) {
+        this.signOutTime = signOutTime;
+    }
+
+    public String getSignInMap() {
+        return signInMap;
+    }
+
+    public void setSignInMap(String signInMap) {
+        this.signInMap = signInMap;
+    }
+
+    public String getSignOutMap() {
+        return signOutMap;
+    }
+
+    public void setSignOutMap(String signOutMap) {
+        this.signOutMap = signOutMap;
+    }
+
+    public String getDateDay() {
+        return dateDay;
+    }
+
+    public void setDateDay(String dateDay) {
+        this.dateDay = dateDay;
+    }
 }
