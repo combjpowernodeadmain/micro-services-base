@@ -50,6 +50,24 @@ public class PropertiesConfig {
     private String informCode;
 
     /**
+     * openOffice执行文件所在路径
+     */
+    @Value("${openOffice.path}")
+    private String openOfficePath;
+
+    /**
+     * openOffice所在主机地址
+     */
+    @Value("${openOffice.host}")
+    private String openOfficeHost;
+
+    /**
+     * openOffice端口号
+     */
+    @Value("${openOffice.port}")
+    private String openOfficePort;
+
+    /**
      * 文件原文件路
      */
     @Value("${writsInstances.srcPath}")
@@ -122,5 +140,17 @@ public class PropertiesConfig {
 
     public String getTemplateSrcPath() {
         return templateSrcPath;
+    }
+
+    public String getOpenOfficePath() {
+        return openOfficePath;
+    }
+
+    public String getOpenOfficeHost() {
+        return openOfficeHost;
+    }
+
+    public String getOpenOfficePort() {
+        return openOfficePort;
     }
 }

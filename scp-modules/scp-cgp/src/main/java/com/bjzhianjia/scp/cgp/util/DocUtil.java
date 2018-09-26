@@ -23,6 +23,11 @@ import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 
+import com.artofsolving.jodconverter.DocumentConverter;
+import com.artofsolving.jodconverter.openoffice.connection.OpenOfficeConnection;
+import com.artofsolving.jodconverter.openoffice.connection.SocketOpenOfficeConnection;
+import com.artofsolving.jodconverter.openoffice.converter.OpenOfficeDocumentConverter;
+
 import lombok.extern.log4j.Log4j;
 
 /**
@@ -140,12 +145,18 @@ public class DocUtil {
             } else if ((sp[sp.length - 1].equalsIgnoreCase("doc")) && (dp[dp.length - 1].equalsIgnoreCase("doc"))) {
                 /** doc只能生成doc，如果生成docx会出错 **/
                 HWPFDocument document = null;
+                FileInputStream in = null;
                 try {
-                    FileInputStream in = new FileInputStream(new File(copyFile));
+                    in = new FileInputStream(new File(copyFile));
                     document = new HWPFDocument(in);
                     Range range = document.getRange();
                     for (Map.Entry<String, String> entry : map.entrySet()) {
-                        range.replaceText(entry.getKey(), entry.getValue());
+                        /*
+                         * By尚
+                         * 修改：2018-09-25
+                         */
+                        String reg = "${" + entry.getKey() + "}";
+                        range.replaceText(reg, entry.getValue());
                     }
                     FileOutputStream outStream = null;
                     outStream = new FileOutputStream(destFullPath);
@@ -159,12 +170,15 @@ public class DocUtil {
                     e.printStackTrace();
                     return null;
                 } finally {
-                    if (document != null) {
-                        try {
+                    try {
+                        if (document != null) {
                             document.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
                         }
+                        if (in != null) {
+                            in.close();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
 
                     // 删除临时文件
@@ -201,7 +215,7 @@ public class DocUtil {
     private static String copyFile(String srcPath, String destPath) {
         String copyPath =
             srcPath.substring(0, srcPath.lastIndexOf(".")) + "_copy" + srcPath.substring(srcPath.lastIndexOf("."));
-        log.debug("创建文书模板copy文件，路径为:"+copyPath);
+        log.debug("创建文书模板copy文件，路径为:" + copyPath);
 
         InputStream is = null;
         OutputStream os = null;
@@ -285,10 +299,15 @@ public class DocUtil {
 
     /**
      * 删除带特定前缀与后缀的文件
-     * @param preffix 文件前缀
-     * @param suffix 文件后缀
-     * @param path 文件路
-     * @param ignoreFileNameList 不进行删除的文件名列表
+     * 
+     * @param preffix
+     *            文件前缀
+     * @param suffix
+     *            文件后缀
+     * @param path
+     *            文件路
+     * @param ignoreFileNameList
+     *            不进行删除的文件名列表
      */
     public static void deletePrefix(String preffix, String suffix, String path, List<String> ignoreFileNameList) {
         File files = new File(path);
@@ -305,5 +324,54 @@ public class DocUtil {
                 }
             }
         }
+    }
+
+    /**
+     * 将doc文档转化为pdf文档
+     * 
+     * @param socDoc
+     *            源doc文档，全路径名
+     * @param targetDoc
+     *            目标路径，全路径名
+     * @throws IOException
+     */
+    public static void WordToPDF(String socDoc, String targetDoc, String openOfficePath, String openOfficeHost,
+        Integer openOfficePort) throws IOException {
+        // 源文件目录
+        File inputFile = new File(socDoc);
+        if (!inputFile.exists()) {
+            System.out.println("源文件不存在！");
+            return;
+        }
+
+        // 输出文件目录
+        File outputFile = new File(targetDoc);
+        if (!outputFile.getParentFile().exists()) {
+            outputFile.getParentFile().exists();
+        }
+
+        // 调用openoffice服务线程
+        StringBuffer commandBuf = new StringBuffer();
+        commandBuf.append(openOfficePath).append(" -headless -accept=\"socket,host=").append(openOfficeHost).append(",port=").append(openOfficePort).append(";urp;\"");
+
+//        String command =
+//            "C:\\Program Files (x86)\\OpenOffice 4\\program\\soffice.exe -headless -accept=\"socket,host=127.0.0.1,port=8100;urp;\"";
+        Process p = Runtime.getRuntime().exec(commandBuf.toString());
+
+        // 连接openoffice服务
+        OpenOfficeConnection connection = new SocketOpenOfficeConnection("127.0.0.1", 8100);
+        connection.connect();
+
+        // 转换
+        // DocumentFormat df=new DocumentFormat(null,null, null, ".docx");
+        DocumentConverter converter = new OpenOfficeDocumentConverter(connection);
+        // converter.convert(inputFile,df, outputFile,null);
+        converter.convert(inputFile, outputFile, null);
+
+        // 关闭连接
+        connection.disconnect();
+
+        // 关闭进程
+        p.destroy();
     }
 }
