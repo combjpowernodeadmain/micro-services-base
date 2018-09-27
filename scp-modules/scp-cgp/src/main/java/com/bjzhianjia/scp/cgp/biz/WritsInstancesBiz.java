@@ -669,13 +669,14 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             propertiesConfig.getDestFilePath(), ignoreFileNameList);
 
         try {
-            DocUtil.WordToPDF(propertiesConfig.getDestFilePath() + fullDocFileName,
-                propertiesConfig.getDestFilePath() + fullPDFFileName,
-                "C:\\Program Files (x86)\\OpenOffice 4\\program\\soffice.exe", "127.0.0.1", 8100);
-
             // DocUtil.WordToPDF(propertiesConfig.getDestFilePath() +
             // fullDocFileName,
-            // propertiesConfig.getDestFilePath() + fullPDFFileName);
+            // propertiesConfig.getDestFilePath() + fullPDFFileName,
+            // "C:\\Program Files (x86)\\OpenOffice 4\\program\\soffice.exe",
+            // "127.0.0.1", 8100);
+
+            DocUtil.WordToPDF(propertiesConfig.getDestFilePath() + fullDocFileName,
+                propertiesConfig.getDestFilePath() + fullPDFFileName);
         } catch (IOException e) {
             e.printStackTrace();
         }
