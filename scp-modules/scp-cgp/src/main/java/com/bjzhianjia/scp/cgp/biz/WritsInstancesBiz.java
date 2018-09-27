@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.biz;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -639,5 +640,45 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
                 this.updateSelectiveById(writsInstances);
             }
         }
+    }
+
+    /**
+     * 生成PDF文书，并返回文书名称<br/>
+     * 如果案件对象的文书已经存在，则直接返回该文书名称<br/>
+     * 如果文书内容发生改变，则删除旧文书，并生成新文书
+     * 
+     * @param writsId
+     * @return
+     */
+    public String getTruePDFWritsInstancesById(Integer writsId) {
+        // 生成文书实例
+        ObjectRestResponse<String> _fileNameRest = this.getWritsInstance(writsId);
+
+        String fullDocFileName = _fileNameRest.getData();
+        String fullPDFFileName =
+            fullDocFileName.substring(0, fullDocFileName.lastIndexOf(".")) + WritsConstances.WRITS_SUFFIX_PDF;
+
+        if (DocUtil.exists(propertiesConfig.getDestFilePath() + fullPDFFileName)) {
+            return fullPDFFileName;
+        }
+
+        // PDF文书实例不存在
+        List<String> ignoreFileNameList = new ArrayList<>();
+        ignoreFileNameList.add(fullPDFFileName);
+        DocUtil.deletePrefix(WritsConstances.WRITS_PREFFIX, WritsConstances.WRITS_SUFFIX_PDF,
+            propertiesConfig.getDestFilePath(), ignoreFileNameList);
+
+        try {
+            DocUtil.WordToPDF(propertiesConfig.getDestFilePath() + fullDocFileName,
+                propertiesConfig.getDestFilePath() + fullPDFFileName,
+                "C:\\Program Files (x86)\\OpenOffice 4\\program\\soffice.exe", "127.0.0.1", 8100);
+
+            // DocUtil.WordToPDF(propertiesConfig.getDestFilePath() +
+            // fullDocFileName,
+            // propertiesConfig.getDestFilePath() + fullPDFFileName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return fullPDFFileName;
     }
 }

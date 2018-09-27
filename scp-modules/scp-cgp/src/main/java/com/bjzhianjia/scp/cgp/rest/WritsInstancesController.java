@@ -1,7 +1,5 @@
 package com.bjzhianjia.scp.cgp.rest;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +16,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.WritsInstancesBiz;
 import com.bjzhianjia.scp.cgp.config.PropertiesConfig;
-import com.bjzhianjia.scp.cgp.constances.WritsConstances;
 import com.bjzhianjia.scp.cgp.entity.WritsInstances;
 import com.bjzhianjia.scp.cgp.util.DocDownUtil;
-import com.bjzhianjia.scp.cgp.util.DocUtil;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
@@ -205,23 +201,20 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
          */
         log.info("请求文书PDF实例，文书ID：" + writsId);
         // 生成文书实例
-        ObjectRestResponse<String> _fileNameRest = this.baseBiz.getWritsInstance(writsId);
-
-        String fullDocFileName = _fileNameRest.getData();
-        String fullPDFFileName =
-            fullDocFileName.substring(0, fullDocFileName.lastIndexOf(".")) + WritsConstances.WRITS_SUFFIX_PDF;
-
-        try {
-            // DocUtil.WordToPDF(propertiesConfig.getDestFilePath() +
-            // fullDocFileName,
-            // propertiesConfig.getDestFilePath() + fullPDFFileName,"C:\\Program
-            // Files (x86)\\OpenOffice
-            // 4\\program\\soffice.exe","127.0.0.1",8100);
-            DocUtil.WordToPDF(propertiesConfig.getDestFilePath() + fullDocFileName,
-                propertiesConfig.getDestFilePath() + fullPDFFileName);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        ObjectRestResponse<String> _fileNameRest = this.baseBiz.getWritsInstance(writsId);
+//
+//        String fullDocFileName = _fileNameRest.getData();
+//        String fullPDFFileName =
+//            fullDocFileName.substring(0, fullDocFileName.lastIndexOf(".")) + WritsConstances.WRITS_SUFFIX_PDF;
+//
+//        try {
+//            DocUtil.WordToPDF(propertiesConfig.getDestFilePath() + fullDocFileName,
+//                propertiesConfig.getDestFilePath() + fullPDFFileName);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+        
+        String fullPDFFileName = this.baseBiz.getTruePDFWritsInstancesById(writsId);
 
         // 设置响应头为响应一个word文档
         response.setContentType("application/pdf");
