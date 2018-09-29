@@ -19,7 +19,10 @@ import com.bjzhianjia.scp.cgp.feign.DictFeign;
 public class CommonUtil {
 
     /**
-     * 生成立案单编号
+     * 生成立案单编号<br/>
+     * 
+     * @param oldCode
+     *            旧编号，即当前排序序号最大的那个编号。如果oldCode为null,则排序序号为00001
      * 
      * @author 尚
      */
