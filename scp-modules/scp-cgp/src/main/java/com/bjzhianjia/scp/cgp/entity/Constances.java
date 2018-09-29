@@ -142,7 +142,7 @@ public class Constances {
 		/**
 		 * 指挥中心热线
 		 */
-		public static final String ROOT_BIZ_EVENTTYPE_COMMAND_LINE="root_biz_eventType_center";
+		public static final String ROOT_BIZ_EVENTTYPE_COMMAND_LINE="root_biz_eventType_hotline";
 	}
 	
 	/**
