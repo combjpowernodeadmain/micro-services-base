@@ -18,6 +18,8 @@ import com.bjzhianjia.scp.cgp.biz.WritsInstancesBiz;
 import com.bjzhianjia.scp.cgp.config.PropertiesConfig;
 import com.bjzhianjia.scp.cgp.entity.WritsInstances;
 import com.bjzhianjia.scp.cgp.util.DocDownUtil;
+import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
+import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
@@ -29,6 +31,8 @@ import lombok.extern.log4j.Log4j;
 
 @RestController
 @RequestMapping("writsInstances")
+@CheckClientToken
+@CheckUserToken
 @Api(tags = "综合执法 - 案件登记文书记录")
 @Log4j
 public class WritsInstancesController extends BaseController<WritsInstancesBiz, WritsInstances, Integer> {
