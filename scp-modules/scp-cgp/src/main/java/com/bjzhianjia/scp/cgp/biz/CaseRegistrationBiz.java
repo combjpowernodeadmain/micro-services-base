@@ -43,7 +43,6 @@ import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.cgp.vo.CaseRegistrationVo;
-import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
@@ -100,12 +99,6 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     private CaseInfoBiz caseInfoBiz;
 
     @Autowired
-    private ConcernedCompanyBiz concernedCompanyBiz;
-
-    @Autowired
-    private ConcernedPersonBiz concernedPersonBiz;
-
-    @Autowired
     private InspectItemsBiz inspectItemsBiz;
 
     @Autowired
@@ -122,9 +115,6 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
     @Autowired
     private CaseAttachmentsBiz caseAttachmentsBiz;
-
-    @Autowired
-    private MergeCore mergeCore;
 
     @Autowired
     private EnforceCertificateBiz enforceCertificateBiz;
@@ -275,6 +265,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      * @param oldFillContext
      * @return
      */
+    @SuppressWarnings("unused")
+    @Deprecated
     private String getWritsFillContext(JSONObject caseRegJObj, String oldFillContext, String ziHao) {
         JSONObject fillContextJObj = JSONObject.parseObject(oldFillContext);
         fillContextJObj = fillContextJObj == null ? new JSONObject() : fillContextJObj;
