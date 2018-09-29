@@ -4,16 +4,16 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.bjzhianjia.scp.cgp.biz.CommandCenterHotlineBiz;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
+import com.bjzhianjia.scp.cgp.entity.CommandCenterHotline;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.Result;
-import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.service.LeadershipAssignService;
 import com.bjzhianjia.scp.cgp.service.MayorHotlineService;
 import com.bjzhianjia.scp.cgp.service.PatrolTaskService;
@@ -24,6 +24,8 @@ import com.bjzhianjia.scp.cgp.vo.PublicOpinionVo;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.task.service.IWfProcTaskCallBackService;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * 处理预立案单
  * 
@@ -32,162 +34,187 @@ import com.bjzhianjia.scp.security.wf.base.task.service.IWfProcTaskCallBackServi
  */
 @Service
 @Transactional
+@Slf4j
 public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService {
-	@Autowired
-	private MayorHotlineService mayorHotlineService;
-	@Autowired
-	private PublicOpinionService publicOpinionService;
-	@Autowired
-	private LeadershipAssignService leadershipAssignService;
-	@Autowired
-	private DictFeign dictFeign;
-	@Autowired
-	private StringRedisTemplate stringRedisTemplate;
-	@Autowired
-	private PatrolTaskService patrolTaskService;
 
-	@Override
-	public void before(String dealType, Map<String, Object> procBizData) throws BizException {
-		/*
-		 * 在进行预立案单处理时，业务ID还没有生成，所以将业务逻辑放在before方法进行操作，以获取业务ID
-		 */
+    @Autowired
+    private MayorHotlineService mayorHotlineService;
 
-		// 前端将来源的字典code传入
-		String key = (String) procBizData.get("sourceType");
+    @Autowired
+    private PublicOpinionService publicOpinionService;
 
-		if (StringUtils.isBlank(key)) {
-			throw new BizException("请指定事件来源");
-		}
+    @Autowired
+    private LeadershipAssignService leadershipAssignService;
 
-		switch (key) {
-		case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345:
-			// 市长热线
-			addMayorLine(procBizData);
-			break;
-		case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CONSENSUS:
-			// 舆情
-			addPublicOpinion(procBizData);
-			break;
-		case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_LEADER:
-			// 领导交办
-			addLeaderAssign(procBizData);
-			break;
-		case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CHECK:
-			// 巡查上报
-			addPatrolTask(procBizData);
-			break;
-		default:
-			break;
-		}
-	}
+    @Autowired
+    private PatrolTaskService patrolTaskService;
 
-	@Override
-	public void after(String dealType, Map<String, Object> procBizData) throws BizException {
+    @Autowired
+    private CommandCenterHotlineBiz commandCenterHotLineBiz;
 
-	}
+    @Override
+    public void before(String dealType, Map<String, Object> procBizData) throws BizException {
+        /*
+         * 在进行预立案单处理时，业务ID还没有生成，所以将业务逻辑放在before方法进行操作，以获取业务ID
+         */
 
-	/**
-	 * 添加巡查上报
-	 * @author 尚
-	 * @param procBizData
-	 */
-	private void addPatrolTask(Map<String, Object> procBizData) {
-		JSONObject patroTaskJObj = JSONObject.parseObject(JSON.toJSONString(procBizData));
-		try {
-			Result<CaseInfo> result = patrolTaskService.createPatrolTask(patroTaskJObj);
-			
-			CaseInfo caseInfo = result.getData();
-			if(caseInfo!=null) {
-				procBizData.put("procBizId", String.valueOf(caseInfo.getId()));
-			}
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new BizException(e.getMessage());
-		}
-	}
+        // 前端将来源的字典code传入
+        String key = (String) procBizData.get("sourceType");
 
-	/**
-	 * 添加领导交办预立案单
-	 * 
-	 * @author 尚
-	 * @param procBizData
-	 * @throws BizException
-	 */
-	private void addLeaderAssign(Map<String, Object> procBizData) throws BizException {
-		LeadershipAssignVo vo = JSON.parseObject(JSON.toJSONString(procBizData), LeadershipAssignVo.class);
+        if (StringUtils.isBlank(key)) {
+            throw new BizException("请指定事件来源");
+        }
 
-		vo.setCaseSource((String) procBizData.get("sourceType"));
+        log.warn("添加事件逻辑--前回调逻辑--事件来源为：" + key);
 
-		if (vo.getId() == null && StringUtils.isNotBlank((String) procBizData.get("sourceCode"))) {
-			vo.setId(Integer.valueOf((String) procBizData.get("sourceCode")));
-		}
+        switch (key) {
+            case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345:
+                // 市长热线
+                addMayorLine(procBizData);
+                break;
+            case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CONSENSUS:
+                // 舆情
+                addPublicOpinion(procBizData);
+                break;
+            case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_LEADER:
+                // 领导交办
+                addLeaderAssign(procBizData);
+                break;
+            case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CHECK:
+                // 巡查上报
+                addPatrolTask(procBizData);
+                break;
+            case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_COMMAND_LINE:
+                // TODO 添加指挥中心热线来源字典
+                addCommandCenterLine(procBizData);
+                break;
+            default:
+                break;
+        }
+    }
 
-		Result<Void> result = new Result<>();
-		try {
-			result = leadershipAssignService.createdLeadershipAssign(vo);
-			if (!result.getIsSuccess()) {
-				throw new BizException(result.getMessage());
-			}
-			procBizData.put("procBizId", String.valueOf(vo.getCaseId()));
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new BizException(StringUtils.isBlank(result.getMessage()) ? e.getMessage() : result.getMessage());
-		}
-	}
+    private void addCommandCenterLine(Map<String, Object> procBizData) throws BizException {
+        CommandCenterHotline instance = JSON.parseObject(JSON.toJSONString(procBizData), CommandCenterHotline.class);
+        Result<CaseInfo> result = new Result<>();
 
-	/**
-	 * 添加舆情预立案单
-	 * 
-	 * @author 尚
-	 * @param procBizData
-	 * @throws BizException
-	 */
-	private void addPublicOpinion(Map<String, Object> procBizData) throws BizException {
-		PublicOpinionVo vo = JSON.parseObject(JSON.toJSONString(procBizData), PublicOpinionVo.class);
+        try {
+            result = commandCenterHotLineBiz.createInstance(instance);
+            procBizData.put("procBizId", String.valueOf(result.getData().getId()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BizException(e.getMessage());
+        }
+    }
 
-		vo.setCaseSource((String) procBizData.get("sourceType"));
+    @Override
+    public void after(String dealType, Map<String, Object> procBizData) throws BizException {
 
-		if (vo.getId() == null && StringUtils.isNotBlank((String) procBizData.get("sourceCode"))) {
-			vo.setId(Integer.valueOf((String) procBizData.get("sourceCode")));
-		}
+    }
 
-		Result<Void> result = new Result<>();
-		try {
-			result = publicOpinionService.createdPublicOpinion(vo);
-			if (!result.getIsSuccess()) {
-				throw new BizException(result.getMessage());
-			}
-			procBizData.put("procBizId", String.valueOf(vo.getCaseId()));
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new BizException(StringUtils.isBlank(result.getMessage()) ? e.getMessage() : result.getMessage());
-		}
-	}
+    /**
+     * 添加巡查上报
+     * 
+     * @author 尚
+     * @param procBizData
+     */
+    private void addPatrolTask(Map<String, Object> procBizData) {
+        JSONObject patroTaskJObj = JSONObject.parseObject(JSON.toJSONString(procBizData));
+        try {
+            Result<CaseInfo> result = patrolTaskService.createPatrolTask(patroTaskJObj);
 
-	/**
-	 * 添加市长热线预立案单
-	 * 
-	 * @author 尚
-	 * @param procBizData
-	 * @throws BizException
-	 */
-	private void addMayorLine(Map<String, Object> procBizData) throws BizException {
+            CaseInfo caseInfo = result.getData();
+            if (caseInfo != null) {
+                procBizData.put("procBizId", String.valueOf(caseInfo.getId()));
+            }
 
-		MayorHotlineVo vo = JSON.parseObject(JSON.toJSONString(procBizData), MayorHotlineVo.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BizException(e.getMessage());
+        }
+    }
 
-		vo.setCaseSource((String) procBizData.get("sourceType"));
+    /**
+     * 添加领导交办预立案单
+     * 
+     * @author 尚
+     * @param procBizData
+     * @throws BizException
+     */
+    private void addLeaderAssign(Map<String, Object> procBizData) throws BizException {
+        LeadershipAssignVo vo = JSON.parseObject(JSON.toJSONString(procBizData), LeadershipAssignVo.class);
 
-		if (vo.getId() == null && StringUtils.isNotBlank((String) procBizData.get("sourceCode"))) {
-			vo.setId(Integer.valueOf((String) procBizData.get("sourceCode")));
-		}
+        vo.setCaseSource((String) procBizData.get("sourceType"));
 
-		try {
-		    mayorHotlineService.createdMayorHotline(vo);
-			procBizData.put("procBizId", String.valueOf(vo.getCaseId()));
+        if (vo.getId() == null && StringUtils.isNotBlank((String) procBizData.get("sourceCode"))) {
+            vo.setId(Integer.valueOf((String) procBizData.get("sourceCode")));
+        }
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new BizException(e.getMessage());		}
-	}
+        Result<Void> result = new Result<>();
+        try {
+            result = leadershipAssignService.createdLeadershipAssign(vo);
+            if (!result.getIsSuccess()) {
+                throw new BizException(result.getMessage());
+            }
+            procBizData.put("procBizId", String.valueOf(vo.getCaseId()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BizException(StringUtils.isBlank(result.getMessage()) ? e.getMessage() : result.getMessage());
+        }
+    }
+
+    /**
+     * 添加舆情预立案单
+     * 
+     * @author 尚
+     * @param procBizData
+     * @throws BizException
+     */
+    private void addPublicOpinion(Map<String, Object> procBizData) throws BizException {
+        PublicOpinionVo vo = JSON.parseObject(JSON.toJSONString(procBizData), PublicOpinionVo.class);
+
+        vo.setCaseSource((String) procBizData.get("sourceType"));
+
+        if (vo.getId() == null && StringUtils.isNotBlank((String) procBizData.get("sourceCode"))) {
+            vo.setId(Integer.valueOf((String) procBizData.get("sourceCode")));
+        }
+
+        Result<Void> result = new Result<>();
+        try {
+            result = publicOpinionService.createdPublicOpinion(vo);
+            if (!result.getIsSuccess()) {
+                throw new BizException(result.getMessage());
+            }
+            procBizData.put("procBizId", String.valueOf(vo.getCaseId()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BizException(StringUtils.isBlank(result.getMessage()) ? e.getMessage() : result.getMessage());
+        }
+    }
+
+    /**
+     * 添加市长热线预立案单
+     * 
+     * @author 尚
+     * @param procBizData
+     * @throws BizException
+     */
+    private void addMayorLine(Map<String, Object> procBizData) throws BizException {
+
+        MayorHotlineVo vo = JSON.parseObject(JSON.toJSONString(procBizData), MayorHotlineVo.class);
+
+        vo.setCaseSource((String) procBizData.get("sourceType"));
+
+        if (vo.getId() == null && StringUtils.isNotBlank((String) procBizData.get("sourceCode"))) {
+            vo.setId(Integer.valueOf((String) procBizData.get("sourceCode")));
+        }
+
+        try {
+            mayorHotlineService.createdMayorHotline(vo);
+            procBizData.put("procBizId", String.valueOf(vo.getCaseId()));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BizException(e.getMessage());
+        }
+    }
 }

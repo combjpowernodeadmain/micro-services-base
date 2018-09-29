@@ -23,6 +23,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.AreaGridBiz;
 import com.bjzhianjia.scp.cgp.biz.CaseInfoBiz;
+import com.bjzhianjia.scp.cgp.biz.CommandCenterHotlineBiz;
 import com.bjzhianjia.scp.cgp.biz.ConcernedCompanyBiz;
 import com.bjzhianjia.scp.cgp.biz.ConcernedPersonBiz;
 import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
@@ -34,6 +35,7 @@ import com.bjzhianjia.scp.cgp.biz.PublicOpinionBiz;
 import com.bjzhianjia.scp.cgp.biz.RegulaObjectBiz;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
+import com.bjzhianjia.scp.cgp.entity.CommandCenterHotline;
 import com.bjzhianjia.scp.cgp.entity.ConcernedCompany;
 import com.bjzhianjia.scp.cgp.entity.ConcernedPerson;
 import com.bjzhianjia.scp.cgp.entity.Constances;
@@ -132,6 +134,9 @@ public class CaseInfoService {
 
     @Autowired
     private MergeCore mergeCore;
+
+    @Autowired
+    private CommandCenterHotlineBiz commandCenterHotlineBiz;
 
     /**
      * 更新单个对象
@@ -758,6 +763,21 @@ public class CaseInfoService {
                 }
                 PatrolTask patrolTask = JSON.parseObject(assist.toJSONString(), PatrolTask.class);
                 patrolTaskBiz.updateSelectiveById(patrolTask);
+                break;
+            case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_COMMAND_LINE:
+                // 指挥中心热线
+                log.info("指挥中心热线事件【已完成】");
+                if (isTermination) {
+                    // 事件终止操作
+                    assist =
+                        assist(caseInfo.getSourceCode(), Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_STOP);
+                } else {
+                    assist =
+                        assist(caseInfo.getSourceCode(), Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_DONE);
+                }
+                CommandCenterHotline commandCenterHotline =
+                    JSON.parseObject(assist.toJSONString(), CommandCenterHotline.class);
+                commandCenterHotlineBiz.updateSelectiveById(commandCenterHotline);
                 break;
             default:
                 break;
