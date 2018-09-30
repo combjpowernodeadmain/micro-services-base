@@ -92,8 +92,9 @@ public class CommandCenterHotlineService {
             JSONObject jsonObject = new JSONObject();
             try {
                 jsonObject =
-                    propertiesProxy.swapProperties(commandCenterHotline, "hotlnCode", "hotlnTitle", "bizTypeName",
-                        "eventTypeName", "appealDatetime", "appealPerson", "exeStatus");
+                    propertiesProxy.swapProperties(commandCenterHotline, "hotlnCode", "hotlnTitle", "appealDatetime",
+                        "appealPerson", "exeStatus","appealTel","crtUserId","bizType");
+                jsonObject.put("eventTypeName", eventType_ID_NAME_Map.get(commandCenterHotline.getEventType()));
             } catch (Throwable e) {
                 e.printStackTrace();
             }
@@ -113,5 +114,33 @@ public class CommandCenterHotlineService {
             jObjResult.add(jsonObject);
         }
         return jObjResult;
+    }
+
+    /**
+     * 按ID进行精确查询
+     * 
+     * @param id
+     * @return
+     */
+    public JSONObject selectById(Integer id) {
+        CommandCenterHotline hotline = commandCenterHotlineBiz.selectById(id);
+
+        List<CommandCenterHotline> hotlines = new ArrayList<>();
+        hotlines.add(hotline);
+        try {
+            mergeCore.mergeResult(CommandCenterHotline.class, hotlines);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        List<JSONObject> queryAssist = queryAssist(hotlines);
+
+        return queryAssist.get(0);
     }
 }

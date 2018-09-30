@@ -138,6 +138,9 @@ public class CaseInfoService {
     @Autowired
     private CommandCenterHotlineBiz commandCenterHotlineBiz;
 
+    @Autowired
+    private CommandCenterHotlineService commandCenterHotlineService;
+
     /**
      * 更新单个对象
      * 
@@ -569,6 +572,30 @@ public class CaseInfoService {
                 resultJObjct.put("sourceCode", patrolTask.getPatrolCode());
 
                 reportPersonId = patrolTask.getCrtUserId();
+                break;
+            case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_COMMAND_LINE:
+                // 指挥中心热线
+                JSONObject centerHotlineJObj =
+                    commandCenterHotlineService.selectById(Integer.valueOf(caseInfo.getSourceCode()));
+
+                resultJObjct = centerHotlineJObj;
+                resultJObjct.put("eventSourceType", "指挥中心热线");
+                resultJObjct.put("sourceCode", centerHotlineJObj.getString("hotlnCode"));
+
+                reportPersonId = centerHotlineJObj.getString("crtUserId");
+
+                zhaiyaoList
+                    .add(centerHotlineJObj.getString("bizType") == null ? "" : centerHotlineJObj.getString("bizType"));
+                zhaiyaoList.add(centerHotlineJObj.getString("eventTypeName") == null ? ""
+                    : centerHotlineJObj.getString("eventTypeName"));
+                zhaiyaoList.add(
+                    centerHotlineJObj.getString("appealType") == null ? "" : centerHotlineJObj.getString("appealType"));
+                zhaiyaoList.add(
+                    centerHotlineJObj.getString("appealTel") == null ? "" : centerHotlineJObj.getString("appealTel"));
+                if (centerHotlineJObj.getDate("appealDatetime") != null) {
+                    zhaiyaoList.add(
+                        DateUtil.dateFromDateToStr(centerHotlineJObj.getDate("appealDatetime"), "yyyy-MM-dd HH:mm:ss"));
+                }
                 break;
             default:
                 break;
