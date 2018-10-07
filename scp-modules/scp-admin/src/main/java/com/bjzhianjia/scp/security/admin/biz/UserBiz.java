@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.bjzhianjia.scp.security.admin.feign.DictFeign;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,7 +56,7 @@ import tk.mybatis.mapper.entity.Example;
  * ${DESCRIPTION}
  *
  * @author scp
- * @version 1.0 
+ * @version 1.0
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -66,9 +67,10 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
     private DepartMapper departMapper;
     @Autowired
     private PositionMapper positionMapper;
-    
-    private Sha256PasswordEncoder encoder = new Sha256PasswordEncoder();
 
+    private Sha256PasswordEncoder encoder = new Sha256PasswordEncoder();
+    @Autowired
+    private DictFeign dictFeign;
 
     @Override
     public User selectById(Object id) {
@@ -101,26 +103,26 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
         ObjectRestResponse<Boolean> result = new ObjectRestResponse<>();
         result.setStatus(400);
         result.setData(false);
-        
+
         // 如果非超级管理员,无法重置用户的密码
         if (BooleanUtil.BOOLEAN_FALSE.equals(mapper.selectByPrimaryKey(BaseContextHandler.getUserID()).getIsSuperAdmin())) {
             result.setMessage("当前用户没有权限！");
             return result;
         }
-        
+
         User user = this.getByUsername(username);
         if (user != null && StringUtils.isNotBlank(user.getPassword())) {
             String password = encoder.encode(newPass);
             user.setPassword(password);
             this.updateSelectiveById(user);
-            
+
             result.setStatus(200);
             result.setData(true);
             return result;
         }
         return result;
     }
-    
+
 
     @Override
     public void insertSelective(User entity) {
@@ -197,7 +199,7 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
         user.setIsDisabled(BooleanUtil.BOOLEAN_FALSE);
         return mapper.selectOne(user);
     }
-    
+
     /**
      * 根据用户名获取用户信息
      *
@@ -211,7 +213,7 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
         user.setIsDeleted(BooleanUtil.BOOLEAN_FALSE);
         return mapper.selectOne(user);
     }
-    
+
     @Override
     public void query2criteria(Query query, Example example) {
         if (query.entrySet().size() > 0) {
@@ -226,9 +228,9 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
     public List<String> getUserDataDepartIds(String userId) {
         return mapper.selectUserDataDepartIds(userId);
     }
-    
+
     /**
-      *  根据ID批量获取人员
+     *  根据ID批量获取人员
      * @param departIDs
      * @return
      */
@@ -240,7 +242,7 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
         List<User> users = mapper.selectByIds(userIds);
         return users.stream().collect(Collectors.toMap(User::getId, user -> JSONObject.toJSONString(user)));
     }
-    
+
     /**
      * 查询部门deptId下的人员
      * @author 尚
@@ -248,10 +250,10 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
      * @return
      */
     public TableResultResponse<User> getUserByDept(String deptId,int page,int limit){
-    	
-    	Page<Object> result =PageHelper.startPage(page, limit);
-    	List<User> userList = departMapper.selectDepartUsers(deptId, null);
-    	
+
+        Page<Object> result =PageHelper.startPage(page, limit);
+        List<User> userList = departMapper.selectDepartUsers(deptId, null);
+
 //    	Example example=new Example(User.class);
 //    	Example.Criteria criteria=example.createCriteria();
 //    	criteria.andEqualTo("departId", deptId);
@@ -259,9 +261,9 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
 //    	example.orderBy("id");
 //    	Page<Object> result =PageHelper.startPage(page, limit);
 //    	List<User> userList = mapper.selectByExample(example);
-    	return new TableResultResponse<User>(result.getTotal(), userList);
+        return new TableResultResponse<User>(result.getTotal(), userList);
     }
-    
+
     /**
      * 按人名进行模糊查询
      * @author 尚
@@ -269,16 +271,16 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
      * @return
      */
     public List<User> getUsersByFakeName(String name){
-    	Example example=new Example(User.class);
-    	Example.Criteria criteria=example.createCriteria();
-    	criteria.andLike("name", "%"+name+"%");
-    	List<User> userList = mapper.selectByExample(example);
-    	if(userList == null) {
-    	   userList = new ArrayList<>();
-    	}    	    
-    	return userList;
+        Example example=new Example(User.class);
+        Example.Criteria criteria=example.createCriteria();
+        criteria.andLike("name", "%"+name+"%");
+        List<User> userList = mapper.selectByExample(example);
+        if(userList == null) {
+            userList = new ArrayList<>();
+        }
+        return userList;
     }
-    
+
     /**
      * 按人名进行模糊查询，翻页
      * @param name 用户名称
@@ -303,7 +305,7 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
     }
     /**
      * 将人员与其所在的职位进行绑定
-     * 
+     *
      * @author 尚
      * @param userList
      * @return
@@ -316,7 +318,7 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
         join = "'" + join.replaceAll(",", "','") + "'";
 
         List<PositionVo> positionMapList = positionMapper.selectPositionByUser(join);
-        
+
         //封装用户职务
         //数据格式：userId：username1，username2
         Map<String , String> positionMap = new HashMap<>();
@@ -342,35 +344,35 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
         }
         return result;
     }
-    
+
     /***********************************************
      * 仅供工作流使用
      */
-    
+
     /**
      * 根据userid查询部门ID
-     * 
+     *
      * @param userid
      * @return
      */
     public String getDepartIdByUserId(String userid) {
         return mapper.selectDepartIdByUserId(userid);
     }
-    
+
     /**
      * 根据userid查询部门ID
-     * 
+     *
      * @param userid
      * @return
      */
     public String getTenantIdByUserId(String userid) {
         return mapper.selectTenantIdByUserId(userid);
     }
-    
-    
+
+
     /**
      * 根据UserId获取角色codes
-     * 
+     *
      * @return
      */
     public List<String> getGroupCodesByUserId(String userid) {
@@ -397,7 +399,7 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
     public JSONArray getByUserIds(String userIds) {
         JSONArray array = new JSONArray();
         Example example=new Example(User.class);
-        
+
         List<String> _userIds = Arrays.asList(userIds.split(","));
         Example.Criteria criteria = example.createCriteria();
         if(_userIds != null && !_userIds.isEmpty()) {
@@ -407,10 +409,37 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
         if(userList != null && !userList.isEmpty()) {
             JSONObject obj = null;
             for(User user : userList) {
-                 obj = JSONObject.parseObject(JSONObject.toJSONString(user));
-                 array.add(obj);
+                obj = JSONObject.parseObject(JSONObject.toJSONString(user));
+                array.add(obj);
             }
         }
         return array;
+    }
+
+    /**
+     * 获取技术人员列表
+     * @param userName 用户名称
+     * @param departIds 用户部门ids
+     * @param major 用户专业
+     * @param page 页码
+     * @param limit 页容量
+     * @return
+     */
+    public TableResultResponse<Map<String, Object>> getMajorUsers(String userName,String departIds, String major, int page, int limit) {
+        Page<Object> pageList = PageHelper.startPage(page, limit);
+        List<Map<String,Object>> userList = mapper.selectMajorUser(userName,departIds,major);
+        Map<String,String> dictMajorMap = dictFeign.getByCode(User.JUDICIAL_PROFESSIONAL);
+        if(userList != null && !userList.isEmpty()){
+            if(dictMajorMap !=null && !dictMajorMap.isEmpty()) {
+                for (Map<String, Object> userMap : userList) {
+                    //专业名称
+                    String majorName = dictMajorMap.get(userMap.get("major"));
+                    userMap.put("majorName",majorName);
+                }
+            }
+        }else{
+            userList = new ArrayList<>();
+        }
+        return new TableResultResponse<>(pageList.getTotal(),userList);
     }
 }

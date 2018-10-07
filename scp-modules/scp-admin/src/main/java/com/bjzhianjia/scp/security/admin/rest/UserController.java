@@ -25,12 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -235,4 +230,25 @@ public class UserController extends BaseController<UserBiz, User, String> {
         }
         return this.baseBiz.getByUserIds(userIds);
     }
+
+	/**
+	 * 获取技术人员列表
+	 * @param userName 用户名称
+	 * @param departIds 用户部门ids
+	 * @param major 用户专业
+	 * @param page 页码
+	 * @param limit 页容量
+	 * @return
+	 */
+	//@IgnoreUserToken
+	@IgnoreClientToken
+	@ApiOperation("获取技术人员列表")
+	@GetMapping("/majorUser")
+	public TableResultResponse<Map<String,Object>>  getMajorUsers(@RequestParam(value = "userName",defaultValue="") @ApiParam("用户名称") String userName,
+																  @RequestParam(value = "departIds",defaultValue="") @ApiParam("用户部门ids") String departIds,
+																  @RequestParam(value = "major",defaultValue="") @ApiParam("用户专业") String major,
+																   @RequestParam(value="page", defaultValue="1") @ApiParam("页码")  Integer page,
+																   @RequestParam(value="limit", defaultValue="10") @ApiParam("页容量")  Integer limit) {
+		return this.baseBiz.getMajorUsers(userName,departIds,major, page, limit);
+	}
 }

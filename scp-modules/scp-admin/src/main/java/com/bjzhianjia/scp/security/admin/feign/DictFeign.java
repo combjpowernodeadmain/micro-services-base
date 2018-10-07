@@ -22,4 +22,14 @@ public interface DictFeign {
      */
     @RequestMapping(value = "/dictValue/feign/{code}",method = RequestMethod.GET)
     public Map<String,String> getDictValues(@PathVariable("code") String code);
+
+    /**
+     * 按code进行查询<br/>
+     *
+     * @author chenshuai
+     * @param code   查询 条件
+     * @return "${code}":"${label_default}"健值对
+     */
+    @RequestMapping(value = "/dictValue/feign/code/{code}", method = RequestMethod.GET)
+    public Map<String, String> getByCode(@PathVariable("code") String code) ;
 }
