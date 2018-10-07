@@ -139,6 +139,10 @@ public class Constances {
 		 * 舆情
 		 */
 		public static final String ROOT_BIZ_EVENTTYPE_CONSENSUS="root_biz_eventType_consensus";
+		/**
+		 * 指挥中心热线
+		 */
+		public static final String ROOT_BIZ_EVENTTYPE_COMMAND_LINE="root_biz_eventType_hotline";
 	}
 	
 	/**

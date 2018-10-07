@@ -37,6 +37,7 @@ public class CaseInfo implements Serializable {
 	public static final String FINISHED_STATE_STOP = "2";
 	    //主键
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 	
 	    //事件来源类型

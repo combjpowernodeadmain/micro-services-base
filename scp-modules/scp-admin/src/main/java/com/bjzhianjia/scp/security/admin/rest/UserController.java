@@ -44,7 +44,6 @@ import com.bjzhianjia.scp.security.admin.vo.MenuTree;
 import com.bjzhianjia.scp.security.api.vo.user.UserInfo;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
-import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
@@ -209,7 +208,7 @@ public class UserController extends BaseController<UserBiz, User, String> {
 	
 	/**
 	 * 
-	 * @param userId 用户Id集合，多个id间用逗号隔开
+	 * @param userId 用户Id
 	 * @return
 	 */
 	@ApiOperation("获取用户详情，包括部门及岗位")

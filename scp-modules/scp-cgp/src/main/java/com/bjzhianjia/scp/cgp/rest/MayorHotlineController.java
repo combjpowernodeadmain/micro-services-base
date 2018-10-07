@@ -15,7 +15,6 @@ import com.bjzhianjia.scp.cgp.biz.MayorHotlineBiz;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.MayorHotline;
 import com.bjzhianjia.scp.cgp.entity.Result;
-import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.service.MayorHotlineService;
 import com.bjzhianjia.scp.cgp.vo.MayorHotlineVo;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
@@ -40,9 +39,6 @@ public class MayorHotlineController extends BaseController<MayorHotlineBiz, Mayo
 
     @Autowired
     private MayorHotlineBiz mayorHotLineBiz;
-
-    @Autowired
-    private DictFeign dictFeign;
 
     @RequestMapping(value = "/add/cache", method = RequestMethod.POST)
     @ApiOperation("添加暂存")
