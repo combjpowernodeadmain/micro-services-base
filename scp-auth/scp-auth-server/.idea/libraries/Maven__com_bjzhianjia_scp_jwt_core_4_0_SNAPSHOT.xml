@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.bjzhianjia.scp:jwt-core:4.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.m2/repository/com/bjzhianjia/scp/jwt-core/4.0-SNAPSHOT/jwt-core-4.0-20180819.084526-4.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.m2/repository/com/bjzhianjia/scp/jwt-core/4.0-SNAPSHOT/jwt-core-4.0-20180819.084526-4-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.m2/repository/com/bjzhianjia/scp/jwt-core/4.0-SNAPSHOT/jwt-core-4.0-20180819.084526-4-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
