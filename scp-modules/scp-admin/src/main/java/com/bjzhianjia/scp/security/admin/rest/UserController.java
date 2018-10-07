@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreClientToken;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -239,7 +240,6 @@ public class UserController extends BaseController<UserBiz, User, String> {
 	 * @param limit 页容量
 	 * @return
 	 */
-	//@IgnoreUserToken
 	@IgnoreClientToken
 	@ApiOperation("获取技术人员列表")
 	@GetMapping("/majorUser")
