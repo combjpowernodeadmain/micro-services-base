@@ -85,7 +85,7 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService {
                 addPatrolTask(procBizData);
                 break;
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_COMMAND_LINE:
-                // TODO 添加指挥中心热线来源字典
+                // 指挥中心
                 addCommandCenterLine(procBizData);
                 break;
             default:

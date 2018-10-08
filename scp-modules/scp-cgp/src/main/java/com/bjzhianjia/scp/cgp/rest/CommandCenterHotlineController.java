@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -76,5 +77,11 @@ public class CommandCenterHotlineController
         commandCenterHotline.setExeStatus(exeStatus);
 
         return commandCenterHotlineServoce.getList(commandCenterHotline, page, limit);
+    }
+    
+    @GetMapping("/one/{id}")
+    @ApiOperation("获取单个对象")
+    public JSONObject getOne(@PathVariable("id") @ApiParam("待查询对象ID")Integer id){
+        return commandCenterHotlineServoce.selectById(id);
     }
 }
