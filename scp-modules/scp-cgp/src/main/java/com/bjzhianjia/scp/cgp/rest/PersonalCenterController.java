@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSONObject;
-import com.bjzhianjia.scp.cgp.util.BeanUtil;
+import com.bjzhianjia.scp.cgp.biz.PersonalCenterBiz;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
@@ -48,8 +48,11 @@ import io.swagger.annotations.ApiOperation;
 public class PersonalCenterController {
 
     @Autowired
+    private PersonalCenterBiz personalCenterBiz;
+
+    @Autowired
     private WfMonitorBiz wfMonitorBiz;
-    
+
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
@@ -75,24 +78,24 @@ public class PersonalCenterController {
 
         if (data != null) {
             resultData = new ArrayList<>();
-            
+
             Map<String, Map<String, Object>> maps = new HashMap<>();
-            for(Map<String , Object> mapData : data) {
+            for (Map<String, Object> mapData : data) {
                 maps.put(String.valueOf(mapData.get("cmonth")), mapData);
             }
-            
+
             Map<String, Object> tempMap = null;
-            //月份
+            // 月份
             String month = "";
-            //当月有数据则设置
+            // 当月有数据则设置
             for (int i = 0; i < 12; i++) {
-                month = String.valueOf(i+1);
+                month = String.valueOf(i + 1);
                 tempMap = maps.get(month);
-                if(tempMap != null) {
+                if (tempMap != null) {
                     Integer lawCount = Integer.valueOf(String.valueOf(tempMap.get(lawEnforcementProcess)));
                     Integer comprehensiveCount = Integer.valueOf(String.valueOf(tempMap.get(comprehensiveManage)));
                     tempMap.put("total", lawCount + comprehensiveCount);
-                }else {
+                } else {
                     tempMap = new HashMap<>();
                     tempMap.put("cmonth", month);
                     tempMap.put(comprehensiveManage, 0);
@@ -101,23 +104,31 @@ public class PersonalCenterController {
                 }
                 resultData.add(tempMap);
             }
-            
+
             result.setData(resultData);
         }
         return result;
     }
+
     /**
      * 获取当前在线人数
+     * 
      * @return
      */
     @ApiOperation("获取当前在线人数")
     @GetMapping("/userCount")
     @ResponseBody
-    public ObjectRestResponse<Integer> getByUserCount(){
-        ObjectRestResponse<Integer> result = new  ObjectRestResponse<>();
+    public ObjectRestResponse<Integer> getByUserCount() {
+        ObjectRestResponse<Integer> result = new ObjectRestResponse<>();
         String auth = "AG:OAUTH:auth:*";
         Set<String> key = redisTemplate.keys(auth);
-        result.setData(key == null ? 0:key.size());
+        result.setData(key == null ? 0 : key.size());
         return result;
+    }
+
+    @GetMapping("/float/count")
+    @ApiOperation("首页悬浮面板数量统计")
+    public JSONObject countOfPeopleOnHome() {
+        return personalCenterBiz.countOfPeopleOnHome();
     }
 }

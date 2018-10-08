@@ -15,22 +15,30 @@ import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
  * @email 576866311@qq.com
  * @version 2018-07-07 16:48:27
  */
-//@Tenant
+// @Tenant
 public interface EnforceCertificateMapper extends CommonMapper<EnforceCertificate> {
 
-	/**
-	 * 批量删除
-	 * 
-	 * @param ids id列表
-	 */
-	public void deleteByIds(@Param("ids") Integer[] ids, @Param("updUserId") String updUserId,
-			@Param("updUserName") String updUserName, @Param("updTime") Date updTime);
-	
-	/**
-	 * 查询全部用户信息
-	 * 
-	 * @return
-	 *        usr_id,holder_name,depart_id
-	 */
-	public List<EnforceCertificate> selectAllUserInfo();
+    /**
+     * 批量删除
+     * 
+     * @param ids
+     *            id列表
+     */
+    public void deleteByIds(@Param("ids") Integer[] ids, @Param("updUserId") String updUserId,
+        @Param("updUserName") String updUserName, @Param("updTime") Date updTime);
+
+    /**
+     * 查询全部用户信息
+     * 
+     * @return
+     *         usr_id,holder_name,depart_id
+     */
+    public List<EnforceCertificate> selectAllUserInfo();
+
+    /**
+     * 查询未删除的执法记录数
+     * 
+     * @return
+     */
+    public int countOfEnforce();
 }

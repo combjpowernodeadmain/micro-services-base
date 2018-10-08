@@ -101,4 +101,16 @@ public class VhclManagementBiz extends BusinessBiz<VhclManagementMapper, VhclMan
 		vhclManagermentMapper.deleteByIds(ids, BaseContextHandler.getUserID(), BaseContextHandler.getName(),
 				new Date());
 	}
+	
+	/**
+	 * 查询未删除车辆数量
+	 * @return
+	 */
+	public int countOfVhcl() {
+	    Example example=new Example(VhclManagement.class);
+	    Criteria criteria = example.createCriteria();
+	    criteria.andEqualTo("isDeleted", "0");
+	    int count = this.selectCountByExample(example);
+	    return count;
+	}
 }
