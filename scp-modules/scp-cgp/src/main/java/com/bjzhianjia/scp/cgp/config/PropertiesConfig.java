@@ -92,7 +92,7 @@ public class PropertiesConfig {
      * 网格等级--自然网格
      */
     @Value("${areaGrid.gridLevel.zrwg}")
-    private String gridLevel_zrwg;
+    private String lowestGridLevel;
 
     /**
      * 现场检查
@@ -160,7 +160,7 @@ public class PropertiesConfig {
         return openOfficePort;
     }
 
-    public String getGridLevel_zrwg() {
-        return gridLevel_zrwg;
+    public String getLowestGridLevel() {
+        return lowestGridLevel;
     }
 }

@@ -256,7 +256,7 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         Criteria criteria = example.createCriteria();
         
         criteria.andEqualTo("isDeleted", "0");
-        criteria.andEqualTo("gridLevel", propertiesConfig.getGridLevel_zrwg());
+        criteria.andEqualTo("gridLevel", propertiesConfig.getLowestGridLevel());
         
         List<AreaGrid> areaGridList = this.selectByExample(example);
         if(BeanUtil.isNotEmpty(areaGridList)) {

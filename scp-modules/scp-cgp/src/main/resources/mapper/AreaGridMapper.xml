@@ -29,9 +29,4 @@
 		<result property="updTime" column="upd_time" />
 		<result property="tenantId" column="tenant_id" />
 	</resultMap>
-	<select id="selectLowestAreaGrid" resultMap="areaGridMap">
-		SELECT id,grid_name,map_info FROM area_grid WHERE id NOT IN(
-		SELECT DISTINCT(ag.`grid_parent`)
-		FROM area_grid ag)
-	</select>
 </mapper>
