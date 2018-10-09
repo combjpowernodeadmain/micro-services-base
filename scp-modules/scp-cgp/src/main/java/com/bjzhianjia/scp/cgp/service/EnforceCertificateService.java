@@ -16,7 +16,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.AreaGridBiz;
 import com.bjzhianjia.scp.cgp.biz.AreaGridMemberBiz;
 import com.bjzhianjia.scp.cgp.biz.EnforceCertificateBiz;
-import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
 import com.bjzhianjia.scp.cgp.biz.LawEnforcePathBiz;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.AreaGridMember;
@@ -25,6 +24,7 @@ import com.bjzhianjia.scp.cgp.entity.EnforceCertificate;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
@@ -44,9 +44,6 @@ public class EnforceCertificateService {
 
     @Autowired
     private EnforceCertificateBiz enforceCertificateBiz;
-
-    @Autowired
-    private EventTypeBiz eventTypeBiz;
 
     @Autowired
     private DictFeign dictFeign;
@@ -77,9 +74,10 @@ public class EnforceCertificateService {
      *            查询条件
      * @return
      */
-    public TableResultResponse<JSONObject> getList(int page, int limit, EnforceCertificate rightsIssues) {
+    public TableResultResponse<JSONObject> getList(int page, int limit, EnforceCertificate rightsIssues,String deptId) {
 
-        TableResultResponse<EnforceCertificate> tableResult = enforceCertificateBiz.getList(page, limit, rightsIssues);
+        TableResultResponse<EnforceCertificate> tableResult =
+            enforceCertificateBiz.getList(page, limit, rightsIssues, deptId);
         List<EnforceCertificate> list = tableResult.getData().getRows();
 
         if (list.size() == 0) {
@@ -155,6 +153,22 @@ public class EnforceCertificateService {
          * =将返回值 改为TableResultResponse<JSONObject>，用于封装与定位信息相关的数据
          */
         JSONArray resultJArray = JSONArray.parseArray(JSON.toJSONString(list));
+
+        /*
+         * 执法人员所在部门
+         */
+        for (int i = 0; i < resultJArray.size(); i++) {
+            JSONObject jsonObject = resultJArray.getJSONObject(i);
+            JSONArray userDetail = adminFeign.getUserDetail(jsonObject.getJSONObject("usrId").getString("id"));
+            List<String> deptNameList = new ArrayList<>();
+            if (BeanUtil.isNotEmpty(userDetail)) {
+                for (int j = 0; j < userDetail.size(); j++) {
+                    JSONObject deptJObj = userDetail.getJSONObject(j);
+                    deptNameList.add(deptJObj.getString("deptName"));
+                }
+            }
+            jsonObject.put("deptName", String.join(",", deptNameList));
+        }
 
         /*
          * =关联执法人员定位
