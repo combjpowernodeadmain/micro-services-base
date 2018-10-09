@@ -25,6 +25,7 @@ import com.github.pagehelper.PageHelper;
 
 import lombok.extern.slf4j.Slf4j;
 import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.entity.Example.Criteria;
 
 
 /**
@@ -211,7 +212,8 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
     public AreaGrid _isPolygonContainsPoint(Point point) {
         AreaGrid result = null;
         
-        List<AreaGrid> areaGridList = this.mapper.selectLowestAreaGrid();
+        // 获取最低级网格方法修改--20181009
+        List<AreaGrid> areaGridList = this.selectLowestAreaGrid();
         if(BeanUtil.isEmpty(areaGridList)) {
             return null;
         }
@@ -240,5 +242,22 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         }
         return result;
     }
-    
+
+    /**
+     * 获取最低级网格
+     * @return
+     */
+    private List<AreaGrid> selectLowestAreaGrid() {
+        Example example=new Example(AreaGrid.class);
+        Criteria criteria = example.createCriteria();
+        
+        criteria.andEqualTo("isDeleted", "0");
+        criteria.andEqualTo("gridLevel", AreaGrid.ROOT_BIZ_GRID_LEVEL_ZRWG);
+        
+        List<AreaGrid> areaGridList = this.selectByExample(example);
+        if(BeanUtil.isNotEmpty(areaGridList)) {
+            return areaGridList;
+        }
+        return new ArrayList<>();
+    }
 }
