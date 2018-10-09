@@ -213,5 +213,41 @@ public class AreaGridController extends BaseController<AreaGridBiz, AreaGrid, In
         }
         return resut;
     }
-
+    
+    /**
+     *  判断当前坐标是否在一个多边形区域内
+     * 
+     * @param lng
+     *            经度
+     * @param lat
+     *            纬度
+     * @return
+     */
+    @ApiOperation("判断当前坐标是否在一个多边形区域内,只涉及最低级别网格")
+    @RequestMapping(value="/polygonPoint/lowest",method=RequestMethod.GET)
+    @ResponseBody
+    public ObjectRestResponse<AreaGrid> _isPolygonContainsPoint(
+        @RequestParam @ApiParam("经度") Double lng,
+        @RequestParam @ApiParam("纬度") Double lat) {
+        
+        ObjectRestResponse<AreaGrid> resut = new ObjectRestResponse<AreaGrid>();
+        resut.setStatus(400);
+        
+        if(lng == null || lat == null) {
+            resut.setMessage("非法参数!");
+            return resut;
+        }
+        
+        AreaGrid areaGrid = areaGridBiz._isPolygonContainsPoint(new Point(lng,lat));
+        if(areaGrid != null){
+            AreaGrid _areaGrid = new AreaGrid();
+            _areaGrid.setId(areaGrid.getId());
+            _areaGrid.setGridName(areaGrid.getGridName());
+            resut.setData(_areaGrid);
+            resut.setStatus(200);
+        }else {
+            resut.setMessage("当前位置，不属于系统内置网格范围！");
+        }
+        return resut;
+    }
 }

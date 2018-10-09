@@ -203,4 +203,42 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         return result;
     }
     
+    /**
+     *  通过经纬度获取指定网格信息
+     * @param point
+     * @return
+     */
+    public AreaGrid _isPolygonContainsPoint(Point point) {
+        AreaGrid result = null;
+        
+        List<AreaGrid> areaGridList = this.mapper.selectLowestAreaGrid();
+        if(BeanUtil.isEmpty(areaGridList)) {
+            return null;
+        }
+        
+        AreaGrid areaGrid = null;
+        if(BeanUtil.isNotEmpty(areaGridList)) {
+            for (int i = 0; i < areaGridList.size(); i++) {
+                areaGrid = areaGridList.get(i);
+                if(StringUtils.isBlank(areaGrid.getMapInfo())) {
+                    continue;
+                }
+                JSONArray array = JSONArray.parseArray(areaGrid.getMapInfo());
+                List<Point> listPoint = array.toJavaList(Point.class);
+                if(listPoint == null) {
+                    continue;
+                }
+                if(SpatialRelationUtil.isPolygonContainsPoint(listPoint, point)) {
+                    result = areaGrid;
+                    break;
+                }
+                if(SpatialRelationUtil.isPointInPolygonBoundary(listPoint, point)) {
+                    result = areaGrid;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+    
 }
