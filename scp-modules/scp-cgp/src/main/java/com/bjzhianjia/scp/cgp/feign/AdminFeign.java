@@ -63,4 +63,13 @@ public interface AdminFeign {
 	 */
     @RequestMapping(value="/depart/enforcersGroup",method=RequestMethod.GET)
     public JSONArray getEnforcersGroup();
+    
+    /**
+     * 获取部门关联用户
+     * @param departId
+     * @param userName
+     * @return
+     */
+    @RequestMapping(value="/depart/feign/user",method=RequestMethod.GET)
+    public JSONArray getFeignDepartUsers(@RequestParam("departId")String departId, @RequestParam("userName")String userName);
 }
