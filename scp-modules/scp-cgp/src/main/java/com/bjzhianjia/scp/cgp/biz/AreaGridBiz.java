@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONArray;
+import com.bjzhianjia.scp.cgp.config.PropertiesConfig;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.Point;
 import com.bjzhianjia.scp.cgp.mapper.AreaGridMapper;
@@ -25,6 +26,7 @@ import com.github.pagehelper.PageHelper;
 
 import lombok.extern.slf4j.Slf4j;
 import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.entity.Example.Criteria;
 
 
 /**
@@ -49,6 +51,9 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
 
     @Autowired
     private MergeCore mergeCore;
+    
+    @Autowired
+    private PropertiesConfig propertiesConfig;
 
     /**
      * 按条件查询未被删除的网格
@@ -203,4 +208,60 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         return result;
     }
     
+    /**
+     *  通过经纬度获取指定网格信息
+     * @param point
+     * @return
+     */
+    public AreaGrid isLowestGridContainsPoint(Point point) {
+        AreaGrid result = null;
+        
+        // 获取最低级网格方法修改--20181009
+        List<AreaGrid> areaGridList = this.selectLowestAreaGrid();
+        if(BeanUtil.isEmpty(areaGridList)) {
+            return null;
+        }
+        
+        AreaGrid areaGrid = null;
+        if(BeanUtil.isNotEmpty(areaGridList)) {
+            for (int i = 0; i < areaGridList.size(); i++) {
+                areaGrid = areaGridList.get(i);
+                if(StringUtils.isBlank(areaGrid.getMapInfo())) {
+                    continue;
+                }
+                JSONArray array = JSONArray.parseArray(areaGrid.getMapInfo());
+                List<Point> listPoint = array.toJavaList(Point.class);
+                if(listPoint == null) {
+                    continue;
+                }
+                if(SpatialRelationUtil.isPolygonContainsPoint(listPoint, point)) {
+                    result = areaGrid;
+                    break;
+                }
+                if(SpatialRelationUtil.isPointInPolygonBoundary(listPoint, point)) {
+                    result = areaGrid;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 获取最低级网格
+     * @return
+     */
+    private List<AreaGrid> selectLowestAreaGrid() {
+        Example example=new Example(AreaGrid.class);
+        Criteria criteria = example.createCriteria();
+        
+        criteria.andEqualTo("isDeleted", "0");
+        criteria.andEqualTo("gridLevel", propertiesConfig.getLowestGridLevel());
+        
+        List<AreaGrid> areaGridList = this.selectByExample(example);
+        if(BeanUtil.isNotEmpty(areaGridList)) {
+            return areaGridList;
+        }
+        return new ArrayList<>();
+    }
 }

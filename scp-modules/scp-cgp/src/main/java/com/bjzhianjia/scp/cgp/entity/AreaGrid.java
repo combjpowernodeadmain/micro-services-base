@@ -17,7 +17,7 @@ import com.bjzhianjia.scp.merge.annonation.MergeField;
 @Table(name = "area_grid")
 public class AreaGrid implements Serializable {
 	private static final long serialVersionUID = 1L;
-
+	
 	//
 	@Id
 	private Integer id;
