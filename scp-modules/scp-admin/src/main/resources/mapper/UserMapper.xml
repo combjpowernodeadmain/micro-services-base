@@ -92,7 +92,10 @@
 	LEFT JOIN base_depart bd ON bd.`id`=dbu.`depart_id`
 	LEFT JOIN base_position_user bpu ON bpu.`user_id`=bu.`id`
 	LEFT JOIN base_position bp ON bp.`id`=bpu.`position_id`
-	WHERE bu.`id` =#{userId}
+	WHERE bu.`id` in 
+	<foreach collection="userIdList" item="item" separator="," open="(" close=")">
+		#{item}
+	</foreach>
   </select>
   <!--获取专业技术人员-->
   <select id="selectMajorUser" resultType="java.util.Map">

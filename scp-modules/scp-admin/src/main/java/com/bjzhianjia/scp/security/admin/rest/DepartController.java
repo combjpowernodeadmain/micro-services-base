@@ -136,4 +136,15 @@ public class DepartController extends BaseController<DepartBiz, Depart, String> 
         result = this.baseBiz.getDeptSonByDepartId(departId, name);
         return result;
     }
+    
+//    @IgnoreClientToken
+    @ApiOperation("获取部门关联用户,用于服务器调用")
+    @RequestMapping(value = "/feign/user", method = RequestMethod.GET)
+    public JSONArray getFeignDepartUsers(String departId, String userName) {
+        TableResultResponse<User> departUsers = this.baseBiz.getDepartUsers(departId, userName);
+        if(departUsers!=null) {
+        	return JSONArray.parseArray(JSON.toJSONString(departUsers.getData().getRows()));
+        }
+        return new JSONArray();
+    }
 }
