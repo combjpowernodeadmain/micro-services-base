@@ -18,11 +18,6 @@ import com.bjzhianjia.scp.merge.annonation.MergeField;
 public class AreaGrid implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
-	/**
-	 * 自然网格
-	 */
-	public static final String ROOT_BIZ_GRID_LEVEL_ZRWG="root_biz_grid_level_zrwg";
-
 	//
 	@Id
 	private Integer id;

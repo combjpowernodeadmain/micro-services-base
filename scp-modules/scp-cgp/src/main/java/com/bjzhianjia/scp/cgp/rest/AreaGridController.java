@@ -226,7 +226,7 @@ public class AreaGridController extends BaseController<AreaGridBiz, AreaGrid, In
     @ApiOperation("判断当前坐标是否在一个多边形区域内,只涉及最低级别网格")
     @RequestMapping(value="/polygonPoint/lowest",method=RequestMethod.GET)
     @ResponseBody
-    public ObjectRestResponse<AreaGrid> _isPolygonContainsPoint(
+    public ObjectRestResponse<AreaGrid> isLowestGridContainsPoint(
         @RequestParam @ApiParam("经度") Double lng,
         @RequestParam @ApiParam("纬度") Double lat) {
         
@@ -238,12 +238,12 @@ public class AreaGridController extends BaseController<AreaGridBiz, AreaGrid, In
             return resut;
         }
         
-        AreaGrid areaGrid = areaGridBiz._isPolygonContainsPoint(new Point(lng,lat));
+        AreaGrid areaGrid = areaGridBiz.isLowestGridContainsPoint(new Point(lng,lat));
         if(areaGrid != null){
-            AreaGrid _areaGrid = new AreaGrid();
-            _areaGrid.setId(areaGrid.getId());
-            _areaGrid.setGridName(areaGrid.getGridName());
-            resut.setData(_areaGrid);
+            AreaGrid areaGridForReturn = new AreaGrid();
+            areaGridForReturn.setId(areaGrid.getId());
+            areaGridForReturn.setGridName(areaGrid.getGridName());
+            resut.setData(areaGridForReturn);
             resut.setStatus(200);
         }else {
             resut.setMessage("当前位置，不属于系统内置网格范围！");

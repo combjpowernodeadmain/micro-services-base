@@ -89,6 +89,12 @@ public class PropertiesConfig {
     private String templateSrcPath;
 
     /**
+     * 网格等级--自然网格
+     */
+    @Value("${areaGrid.gridLevel.zrwg}")
+    private String gridLevel_zrwg;
+
+    /**
      * 现场检查
      * 
      * @author 尚
@@ -152,5 +158,9 @@ public class PropertiesConfig {
 
     public String getOpenOfficePort() {
         return openOfficePort;
+    }
+
+    public String getGridLevel_zrwg() {
+        return gridLevel_zrwg;
     }
 }

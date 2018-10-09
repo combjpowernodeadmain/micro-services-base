@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONArray;
+import com.bjzhianjia.scp.cgp.config.PropertiesConfig;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.Point;
 import com.bjzhianjia.scp.cgp.mapper.AreaGridMapper;
@@ -50,6 +51,9 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
 
     @Autowired
     private MergeCore mergeCore;
+    
+    @Autowired
+    private PropertiesConfig propertiesConfig;
 
     /**
      * 按条件查询未被删除的网格
@@ -209,7 +213,7 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
      * @param point
      * @return
      */
-    public AreaGrid _isPolygonContainsPoint(Point point) {
+    public AreaGrid isLowestGridContainsPoint(Point point) {
         AreaGrid result = null;
         
         // 获取最低级网格方法修改--20181009
@@ -252,7 +256,7 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         Criteria criteria = example.createCriteria();
         
         criteria.andEqualTo("isDeleted", "0");
-        criteria.andEqualTo("gridLevel", AreaGrid.ROOT_BIZ_GRID_LEVEL_ZRWG);
+        criteria.andEqualTo("gridLevel", propertiesConfig.getGridLevel_zrwg());
         
         List<AreaGrid> areaGridList = this.selectByExample(example);
         if(BeanUtil.isNotEmpty(areaGridList)) {
