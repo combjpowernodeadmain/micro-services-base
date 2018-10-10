@@ -654,7 +654,7 @@ public class CaseInfoService {
         JSONObject concernedPersonJObj = bizDataJObject.getJSONObject("concernedPerson");// 当事人(个人信息)
         JSONObject concernedCompanyJObj = bizDataJObject.getJSONObject("concernedCompany");// 当事人(单位)
 
-        CaseInfo caseInfo = new CaseInfo();
+        CaseInfo caseInfo = new CaseInfo();//要更新到数据库里的实例信息
         if (caseInfoJObj != null) {
             caseInfo = JSON.parseObject(caseInfoJObj.toJSONString(), CaseInfo.class);
         }
@@ -673,6 +673,7 @@ public class CaseInfoService {
             caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
             caseInfo.setIsFinished(CaseInfo.FINISHED_STATE_FINISH);
             caseInfo.setFinishTime(new Date());// 结案时间
+            caseInfo.setSourceType(caseInfoInDB.getSourceType());
             gotoFinishSource(caseInfo, false);// 去更新事件来源的状态
         } else if (Constances.ProcFlowWork.TOFINISHWORKFLOW_DUP.equals(flowDirection)) {
             // 因重覆而结束
@@ -684,6 +685,7 @@ public class CaseInfoService {
             caseInfo.setIsFinished(CaseInfo.FINISHED_STATE_FINISH);
             caseInfo.setIsDuplicate("1");
             caseInfo.setFinishTime(new Date());// 结案时间
+            caseInfo.setSourceType(caseInfoInDB.getSourceType());
             // caseInfo.setDuplicateWith(Integer.valueOf(bizDataJObject.getString("duplicateWith")));
             gotoFinishSource(caseInfo, false);// 去更新事件来源的状态
         }

@@ -125,7 +125,13 @@ public class WfProcUserAuthBiz extends WfBaseBiz {
                 }
                 
                 authData.setProcTaskUser(userCode);
-                authData.setProcDeptId(getDeptId());
+                
+                /*
+                 * procDeptId用户验证部门权限<br/>
+                 * 该部门ID之前从BaseContexttHandler中获取，现在改为从前端传入<br/>
+                 * 前端获取方式为从token中解析出来 ，与从BaseContextHandler中获取的内容是一样的
+                 */
+//                authData.setProcDeptId(getDeptId());
                 authData.setProcTenantId(tenantID);
                 authData.setProcTaskRoles(roleCodes);
                 authData.setProcOrgCode(getOrgCode());
