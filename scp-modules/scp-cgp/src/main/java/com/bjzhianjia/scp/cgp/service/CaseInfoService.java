@@ -867,9 +867,6 @@ public class CaseInfoService {
         List<WfProcTaskHistoryBean> procHistoryList = procApprovedHistory.getList();
         JSONArray procHistoryJArray = JSONArray.parseArray(JSON.toJSONString(procHistoryList));
 
-        // List<String> committerIdList = procHistoryList.stream().map(o ->
-        // o.getProcTaskCommitter()).distinct()
-        // .collect(Collectors.toList());
         List<String> procTaskAssigneeIdList =
             procHistoryList.stream().map(o -> o.getProcTaskAssignee()).distinct().collect(Collectors.toList());
         if (procTaskAssigneeIdList != null && !procTaskAssigneeIdList.isEmpty()) {
@@ -944,12 +941,11 @@ public class CaseInfoService {
          * =================查询基础信息===========开始==========
          */
         JSONObject baseInfoJObj = new JSONObject();
+        baseInfoJObj.put("sourceType", caseInfo.getSourceType());
         baseInfoJObj.put("caseCode", caseInfo.getCaseCode());
         baseInfoJObj.put("caseTitle", caseInfo.getCaseTitle());
         baseInfoJObj.put("caseLevel", caseInfo.getCaseLevel());
         if (caseInfo.getCaseLevel() != null) {
-            // Map<String, String> dictValueMap =
-            // dictFeign.getDictValueByID(caseInfo.getCaseLevel());//>>>>>>>>>>>>>>>查询了字典>>>>>>>>>>>>>>>>>>>>>>>>>
             if (manyDictValuesMap != null && !manyDictValuesMap.isEmpty()) {
                 baseInfoJObj.put("caseLevelName", manyDictValuesMap.get(caseInfo.getCaseLevel()));
             }

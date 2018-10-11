@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.bjzhianjia.scp.cgp.config.PropertiesConfig;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.EnforceCertificate;
 import com.bjzhianjia.scp.cgp.entity.EventType;
@@ -46,7 +47,7 @@ import tk.mybatis.mapper.entity.Example;
  * </pre>
  * 
  *
- * @version 1.0 
+ * @version 1.0
  * @author chenshuai
  *
  */
@@ -77,6 +78,9 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 
     @Autowired
     private EventTypeBiz eventTypeBiz;
+
+    @Autowired
+    private PropertiesConfig propertiesConfig;
 
     public void createLawTask(LawTask lawTask) throws Exception {
         // 生成巡查记录编号
@@ -484,13 +488,13 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
                         String bizType = "";
                         StringBuilder typeName = new StringBuilder();
                         // 封装数据 "code":"name1,name2.."
-                        for(int i=0 ; i < list.size();i++) {
+                        for (int i = 0; i < list.size(); i++) {
                             EventType eventType = list.get(i);
-                            if(i ==  list.size()-1) {
+                            if (i == list.size() - 1) {
                                 typeName.append(eventType.getTypeName());
-                                //biz相同，所以添加一次
+                                // biz相同，所以添加一次
                                 bizType = eventType.getBizType();
-                            }else {
+                            } else {
                                 typeName.append(eventType.getTypeName()).append(",");
                             }
                         }
@@ -511,5 +515,92 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
             reslutObj.put("group", array);
         }
         return reslutObj;
+    }
+
+    /**
+     * 执法任务翻页查询
+     * 
+     * @param userName
+     *            执法者姓名
+     * @param regulaObjectName
+     *            巡查对象名称
+     * @param startTime
+     *            开始日期
+     * @param endTime
+     *            结束日期
+     * @param page
+     *            页码
+     * @param limit
+     *            页容量
+     * @return
+     */
+    public TableResultResponse<Map<String, Object>> getLawTaskToDoList(String userName, String regulaObjectName,
+        Date startTime, Date endTime, int page, int limit) {
+
+        Page<Object> result = PageHelper.startPage(page, limit);
+        List<Map<String, Object>> list =
+            lawTaskMapper.selectLawTaskList(userName, regulaObjectName, propertiesConfig.getLawTasksToDo(), startTime,
+                endTime);
+        if (list == null) {
+            return new TableResultResponse<Map<String, Object>>(0, null);
+        }
+
+        Map<String, String> dictData = dictFeign.getByCode(LawTask.ROOT_BIZ_LAWTASKS);
+        if (list.size() > 0) {
+            // 执法者分队（部门名称）
+            for (Map<String, Object> map : list) {
+
+                String executePerson = map.get("executePerson").toString();
+                String _executePerson = this.getDeptNameToDo(executePerson);
+                map.put("executePerson", _executePerson);
+            }
+            // 任务状态（数据字典）
+            if (dictData != null) {
+                String _state = null;
+                for (Map<String, Object> map : list) {
+                    _state = dictData.get(map.get("state"));
+                    map.put("state", _state);
+                }
+            }
+        }
+
+        return new TableResultResponse<Map<String, Object>>(result.getTotal(), list);
+    }
+
+    /**
+     * 通过json获取执法分队名称（部门名称）
+     * 
+     * @param executePerson
+     *            执法者信息
+     *            [{'userid':{'userName':'xxxx','deptId':'xxxx'}},{'userid':{'userName':'xxx','deptId':'xxxx'}}]
+     * @return [{'userid':{'userName':'xxxx','deptId':'deptName','':'xxx'}},{'userid':{'userName':'xxx','deptId':'xxxx','deptName':'xxxx'}}]
+     */
+    private String getDeptNameToDo(String executePerson) {
+        // 执法者json信息
+        JSONArray userObjs = JSONArray.parseArray(executePerson);
+        JSONArray _userObjs = new JSONArray(); // 封装执法者信息
+        JSONObject deptObj = null; // 执法者部门
+        JSONObject obj = null; // 执法者
+        if (userObjs != null) {
+            for (int i = 0; userObjs != null && i < userObjs.size(); i++) {
+                JSONObject object = userObjs.getJSONObject(i);
+                Set<String> userIds = object.keySet();
+                for (String userId : userIds) {
+                    String json = object.getString(userId);
+                    obj = JSONObject.parseObject(json);
+                    if (obj != null) {
+                        // 法者分队（部门名称）
+                        deptObj = adminFeign.getByDeptId(obj.getString("deptId"));
+                        if (deptObj != null) {
+                            obj.put("deptName", deptObj.getString("name"));
+                        }
+                        obj.put("userId", userId);
+                        _userObjs.add(obj);
+                    }
+                }
+
+            }
+        }
+        return _userObjs.toJSONString();
     }
 }

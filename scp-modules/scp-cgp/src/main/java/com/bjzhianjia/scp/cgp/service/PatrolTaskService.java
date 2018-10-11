@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.bjzhianjia.scp.cgp.biz.AreaGridBiz;
 import com.bjzhianjia.scp.cgp.biz.CaseInfoBiz;
 import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
 import com.bjzhianjia.scp.cgp.biz.InspectItemsBiz;
@@ -76,17 +75,11 @@ public class PatrolTaskService {
 	@Autowired
 	private RegulaObjectTypeBiz regulaObjectTypeBiz;
 	
-	
-	@Autowired
-	private AreaGridBiz areaGridBiz;
-	
 	@Autowired
 	private SpecialEventBiz specialEventBiz;
 	
-	
 	@Autowired
 	private EventTypeBiz eventTypeBiz;
-	
 	
 	@Autowired
 	private InspectItemsBiz inspectItemsBiz;
@@ -342,7 +335,7 @@ public class PatrolTaskService {
 			for(InspectItems inspectItems : inspectItemsList) {
 				names.add(inspectItems.getName());
 			}
-			result.put("inspectItems",names);
+			result.put("inspectItems",String.join(",", names));
 		}
 		
 		result.put("content", patrolTask.getContent());

@@ -154,7 +154,7 @@
 				and (sign_in_time = '' or sign_out_time = '')
 			</if>
 		</where>
-		order by date_day,crt_username
+		order by date_day desc,crt_username
 		limit ${startIndex},${limit}
 	</select>
 </mapper>
