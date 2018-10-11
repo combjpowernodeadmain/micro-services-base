@@ -12,11 +12,18 @@
 
 package com.bjzhianjia.scp.cgp.service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.bjzhianjia.scp.cgp.biz.AreaGridMemberBiz;
+import com.bjzhianjia.scp.cgp.entity.AreaGridMember;
 import com.bjzhianjia.scp.cgp.feign.IUserFeign;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.wf.base.auth.service.IWfProcUserAuthService;
 
@@ -30,6 +37,9 @@ public class UserAuthCustomImpl implements IWfProcUserAuthService {
     
     @Autowired
     private IUserFeign userFeign;
+    
+    @Autowired
+    private AreaGridMemberBiz areaGridMemberBiz;
     /**
      * 空构造函数
      */
@@ -112,8 +122,23 @@ public class UserAuthCustomImpl implements IWfProcUserAuthService {
 
     @Override
     public String getSelfPermissionData1() {
-        // TODO Auto-generated method stub
-        return null;
+        /*
+         * selfPermissionData1用于网格权限
+         */
+        // 查询操作人所属网格,一个人可能属于多个网格
+        List<AreaGridMember> areaGridList = areaGridMemberBiz.getGridByMemId(BaseContextHandler.getUserID());
+        List<String> areaGridIdList=new ArrayList<>();
+        if(BeanUtil.isNotEmpty(areaGridList)) {
+            areaGridIdList=areaGridList.stream().map(o->String.valueOf(o.getGridId())).distinct().collect(Collectors.toList());
+            String areaGridIdStr = "'" + String.join(",", areaGridIdList).replaceAll(",", "','")+"'";//拼接sql中替换点位符的字符串
+            return areaGridIdStr;
+        }
+        
+        /*
+         *  如果当前人员不属于某一网格，则返回“-1”，而不返回空，避免产生sql错误
+         *  如果返回为空，则sql语句为"AND task.PROC_SELFDATA1 IN ()",该sql片段会报错
+         */
+        return "'-1'";
     }
 
     @Override
@@ -175,6 +200,4 @@ public class UserAuthCustomImpl implements IWfProcUserAuthService {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
-	
 }
