@@ -136,7 +136,13 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         if (StringUtils.isNotBlank(caseInfo.getRegulaObjList())) {
             criteria.andIn("regulaObjList", Arrays.asList(caseInfo.getRegulaObjList().split(",")));
         }
-        example.setOrderByClause("id desc");
+        if(StringUtils.isNotBlank(caseInfo.getCaseTitle())) {
+            criteria.andLike("caseTitle", caseInfo.getCaseTitle());
+        }
+        if(StringUtils.isNotBlank(caseInfo.getCaseCode())) {
+            criteria.andLike("caseCode", caseInfo.getCaseCode());
+        }
+        example.setOrderByClause("source_type desc");
 
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<CaseInfo> list = this.mapper.selectByExample(example);
@@ -381,10 +387,8 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
 
             int startYear = 0;
             int startMonth = 0;
-            
-            
-            
-            while (calStart.before(calEnd) || (calStart.get(Calendar.MONTH) == calEnd.get(Calendar.MONTH))){
+
+            while (calStart.before(calEnd) || (calStart.get(Calendar.MONTH) == calEnd.get(Calendar.MONTH))) {
                 startYear = calStart.get(Calendar.YEAR);
                 startMonth = calStart.get(Calendar.MONTH) + 1;
 

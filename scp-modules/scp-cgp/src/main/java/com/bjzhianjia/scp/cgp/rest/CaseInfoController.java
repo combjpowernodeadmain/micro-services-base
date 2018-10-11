@@ -109,9 +109,14 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
     @ApiOperation("分页获取对象")
     public TableResultResponse<CaseInfo> pageNoFinish(@PathVariable("id") Integer id,
         @RequestParam(value = "page", defaultValue = "1") @ApiParam(name = "当前页") Integer page,
-        @RequestParam(value = "limit", defaultValue = "10") @ApiParam(name = "页容量") Integer limit) {
+        @RequestParam(value = "limit", defaultValue = "10") @ApiParam(name = "页容量") Integer limit,
+        @RequestParam(value = "caseCode", defaultValue = "") @ApiParam(name = "事件编号") String caseCode,
+        @RequestParam(value = "caseTitle", defaultValue = "") @ApiParam(name = "事件标题") String caseTitle
+        ) {
         CaseInfo caseInfo = new CaseInfo();
         caseInfo.setId(id);
+        caseInfo.setCaseCode(caseCode);
+        caseInfo.setCaseTitle(caseTitle);
 
         TableResultResponse<CaseInfo> restResult = caserInfoService.getList(caseInfo, page, limit, true);
 
