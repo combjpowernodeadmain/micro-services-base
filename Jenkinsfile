@@ -67,7 +67,7 @@ pipeline {
                 sshPublisher(publishers: [
 
                     sshPublisherDesc(
-                        configName: 'XiashuIntranetServer', 
+                        configName: 'AliyunServerZZ001', 
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
@@ -88,7 +88,7 @@ pipeline {
                         verbose: false
                     ),
                     sshPublisherDesc(
-                        configName: 'XiashuIntranetServer', 
+                        configName: 'AliyunServerZZ001', 
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
