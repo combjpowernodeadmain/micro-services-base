@@ -49,7 +49,7 @@
 		from attendance_info
 		<where>
 			<if test="account != null and account != ''">
-				and crt_username like concat('%',#{account},'%')
+				and crt_username=#{account}
 			</if>
 			<if test="name != null and name != ''">
 				and crt_user_name like concat('%',#{name},'%')
@@ -78,8 +78,10 @@
 		</where>
 		) C
 		<where>
+			<![CDATA[ and (sign_in_time <> '' or sign_out_time <> '') ]]>
+		
 			<if test='status == "1"'>
-				<![CDATA[ and sign_in_time <> '' and sign_out_time <> '' ]]>
+				<![CDATA[ and (sign_in_time <> '' and sign_out_time <> '') ]]>
 			</if>
 			<if test='status == "0"'>
 				and (sign_in_time = '' or sign_out_time = '')
@@ -118,7 +120,7 @@
 		from attendance_info
 		<where>
 			<if test="account != null and account != ''">
-				and crt_username like concat('%',#{account},'%')
+				and crt_username=#{account}
 			</if>
 			<if test="name != null and name != ''">
 				and crt_user_name like concat('%',#{name},'%')
@@ -147,8 +149,10 @@
 		</where>
 		) C
 		<where>
+			<![CDATA[ and (sign_in_time <> '' or sign_out_time <> '') ]]>
+			
 			<if test='status == "1"'>
-				<![CDATA[ and sign_in_time <> '' and sign_out_time <> '' ]]>
+				<![CDATA[ and (sign_in_time <> '' and sign_out_time <> '') ]]>
 			</if>
 			<if test='status == "0"'>
 				and (sign_in_time = '' or sign_out_time = '')

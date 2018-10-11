@@ -101,17 +101,6 @@ public class AttendanceInfoService {
 	public TableResultResponse<AttendanceVo> getUserAttendanceInfo(int page,int limit,String startDate,String endDate){
 	    TableResultResponse<AttendanceVo> tableResultResponse=new TableResultResponse<>();
 	    
-        if (StringUtils.isBlank(startDate) || StringUtils.isBlank(endDate)) {
-            endDate = DateUtil.dateFromDateToStr(DateUtils.addDays(new Date(), 1), "yyyy-MM-dd");
-            Date _startDate = DateUtils.addDays(new Date(), -6);
-            startDate = DateUtil.dateFromDateToStr(_startDate, "yyyy-MM-dd");
-        } else {
-            // 查询结束日期结止至当天24点，即次日0点
-            endDate =
-                DateUtil.dateFromDateToStr(DateUtils.addDays(DateUtil.dateFromStrToDate(endDate, "yyyy-MM-dd"), 1),
-                    "yyyy-MM-dd");
-        }
-        
         Map<String, String> userMap = adminFeign.getUser(BaseContextHandler.getUserID());
         String userName="";
         if(BeanUtil.isNotEmpty(userMap)) {
