@@ -23,6 +23,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.AreaGridBiz;
 import com.bjzhianjia.scp.cgp.biz.CaseInfoBiz;
+import com.bjzhianjia.scp.cgp.biz.CommandCenterHotlineBiz;
 import com.bjzhianjia.scp.cgp.biz.ConcernedCompanyBiz;
 import com.bjzhianjia.scp.cgp.biz.ConcernedPersonBiz;
 import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
@@ -34,6 +35,7 @@ import com.bjzhianjia.scp.cgp.biz.PublicOpinionBiz;
 import com.bjzhianjia.scp.cgp.biz.RegulaObjectBiz;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
+import com.bjzhianjia.scp.cgp.entity.CommandCenterHotline;
 import com.bjzhianjia.scp.cgp.entity.ConcernedCompany;
 import com.bjzhianjia.scp.cgp.entity.ConcernedPerson;
 import com.bjzhianjia.scp.cgp.entity.Constances;
@@ -133,6 +135,12 @@ public class CaseInfoService {
     @Autowired
     private MergeCore mergeCore;
 
+    @Autowired
+    private CommandCenterHotlineBiz commandCenterHotlineBiz;
+
+    @Autowired
+    private CommandCenterHotlineService commandCenterHotlineService;
+
     /**
      * 更新单个对象
      * 
@@ -172,10 +180,10 @@ public class CaseInfoService {
      * @return
      */
     public ObjectRestResponse<JSONObject> get(Integer id) {
-        ObjectRestResponse<JSONObject> restResult=new ObjectRestResponse<>();
+        ObjectRestResponse<JSONObject> restResult = new ObjectRestResponse<>();
         CaseInfo caseInfo = this.caseInfoBiz.selectById(id);
-        
-        if(BeanUtil.isEmpty(caseInfo)) {
+
+        if (BeanUtil.isEmpty(caseInfo)) {
             restResult.setData(new JSONObject());
             return restResult;
         }
@@ -193,20 +201,20 @@ public class CaseInfoService {
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
-        
-        //整合办理信息
+
+        // 整合办理信息
         List<ExecuteInfo> exeInfoList = executeInfoBiz.getListByCaseInfoId(caseInfo.getId());
-        ExecuteInfo executeInfo=new ExecuteInfo();
-        if(BeanUtil.isNotEmpty(exeInfoList)) {
-            executeInfo=exeInfoList.get(0);
+        ExecuteInfo executeInfo = new ExecuteInfo();
+        if (BeanUtil.isNotEmpty(exeInfoList)) {
+            executeInfo = exeInfoList.get(0);
         }
-        
+
         JSONObject caseInfoJObj = JSONObject.parseObject(JSON.toJSONString(caseInfo));
-        if(BeanUtil.isNotEmpty(executeInfo)) {
+        if (BeanUtil.isNotEmpty(executeInfo)) {
             caseInfoJObj.put("exePerson", executeInfo.getExePerson());
             caseInfoJObj.put("exeFinishTime", executeInfo.getFinishTime());
         }
-        
+
         restResult.setData(caseInfoJObj);
         return restResult;
     }
@@ -291,7 +299,9 @@ public class CaseInfoService {
 
         if (list != null && !list.isEmpty()) {
             // 有待办任务
-            return queryAssist(queryCaseInfo, queryData, jObjList, pageInfo, objs);
+            TableResultResponse<JSONObject> restResult =
+                queryAssist(queryCaseInfo, queryData, jObjList, pageInfo, objs);
+            return restResult;
         } else {
             // 无待办任务
             return new TableResultResponse<>(0, jObjList);
@@ -336,7 +346,9 @@ public class CaseInfoService {
 
         if (list != null && !list.isEmpty()) {
             // 有待办任务
-            return queryAssist(queryCaseInfo, queryData, jObjList, pageInfo, objs);
+            TableResultResponse<JSONObject> restResult =
+                queryAssist(queryCaseInfo, queryData, jObjList, pageInfo, objs);
+            return restResult;
         } else {
             // 无待办任务
             return new TableResultResponse<>(0, jObjList);
@@ -561,6 +573,30 @@ public class CaseInfoService {
 
                 reportPersonId = patrolTask.getCrtUserId();
                 break;
+            case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_COMMAND_LINE:
+                // 指挥中心热线
+                JSONObject centerHotlineJObj =
+                    commandCenterHotlineService.selectById(Integer.valueOf(caseInfo.getSourceCode()));
+
+                resultJObjct = centerHotlineJObj;
+                resultJObjct.put("eventSourceType", "指挥中心热线");
+                resultJObjct.put("sourceCode", centerHotlineJObj.getString("hotlnCode"));
+
+                reportPersonId = centerHotlineJObj.getString("crtUserId");
+
+                zhaiyaoList
+                    .add(centerHotlineJObj.getString("bizType") == null ? "" : centerHotlineJObj.getString("bizType"));
+                zhaiyaoList.add(centerHotlineJObj.getString("eventTypeName") == null ? ""
+                    : centerHotlineJObj.getString("eventTypeName"));
+                zhaiyaoList.add(
+                    centerHotlineJObj.getString("appealType") == null ? "" : centerHotlineJObj.getString("appealType"));
+                zhaiyaoList.add(
+                    centerHotlineJObj.getString("appealTel") == null ? "" : centerHotlineJObj.getString("appealTel"));
+                if (centerHotlineJObj.getDate("appealDatetime") != null) {
+                    zhaiyaoList.add(
+                        DateUtil.dateFromDateToStr(centerHotlineJObj.getDate("appealDatetime"), "yyyy-MM-dd HH:mm:ss"));
+                }
+                break;
             default:
                 break;
         }
@@ -618,7 +654,7 @@ public class CaseInfoService {
         JSONObject concernedPersonJObj = bizDataJObject.getJSONObject("concernedPerson");// 当事人(个人信息)
         JSONObject concernedCompanyJObj = bizDataJObject.getJSONObject("concernedCompany");// 当事人(单位)
 
-        CaseInfo caseInfo = new CaseInfo();
+        CaseInfo caseInfo = new CaseInfo();//要更新到数据库里的实例信息
         if (caseInfoJObj != null) {
             caseInfo = JSON.parseObject(caseInfoJObj.toJSONString(), CaseInfo.class);
         }
@@ -637,6 +673,7 @@ public class CaseInfoService {
             caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
             caseInfo.setIsFinished(CaseInfo.FINISHED_STATE_FINISH);
             caseInfo.setFinishTime(new Date());// 结案时间
+            caseInfo.setSourceType(caseInfoInDB.getSourceType());
             gotoFinishSource(caseInfo, false);// 去更新事件来源的状态
         } else if (Constances.ProcFlowWork.TOFINISHWORKFLOW_DUP.equals(flowDirection)) {
             // 因重覆而结束
@@ -648,6 +685,7 @@ public class CaseInfoService {
             caseInfo.setIsFinished(CaseInfo.FINISHED_STATE_FINISH);
             caseInfo.setIsDuplicate("1");
             caseInfo.setFinishTime(new Date());// 结案时间
+            caseInfo.setSourceType(caseInfoInDB.getSourceType());
             // caseInfo.setDuplicateWith(Integer.valueOf(bizDataJObject.getString("duplicateWith")));
             gotoFinishSource(caseInfo, false);// 去更新事件来源的状态
         }
@@ -754,6 +792,21 @@ public class CaseInfoService {
                 }
                 PatrolTask patrolTask = JSON.parseObject(assist.toJSONString(), PatrolTask.class);
                 patrolTaskBiz.updateSelectiveById(patrolTask);
+                break;
+            case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_COMMAND_LINE:
+                // 指挥中心热线
+                log.info("指挥中心热线事件【已完成】");
+                if (isTermination) {
+                    // 事件终止操作
+                    assist =
+                        assist(caseInfo.getSourceCode(), Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_STOP);
+                } else {
+                    assist =
+                        assist(caseInfo.getSourceCode(), Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_DONE);
+                }
+                CommandCenterHotline commandCenterHotline =
+                    JSON.parseObject(assist.toJSONString(), CommandCenterHotline.class);
+                commandCenterHotlineBiz.updateSelectiveById(commandCenterHotline);
                 break;
             default:
                 break;

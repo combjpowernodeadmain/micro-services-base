@@ -65,12 +65,14 @@ public class EnforceCertificateController extends BaseController<EnforceCertific
     public TableResultResponse<JSONObject> page(@RequestParam(defaultValue = "10") int limit
     				,@RequestParam(defaultValue = "1") int page
     				,@RequestParam(defaultValue = "") String certCode
-    				,@RequestParam(defaultValue = "") String holderName) {
+    				,@RequestParam(defaultValue = "") String holderName
+    				,@RequestParam(defaultValue = "") String deptId
+    				) {
 	    
 		EnforceCertificate enforceCertificate = new EnforceCertificate();
 		enforceCertificate.setCertCode(certCode);
 		enforceCertificate.setHolderName(holderName);
-	    return enforceCertificateService.getList(page, limit, enforceCertificate);
+	    return enforceCertificateService.getList(page, limit, enforceCertificate,deptId);
 	    
     }
 	

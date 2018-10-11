@@ -65,6 +65,49 @@ pipeline {
         stage ('Rename Files in aliyun') {
             steps {
                 sshPublisher(publishers: [
+
+                    sshPublisherDesc(
+                        configName: 'XiashuIntranetServer', 
+                        transfers: [
+                            sshTransfer(
+                                excludes: '', 
+                                execCommand: 'mv /data/scp/4_admin/scp-admin.jar /data/scp/4_admin/scp-admin.${BUILD_ID}.jar', 
+                                execTimeout: 120000, 
+                                flatten: false, 
+                                makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: '', 
+                                sourceFiles: ''
+                            )
+                        ], 
+                        usePromotionTimestamp: false, 
+                        useWorkspaceInPromotion: false, 
+                        verbose: false
+                    ),
+                    sshPublisherDesc(
+                        configName: 'XiashuIntranetServer', 
+                        transfers: [
+                            sshTransfer(
+                                excludes: '', 
+                                execCommand: 'mv /data/scp/5_gate/scp-gate.jar /data/scp/5_gate/scp-gate.${BUILD_ID}.jar', 
+                                execTimeout: 120000, 
+                                flatten: false, 
+                                makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: '', 
+                                sourceFiles: ''
+                            )
+                        ], 
+                        usePromotionTimestamp: false, 
+                        useWorkspaceInPromotion: false, 
+                        verbose: false
+                    ),
                     sshPublisherDesc(
                         configName: 'AliyunServerZZ001', 
                         transfers: [

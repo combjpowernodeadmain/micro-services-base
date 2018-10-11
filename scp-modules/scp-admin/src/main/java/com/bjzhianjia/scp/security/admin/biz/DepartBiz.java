@@ -5,8 +5,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.bjzhianjia.scp.security.admin.vo.DepartTree;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
+import com.bjzhianjia.scp.security.common.util.TreeUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,7 +37,7 @@ import tk.mybatis.mapper.entity.Example.Criteria;
  *
  * @author Mr.AG
  * @email 576866311@qq.com
- * @version 1.0 
+ * @version 1.0
  */
 @Service
 public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
@@ -166,17 +170,94 @@ public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
     	List<Depart> deptList = mapper.selectByExample(example);
     	return deptList;
     }
-    
+
     /**
      * 查询执法分队
      * @return
      */
     public List<Depart> getEnforcersGroup(){
-      Example example = new Example(Depart.class);
-      Criteria criteria = example.createCriteria();
-      //1 执法分队 0非执法分队
-      String isEnforcersGroup = "1";
-      criteria.andEqualTo("attr1", isEnforcersGroup);
-     return this.mapper.selectByExample(example);
+        Example example = new Example(Depart.class);
+        Criteria criteria = example.createCriteria();
+        //1 执法分队 0非执法分队
+        String isEnforcersGroup = "1";
+        criteria.andEqualTo("attr1", isEnforcersGroup);
+        return this.mapper.selectByExample(example);
+    }
+
+    /**
+     * 通过部门id获取所在部门和子部门的集合
+     *
+     * @param departId 部门id
+     * @return
+     */
+    public ObjectRestResponse<List<DepartTree>> getDeptSonByDepartId(String departId, String name) {
+        ObjectRestResponse<List<DepartTree>> result = new ObjectRestResponse<>();
+        List<DepartTree> resultData = new ArrayList<>();
+        //封装当前部门信息
+        Depart depart = this.selectById(departId);
+        if (depart == null) {
+            result.setMessage("没有匹配的部门信息！");
+            result.setStatus(400);
+            return result;
+        }
+        resultData.add(this.resetBean(depart));
+
+        //封装当前子部门集
+        List<Depart> departList = this.selectListAll() ; //this.selectByExample(example);
+        if (departList != null && !departList.isEmpty()) {
+            this.getDepartSon(departId, departList, resultData,name);
+        }
+
+        result.data(TreeUtil.bulid(resultData, "-1", null));
+        return result;
+    }
+
+    /**
+     * 通过部门id获取子部门集
+     *
+     * @param departId   部门id
+     * @param departList 所有部门集
+     * @param resultData 结果集部门列表
+     */
+    private void getDepartSon(String departId, List<Depart> departList, List<DepartTree> resultData,String name) {
+        for (Depart depart : departList) {
+            if (departId.equals(depart.getParentId())) {
+                if(StringUtils.isNotBlank(name)) {
+                    if(!this.matchingName(depart.getName(), name)) {
+                        continue;
+                    }
+                }
+                resultData.add(this.resetBean(depart));
+                this.getDepartSon(depart.getId(), departList, resultData,name);
+            }
+        }
+    }
+
+    /**
+     * 分装成部门树节点
+     *
+     * @param depart 完整部门信息
+     * @return DepartTree 部门树节点
+     */
+    private DepartTree resetBean(Depart depart) {
+        DepartTree departTree = new DepartTree();
+        if (depart == null) {
+            return departTree;
+        }
+        departTree.setCode(depart.getCode());
+        departTree.setLabel(depart.getName());
+        departTree.setId(depart.getId());
+        departTree.setParentId(depart.getParentId());
+        return departTree;
+    }
+    /**
+     * 模糊匹配部门名称
+     * @param name 部门名称
+     * @param data 匹配名称
+     * @return
+     *      true:匹配成功，false:匹配失败
+     */
+    private boolean matchingName(String name,String data) {
+        return Pattern.matches(".*"+data+".*", name);
     }
 }

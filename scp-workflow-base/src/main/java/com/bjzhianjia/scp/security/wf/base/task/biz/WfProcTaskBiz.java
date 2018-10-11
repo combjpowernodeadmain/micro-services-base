@@ -975,6 +975,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 				+ procTask.getProcCtaskname() + ")的委托关系结束.");
 
 		// 如果非委托授权处理，且候选用户组与处理用户所属角色不同时，则该用户不具有流程任务签收权限
+		// TODO 是否必须为签收人分配组
 		if (!isDelegate
 				&& !authData.getProcTaskRoles().contains(
 						procTask.getProcTaskGroup())) {
@@ -3295,7 +3296,8 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			wfProcTaskBean.setProcDatapermission(getProcTaskDataPermission(properties));
 			wfProcTaskBean.setProcOrgpermission(getProcTaskOrgPermission(properties));
 	        wfProcTaskBean.setProcDeptpermission(getProcTaskDeptPermission(properties));
-	        wfProcTaskBean.setProcDepartId(wfPreProcTaskBean.getProcDepartId());
+	        // 修改审批时，设置部门策略的方式wfPreProcTaskBean.getProcDepartId()-->authData.getProcDeptId()==2018-10-09
+	        wfProcTaskBean.setProcDepartId(authData.getProcDeptId());
 	        wfProcTaskBean.setProcTenantpermission(getProcTenantPermission(properties));
 	        wfProcTaskBean.setProcTenantId(wfPreProcTaskBean.getProcTenantId());
 	        wfProcTaskBean.setProcSelfpermission1(getProcTaskSelfPermission1(properties));

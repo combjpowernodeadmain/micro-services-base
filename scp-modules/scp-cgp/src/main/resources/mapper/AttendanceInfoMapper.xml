@@ -30,6 +30,7 @@
 		<result property="signOutTime" column="sign_out_time" />
 		<result property="signOutMapInfo" column="sign_out_map_info" />
 		<result property="signOutMap" column="sign_out_map" />
+		<result property="dateDay" column="date_day" />
 	</resultMap>
 
 	<select id="getTotal" resultType="int">
@@ -102,9 +103,9 @@
 		'|'),'|',1) crt_user_name
 		,substring_index(group_concat(depart_id order
 		by id separator '|'),'|',1) depart_id
-		,substring_index(group_concat(crt_time order by id separator
+		,substring_index(group_concat(DATE_FORMAT(crt_time,'%H:%i:%s') order by id separator	
 		'|'),'|',1) sign_in_time
-		,if(count(*)=1,'',substring_index(group_concat(crt_time order by id
+		,if(count(*)=1,'',substring_index(group_concat(DATE_FORMAT(crt_time,'%H:%i:%s') order by id
 		separator '|'),'|',-1)) sign_out_time
 		,substring_index(group_concat(map_info order by id separator
 		'|'),'|',1) sign_in_map_info

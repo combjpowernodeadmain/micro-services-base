@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.bjzhianjia.scp.cgp.mapper.PopulationInfoMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+	<resultMap
+		type="com.bjzhianjia.scp.cgp.entity.PopulationInfo"
+		id="populationInfoMap">
+		<result property="id" column="id" />
+		<result property="quantity" column="quantity" />
+		<result property="pType" column="p_type" />
+		<result property="crtUserName" column="crt_user_name" />
+		<result property="crtUserId" column="crt_user_id" />
+		<result property="crtTime" column="crt_time" />
+		<result property="updUserName" column="upd_user_name" />
+		<result property="updUserId" column="upd_user_id" />
+		<result property="updTime" column="upd_time" />
+		<result property="departId" column="depart_id" />
+		<result property="tenantId" column="tenant_id" />
+	</resultMap>
+
+	<insert id="insertPopulationInfoList">
+		INSERT INTO population_info (
+		population_info.quantity,
+		population_info.p_type,
+		population_info.crt_user_name,
+		population_info.crt_user_id,
+		population_info.crt_time,
+		population_info.depart_id,
+		population_info.tenant_id
+		)
+		VALUES
+		<foreach collection="populationInfoList" index="index"
+			item="item" separator=",">
+			(
+			#{item.quantity},
+			#{item.pType},
+			#{item.crtUserName},
+			#{item.crtUserId},
+			#{item.crtTime},
+			#{item.departId},
+			#{item.tenantId}
+			)
+		</foreach>
+	</insert>
+
+	<update id="updatePopulationInfoList">
+		UPDATE population_info
+		SET
+		quantity =
+		CASE id
+		<foreach collection="populationInfoList" index="index"
+			item="item">
+			WHEN #{item.id} THEN #{item.quantity}
+		</foreach>
+		END,
+		upd_user_name =
+		CASE id
+		<foreach collection="populationInfoList" index="index"
+			item="item">
+			WHEN #{item.id} THEN #{item.updUserName}
+		</foreach>
+		END,
+		upd_user_id =
+		CASE id
+		<foreach collection="populationInfoList" index="index"
+			item="item">
+			WHEN #{item.id} THEN #{item.updUserId}
+		</foreach>
+		END,
+		upd_time =
+		CASE id
+		<foreach collection="populationInfoList" index="index"
+			item="item">
+			WHEN #{item.id} THEN #{item.updTime}
+		</foreach>
+		END
+		WHERE id IN (
+		<foreach collection="populationInfoList" index="index"
+			item="item" separator=",">
+			#{item.id}
+		</foreach>
+		)
+	</update>
+</mapper>

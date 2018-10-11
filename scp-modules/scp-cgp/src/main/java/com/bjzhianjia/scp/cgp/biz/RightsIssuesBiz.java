@@ -115,6 +115,9 @@ public class RightsIssuesBiz extends BusinessBiz<RightsIssuesMapper, RightsIssue
         if (BeanUtil.isNotEmpty(rightsIssues.getType())) {
             criteria.andEqualTo("type", rightsIssues.getType());
         }
+        if (StringUtils.isNotBlank(rightsIssues.getBizType())) {
+            criteria.andEqualTo("bizType", rightsIssues.getBizType());
+        }
 
         example.setOrderByClause("id desc");
 

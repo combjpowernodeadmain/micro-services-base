@@ -32,6 +32,11 @@ import jdk.nashorn.internal.ir.annotations.Ignore;
 @Table(name = "base_user")
 public class User implements Serializable{
     private static final long serialVersionUID = -2786301994259082323L;
+    /**
+     * 专业
+     */
+    public static final String JUDICIAL_PROFESSIONAL = "judicial_professional";
+
     @Id
 //    @GeneratedValue(generator = "UUID")
     private String id;

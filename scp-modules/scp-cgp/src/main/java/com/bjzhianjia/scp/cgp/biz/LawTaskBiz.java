@@ -198,9 +198,9 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
      */
     public TableResultResponse<Map<String, Object>> getLawTaskList(String userName, String regulaObjectName,
         String state, Date startTime, Date endTime, int page, int limit) {
+        Page<Object> result = PageHelper.startPage(page, limit);
         List<Map<String, Object>> list =
             lawTaskMapper.selectLawTaskList(userName, regulaObjectName, state, startTime, endTime);
-        Page<Object> result = PageHelper.startPage(page, limit);
         if (list == null) {
             return new TableResultResponse<Map<String, Object>>(0, null);
         }
@@ -358,6 +358,7 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
             }
         }
 
+        result.setIsSuccess(true);
         return result;
     }
 

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.bjzhianjia.scp.security.admin.feign.DictFeign;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,203 +56,211 @@ import tk.mybatis.mapper.entity.Example;
  * ${DESCRIPTION}
  *
  * @author scp
- * @version 1.0 
+ * @version 1.0
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class UserBiz extends BaseBiz<UserMapper, User> {
-    @Autowired
-    private MergeCore mergeCore;
-    @Autowired
-    private DepartMapper departMapper;
-    @Autowired
-    private PositionMapper positionMapper;
-    
-    private Sha256PasswordEncoder encoder = new Sha256PasswordEncoder();
+	@Autowired
+	private MergeCore mergeCore;
+	@Autowired
+	private DepartMapper departMapper;
+	@Autowired
+	private PositionMapper positionMapper;
 
+	private Sha256PasswordEncoder encoder = new Sha256PasswordEncoder();
+	@Autowired
+	private DictFeign dictFeign;
 
-    @Override
-    public User selectById(Object id) {
-        User user = super.selectById(id);
-        try {
-            mergeCore.mergeOne(User.class, user);
-            return user;
-        } catch (Exception e) {
-            return super.selectById(id);
-        }
-    }
+	@Override
+	public User selectById(Object id) {
+		User user = super.selectById(id);
+		try {
+			mergeCore.mergeOne(User.class, user);
+			return user;
+		} catch (Exception e) {
+			return super.selectById(id);
+		}
+	}
 
-    public Boolean changePassword(String oldPass, String newPass) {
-        User user = this.getUserByUsername(BaseContextHandler.getUsername());
-        if (encoder.matches(oldPass, user.getPassword())) {
-            String password = encoder.encode(newPass);
-            user.setPassword(password);
-            this.updateSelectiveById(user);
-            return true;
-        }
-        return false;
-    }
-    /**
-     * 管理员重置用户密码
-     * @param oldPass
-     * @param newPass
-     * @return
-     */
-    public ObjectRestResponse<Boolean> resetPassword(String username , String newPass) {
-        ObjectRestResponse<Boolean> result = new ObjectRestResponse<>();
-        result.setStatus(400);
-        result.setData(false);
-        
-        // 如果非超级管理员,无法重置用户的密码
-        if (BooleanUtil.BOOLEAN_FALSE.equals(mapper.selectByPrimaryKey(BaseContextHandler.getUserID()).getIsSuperAdmin())) {
-            result.setMessage("当前用户没有权限！");
-            return result;
-        }
-        
-        User user = this.getByUsername(username);
-        if (user != null && StringUtils.isNotBlank(user.getPassword())) {
-            String password = encoder.encode(newPass);
-            user.setPassword(password);
-            this.updateSelectiveById(user);
-            
-            result.setStatus(200);
-            result.setData(true);
-            return result;
-        }
-        return result;
-    }
-    
+	public Boolean changePassword(String oldPass, String newPass) {
+		User user = this.getUserByUsername(BaseContextHandler.getUsername());
+		if (encoder.matches(oldPass, user.getPassword())) {
+			String password = encoder.encode(newPass);
+			user.setPassword(password);
+			this.updateSelectiveById(user);
+			return true;
+		}
+		return false;
+	}
 
-    @Override
-    public void insertSelective(User entity) {
-        String password = encoder.encode(entity.getPassword());
-        String departId = entity.getDepartId();
-        EntityUtils.setCreatAndUpdatInfo(entity);
-        entity.setPassword(password);
-        entity.setDepartId(departId);
-        entity.setIsDeleted(BooleanUtil.BOOLEAN_FALSE);
-        entity.setIsDisabled(BooleanUtil.BOOLEAN_FALSE);
-        String userId = UUIDUtils.generateUuid();
-        entity.setTenantId(BaseContextHandler.getTenantID());
-        entity.setId(userId);
-        entity.setIsSuperAdmin(BooleanUtil.BOOLEAN_FALSE);
-        // 如果非超级管理员,无法修改用户的租户信息
-        if (BooleanUtil.BOOLEAN_FALSE.equals(mapper.selectByPrimaryKey(BaseContextHandler.getUserID()).getIsSuperAdmin())) {
-            entity.setIsSuperAdmin(BooleanUtil.BOOLEAN_FALSE);
-        }
-        departMapper.insertDepartUser(UUIDUtils.generateUuid(), entity.getDepartId(), entity.getId(),BaseContextHandler.getTenantID());
-        super.insertSelective(entity);
-    }
+	/**
+	 * 管理员重置用户密码
+	 * 
+	 * @param oldPass
+	 * @param newPass
+	 * @return
+	 */
+	public ObjectRestResponse<Boolean> resetPassword(String username, String newPass) {
+		ObjectRestResponse<Boolean> result = new ObjectRestResponse<>();
+		result.setStatus(400);
+		result.setData(false);
 
-    @Override
-    public void updateSelectiveById(User entity) {
-        EntityUtils.setUpdatedInfo(entity);
-        User user = mapper.selectByPrimaryKey(entity.getId());
-        if (!user.getDepartId().equals(entity.getDepartId())) {
-            departMapper.deleteDepartUser(user.getDepartId(), entity.getId());
-            departMapper.insertDepartUser(UUIDUtils.generateUuid(), entity.getDepartId(), entity.getId(),BaseContextHandler.getTenantID());
-        }
-        // 如果非超级管理员,无法修改用户的租户信息
-        if (BooleanUtil.BOOLEAN_FALSE.equals(mapper.selectByPrimaryKey(BaseContextHandler.getUserID()).getIsSuperAdmin())) {
-            entity.setTenantId(BaseContextHandler.getTenantID());
-        }
-        // 如果非超级管理员,无法修改用户的租户信息
-        if (BooleanUtil.BOOLEAN_FALSE.equals(mapper.selectByPrimaryKey(BaseContextHandler.getUserID()).getIsSuperAdmin())) {
-            entity.setIsSuperAdmin(BooleanUtil.BOOLEAN_FALSE);
-        }
-        super.updateSelectiveById(entity);
-    }
+		// 如果非超级管理员,无法重置用户的密码
+		if (BooleanUtil.BOOLEAN_FALSE
+				.equals(mapper.selectByPrimaryKey(BaseContextHandler.getUserID()).getIsSuperAdmin())) {
+			result.setMessage("当前用户没有权限！");
+			return result;
+		}
 
-    @Override
-    public void deleteById(Object id) {
-        User user = mapper.selectByPrimaryKey(id);
-        user.setIsDeleted(BooleanUtil.BOOLEAN_TRUE);
-        this.updateSelectiveById(user);
-    }
+		User user = this.getByUsername(username);
+		if (user != null && StringUtils.isNotBlank(user.getPassword())) {
+			String password = encoder.encode(newPass);
+			user.setPassword(password);
+			this.updateSelectiveById(user);
 
-    @Override
-    public List<User> selectByExample(Object obj) {
-        Example example = (Example) obj;
-        example.createCriteria().andEqualTo("isDeleted", BooleanUtil.BOOLEAN_FALSE);
-        List<User> users = super.selectByExample(example);
-        try {
-            mergeCore.mergeResult(User.class, users);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            return users;
-        }
-    }
+			result.setStatus(200);
+			result.setData(true);
+			return result;
+		}
+		return result;
+	}
 
-    /**
-     * 根据用户名获取用户信息
-     *
-     * @param username
-     * @return
-     *      去除删除用户和禁用用户
-     */
-    public User getUserByUsername(String username) {
-        User user = new User();
-        user.setUsername(username);
-        user.setIsDeleted(BooleanUtil.BOOLEAN_FALSE);
-        user.setIsDisabled(BooleanUtil.BOOLEAN_FALSE);
-        return mapper.selectOne(user);
-    }
-    
-    /**
-     * 根据用户名获取用户信息
-     *
-     * @param username
-     * @return
-     *     去除删除用户
-     */
-    public User getByUsername(String username) {
-        User user = new User();
-        user.setUsername(username);
-        user.setIsDeleted(BooleanUtil.BOOLEAN_FALSE);
-        return mapper.selectOne(user);
-    }
-    
-    @Override
-    public void query2criteria(Query query, Example example) {
-        if (query.entrySet().size() > 0) {
-            for (Map.Entry<String, Object> entry : query.entrySet()) {
-                Example.Criteria criteria = example.createCriteria();
-                criteria.andLike(entry.getKey(), "%" + entry.getValue().toString() + "%");
-                example.or(criteria);
-            }
-        }
-    }
+	@Override
+	public void insertSelective(User entity) {
+		String password = encoder.encode(entity.getPassword());
+		String departId = entity.getDepartId();
+		EntityUtils.setCreatAndUpdatInfo(entity);
+		entity.setPassword(password);
+		entity.setDepartId(departId);
+		entity.setIsDeleted(BooleanUtil.BOOLEAN_FALSE);
+		entity.setIsDisabled(BooleanUtil.BOOLEAN_FALSE);
+		String userId = UUIDUtils.generateUuid();
+		entity.setTenantId(BaseContextHandler.getTenantID());
+		entity.setId(userId);
+		entity.setIsSuperAdmin(BooleanUtil.BOOLEAN_FALSE);
+		// 如果非超级管理员,无法修改用户的租户信息
+		if (BooleanUtil.BOOLEAN_FALSE
+				.equals(mapper.selectByPrimaryKey(BaseContextHandler.getUserID()).getIsSuperAdmin())) {
+			entity.setIsSuperAdmin(BooleanUtil.BOOLEAN_FALSE);
+		}
+		departMapper.insertDepartUser(UUIDUtils.generateUuid(), entity.getDepartId(), entity.getId(),
+				BaseContextHandler.getTenantID());
+		super.insertSelective(entity);
+	}
 
-    public List<String> getUserDataDepartIds(String userId) {
-        return mapper.selectUserDataDepartIds(userId);
-    }
-    
-    /**
-      *  根据ID批量获取人员
-     * @param departIDs
-     * @return
-     */
-    public Map<String,String> getUsers(String userIds){
-        if(StringUtils.isBlank(userIds)) {
-            return new HashMap<>();
-        }
-        userIds = "'"+userIds.replaceAll(",","','")+"'";
-        List<User> users = mapper.selectByIds(userIds);
-        return users.stream().collect(Collectors.toMap(User::getId, user -> JSONObject.toJSONString(user)));
-    }
-    
-    /**
-     * 查询部门deptId下的人员
-     * @author 尚
-     * @param deptId
-     * @return
-     */
-    public TableResultResponse<User> getUserByDept(String deptId,int page,int limit){
-    	
-    	Page<Object> result =PageHelper.startPage(page, limit);
-    	List<User> userList = departMapper.selectDepartUsers(deptId, null);
-    	
+	@Override
+	public void updateSelectiveById(User entity) {
+		EntityUtils.setUpdatedInfo(entity);
+		User user = mapper.selectByPrimaryKey(entity.getId());
+		if (!user.getDepartId().equals(entity.getDepartId())) {
+			departMapper.deleteDepartUser(user.getDepartId(), entity.getId());
+			departMapper.insertDepartUser(UUIDUtils.generateUuid(), entity.getDepartId(), entity.getId(),
+					BaseContextHandler.getTenantID());
+		}
+		// 如果非超级管理员,无法修改用户的租户信息
+		if (BooleanUtil.BOOLEAN_FALSE
+				.equals(mapper.selectByPrimaryKey(BaseContextHandler.getUserID()).getIsSuperAdmin())) {
+			entity.setTenantId(BaseContextHandler.getTenantID());
+		}
+		// 如果非超级管理员,无法修改用户的租户信息
+		if (BooleanUtil.BOOLEAN_FALSE
+				.equals(mapper.selectByPrimaryKey(BaseContextHandler.getUserID()).getIsSuperAdmin())) {
+			entity.setIsSuperAdmin(BooleanUtil.BOOLEAN_FALSE);
+		}
+		super.updateSelectiveById(entity);
+	}
+
+	@Override
+	public void deleteById(Object id) {
+		User user = mapper.selectByPrimaryKey(id);
+		user.setIsDeleted(BooleanUtil.BOOLEAN_TRUE);
+		this.updateSelectiveById(user);
+	}
+
+	@Override
+	public List<User> selectByExample(Object obj) {
+		Example example = (Example) obj;
+		example.createCriteria().andEqualTo("isDeleted", BooleanUtil.BOOLEAN_FALSE);
+		List<User> users = super.selectByExample(example);
+		try {
+			mergeCore.mergeResult(User.class, users);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			return users;
+		}
+	}
+
+	/**
+	 * 根据用户名获取用户信息
+	 *
+	 * @param username
+	 * @return 去除删除用户和禁用用户
+	 */
+	public User getUserByUsername(String username) {
+		User user = new User();
+		user.setUsername(username);
+		user.setIsDeleted(BooleanUtil.BOOLEAN_FALSE);
+		user.setIsDisabled(BooleanUtil.BOOLEAN_FALSE);
+		return mapper.selectOne(user);
+	}
+
+	/**
+	 * 根据用户名获取用户信息
+	 *
+	 * @param username
+	 * @return 去除删除用户
+	 */
+	public User getByUsername(String username) {
+		User user = new User();
+		user.setUsername(username);
+		user.setIsDeleted(BooleanUtil.BOOLEAN_FALSE);
+		return mapper.selectOne(user);
+	}
+
+	@Override
+	public void query2criteria(Query query, Example example) {
+		if (query.entrySet().size() > 0) {
+			for (Map.Entry<String, Object> entry : query.entrySet()) {
+				Example.Criteria criteria = example.createCriteria();
+				criteria.andLike(entry.getKey(), "%" + entry.getValue().toString() + "%");
+				example.or(criteria);
+			}
+		}
+	}
+
+	public List<String> getUserDataDepartIds(String userId) {
+		return mapper.selectUserDataDepartIds(userId);
+	}
+
+	/**
+	 * 根据ID批量获取人员
+	 * 
+	 * @param departIDs
+	 * @return
+	 */
+	public Map<String, String> getUsers(String userIds) {
+		if (StringUtils.isBlank(userIds)) {
+			return new HashMap<>();
+		}
+		userIds = "'" + userIds.replaceAll(",", "','") + "'";
+		List<User> users = mapper.selectByIds(userIds);
+		return users.stream().collect(Collectors.toMap(User::getId, user -> JSONObject.toJSONString(user)));
+	}
+
+	/**
+	 * 查询部门deptId下的人员
+	 * 
+	 * @author 尚
+	 * @param deptId
+	 * @return
+	 */
+	public TableResultResponse<User> getUserByDept(String deptId, int page, int limit) {
+
+		Page<Object> result = PageHelper.startPage(page, limit);
+		List<User> userList = departMapper.selectDepartUsers(deptId, null);
+
 //    	Example example=new Example(User.class);
 //    	Example.Criteria criteria=example.createCriteria();
 //    	criteria.andEqualTo("departId", deptId);
@@ -259,158 +268,194 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
 //    	example.orderBy("id");
 //    	Page<Object> result =PageHelper.startPage(page, limit);
 //    	List<User> userList = mapper.selectByExample(example);
-    	return new TableResultResponse<User>(result.getTotal(), userList);
-    }
-    
-    /**
-     * 按人名进行模糊查询
-     * @author 尚
-     * @param name
-     * @return
-     */
-    public List<User> getUsersByFakeName(String name){
-    	Example example=new Example(User.class);
-    	Example.Criteria criteria=example.createCriteria();
-    	criteria.andLike("name", "%"+name+"%");
-    	List<User> userList = mapper.selectByExample(example);
-    	if(userList == null) {
-    	   userList = new ArrayList<>();
-    	}    	    
-    	return userList;
-    }
-    
-    /**
-     * 按人名进行模糊查询，翻页
-     * @param name 用户名称
-     * @param page 页面
-     * @param limit 页容量
-     * @return
-     */
-    public TableResultResponse<Map<String, Object>> getUsersByFakeName(String name, int page, int limit) {
-        Example example = new Example(User.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andLike("name", "%" + name + "%");
-        Page<Object> pageList = PageHelper.startPage(page, limit);
-        List<User> userList = mapper.selectByExample(example);
-        if (userList == null) {
-            userList = new ArrayList<>();
-        }
-        List<Map<String, Object>> data = this.bindPositionToUser(userList);
-        if(data == null) {
-            data = new ArrayList<>();
-        }
-        return new TableResultResponse<>(pageList.getTotal(),data);
-    }
-    /**
-     * 将人员与其所在的职位进行绑定
-     * 
-     * @author 尚
-     * @param userList
-     * @return
-     */
-    private List<Map<String , Object>> bindPositionToUser(List<User> userList) {
-        List<Map<String , Object>> result = new ArrayList<>();
-        List<String> userIdList = userList.stream().map((o) -> o.getId()).distinct().collect(Collectors.toList());
+		return new TableResultResponse<User>(result.getTotal(), userList);
+	}
 
-        String join = String.join(",", userIdList);
-        join = "'" + join.replaceAll(",", "','") + "'";
+	/**
+	 * 按人名进行模糊查询
+	 * 
+	 * @author 尚
+	 * @param name
+	 * @return
+	 */
+	public List<User> getUsersByFakeName(String name) {
+		Example example = new Example(User.class);
+		Example.Criteria criteria = example.createCriteria();
+		criteria.andLike("name", "%" + name + "%");
+		List<User> userList = mapper.selectByExample(example);
+		if (userList == null) {
+			userList = new ArrayList<>();
+		}
+		return userList;
+	}
 
-        List<PositionVo> positionMapList = positionMapper.selectPositionByUser(join);
-        
-        //封装用户职务
-        //数据格式：userId：username1，username2
-        Map<String , String> positionMap = new HashMap<>();
-        if(positionMapList != null) {
-            for(PositionVo positionVo : positionMapList) {
-                String userName = positionMap.get(positionVo.getUserId());
-                if(StringUtils.isNotBlank(userName)) {
-                    positionMap.put(positionVo.getUserId(), userName+","+positionVo.getName());
-                }else {
-                    positionMap.put(positionVo.getUserId(), positionVo.getName());
-                }
-            }
-        }
-        if(userList != null) {
-            Map<String , Object> data = null;
-            for(User user : userList) {
-                data = new HashMap<>();
-                data.put("id", user.getId());
-                data.put("name", user.getName());
-                data.put("position", positionMap.get(user.getId()));
-                result.add(data);
-            }
-        }
-        return result;
-    }
-    
-    /***********************************************
-     * 仅供工作流使用
-     */
-    
-    /**
-     * 根据userid查询部门ID
-     * 
-     * @param userid
-     * @return
-     */
-    public String getDepartIdByUserId(String userid) {
-        return mapper.selectDepartIdByUserId(userid);
-    }
-    
-    /**
-     * 根据userid查询部门ID
-     * 
-     * @param userid
-     * @return
-     */
-    public String getTenantIdByUserId(String userid) {
-        return mapper.selectTenantIdByUserId(userid);
-    }
-    
-    
-    /**
-     * 根据UserId获取角色codes
-     * 
-     * @return
-     */
-    public List<String> getGroupCodesByUserId(String userid) {
-        List<String> leaderGroupCodes = mapper.selectLearderGroupCodesByUserId(userid);
-        leaderGroupCodes.addAll(mapper.selectMemberGroupCodesByUserId(userid));
-        return leaderGroupCodes;
-    }
+	/**
+	 * 按人名进行模糊查询，翻页
+	 * 
+	 * @param name  用户名称
+	 * @param page  页面
+	 * @param limit 页容量
+	 * @return
+	 */
+	public TableResultResponse<Map<String, Object>> getUsersByFakeName(String name, int page, int limit) {
+		Example example = new Example(User.class);
+		Example.Criteria criteria = example.createCriteria();
+		criteria.andLike("name", "%" + name + "%");
+		Page<Object> pageList = PageHelper.startPage(page, limit);
+		List<User> userList = mapper.selectByExample(example);
+		if (userList == null) {
+			userList = new ArrayList<>();
+		}
+		List<Map<String, Object>> data = this.bindPositionToUser(userList);
+		if (data == null) {
+			data = new ArrayList<>();
+		}
+		return new TableResultResponse<>(pageList.getTotal(), data);
+	}
 
+	/**
+	 * 将人员与其所在的职位进行绑定
+	 *
+	 * @author 尚
+	 * @param userList
+	 * @return
+	 */
+	private List<Map<String, Object>> bindPositionToUser(List<User> userList) {
+		List<Map<String, Object>> result = new ArrayList<>();
+		List<String> userIdList = userList.stream().map((o) -> o.getId()).distinct().collect(Collectors.toList());
 
-    /**
-     * 获取用户详情，包括部门及岗位
-     * @param userId
-     * @return
-     */
-    public JSONArray getUserDetail(String userId) {
-        List<Map<String, String>> userDetail = mapper.getUserDetail(userId);
-        return JSONArray.parseArray(JSON.toJSONString(userDetail));
-    }
-    /**
-     * 通过用户ids查询
-     * @param userIds
-     * @return
-     */
-    public JSONArray getByUserIds(String userIds) {
-        JSONArray array = new JSONArray();
-        Example example=new Example(User.class);
-        
-        List<String> _userIds = Arrays.asList(userIds.split(","));
-        Example.Criteria criteria = example.createCriteria();
-        if(_userIds != null && !_userIds.isEmpty()) {
-            criteria.andIn("id", _userIds);
-        }
-        List<User> userList =  mapper.selectByExample(example);
-        if(userList != null && !userList.isEmpty()) {
-            JSONObject obj = null;
-            for(User user : userList) {
-                 obj = JSONObject.parseObject(JSONObject.toJSONString(user));
-                 array.add(obj);
-            }
-        }
-        return array;
-    }
+		String join = String.join(",", userIdList);
+		join = "'" + join.replaceAll(",", "','") + "'";
+
+		List<PositionVo> positionMapList = positionMapper.selectPositionByUser(join);
+
+		// 封装用户职务
+		// 数据格式：userId：username1，username2
+		Map<String, String> positionMap = new HashMap<>();
+		if (positionMapList != null) {
+			for (PositionVo positionVo : positionMapList) {
+				String userName = positionMap.get(positionVo.getUserId());
+				if (StringUtils.isNotBlank(userName)) {
+					positionMap.put(positionVo.getUserId(), userName + "," + positionVo.getName());
+				} else {
+					positionMap.put(positionVo.getUserId(), positionVo.getName());
+				}
+			}
+		}
+		if (userList != null) {
+			Map<String, Object> data = null;
+			for (User user : userList) {
+				data = new HashMap<>();
+				data.put("id", user.getId());
+				data.put("name", user.getName());
+				data.put("position", positionMap.get(user.getId()));
+				result.add(data);
+			}
+		}
+		return result;
+	}
+
+	/***********************************************
+	 * 仅供工作流使用
+	 */
+
+	/**
+	 * 根据userid查询部门ID
+	 *
+	 * @param userid
+	 * @return
+	 */
+	public String getDepartIdByUserId(String userid) {
+		return mapper.selectDepartIdByUserId(userid);
+	}
+
+	/**
+	 * 根据userid查询部门ID
+	 *
+	 * @param userid
+	 * @return
+	 */
+	public String getTenantIdByUserId(String userid) {
+		return mapper.selectTenantIdByUserId(userid);
+	}
+
+	/**
+	 * 根据UserId获取角色codes
+	 *
+	 * @return
+	 */
+	public List<String> getGroupCodesByUserId(String userid) {
+		List<String> leaderGroupCodes = mapper.selectLearderGroupCodesByUserId(userid);
+		leaderGroupCodes.addAll(mapper.selectMemberGroupCodesByUserId(userid));
+		return leaderGroupCodes;
+	}
+
+	/**
+	 * 获取用户详情，包括部门及岗位
+	 * 
+	 * @param userId
+	 * @return
+	 */
+	public JSONArray getUserDetail(String userId) {
+		if(userId!=null) {
+			List<Map<String, String>> userDetail = mapper.getUserDetail(Arrays.asList(userId.split(",")));
+			return JSONArray.parseArray(JSON.toJSONString(userDetail));
+		}
+		return new JSONArray();
+	}
+
+	/**
+	 * 通过用户ids查询
+	 * 
+	 * @param userIds
+	 * @return
+	 */
+	public JSONArray getByUserIds(String userIds) {
+		JSONArray array = new JSONArray();
+		Example example = new Example(User.class);
+
+		List<String> _userIds = Arrays.asList(userIds.split(","));
+		Example.Criteria criteria = example.createCriteria();
+		if (_userIds != null && !_userIds.isEmpty()) {
+			criteria.andIn("id", _userIds);
+		}
+		List<User> userList = mapper.selectByExample(example);
+		if (userList != null && !userList.isEmpty()) {
+			JSONObject obj = null;
+			for (User user : userList) {
+				obj = JSONObject.parseObject(JSONObject.toJSONString(user));
+				array.add(obj);
+			}
+		}
+		return array;
+	}
+
+	/**
+	 * 获取技术人员列表
+	 * 
+	 * @param userName  用户名称
+	 * @param departIds 用户部门ids
+	 * @param major     用户专业
+	 * @param page      页码
+	 * @param limit     页容量
+	 * @return
+	 */
+	public TableResultResponse<Map<String, Object>> getMajorUsers(String userName, String departIds, String major,
+			int page, int limit) {
+		Page<Object> pageList = PageHelper.startPage(page, limit);
+		List<Map<String, Object>> userList = mapper.selectMajorUser(userName, departIds, major);
+		Map<String, String> dictMajorMap = dictFeign.getByCode(User.JUDICIAL_PROFESSIONAL);
+		if (userList != null && !userList.isEmpty()) {
+			if (dictMajorMap != null && !dictMajorMap.isEmpty()) {
+				for (Map<String, Object> userMap : userList) {
+					// 专业名称
+					String majorName = dictMajorMap.get(userMap.get("major"));
+					userMap.put("majorName", majorName);
+				}
+			}
+		} else {
+			userList = new ArrayList<>();
+		}
+		return new TableResultResponse<>(pageList.getTotal(), userList);
+	}
 }

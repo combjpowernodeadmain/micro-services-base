@@ -1,7 +1,6 @@
 package com.bjzhianjia.scp.cgp.mapper;
 
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
-import com.bjzhianjia.scp.security.common.data.Tenant;
 import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 
 /**
@@ -13,5 +12,4 @@ import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
  */
 //@Tenant
 public interface AreaGridMapper extends CommonMapper<AreaGrid> {
-	
 }

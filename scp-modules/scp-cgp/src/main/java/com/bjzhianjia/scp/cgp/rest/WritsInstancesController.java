@@ -16,9 +16,10 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.WritsInstancesBiz;
 import com.bjzhianjia.scp.cgp.config.PropertiesConfig;
-import com.bjzhianjia.scp.cgp.constances.WritsConstances;
 import com.bjzhianjia.scp.cgp.entity.WritsInstances;
 import com.bjzhianjia.scp.cgp.util.DocDownUtil;
+import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
+import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
@@ -30,6 +31,8 @@ import lombok.extern.log4j.Log4j;
 
 @RestController
 @RequestMapping("writsInstances")
+@CheckClientToken
+@CheckUserToken
 @Api(tags = "综合执法 - 案件登记文书记录")
 @Log4j
 public class WritsInstancesController extends BaseController<WritsInstancesBiz, WritsInstances, Integer> {
@@ -145,7 +148,8 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
 
         log.info("请求文书实例，文书名：" + fileName);
 
-        response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        // response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        response.setContentType("application/msword");
 
         ResponseEntity<?> file = docDownUtil.getFile(propertiesConfig.getDestFilePath(), fileName);
         return file;
@@ -154,8 +158,8 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
 
     @RequestMapping(value = "/true/instance/writsId", method = RequestMethod.GET)
     @ApiOperation("生成文书实例，并返回文书实例对应的word文档")
-    public ResponseEntity<?> getTrueWritsInstancesById(
-        @RequestParam(value = "writsId") Integer writsId, HttpServletResponse response) {
+    public ResponseEntity<?> getTrueWritsInstancesById(@RequestParam(value = "writsId") Integer writsId,
+        HttpServletResponse response) {
         /*
          * 采用com.bjzhianjia.scp.cgp.rest.WritsInstancesController.
          * getWritsInstances(String,
@@ -169,10 +173,36 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
         log.info("请求文书实例，文书ID：" + writsId);
         // 生成文书实例
         ObjectRestResponse<String> _fileNameRest = this.baseBiz.getWritsInstance(writsId);
-        // 设置响应头为响应一个word文档
-        response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        // 设置响应头为响应一个word文档--doc
+        // response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        response.setContentType("application/msword");
 
+        response.setHeader("Content-Disposition", "attachment; filename=" + _fileNameRest.getData());
         ResponseEntity<?> file = docDownUtil.getFile(propertiesConfig.getDestFilePath(), _fileNameRest.getData());
+        return file;
+    }
+
+    /**
+     * 根据文书ID获取PDF格式的文书
+     * 
+     * @param writsId
+     *            待获取的文书ID
+     * @param response
+     * @return
+     */
+    @RequestMapping(value = "/true/instance/pdf/writsId", method = RequestMethod.GET)
+    @ApiOperation("生成文书实例，并返回文书实例对应的word文档")
+    public ResponseEntity<?> getTruePDFWritsInstancesById(@RequestParam(value = "writsId") Integer writsId,
+        HttpServletResponse response) {
+        log.info("请求文书PDF实例，文书ID：" + writsId);
+        // 生成文书实例
+        String fullPDFFileName = this.baseBiz.getTruePDFWritsInstancesById(writsId);
+
+        // 设置响应头为响应一个word文档
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=" + fullPDFFileName);
+
+        ResponseEntity<?> file = docDownUtil.getFile(propertiesConfig.getDestFilePath(), fullPDFFileName);
         return file;
     }
 }

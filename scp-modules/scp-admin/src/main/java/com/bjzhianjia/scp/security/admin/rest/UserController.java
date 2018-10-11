@@ -21,16 +21,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreClientToken;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -49,7 +45,6 @@ import com.bjzhianjia.scp.security.admin.vo.MenuTree;
 import com.bjzhianjia.scp.security.api.vo.user.UserInfo;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
-import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
@@ -214,7 +209,7 @@ public class UserController extends BaseController<UserBiz, User, String> {
 	
 	/**
 	 * 
-	 * @param userId 用户Id集合，多个id间用逗号隔开
+	 * @param userId 用户Id
 	 * @return
 	 */
 	@ApiOperation("获取用户详情，包括部门及岗位")
@@ -235,4 +230,24 @@ public class UserController extends BaseController<UserBiz, User, String> {
         }
         return this.baseBiz.getByUserIds(userIds);
     }
+
+	/**
+	 * 获取技术人员列表
+	 * @param userName 用户名称
+	 * @param departIds 用户部门ids
+	 * @param major 用户专业
+	 * @param page 页码
+	 * @param limit 页容量
+	 * @return
+	 */
+	@IgnoreClientToken
+	@ApiOperation("获取技术人员列表")
+	@GetMapping("/majorUser")
+	public TableResultResponse<Map<String,Object>>  getMajorUsers(@RequestParam(value = "userName",defaultValue="") @ApiParam("用户名称") String userName,
+																  @RequestParam(value = "departIds",defaultValue="") @ApiParam("用户部门ids") String departIds,
+																  @RequestParam(value = "major",defaultValue="") @ApiParam("用户专业") String major,
+																   @RequestParam(value="page", defaultValue="1") @ApiParam("页码")  Integer page,
+																   @RequestParam(value="limit", defaultValue="10") @ApiParam("页容量")  Integer limit) {
+		return this.baseBiz.getMajorUsers(userName,departIds,major, page, limit);
+	}
 }

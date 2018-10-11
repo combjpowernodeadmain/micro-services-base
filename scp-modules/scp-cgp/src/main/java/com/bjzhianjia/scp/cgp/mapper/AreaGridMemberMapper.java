@@ -43,4 +43,6 @@ public interface AreaGridMemberMapper extends CommonMapper<AreaGridMember> {
      */
     void deleteByGridId(@Param("id") Integer gridId, @Param("updUserId") String updUserId,
         @Param("updUserName") String updUserName, @Param("updTime") Date updTime);
+    
+    public int countOfAreaMember();
 }

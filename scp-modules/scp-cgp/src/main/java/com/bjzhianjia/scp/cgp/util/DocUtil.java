@@ -156,7 +156,7 @@ public class DocUtil {
                          * 修改：2018-09-25
                          */
                         String reg = "${" + entry.getKey() + "}";
-                        range.replaceText(reg, entry.getValue());
+                        range.replaceText(reg, String.valueOf(entry.getValue()));
                     }
                     FileOutputStream outStream = null;
                     outStream = new FileOutputStream(destFullPath);
@@ -352,10 +352,9 @@ public class DocUtil {
 
         // 调用openoffice服务线程
         StringBuffer commandBuf = new StringBuffer();
-        commandBuf.append(openOfficePath).append(" -headless -accept=\"socket,host=").append(openOfficeHost).append(",port=").append(openOfficePort).append(";urp;\"");
+        commandBuf.append(openOfficePath).append(" -headless -accept=\"socket,host=").append(openOfficeHost)
+            .append(",port=").append(openOfficePort).append(";urp;\"");
 
-//        String command =
-//            "C:\\Program Files (x86)\\OpenOffice 4\\program\\soffice.exe -headless -accept=\"socket,host=127.0.0.1,port=8100;urp;\"";
         Process p = Runtime.getRuntime().exec(commandBuf.toString());
 
         // 连接openoffice服务
@@ -373,5 +372,45 @@ public class DocUtil {
 
         // 关闭进程
         p.destroy();
+    }
+
+    /**
+     * 将doc文档转化为pdf文档
+     * 
+     * @param socDoc
+     *            源doc文档，全路径名
+     * @param targetDoc
+     *            目标路径，全路径名
+     * @throws IOException
+     */
+    public static void WordToPDF(String socDoc, String targetDoc) throws IOException {
+        // 源文件目录
+        File inputFile = new File(socDoc);
+        if (!inputFile.exists()) {
+            log.warn("源文件不存在！");
+            return;
+        }
+
+        // 输出文件目录
+        File outputFile = new File(targetDoc);
+        if (!outputFile.getParentFile().exists()) {
+            outputFile.getParentFile().exists();
+        }
+
+        // 调用openoffice服务线程
+        // 连接openoffice服务
+        log.debug("doc转pdf,开始建立连接："
+            + "/opt/openoffice4/program/soffice -headless -accept=\"socket,host=127.0.0.1,port=8100;urp;\"");
+        OpenOfficeConnection connection = new SocketOpenOfficeConnection("127.0.0.1", 8100);
+        connection.connect();
+
+        // 转换
+        // DocumentFormat df=new DocumentFormat(null,null, null, ".docx");
+        DocumentConverter converter = new OpenOfficeDocumentConverter(connection);
+        // converter.convert(inputFile,df, outputFile,null);
+        converter.convert(inputFile, outputFile, null);
+
+        // 关闭连接
+        connection.disconnect();
     }
 }

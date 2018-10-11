@@ -62,5 +62,16 @@ public interface UserMapper extends CommonMapper<User> {
      * @param userId
      * @return
      */
-    public List<Map<String, String>> getUserDetail(@Param("userId")String userId);
+    public List<Map<String, String>> getUserDetail(@Param("userIdList")List<String> userIdList);
+
+    /**
+     * 获取技术人员列表
+     * @param userName 用户名称
+     * @param departIds 用户部门ids
+     * @param major 用户专业
+     * @return
+     */
+    public List<Map<String,Object>> selectMajorUser(@Param("userName") String userName,
+                                                    @Param("departIds")String departIds,
+                                                    @Param("major") String major);
 }

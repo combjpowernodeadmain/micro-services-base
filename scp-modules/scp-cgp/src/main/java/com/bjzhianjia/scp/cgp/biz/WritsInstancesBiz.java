@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.biz;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -260,7 +261,7 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         // 生成与fillContext相对应的文件名
         StringBuffer destFileNameBuffer = new StringBuffer();
         destFileNameBuffer.append(WritsConstances.WRITS_PREFFIX).append(writsInstances.getCaseId()).append("_")
-            .append(fillContext.hashCode()).append(".docx");
+            .append(fillContext.hashCode()).append(WritsConstances.WRITS_SUFFIX_DOC);
 
         String destPath = propertiesConfig.getDestFilePath() + destFileNameBuffer.toString();
 
@@ -272,15 +273,15 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             ignoreFileNameList.add(destFileNameBuffer.toString());
 
             DocUtil.deletePrefix(WritsConstances.WRITS_PREFFIX + writsInstances.getCaseId() + "_",
-                WritsConstances.WRITS_SUFFIX, propertiesConfig.getDestFilePath(), ignoreFileNameList);
+                WritsConstances.WRITS_SUFFIX_DOC, propertiesConfig.getDestFilePath(), ignoreFileNameList);
 
             // 将fillContext内的内容添加到文书模板上
             JSONObject fillJObj = JSONObject.parseObject(fillContext);
 
-            StringBuffer ziHao = new StringBuffer();
-            ziHao.append(writsInstances.getRefEnforceType()).append("[").append(writsInstances.getRefYear()).append("]")
-                .append(writsInstances.getRefNo());
-            fillJObj.put("ZiHao", ziHao.toString());
+            // StringBuffer ziHao = new StringBuffer();
+            // ziHao.append(writsInstances.getRefEnforceType()).append("[").append(writsInstances.getRefYear()).append("]")
+            // .append(writsInstances.getRefNo());
+            // fillJObj.put("ZiHao", ziHao.toString());
 
             @SuppressWarnings({ "unchecked", "rawtypes" })
             Map<String, String> map = (Map) fillJObj;
@@ -639,5 +640,46 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
                 this.updateSelectiveById(writsInstances);
             }
         }
+    }
+
+    /**
+     * 生成PDF文书，并返回文书名称<br/>
+     * 如果案件对象的文书已经存在，则直接返回该文书名称<br/>
+     * 如果文书内容发生改变，则删除旧文书，并生成新文书
+     * 
+     * @param writsId
+     * @return
+     */
+    public String getTruePDFWritsInstancesById(Integer writsId) {
+        // 生成文书实例
+        ObjectRestResponse<String> _fileNameRest = this.getWritsInstance(writsId);
+
+        String fullDocFileName = _fileNameRest.getData();
+        String fullPDFFileName =
+            fullDocFileName.substring(0, fullDocFileName.lastIndexOf(".")) + WritsConstances.WRITS_SUFFIX_PDF;
+
+        if (DocUtil.exists(propertiesConfig.getDestFilePath() + fullPDFFileName)) {
+            return fullPDFFileName;
+        }
+
+        // PDF文书实例不存在
+        List<String> ignoreFileNameList = new ArrayList<>();
+        ignoreFileNameList.add(fullPDFFileName);
+        DocUtil.deletePrefix(WritsConstances.WRITS_PREFFIX, WritsConstances.WRITS_SUFFIX_PDF,
+            propertiesConfig.getDestFilePath(), ignoreFileNameList);
+
+        try {
+            // DocUtil.WordToPDF(propertiesConfig.getDestFilePath() +
+            // fullDocFileName,
+            // propertiesConfig.getDestFilePath() + fullPDFFileName,
+            // "C:\\Program Files (x86)\\OpenOffice 4\\program\\soffice.exe",
+            // "127.0.0.1", 8100);
+
+            DocUtil.WordToPDF(propertiesConfig.getDestFilePath() + fullDocFileName,
+                propertiesConfig.getDestFilePath() + fullPDFFileName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return fullPDFFileName;
     }
 }

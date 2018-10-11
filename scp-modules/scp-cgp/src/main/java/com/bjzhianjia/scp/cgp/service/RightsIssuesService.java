@@ -57,9 +57,9 @@ public class RightsIssuesService {
 	 */
 	public TableResultResponse<RightsIssuesVo> getList(int page, int limit, RightsIssues rightsIssues) {
 		
-		List<EventType> eventTypes = eventTypeBiz.getByBizType(rightsIssues.getBizType());
-		List<Integer> eventIds = eventTypes.stream().map(e -> e.getId()).collect(Collectors.toList());
-		TableResultResponse<RightsIssues> tableResult = rightsIssuesBiz.getList(page, limit, eventIds, rightsIssues);
+//		List<EventType> eventTypes = eventTypeBiz.getByBizType(rightsIssues.getBizType());
+//		List<Integer> eventIds = eventTypes.stream().map(e -> e.getId()).collect(Collectors.toList());
+		TableResultResponse<RightsIssues> tableResult = rightsIssuesBiz.getList(page, limit, null, rightsIssues);
 		List<RightsIssues> list = tableResult.getData().getRows();
 		
 		if(BeanUtil.isEmpty(list)) {

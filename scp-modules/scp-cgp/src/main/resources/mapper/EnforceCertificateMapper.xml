@@ -38,4 +38,11 @@
     	FROM 
     		enforce_certificate
     </select>
+    
+    <select id="countOfEnforce" resultType="java.lang.Integer">
+    	SELECT COUNT(*) FROM(
+		SELECT DISTINCT(usr_id) FROM enforce_certificate
+		WHERE is_deleted='0'
+		) d_c
+    </select>
 </mapper>

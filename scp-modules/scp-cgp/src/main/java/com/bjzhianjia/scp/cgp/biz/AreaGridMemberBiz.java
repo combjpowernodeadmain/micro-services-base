@@ -432,5 +432,25 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
         }
         return result;
     }
-
+    
+    /**
+     * 通过网格员查询记录
+     * 
+     * @param userId 用户id
+     * @return
+     *         网格id、网格名称
+     */
+    public List<AreaGridMember> getGridByMemId(String memId) {
+        AreaGridMember areaGridMember = new AreaGridMember();
+        areaGridMember.setIsDeleted("0");
+        areaGridMember.setIsDisabled("0");
+        areaGridMember.setGridMember(memId);
+        List<AreaGridMember> list = this.mapper.select(areaGridMember);
+        
+        if (BeanUtil.isNotEmpty(list)) {
+            return list;
+        }else {
+            return new ArrayList<>();
+        }
+    }
 }

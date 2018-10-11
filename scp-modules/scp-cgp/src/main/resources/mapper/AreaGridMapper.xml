@@ -4,27 +4,29 @@
 <mapper namespace="com.bjzhianjia.scp.cgp.mapper.AreaGridMapper">
 
 	<!-- 可根据自己的需求，是否要使用 -->
-    <resultMap type="com.bjzhianjia.scp.cgp.entity.AreaGrid" id="areaGridMap">
-        <result property="id" column="id"/>
-        <result property="gridCode" column="grid_code"/>
-        <result property="gridName" column="grid_name"/>
-        <result property="gridLevel" column="grid_level"/>
-        <result property="gridParent" column="grid_parent"/>
-        <result property="gridTeam" column="grid_team"/>
-        <result property="gridNumbers" column="grid_numbers"/>
-        <result property="gridHousehold" column="grid_household"/>
-        <result property="gridPersons" column="grid_persons"/>
-        <result property="gridAreas" column="grid_areas"/>
-        <result property="gridRange" column="grid_range"/>
-        <result property="isDeleted" column="is_deleted"/>
-        <result property="isDisabled" column="is_disabled"/>
-        <result property="crtUserName" column="crt_user_name"/>
-        <result property="crtUserId" column="crt_user_id"/>
-        <result property="crtTime" column="crt_time"/>
-        <result property="updUserName" column="upd_user_name"/>
-        <result property="updUserId" column="upd_user_id"/>
-        <result property="updTime" column="upd_time"/>
-        <result property="tenantId" column="tenant_id"/>
-    </resultMap>
-
+	<resultMap type="com.bjzhianjia.scp.cgp.entity.AreaGrid"
+		id="areaGridMap">
+		<result property="id" column="id" />
+		<result property="gridCode" column="grid_code" />
+		<result property="gridName" column="grid_name" />
+		<result property="gridLevel" column="grid_level" />
+		<result property="gridParent" column="grid_parent" />
+		<result property="gridTeam" column="grid_team" />
+		<result property="gridNumbers" column="grid_numbers" />
+		<result property="gridHousehold" column="grid_household" />
+		<result property="gridPersons" column="grid_persons" />
+		<result property="gridAreas" column="grid_areas" />
+		<result property="gridRange" column="grid_range" />
+		<result property="mgrDept" column="mgr_dept" />
+		<result property="mapInfo" column="map_info" />
+		<result property="isDeleted" column="is_deleted" />
+		<result property="isDisabled" column="is_disabled" />
+		<result property="crtUserName" column="crt_user_name" />
+		<result property="crtUserId" column="crt_user_id" />
+		<result property="crtTime" column="crt_time" />
+		<result property="updUserName" column="upd_user_name" />
+		<result property="updUserId" column="upd_user_id" />
+		<result property="updTime" column="upd_time" />
+		<result property="tenantId" column="tenant_id" />
+	</resultMap>
 </mapper>
