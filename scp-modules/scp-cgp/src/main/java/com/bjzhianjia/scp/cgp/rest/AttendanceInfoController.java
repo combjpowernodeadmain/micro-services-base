@@ -26,6 +26,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -109,4 +110,13 @@ public class AttendanceInfoController extends BaseController<AttendanceInfoBiz, 
 
     }
 
+    @GetMapping("/user/list")
+    @ApiOperation("获取当前登陆人的考勤记录")
+    public TableResultResponse<AttendanceVo> getUserAttendanceInfo(
+        @RequestParam(defaultValue = "10") @ApiParam("页容量")int limit,
+        @RequestParam(defaultValue = "1") @ApiParam("当前页")int page,
+        @RequestParam(defaultValue = "") @ApiParam("查询开始日期")String startDate,
+        @RequestParam(defaultValue = "") @ApiParam("查询结束日期")String endDate){
+        return attendanceInfoService.getUserAttendanceInfo(page, limit, startDate, endDate);
+    }
 }
