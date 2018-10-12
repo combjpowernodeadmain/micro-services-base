@@ -147,4 +147,10 @@ public class DepartController extends BaseController<DepartBiz, Depart, String> 
         }
         return new JSONArray();
     }
+    
+    @GetMapping("/list/ids")
+    @ApiOperation("以部门ID集合批量查询部门信息")
+    public JSONArray getDeptByIds(@RequestParam("deptIds") @ApiParam("以字符串形式表示 的部门ID集合，多个ID之间用逗号隔开")String deptIds) {
+    	return this.baseBiz.getDeptByIds(deptIds);
+    }
 }
