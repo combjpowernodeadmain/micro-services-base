@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.security.admin.biz;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -8,14 +9,12 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.bjzhianjia.scp.security.admin.vo.DepartTree;
-import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
-import com.bjzhianjia.scp.security.common.util.TreeUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.merge.annonation.MergeResult;
@@ -24,9 +23,12 @@ import com.bjzhianjia.scp.security.admin.entity.User;
 import com.bjzhianjia.scp.security.admin.mapper.DepartMapper;
 import com.bjzhianjia.scp.security.admin.mapper.UserMapper;
 import com.bjzhianjia.scp.security.admin.service.TableResultParser;
+import com.bjzhianjia.scp.security.admin.vo.DepartTree;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.exception.base.BusinessException;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.common.util.TreeUtil;
 import com.bjzhianjia.scp.security.common.util.UUIDUtils;
 
 import tk.mybatis.mapper.entity.Example;
@@ -259,5 +261,37 @@ public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
      */
     private boolean matchingName(String name,String data) {
         return Pattern.matches(".*"+data+".*", name);
+    }
+    
+    /**
+     * 以部门ID集合批量查询部门信息
+     * @param deptIds
+     * @return
+     */
+    public JSONArray getDeptByIds(String deptIds) {
+    	JSONArray resultJArray=new JSONArray();
+    	
+    	Example example = new Example(Depart.class);
+    	Criteria criteria = example.createCriteria();
+    	criteria.andIn("id", Arrays.asList(deptIds.split(",")));
+    	
+    	List<Depart> deptList = this.selectByExample(example);
+    	
+//    	List<Depart> deptList = this.mapper.selectByIds(deptIds);
+    	if(deptList!=null && deptList.size()>0) {
+    		for (Depart depart : deptList) {
+				JSONObject resultJObj=new JSONObject();
+				resultJObj.put("id", depart.getId());
+				resultJObj.put("name", depart.getName());
+				resultJObj.put("code", depart.getCode());
+				resultJObj.put("type", depart.getType());
+				
+				resultJArray.add(resultJObj);
+			}
+    		
+    		return resultJArray;
+    	}
+    	
+    	return new JSONArray();
     }
 }

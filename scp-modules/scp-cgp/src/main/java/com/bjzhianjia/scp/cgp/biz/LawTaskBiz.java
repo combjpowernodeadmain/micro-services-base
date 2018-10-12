@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.mapper.LawTaskMapper;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
@@ -212,10 +215,44 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
         Map<String, String> dictData = dictFeign.getByCode(LawTask.ROOT_BIZ_LAWTASKS);
         if (list.size() > 0) {
             // 执法者分队（部门名称）
+            //收集需要进行查询的部门ID
+            List<String> excutePersonList = list.stream().map(o->String.valueOf(o.get("executePerson"))).distinct().collect(Collectors.toList());
+            
+            Set<String> deptIdList=new HashSet<>();
+            if(BeanUtil.isNotEmpty(excutePersonList)) {
+                for (String excutePersonTmp : excutePersonList) {
+                    /*
+                     * [{"f8d0d626935b48baad56ddc30b26aa6d":{"deptId":"9250f76e502e4c99985520c06f5378fc","userName":"综合执法项目管理员"}},
+                     * {"2147a930090546c1ad9d4ef98330e97c":{"deptId":"9250f76e502e4c99985520c06f5378fc","userName":"licheng"}}]
+                     */
+                    JSONArray excutePersonJArray = JSONArray.parseArray(excutePersonTmp);
+                    for(int i=0;i<excutePersonJArray.size();i++) {
+                        /*
+                         * {"f8d0d626935b48baad56ddc30b26aa6d":{"deptId":"9250f76e502e4c99985520c06f5378fc","userName":"综合执法项目管理员"}}
+                         */
+                        JSONObject executePersonJObj = excutePersonJArray.getJSONObject(i);
+                        for(String excutePersonKey:executePersonJObj.keySet()) {
+                            //"deptId":"9250f76e502e4c99985520c06f5378fc"
+                            String deptId = CommonUtil.getValueFromJObjStr(executePersonJObj.getString(excutePersonKey), "deptId");
+                            deptIdList.add(deptId);
+                        }
+                    }
+                }
+            }
+            
+            JSONArray deptList = adminFeign.getDeptByIds(String.join(",", deptIdList));
+            Map<String, String> dept_ID_NAME_Map=new HashMap<>();
+            if(BeanUtil.isNotEmpty(deptList)) {
+                for(int i=0;i<deptList.size();i++) {
+                    JSONObject deptJObj = deptList.getJSONObject(i);
+                    dept_ID_NAME_Map.put(deptJObj.getString("id"), deptJObj.getString("name"));
+                }
+            }
+            
             for (Map<String, Object> map : list) {
 
                 String executePerson = map.get("executePerson").toString();
-                String _executePerson = this.getDeptName(executePerson);
+                String _executePerson = this.getDeptName(executePerson,dept_ID_NAME_Map);
                 map.put("executePerson", _executePerson);
             }
             // 任务状态（数据字典）
@@ -239,12 +276,10 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
      *            [{'userid':{'userName':'xxxx','deptId':'xxxx'}},{'userid':{'userName':'xxx','deptId':'xxxx'}}]
      * @return [{'userid':{'userName':'xxxx','deptId':'deptName','':'xxx'}},{'userid':{'userName':'xxx','deptId':'xxxx','deptName':'xxxx'}}]
      */
-    @SuppressWarnings("rawtypes")
-    private String getDeptName(String executePerson) {
+    private String getDeptName(String executePerson,Map<String, String> dept_ID_NAME_Map) {
         // 执法者json信息
         JSONArray userObjs = JSONArray.parseArray(executePerson);
         JSONArray _userObjs = new JSONArray(); // 封装执法者信息
-        JSONObject deptObj = null; // 执法者部门
         JSONObject obj = null; // 执法者
         if (userObjs != null) {
             for (int i = 0; userObjs != null && i < userObjs.size(); i++) {
@@ -255,10 +290,7 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
                     obj = JSONObject.parseObject(json);
                     if (obj != null) {
                         // 法者分队（部门名称）
-                        deptObj = adminFeign.getByDeptId(obj.getString("deptId"));
-                        if (deptObj != null) {
-                            obj.put("deptName", deptObj.getString("name"));
-                        }
+                        obj.put("deptName", dept_ID_NAME_Map.get(obj.getString("deptId")));
                         _userObjs.add(obj);
                     }
                 }
@@ -549,7 +581,6 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
         if (list.size() > 0) {
             // 执法者分队（部门名称）
             for (Map<String, Object> map : list) {
-
                 String executePerson = map.get("executePerson").toString();
                 String _executePerson = this.getDeptNameToDo(executePerson);
                 map.put("executePerson", _executePerson);
@@ -573,13 +604,12 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
      * @param executePerson
      *            执法者信息
      *            [{'userid':{'userName':'xxxx','deptId':'xxxx'}},{'userid':{'userName':'xxx','deptId':'xxxx'}}]
-     * @return [{'userid':{'userName':'xxxx','deptId':'deptName','':'xxx'}},{'userid':{'userName':'xxx','deptId':'xxxx','deptName':'xxxx'}}]
+     * @return [{'userid':{'userName':'xxxx','userId':'xxx'}},{'userid':{'userName':'xxx','userId':'xxxx'}}]
      */
     private String getDeptNameToDo(String executePerson) {
         // 执法者json信息
         JSONArray userObjs = JSONArray.parseArray(executePerson);
         JSONArray _userObjs = new JSONArray(); // 封装执法者信息
-        JSONObject deptObj = null; // 执法者部门
         JSONObject obj = null; // 执法者
         if (userObjs != null) {
             for (int i = 0; userObjs != null && i < userObjs.size(); i++) {
@@ -588,17 +618,14 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
                 for (String userId : userIds) {
                     String json = object.getString(userId);
                     obj = JSONObject.parseObject(json);
+                    
+                    JSONObject newJObj=new JSONObject();
                     if (obj != null) {
-                        // 法者分队（部门名称）
-                        deptObj = adminFeign.getByDeptId(obj.getString("deptId"));
-                        if (deptObj != null) {
-                            obj.put("deptName", deptObj.getString("name"));
-                        }
-                        obj.put("userId", userId);
-                        _userObjs.add(obj);
+                        newJObj.put("userName", obj.getString("userName"));
+                        newJObj.put("userId", userId);
+                        _userObjs.add(newJObj);
                     }
                 }
-
             }
         }
         return _userObjs.toJSONString();
