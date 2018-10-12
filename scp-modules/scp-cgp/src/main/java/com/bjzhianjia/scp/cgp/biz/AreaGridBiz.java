@@ -8,14 +8,17 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.config.PropertiesConfig;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.Point;
 import com.bjzhianjia.scp.cgp.mapper.AreaGridMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
+import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
 import com.bjzhianjia.scp.cgp.util.SpatialRelationUtil;
 import com.bjzhianjia.scp.cgp.vo.AreaGridVo;
 import com.bjzhianjia.scp.merge.core.MergeCore;
@@ -54,6 +57,11 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
     
     @Autowired
     private PropertiesConfig propertiesConfig;
+    @Autowired
+    private Environment environment;
+    
+    @Autowired
+    private PropertiesProxy propertiesProxy;
 
     /**
      * 按条件查询未被删除的网格
@@ -263,5 +271,43 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
             return areaGridList;
         }
         return new ArrayList<>();
+    }
+    
+    
+    public TableResultResponse<JSONObject> getByAreaGrid(String gridLevelKey){
+        TableResultResponse<JSONObject> tableResultResponse=new TableResultResponse<>();
+        
+        String property = environment.getProperty(gridLevelKey);
+        if(StringUtils.isBlank(property)) {
+            tableResultResponse.setStatus(400);
+            tableResultResponse.setMessage(gridLevelKey+"不存在");
+            return tableResultResponse;
+        }
+        
+        Example example=new Example(AreaGrid.class);
+        Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isDeleted", "0");
+        criteria.andEqualTo("gridLevel", property);
+        
+        List<AreaGrid> areaGridList = this.selectByExample(example);
+        
+        List<JSONObject> resultJObj=new ArrayList<>();
+        if(BeanUtil.isNotEmpty(areaGridList)) {
+            for (AreaGrid areaGrid : areaGridList) {
+                JSONObject propertiesJObj;
+                try {
+                    propertiesJObj = propertiesProxy.swapProperties(areaGrid, "gridName","id","mapInfo");
+                    resultJObj.add(propertiesJObj);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+            }
+            tableResultResponse.getData().setRows(resultJObj);
+            return tableResultResponse;
+        }
+        
+        tableResultResponse.setStatus(400);
+        tableResultResponse.setMessage("未找到相应数据");
+        return tableResultResponse;
     }
 }

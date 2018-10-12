@@ -408,4 +408,14 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         return result;
     }
     
+    @RequestMapping(value = "/list/sourceType", method = RequestMethod.GET)
+    @ApiOperation("分页获取对象")
+    public TableResultResponse<CaseInfo> sourceType(
+        @RequestParam(value = "sourceTypeKeyPatrol") @ApiParam("监管对象") String sourceTypeKeyPatrol,
+        @RequestParam(value = "page", defaultValue = "1") @ApiParam(name = "当前页") Integer page,
+        @RequestParam(value = "limit", defaultValue = "10") @ApiParam(name = "页容量") Integer limit) {
+        TableResultResponse<CaseInfo> restResult = caserInfoService.getListSourceType(sourceTypeKeyPatrol, page, limit, false);
+
+        return restResult;
+    }
 }
