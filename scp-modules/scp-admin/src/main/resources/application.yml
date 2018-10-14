@@ -139,3 +139,9 @@ merge:
 
 mapper:
   mappers: com.bjzhianjia.scp.security.common.mapper.CommonMapper
+
+#司法角色
+jtp:
+  role:
+      technicist: 79ecee6155a941d1ade2c1c2b20997a2 #技术人员
+      distribute: 20b80d569a9c4bbe81b9e49409439780 #分案人员
