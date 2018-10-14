@@ -747,6 +747,10 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             if (StringUtils.isNotBlank(caseRegistration.getCaseSourceType())) {
                 rootBizIdSet.add(caseRegistration.getCaseSourceType());
             }
+            // 收集案件类型
+            if (StringUtils.isNotBlank(caseRegistration.getDealType())) {
+                rootBizIdSet.add(caseRegistration.getDealType());
+            }
             if (StringUtils.isNotBlank(caseRegistration.getEventType())) {
                 eventTypeIdStrList.add(caseRegistration.getEventType());
             }
@@ -801,6 +805,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 getEventTypeName(eventType_ID_NAME_Map, caseRegistration.getEventType()));
             // 事件来源
             objResult.put("sourceTypeName", getRootBizTypeName(caseRegistration.getCaseSourceType(), rootBizList));
+            // 案件处理方式--后添加
+            objResult.put("dealTypeName", getRootBizTypeName(caseRegistration.getDealType(), rootBizList));
+            
             // 具体来源id
             String sourceId = caseRegistration.getCaseSource();
             // 具体来源标题

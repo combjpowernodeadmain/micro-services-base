@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.bjzhianjia.scp.cgp.entity.PatrolTask;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.mapper.PatrolTaskMapper;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
@@ -60,8 +61,10 @@ public class PatrolTaskBiz extends BusinessBiz<PatrolTaskMapper, PatrolTask> {
         Object status = null;
         if(list != null && list.size() > 0) {
             for(Map<String,Object> map: list) {
-                sourceType =  dictData.get(map.get("sourceType"));
-                status =  dictData.get(map.get("status"));
+                if(BeanUtil.isNotEmpty(map)) {
+                    sourceType =  dictData.get(map.get("sourceType"));
+                    status =  dictData.get(map.get("status"));
+                }
                 map.put("sourceType", sourceType);
                 map.put("status", status);
             }
@@ -79,8 +82,10 @@ public class PatrolTaskBiz extends BusinessBiz<PatrolTaskMapper, PatrolTask> {
         Set<String> set = new HashSet<>();
         if(list != null && list.size() > 0 ) {
             for(Map<String , Object> map : list) {
-                set.add(map.get("sourceType").toString()); //来源类型
-                set.add(map.get("status").toString()); //立案单状态
+                if(BeanUtil.isNotEmpty(map)) {
+                    set.add(String.valueOf(map.get("sourceType"))); //来源类型
+                    set.add(String.valueOf(map.get("status"))); //立案单状态
+                }
             }
             return set;
         }else {
