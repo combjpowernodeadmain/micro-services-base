@@ -208,7 +208,7 @@ public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
             this.getDepartSon(departId, departList, resultData,name);
         }
 
-        result.data(TreeUtil.bulid(resultData, "-1", null));
+        result.data(TreeUtil.bulid(resultData, resultData.get(0).getParentId(), null));
         return result;
     }
 
