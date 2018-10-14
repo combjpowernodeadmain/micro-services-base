@@ -232,22 +232,17 @@ public class UserController extends BaseController<UserBiz, User, String> {
     }
 
 	/**
-	 * 获取技术人员列表
-	 * @param userName 用户名称
-	 * @param departIds 用户部门ids
-	 * @param major 用户专业
-	 * @param page 页码
-	 * @param limit 页容量
+	 *	通过用户id获取信息
+	 * @param userId 用户Id
 	 * @return
 	 */
-	@IgnoreClientToken
-	@ApiOperation("获取技术人员列表")
-	@GetMapping("/majorUser")
-	public TableResultResponse<Map<String,Object>>  getMajorUsers(@RequestParam(value = "userName",defaultValue="") @ApiParam("用户名称") String userName,
-																  @RequestParam(value = "departIds",defaultValue="") @ApiParam("用户部门ids") String departIds,
-																  @RequestParam(value = "major",defaultValue="") @ApiParam("用户专业") String major,
-																   @RequestParam(value="page", defaultValue="1") @ApiParam("页码")  Integer page,
-																   @RequestParam(value="limit", defaultValue="10") @ApiParam("页容量")  Integer limit) {
-		return this.baseBiz.getMajorUsers(userName,departIds,major, page, limit);
+	@ApiOperation("获取用户基本详情")
+	@GetMapping(value="/{userId}/info")
+	public User getUserInfo(@PathVariable(value="userId") @ApiParam("待查询人员ID") String userId) {
+		if(StringUtils.isBlank(userId)) {
+			return new User();
+		}
+		return this.baseBiz.selectById(userId);
 	}
+
 }

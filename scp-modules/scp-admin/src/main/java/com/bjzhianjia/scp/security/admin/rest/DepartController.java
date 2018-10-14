@@ -136,7 +136,7 @@ public class DepartController extends BaseController<DepartBiz, Depart, String> 
         result = this.baseBiz.getDeptSonByDepartId(departId, name);
         return result;
     }
-    
+
 //    @IgnoreClientToken
     @ApiOperation("获取部门关联用户,用于服务器调用")
     @RequestMapping(value = "/feign/user", method = RequestMethod.GET)
@@ -153,4 +153,5 @@ public class DepartController extends BaseController<DepartBiz, Depart, String> 
     public JSONArray getDeptByIds(@RequestParam("deptIds") @ApiParam("以字符串形式表示 的部门ID集合，多个ID之间用逗号隔开")String deptIds) {
     	return this.baseBiz.getDeptByIds(deptIds);
     }
+
 }
