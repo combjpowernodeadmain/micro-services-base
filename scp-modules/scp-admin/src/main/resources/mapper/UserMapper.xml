@@ -92,38 +92,6 @@
 	LEFT JOIN base_depart bd ON bd.`id`=dbu.`depart_id`
 	LEFT JOIN base_position_user bpu ON bpu.`user_id`=bu.`id`
 	LEFT JOIN base_position bp ON bp.`id`=bpu.`position_id`
-	WHERE bu.`id` in 
-	<foreach collection="userIdList" item="item" separator="," open="(" close=")">
-		#{item}
-	</foreach>
+	WHERE bu.`id` =#{userId}
   </select>
-  <!--获取专业技术人员-->
-  <select id="selectMajorUser" resultType="java.util.Map">
-    SELECT
-    bu.id userId,
-    bu.name userName,
-    bu.attr2 major,
-    ba1.name areaProvince,
-    ba2.name areaCity,
-    bd.name departName
-    FROM
-    base_user bu
-    LEFT JOIN base_depart bd ON bu.depart_id = bd.id
-    LEFT JOIN base_areainfo ba1 ON bu.attr2=ba1.id
-    LEFT JOIN base_areainfo ba2 ON bu.attr3=ba2.id
-    WHERE
-    1=1
-    <if test="userName!=null and userName!=''">
-      <bind name="userNameLike" value="'%' + userName + '%'" />
-      AND bu.name like #{userNameLike}
-    </if>
-    <if test="departIds!=null and departIds!=''">
-      AND bu.depart_id IN (#{departIds})
-    </if>
-    <!--专业-->
-    <if test="major!=null and major!=''">
-      AND bu.attr2 = #{major}
-    </if>
-  </select>
-
 </mapper>
