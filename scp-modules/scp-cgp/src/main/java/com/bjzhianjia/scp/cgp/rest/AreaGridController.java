@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -249,5 +250,12 @@ public class AreaGridController extends BaseController<AreaGridBiz, AreaGrid, In
             resut.setMessage("当前位置，不属于系统内置网格范围！");
         }
         return resut;
+    }
+    
+    @GetMapping("/list/level")
+    @ApiOperation("根据网格等级获取网格")
+    public TableResultResponse<JSONObject> getByAreaGrid(@RequestParam @ApiParam("待查询网格等级") String gridLevelKey){
+        TableResultResponse<JSONObject> restResult = this.baseBiz.getByAreaGrid(gridLevelKey);
+            return restResult;
     }
 }

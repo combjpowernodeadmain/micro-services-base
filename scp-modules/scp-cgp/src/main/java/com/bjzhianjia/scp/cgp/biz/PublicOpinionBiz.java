@@ -100,7 +100,7 @@ public class PublicOpinionBiz extends BusinessBiz<PublicOpinionMapper, PublicOpi
             criteria.andLike("opinTitle", publicOpinion.getOpinTitle());
         }
         if (StringUtils.isNotBlank(publicOpinion.getOpinCode())) {
-            criteria.andEqualTo("opinCode", publicOpinion.getOpinCode());
+            criteria.andLike("opinCode", "%" + publicOpinion.getOpinCode() + "%");
         }
         if (StringUtils.isNotBlank(publicOpinion.getOpinLevel())) {
             criteria.andEqualTo("opinLevel", publicOpinion.getOpinLevel());
@@ -117,7 +117,7 @@ public class PublicOpinionBiz extends BusinessBiz<PublicOpinionMapper, PublicOpi
             // 查询截止日期为次日00:00:00，即包括请求截止日期当天
             Date _endDate = DateUtils.addDays(_endTimeTmp, 1);
 
-            criteria.andBetween("crtTime", _startTime, _endDate);
+            criteria.andBetween("publishTime", _startTime, _endDate);
         }
 
         example.setOrderByClause("id desc");

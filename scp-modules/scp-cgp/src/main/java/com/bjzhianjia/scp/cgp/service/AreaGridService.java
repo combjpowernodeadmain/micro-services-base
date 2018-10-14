@@ -223,7 +223,8 @@ public class AreaGridService {
         Result<Void> result = new Result<>();
         result.setIsSuccess(false);
 
-        if (areaGridJObject.getBooleanValue("flag")) {
+        if (areaGridJObject.getBooleanValue("flag")
+            || StringUtils.isNotBlank(areaGridJObject.getString("areaGridMember"))) {
             // 验证所选网格管理人员是否存在
 
             /*
@@ -242,7 +243,9 @@ public class AreaGridService {
                 JSONObject jsonObject = areaGridMemberJArray.getJSONObject(i);
                 String[] split = jsonObject.getString("gridMember").split(",");
                 for (String string : split) {
-                    areaGridMemberIdList.add(string);
+                    if (StringUtils.isNotBlank(string)) {
+                        areaGridMemberIdList.add(string);
+                    }
                 }
             }
 
@@ -307,7 +310,8 @@ public class AreaGridService {
         // }
         // }
 
-        if (areaGridJObject.getBooleanValue("flag")) {
+        if (areaGridJObject.getBooleanValue("flag")
+            || StringUtils.isNotBlank(areaGridJObject.getString("areaGridMember"))) {
             areaGridMemberBiz.deleteByGridId(areaGrid.getId());
             Result<List<AreaGridMember>> resultM = checkAreaGridMember(areaGridJObject, areaGrid.getId());
             if (!resultM.getIsSuccess()) {
