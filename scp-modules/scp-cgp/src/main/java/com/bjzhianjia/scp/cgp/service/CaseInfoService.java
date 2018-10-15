@@ -15,6 +15,7 @@ import javax.transaction.Transactional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -30,6 +31,7 @@ import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
 import com.bjzhianjia.scp.cgp.biz.ExecuteInfoBiz;
 import com.bjzhianjia.scp.cgp.biz.LeadershipAssignBiz;
 import com.bjzhianjia.scp.cgp.biz.MayorHotlineBiz;
+import com.bjzhianjia.scp.cgp.biz.PatrolResBiz;
 import com.bjzhianjia.scp.cgp.biz.PatrolTaskBiz;
 import com.bjzhianjia.scp.cgp.biz.PublicOpinionBiz;
 import com.bjzhianjia.scp.cgp.biz.RegulaObjectBiz;
@@ -43,6 +45,7 @@ import com.bjzhianjia.scp.cgp.entity.EventType;
 import com.bjzhianjia.scp.cgp.entity.ExecuteInfo;
 import com.bjzhianjia.scp.cgp.entity.LeadershipAssign;
 import com.bjzhianjia.scp.cgp.entity.MayorHotline;
+import com.bjzhianjia.scp.cgp.entity.PatrolRes;
 import com.bjzhianjia.scp.cgp.entity.PatrolTask;
 import com.bjzhianjia.scp.cgp.entity.PublicOpinion;
 import com.bjzhianjia.scp.cgp.entity.RegulaObject;
@@ -62,9 +65,13 @@ import com.bjzhianjia.scp.security.wf.base.monitor.entity.WfProcBackBean;
 import com.bjzhianjia.scp.security.wf.base.monitor.service.impl.WfMonitorServiceImpl;
 import com.bjzhianjia.scp.security.wf.base.task.entity.WfProcTaskHistoryBean;
 import com.bjzhianjia.scp.security.wf.base.task.service.impl.WfProcTaskServiceImpl;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 
 import lombok.extern.slf4j.Slf4j;
+import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.entity.Example.Criteria;
 
 /**
  * 立案管理
@@ -131,6 +138,9 @@ public class CaseInfoService {
 
     @Autowired
     private PatrolTaskBiz patrolTaskBiz;
+    
+    @Autowired
+    private PatrolResBiz patrolResBiz;
 
     @Autowired
     private MergeCore mergeCore;
@@ -140,6 +150,9 @@ public class CaseInfoService {
 
     @Autowired
     private CommandCenterHotlineService commandCenterHotlineService;
+    
+    @Autowired
+    private Environment environment;
 
     /**
      * 更新单个对象
@@ -190,6 +203,9 @@ public class CaseInfoService {
 
         List<CaseInfo> list = new ArrayList<>();
         list.add(caseInfo);
+        
+        String sourceType = caseInfo.getSourceType();
+        
         try {
             mergeCore.mergeResult(CaseInfo.class, list);
         } catch (NoSuchMethodException e) {
@@ -213,8 +229,26 @@ public class CaseInfoService {
         if (BeanUtil.isNotEmpty(executeInfo)) {
             caseInfoJObj.put("exePerson", executeInfo.getExePerson());
             caseInfoJObj.put("exeFinishTime", executeInfo.getFinishTime());
+            caseInfoJObj.put("exeInfoPicture",executeInfo.getPicture());
         }
 
+        // 判断事件是否为巡查上报，如果是，则需要整合巡查上报的图片
+        if (environment.getProperty("sourceTypeKeyPatrol").equals(sourceType)) {
+            PatrolTask patrolTask = patrolTaskBiz.selectById(Integer.valueOf(caseInfo.getSourceCode()));
+            String patrolTaskPicUrl = "";
+            if (BeanUtil.isNotEmpty(patrolTask)) {
+                Example resExample = new Example(PatrolRes.class);
+                Criteria resCriteria = resExample.createCriteria();
+                resCriteria.andEqualTo("patrolTaskId", patrolTask.getId());
+                List<PatrolRes> patrolRes = patrolResBiz.selectByExample(resExample);
+                if (BeanUtil.isNotEmpty(patrolRes)) {
+                    List<String> uriList =
+                        patrolRes.stream().map(o -> o.getUrl()).distinct().collect(Collectors.toList());
+                    patrolTaskPicUrl = String.join(",", uriList);
+                }
+            }
+            caseInfoJObj.put("patrolTaskPicUrl", patrolTaskPicUrl);
+        }
         restResult.setData(caseInfoJObj);
         return restResult;
     }
@@ -504,6 +538,8 @@ public class CaseInfoService {
                 resultJObjct = JSONObject.parseObject(JSON.toJSONString(mayorHotline));
                 resultJObjct.put("eventSourceType", "市长热线12345");
                 resultJObjct.put("sourceCode", mayorHotline.getHotlnCode());
+                //添加主办人姓名
+                resultJObjct.put("crtUserName", mayorHotline.getCrtUserName());
 
                 zhaiyaoList.add(mayorHotline.getHotlnType());
                 zhaiyaoList.add(mayorHotline.getHotlnSubType());
@@ -525,6 +561,8 @@ public class CaseInfoService {
                 resultJObjct = JSONObject.parseObject(JSON.toJSONString(poinion));
                 resultJObjct.put("eventSourceType", "舆情");
                 resultJObjct.put("sourceCode", poinion.getOpinCode());
+                //添加主办人姓名
+                resultJObjct.put("crtUserName", poinion.getCrtUserName());
 
                 Map<String, String> dictValueMap = dictFeign.getByCodeIn(String.join(",", dictIdList));
                 if (dictValueMap != null && !dictValueMap.isEmpty()) {
@@ -540,6 +578,8 @@ public class CaseInfoService {
                 resultJObjct = JSONObject.parseObject(JSON.toJSONString(leadershipAssign));
                 resultJObjct.put("eventSourceType", "领导交办");
                 resultJObjct.put("sourceCode", leadershipAssign.getTaskCode());
+                //添加主办人姓名
+                resultJObjct.put("crtUserName", leadershipAssign.getCrtUserName());
 
                 reportPersonId = leadershipAssign.getCrtUserId();
 
@@ -570,6 +610,8 @@ public class CaseInfoService {
                 resultJObjct = JSONObject.parseObject(JSON.toJSONString(patrolTask));
                 resultJObjct.put("eventSourceType", "巡查上报");
                 resultJObjct.put("sourceCode", patrolTask.getPatrolCode());
+                //添加主办人姓名
+                resultJObjct.put("crtUserName", patrolTask.getCrtUserName());
 
                 reportPersonId = patrolTask.getCrtUserId();
                 break;
@@ -581,6 +623,8 @@ public class CaseInfoService {
                 resultJObjct = centerHotlineJObj;
                 resultJObjct.put("eventSourceType", "指挥中心热线");
                 resultJObjct.put("sourceCode", centerHotlineJObj.getString("hotlnCode"));
+                //添加主办人姓名
+                resultJObjct.put("crtUserName", centerHotlineJObj.getString("crtUserName"));
 
                 reportPersonId = centerHotlineJObj.getString("crtUserId");
 
@@ -869,9 +913,6 @@ public class CaseInfoService {
         List<WfProcTaskHistoryBean> procHistoryList = procApprovedHistory.getList();
         JSONArray procHistoryJArray = JSONArray.parseArray(JSON.toJSONString(procHistoryList));
 
-        // List<String> committerIdList = procHistoryList.stream().map(o ->
-        // o.getProcTaskCommitter()).distinct()
-        // .collect(Collectors.toList());
         List<String> procTaskAssigneeIdList =
             procHistoryList.stream().map(o -> o.getProcTaskAssignee()).distinct().collect(Collectors.toList());
         if (procTaskAssigneeIdList != null && !procTaskAssigneeIdList.isEmpty()) {
@@ -946,12 +987,11 @@ public class CaseInfoService {
          * =================查询基础信息===========开始==========
          */
         JSONObject baseInfoJObj = new JSONObject();
+        baseInfoJObj.put("sourceType", caseInfo.getSourceType());
         baseInfoJObj.put("caseCode", caseInfo.getCaseCode());
         baseInfoJObj.put("caseTitle", caseInfo.getCaseTitle());
         baseInfoJObj.put("caseLevel", caseInfo.getCaseLevel());
         if (caseInfo.getCaseLevel() != null) {
-            // Map<String, String> dictValueMap =
-            // dictFeign.getDictValueByID(caseInfo.getCaseLevel());//>>>>>>>>>>>>>>>查询了字典>>>>>>>>>>>>>>>>>>>>>>>>>
             if (manyDictValuesMap != null && !manyDictValuesMap.isEmpty()) {
                 baseInfoJObj.put("caseLevelName", manyDictValuesMap.get(caseInfo.getCaseLevel()));
             }
@@ -1032,7 +1072,14 @@ public class CaseInfoService {
         eventTypeJObj.put("eventTypeList", caseInfo.getEventTypeList());
         EventType eventType = new EventType();
         if (StringUtils.isNotBlank(caseInfo.getEventTypeList())) {
-            eventType = eventTypeBiz.selectById(Integer.valueOf(caseInfo.getEventTypeList()));
+            try {
+                eventType = eventTypeBiz.selectById(Integer.valueOf(caseInfo.getEventTypeList()));
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                
+                //caseInfo.getEventTypeList()在数据库中应为数字，如果出现格式错误，表示数据出现问题，此catch使异常不至于因此而中断
+                eventType=null;
+            }
             if (eventType != null) {
                 eventTypeJObj.put("eventTypeListName", eventType.getTypeName());
             }
@@ -1278,5 +1325,26 @@ public class CaseInfoService {
 
         // 更新业务数据(caseInfo)
         caseInfoBiz.updateSelectiveById(caseInfo);
+    }
+    
+    /**
+     * 按来源类型查询记录
+     * 
+     * @author 尚
+     * @param caseInfo
+     * @param page
+     * @param limit
+     * @return
+     */
+    public TableResultResponse<CaseInfo> getListSourceType(String sourceTypeKeyPatrol, int page, int limit, boolean isNoFinish) {
+        String property = environment.getProperty(sourceTypeKeyPatrol);
+        Example example=new Example(CaseInfo.class);
+        example.createCriteria().andEqualTo("sourceType", property);
+        Page<Object> pageInfo = PageHelper.startPage(page, limit);
+        List<CaseInfo> rows = caseInfoBiz.selectByExample(example);
+        if(BeanUtil.isNotEmpty(rows)) {
+            return new TableResultResponse<>(pageInfo.getTotal(), rows);
+        }
+        return new TableResultResponse<>(0, new ArrayList<>());
     }
 }

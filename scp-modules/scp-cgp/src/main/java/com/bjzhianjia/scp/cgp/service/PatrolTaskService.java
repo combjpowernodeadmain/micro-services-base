@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.bjzhianjia.scp.cgp.biz.AreaGridBiz;
 import com.bjzhianjia.scp.cgp.biz.CaseInfoBiz;
 import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
 import com.bjzhianjia.scp.cgp.biz.InspectItemsBiz;
@@ -76,17 +75,11 @@ public class PatrolTaskService {
 	@Autowired
 	private RegulaObjectTypeBiz regulaObjectTypeBiz;
 	
-	
-	@Autowired
-	private AreaGridBiz areaGridBiz;
-	
 	@Autowired
 	private SpecialEventBiz specialEventBiz;
 	
-	
 	@Autowired
 	private EventTypeBiz eventTypeBiz;
-	
 	
 	@Autowired
 	private InspectItemsBiz inspectItemsBiz;
@@ -117,7 +110,7 @@ public class PatrolTaskService {
 
 		String concernedType = json.getString("concernedType"); // person 个人，org 单位)
 		String handleStatus = json.getString("handleStatus"); // finish直接处理，submit提交受理中心
-		String[] urls = json.getString("urls").split(",");
+		String[] urls = json.getString("urls")==null?null:json.getString("urls").split(",");
 		String _concernedType = null; // 当事人类型（数据字典id）
 		Integer concernedId = 0;// 当事人id
 		// 巡查任务记录
@@ -244,6 +237,7 @@ public class PatrolTaskService {
 		caseInfo.setMapInfo(patrolTask.getMapInfo());
 
 		caseInfoBiz.insertSelective(caseInfo);
+		caseInfo.getId();
 
 		result.setIsSuccess(true);
 		result.setData(caseInfo);
@@ -342,7 +336,7 @@ public class PatrolTaskService {
 			for(InspectItems inspectItems : inspectItemsList) {
 				names.add(inspectItems.getName());
 			}
-			result.put("inspectItems",names);
+			result.put("inspectItems",String.join(",", names));
 		}
 		
 		result.put("content", patrolTask.getContent());

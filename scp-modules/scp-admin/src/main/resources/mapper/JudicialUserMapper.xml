@@ -50,6 +50,74 @@
         INNER JOIN base_group_member bgm ON bu.id = bgm.user_id
         AND bgm.group_id=#{groupId}
         WHERE
-        bu.attr2=#{professional}
+        bu.is_deleted=0
     </select>
+    <!--获取指定角色列表-->
+    <select id="selectMajorUser" resultType="java.util.Map">
+        SELECT
+        bu.id userId,
+        bu.name userName,
+        bu.attr2 major,
+        ba1.name areaProvince,
+        ba2.name areaCity,
+        bd.name departName
+        FROM
+        base_user bu
+        LEFT JOIN base_depart bd ON bu.depart_id = bd.id
+        LEFT JOIN base_areainfo ba1 ON bd.attr1=ba1.id
+        LEFT JOIN base_areainfo ba2 ON bd.attr2=ba2.id
+        INNER JOIN base_group_member bgm ON bgm.user_id = bu.id
+        AND bgm.group_id = #{groupId}
+        WHERE
+        bu.is_deleted=0
+        <if test="user.name!=null and user.name!=''">
+            <bind name="userNameLike" value="'%' + user.name + '%'" />
+            AND bu.name like #{userNameLike}
+        </if>
+        <if test="departIds!=null and departIds!=''">
+            AND bu.depart_id IN (#{departIds})
+        </if>
+        <!--专业-->
+        <if test="user.attr2!=null and user.attr2!=''">
+            AND bu.attr2 = #{user.attr2}
+        </if>
+        <!--省级-->
+        <if test="user.attr3!=null and user.attr3!=''">
+            AND bgm.attr3 = #{user.attr3}
+        </if>
+    </select>
+
+    <!--获取排除指定角色的列表-->
+    <select id="selectUserDebarRole" resultType="java.util.Map">
+        SELECT
+        bu.id userId,
+        bu.name userName,
+        bu.attr2 major,
+        bu.username username,
+        bu.username password,
+        bu.mobile_phone mobilePhone,
+        ba1.name areaProvince,
+        bd.name departName
+        FROM
+        base_user bu
+        LEFT JOIN base_depart bd ON bu.depart_id = bd.id
+        LEFT JOIN base_areainfo ba1 ON bu.attr3=ba1.id
+        INNER JOIN base_group_member bgm ON bgm.user_id = bu.id
+        AND bgm.group_id != #{groupId}
+        WHERE
+        bu.is_deleted=0
+        <if test="user.name!=null and user.name!=''">
+            <bind name="userNameLike" value="'%' + user.name + '%'" />
+            AND bu.name like #{userNameLike}
+        </if>
+        <!--专业-->
+        <if test="user.attr2!=null and user.attr2!=''">
+            AND bu.attr2 = #{user.attr2}
+        </if>
+        <!--省级-->
+        <if test="user.attr3!=null and user.attr3!=''">
+            AND bgm.attr3 = #{user.attr3}
+        </if>
+    </select>
+
 </mapper>

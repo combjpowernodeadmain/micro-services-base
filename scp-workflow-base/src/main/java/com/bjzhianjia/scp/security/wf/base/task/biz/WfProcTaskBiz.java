@@ -740,7 +740,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 				wfNextTasksBean = getNextProcTasks(wfProcTaskBean, authData,
 						true, DictKeyConst.YESORNO_NO,
 						procVarData.getProcAssignee(),
-						wfProcBean.getProcCreatetime());
+						wfProcBean.getProcCreatetime(),procVarData);//添加流程变量形参
 
 				// 将下一任务列表添加到List列表中，并更新到流程任务列表中
 				if (wfNextTasksBean != null && wfNextTasksBean.size() > 0) {
@@ -1894,7 +1894,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			} else {
 				// 获取流程实例下一任务列表
 				wfNextTasksBean = getNextProcTasks(procTask, authData, isPassed,
-						parallel, procVarData.getProcAssignee(), datetime);
+						parallel, procVarData.getProcAssignee(), datetime,procVarData);
 				if (wfNextTasksBean != null && wfNextTasksBean.size() > 0) {
 					for (WfProcTaskBean temp : wfNextTasksBean) {
 						nextTasks.add(temp.getProcCtaskcode());
@@ -2677,7 +2677,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 
 			// 获取撤回流程产生的下一任务列表
 			List<WfProcTaskBean> wfNextTasksBean = getNextProcTasks(
-					procTask, authData, false, procTask.getProcParallel(), null, datetime);
+					procTask, authData, false, procTask.getProcParallel(), null, datetime,procVarData);
 			List<String> nextTasks = new ArrayList<String>();
 			if (wfNextTasksBean != null && wfNextTasksBean.size() > 0) {
 				for (WfProcTaskBean temp : wfNextTasksBean) {
@@ -3241,7 +3241,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	private List<WfProcTaskBean> getNextProcTasks(
 			WfProcTaskBean wfPreProcTaskBean, WfProcAuthDataBean authData,
 			boolean isPassed, String procParallel, String procAssignee,
-			int datetime)
+			int datetime,WfProcVariableDataBean procVarData)
 			throws WorkflowException, Exception {
 		List<WfProcTaskBean> wfProcTaskBeans = new ArrayList<>();
 		Map<String, ActivityImpl> activities = wfProcDesinerBiz
@@ -3359,7 +3359,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 				// 没有指定受理人，则从流程定义中获取候选用户组
 				String candidateGroups = wfProcDesinerBiz
 						.getTaskCandidateGroups(activities,
-								newTask.getTaskDefinitionKey());
+								newTask.getTaskDefinitionKey(),procVarData);//添加流程变量形参
 				wfProcTaskBean.setProcTaskGroup(candidateGroups);
 				wfProcTaskBean.setProcTaskStatus(FlowStatus.TASK01.getRetCode()); // 流程任务没有指定受理人，任务状态未签收
 			}

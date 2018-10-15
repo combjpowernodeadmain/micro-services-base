@@ -25,4 +25,18 @@ public class UserConstant {
      * 密码腌制
      */
     public static int PW_ENCORDER_SALT = 15;
+
+    /**
+     * 已被删除 - 标识
+     *
+     * 用来标识数据库中的数据是否被删除
+     */
+    public static final String IS_DELETED_FLAG = "1";
+
+    /**
+     * 未被删除 - 标识
+     *
+     * 用来标识数据库中的数据是否被删除
+     */
+    public static final String IS_UNDELETED_FLAG = "0";
 }

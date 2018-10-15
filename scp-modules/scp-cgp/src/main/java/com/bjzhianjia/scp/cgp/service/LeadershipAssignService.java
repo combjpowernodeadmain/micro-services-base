@@ -99,7 +99,9 @@ public class LeadershipAssignService {
 			return result;
 		}
 
-		caseInfoBiz.insertSelective(resultCaseInfo.getData());
+		CaseInfo caseInfo = resultCaseInfo.getData();
+		caseInfoBiz.insertSelective(caseInfo);
+		vo.setCaseId(String.valueOf(caseInfo.getId()));// 将生成的立案单ID也放入到vo中一份，带出到工作流回调方法中
 
 		result.setIsSuccess(true);
 		result.setMessage("成功");
@@ -116,9 +118,6 @@ public class LeadershipAssignService {
 
 		CaseInfo maxOne = caseInfoBiz.getMaxOne();
 
-		
-		int nextId = maxOne.getId() == null ? 1 : (maxOne.getId() + 1);
-
 		// 立案单事件编号
 		Result<String> caseCodeResult = CommonUtil.generateCaseCode(maxOne.getCaseCode());
 		if (!caseCodeResult.getIsSuccess()) {
@@ -126,8 +125,6 @@ public class LeadershipAssignService {
 			throw new Exception(caseCodeResult.getMessage());// 向外抛出异常，使事务回滚
 		}
 		caseInfo.setCaseCode(caseCodeResult.getData());
-
-		vo.setCaseId(nextId + "");// 将生成的立案单ID也放入到vo中一份，带出到工作流回调方法中
 
 		caseInfo.setCaseTitle(vo.getTaskTitle());
 		caseInfo.setCaseDesc(vo.getTaskDesc());

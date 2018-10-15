@@ -3,6 +3,7 @@ package com.bjzhianjia.scp.cgp.feign;
 import java.util.Map;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -11,6 +12,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.auth.client.config.FeignApplyConfiguration;
+
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 /**
  * 管理服务
@@ -72,4 +76,8 @@ public interface AdminFeign {
      */
     @RequestMapping(value="/depart/feign/user",method=RequestMethod.GET)
     public JSONArray getFeignDepartUsers(@RequestParam("departId")String departId, @RequestParam("userName")String userName);
+    
+    @GetMapping("/depart/list/ids")
+    @ApiOperation("以部门ID集合批量查询部门信息")
+    public JSONArray getDeptByIds(@RequestParam("deptIds") @ApiParam("以字符串形式表示 的部门ID集合，多个ID之间用逗号隔开")String deptIds);
 }

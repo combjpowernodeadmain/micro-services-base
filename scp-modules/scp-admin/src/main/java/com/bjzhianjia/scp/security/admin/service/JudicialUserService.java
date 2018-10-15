@@ -32,12 +32,11 @@ public class JudicialUserService {
 	 *
 	 * @param departId 当前所属部门id
 	 * @param groupId 角色id
-	 * @param professional 专业id（数据字典code）
 	 * @param isOwn 是否包含当前部门。（1 包含|0不包含）
 	 * @return
 	 *         -1 没有可以处理的部门
 	 */
-	public String getCaseDeal(String departId, String groupId, String professional,Integer isOwn) {
+	public String getCaseDeal(String departId, String groupId,Integer isOwn) {
 		//没有可以处理的检察院（部门）
 		String notDepart = "-1";
 
@@ -56,7 +55,7 @@ public class JudicialUserService {
 		while ("0".equals(caseDealId)) {
 			depart = departBiz.selectById(departId);
 			if (depart != null) {
-				Integer count = judicialUserBiz.getUserByDepartAndGroup(depart.getId(), groupId, professional);
+				Integer count = judicialUserBiz.getUserByDepartAndGroup(depart.getId(), groupId);
 				if (count > 0) {
 					caseDealId = depart.getId();
 					break;

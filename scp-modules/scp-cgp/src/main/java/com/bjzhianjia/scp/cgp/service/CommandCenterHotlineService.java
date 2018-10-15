@@ -92,8 +92,9 @@ public class CommandCenterHotlineService {
             JSONObject jsonObject = new JSONObject();
             try {
                 jsonObject =
-                    propertiesProxy.swapProperties(commandCenterHotline, "id", "hotlnCode", "hotlnTitle","appealType",
-                        "appealDatetime", "appealPerson", "exeStatus", "appealTel", "crtUserId", "bizType");
+                    propertiesProxy.swapProperties(commandCenterHotline, "id", "hotlnCode", "hotlnTitle", "appealType",
+                        "appealDatetime", "appealPerson", "exeStatus", "appealTel", "crtUserId", "bizType",
+                        "crtUserName");
                 jsonObject.put("eventTypeName", eventType_ID_NAME_Map.get(commandCenterHotline.getEventType()));
             } catch (Throwable e) {
                 e.printStackTrace();

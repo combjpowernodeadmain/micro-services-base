@@ -95,6 +95,12 @@ public class PropertiesConfig {
     private String lowestGridLevel;
 
     /**
+     * 网格等级--自然网格
+     */
+    @Value("${lawTasks.todo}")
+    private String lawTasksToDo;
+
+    /**
      * 现场检查
      * 
      * @author 尚
@@ -162,5 +168,9 @@ public class PropertiesConfig {
 
     public String getLowestGridLevel() {
         return lowestGridLevel;
+    }
+
+    public String getLawTasksToDo() {
+        return lawTasksToDo;
     }
 }

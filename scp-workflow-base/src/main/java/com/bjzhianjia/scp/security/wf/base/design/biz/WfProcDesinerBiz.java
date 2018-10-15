@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;
@@ -52,6 +53,7 @@ import org.activiti.spring.ProcessEngineFactoryBean;
 import org.activiti.validation.ProcessValidator;
 import org.activiti.validation.ProcessValidatorFactory;
 import org.activiti.validation.ValidationError;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -66,6 +68,7 @@ import com.bjzhianjia.scp.security.wf.base.design.mapper.WfActReProcdefBeanMappe
 import com.bjzhianjia.scp.security.wf.base.exception.WorkflowException;
 import com.bjzhianjia.scp.security.wf.base.task.entity.WfProcTaskPropertiesBean;
 import com.bjzhianjia.scp.security.wf.base.utils.StringUtil;
+import com.bjzhianjia.scp.security.wf.base.vo.WfProcVariableDataBean;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -466,7 +469,7 @@ public class WfProcDesinerBiz extends WfBaseBiz{
      * @return
      */
     public String getTaskCandidateGroups(Map<String, ActivityImpl> activities,
-        String taskDefinitionKey) {
+        String taskDefinitionKey,WfProcVariableDataBean procVarData) {
         ActivityImpl activityImpl = activities.get(taskDefinitionKey);
         StringBuilder groups = new StringBuilder();
 
@@ -478,7 +481,23 @@ public class WfProcDesinerBiz extends WfBaseBiz{
                 taskDefinition.getCandidateGroupIdExpressions().iterator();
 
             while (iterator.hasNext()) {
-                groups.append(iterator.next()).append(",");
+            	String input=iterator.next().toString();
+            	String regex="^\\$\\{.*\\}$";
+            	
+            	/*
+            	 * 判断在流程中指定的候选组是否为点位符形式
+            	 */
+            	if(Pattern.matches(regex, input)) {
+            		//在流程中指定的是点位符的形式,从procVarData全取与点位符对应的变量值
+            		String expressKey=input.replace("${", "").replace("}", "");
+            		String expressValue = String.valueOf(procVarData.getVariableData(expressKey));
+            		if(StringUtils.isBlank(expressValue)) {
+            			throw new WorkflowException("请指定【"+expressKey+"】变量的值");
+            		}
+            		groups.append(expressValue).append(",");
+            	}else {
+            		groups.append(input).append(",");
+            	}
             }
 
         }
