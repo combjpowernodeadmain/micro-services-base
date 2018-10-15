@@ -95,6 +95,40 @@
 		#{procTenantId,jdbcType=VARCHAR},
 		#{procDepartId,jdbcType=VARCHAR})
 	</insert>
+	<insert id="insertList" parameterType="java.util.List">
+		insert into SCP_WF_PROC_PROPS
+		(
+		ID, 
+		PROC_ID, 
+		PROC_TASK_CODE,
+		PROC_PROPS_TYPE, 
+		PROC_PROPS_KEY, 
+		PROC_PROPS_VALUE,
+		PROC_PROPS_CREATOR, 
+		PROC_PROPS_CREATETIME,
+		PROC_PROPS_UPDATOR, 
+		PROC_PROPS_UPDATETIME,
+		PROC_TENANT_ID,
+		PROC_DEPART_ID
+		)
+		values
+		<foreach collection="recordList" item="item" separator=",">
+			(
+			#{item.id,jdbcType=INTEGER}, 
+			#{item.procId,jdbcType=VARCHAR},
+			#{item.procTaskCode,jdbcType=VARCHAR},
+			#{item.procPropsType,jdbcType=CHAR},
+			#{item.procPropsKey,jdbcType=VARCHAR}, 
+			#{item.procPropsValue,jdbcType=VARCHAR},
+			#{item.procPropsCreator,jdbcType=VARCHAR},
+			#{item.procPropsCreatetime,jdbcType=INTEGER},
+			#{item.procPropsUpdator,jdbcType=VARCHAR},
+			#{item.procPropsUpdatetime,jdbcType=INTEGER},
+			#{item.procTenantId,jdbcType=VARCHAR},
+			#{item.procDepartId,jdbcType=VARCHAR}
+			)
+		</foreach>
+	</insert>
 	
 	<update id="updateByPrimaryKeySelective" parameterType="com.bjzhianjia.scp.security.wf.base.design.entity.WfProcPropsBean" >
 	    update SCP_WF_PROC_PROPS

@@ -47,6 +47,7 @@ import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.util.UUIDUtils;
+import com.bjzhianjia.scp.security.wf.base.design.entity.WfProcPropsBean;
 import com.bjzhianjia.scp.security.wf.base.monitor.entity.WfProcBackBean;
 import com.bjzhianjia.scp.security.wf.base.monitor.service.impl.WfMonitorServiceImpl;
 import com.bjzhianjia.scp.security.wf.base.task.entity.WfProcTaskHistoryBean;
@@ -1141,6 +1142,16 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 }
                 result.put("procHistory", procHistoryJArray);
             }
+            
+            // 向前端返回流程实例相关的流程参数
+            List<WfProcPropsBean> wfProcPropsList = wfProcTaskService.getWfProcPropsList(objs);
+            Map<String, String> procpropsMap = new HashMap<>();
+            if (BeanUtil.isNotEmpty(wfProcPropsList)) {
+                for (WfProcPropsBean wfProcPropsBean : wfProcPropsList) {
+                    procpropsMap.put(wfProcPropsBean.getProcPropsKey(), wfProcPropsBean.getProcPropsValue());
+                }
+            }
+            result.put("procProps", procpropsMap);
         }
         return result;
     }
