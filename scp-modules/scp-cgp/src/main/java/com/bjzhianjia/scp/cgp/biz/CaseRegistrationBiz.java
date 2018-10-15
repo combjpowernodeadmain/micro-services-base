@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.cgp.biz;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
@@ -42,6 +44,7 @@ import com.bjzhianjia.scp.cgp.mapper.EventTypeMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
+import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
 import com.bjzhianjia.scp.cgp.vo.CaseRegistrationVo;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
@@ -120,6 +123,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
     @Autowired
     private EnforceCertificateBiz enforceCertificateBiz;
+    
+    @Autowired
+    private Environment environment;
+    
+    @Autowired
+    private PropertiesProxy propertiesProxy;
 
     /**
      * 添加立案记录<br/>
@@ -1478,6 +1487,49 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
         JSONObject resultJObj = JSONObject.parseObject(JSON.toJSONString(caseRegistration));
         restResult.setData(resultJObj);
+        return restResult;
+    }
+    
+    /**
+     * 获取执法任务案件
+     * 
+     * @param ids
+     * @return
+     */
+    public TableResultResponse<JSONObject> listLawTask(Integer[] ids) {
+        TableResultResponse<JSONObject> restResult = new TableResultResponse<>();
+
+        Example example = new Example(CaseRegistration.class);
+        Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isDeleted", "0");
+        criteria.andIn("caseSource", Arrays.asList(ids));
+        criteria.andEqualTo("caseSourceType", environment.getProperty("caseSourceTypeLawTask"));
+
+        List<CaseRegistration> caseRegi = this.selectByExample(example);
+        List<JSONObject> result = new ArrayList<>();
+        if (BeanUtil.isNotEmpty(caseRegi)) {
+            for (CaseRegistration caseRegistration : caseRegi) {
+                try {
+                    JSONObject resultJObj =
+                        propertiesProxy.swapProperties(caseRegistration, "id", "caseOngitude", "caseLatitude",
+                            "caseName");
+                    JSONObject mapInfoJObj = new JSONObject();
+                    mapInfoJObj.put("lat", caseRegistration.getCaseLatitude());
+                    mapInfoJObj.put("lng", caseRegistration.getCaseOngitude());
+                    resultJObj.put("mapInfo", mapInfoJObj.toJSONString());
+                    result.add(resultJObj);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+            }
+
+            restResult.setStatus(200);
+            restResult.setMessage("成功");
+            restResult.getData().setRows(result);
+            return restResult;
+        }
+
+        restResult.getData().setRows(new ArrayList<>());
         return restResult;
     }
 }

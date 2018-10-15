@@ -392,4 +392,10 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         
         return this.baseBiz.caseRegistration(id);
     }
+    
+    @GetMapping("/list/lawTask/{ids}")
+    @ApiOperation("获取执法任务案件")
+    public TableResultResponse<JSONObject> listLawTask(@PathVariable("ids") @ApiParam("执法任务ID集合")Integer[] ids){
+        return this.baseBiz.listLawTask(ids);
+    }
 }

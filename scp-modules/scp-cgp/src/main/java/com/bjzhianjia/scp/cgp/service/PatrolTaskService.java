@@ -2,11 +2,14 @@ package com.bjzhianjia.scp.cgp.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,12 +36,17 @@ import com.bjzhianjia.scp.cgp.entity.RegulaObjectType;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.SpecialEvent;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.CommonUtil;
+import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
+import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
 import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.entity.Example.Criteria;
 
 /**
  * 巡查任务逻辑层
@@ -86,6 +94,12 @@ public class PatrolTaskService {
 	
 	@Autowired
 	private PatrolResBiz patrolResBiz;
+
+    @Autowired
+    private Environment environment;
+    
+    @Autowired
+    private PropertiesProxy propertiesProxy;
 	
 	/**
 	 * 创建巡查任务
@@ -448,4 +462,57 @@ public class PatrolTaskService {
 		
 		return restResult;
 	}
+	
+    /**
+     * 查询类型为专项的任务
+     * 
+     * @param page
+     * @param limit
+     * @return
+     */
+    public TableResultResponse<JSONObject> listSpecial(int page, int limit) {
+        Example example = new Example(PatrolTask.class);
+        Criteria criteria = example.createCriteria();
+        // criteria.andEqualTo("isDeleted", "0");
+        criteria.andEqualTo("sourceType", environment.getProperty("patrolType.special"));
+
+        example.setOrderByClause("id desc");
+
+        Page<Object> pageInfo = PageHelper.startPage(page, limit);
+        List<PatrolTask> patrolTaskList = this.patrolTaskBiz.selectByExample(example);
+        List<JSONObject> resultJObjList = new ArrayList<>();
+        if (BeanUtil.isNotEmpty(patrolTaskList)) {
+
+            Set<String> dictCodeList = new HashSet<>();
+            for (PatrolTask tmp : patrolTaskList) {
+                if (org.apache.commons.lang3.StringUtils.isNotBlank(tmp.getSourceType())) {
+                    dictCodeList.add(tmp.getSourceType());
+                }
+                if (org.apache.commons.lang3.StringUtils.isNotBlank(tmp.getPatrolLevel())) {
+                    dictCodeList.add(tmp.getPatrolLevel());
+                }
+            }
+
+            Map<String, String> dictValues = new HashMap<>();
+            if (BeanUtil.isNotEmpty(dictCodeList)) {
+                dictValues = dictFeign.getByCodeIn(String.join(",", dictCodeList));
+            }
+
+            for (PatrolTask tmp : patrolTaskList) {
+                try {
+                    JSONObject jObjTmp =
+                        propertiesProxy.swapProperties(tmp, "id", "sourceType", "patrolName", "patrolLevel", "mapInfo",
+                            "regulaObjectId");
+                    jObjTmp.put("sourceTypeName", dictValues.get(tmp.getSourceType()));
+                    jObjTmp.put("patrolLevelName", dictValues.get(tmp.getPatrolLevel()));
+                    resultJObjList.add(jObjTmp);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+            }
+            return new TableResultResponse<>(pageInfo.getTotal(), resultJObjList);
+        }
+
+        return new TableResultResponse<>(0, new ArrayList<>());
+    }
 }

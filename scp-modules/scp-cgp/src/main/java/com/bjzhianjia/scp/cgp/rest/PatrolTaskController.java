@@ -24,6 +24,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -136,5 +137,12 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
 
         return restResult;
     }
-
+    
+    @GetMapping("/list/special")
+    @ApiOperation("查询类型为专项的列表")
+    public TableResultResponse<JSONObject> listSpecial(
+        @RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
+        @RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page) {
+        return patrolTaskService.listSpecial(page, limit);
+    }
 }

@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -212,5 +213,11 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
         RegulaObject regulaObject = new RegulaObject();
         regulaObject.setObjType(objType);
         return this.baseBiz.getRegObjPatrolInfo(regulaObject,regObjIds, page, limit);
+    }
+    
+    @GetMapping("/list/ids/{ids}")
+    @ApiOperation("按ID集合获取列表")
+    public TableResultResponse<JSONObject> getByIds(@PathVariable("ids") @ApiParam("待查询列表ID集合") Integer[] ids){
+        return this.baseBiz.getByIds(ids);
     }
 }

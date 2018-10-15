@@ -339,6 +339,7 @@ public class PublicOpinionService {
 		Example.Criteria criteria = caseInfoExample.createCriteria();
 		criteria.andEqualTo("sourceType", Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CONSENSUS);
 		criteria.andIn("sourceCode", collect);
+		criteria.andEqualTo("isDeleted", "0");
 		List<CaseInfo> caseInfoListInDB = caseInfoBiz.selectByExample(caseInfoExample);
 
 		Map<String, String> caseInfoMap = caseInfoListInDB.stream()

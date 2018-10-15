@@ -22,6 +22,7 @@ import com.bjzhianjia.scp.cgp.mapper.EnterpriseInfoMapper;
 import com.bjzhianjia.scp.cgp.mapper.PatrolTaskMapper;
 import com.bjzhianjia.scp.cgp.mapper.RegulaObjectMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
+import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
@@ -62,6 +63,9 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 
     @Autowired
     private PatrolTaskMapper patrolTaskMapper;
+    
+    @Autowired
+    private PropertiesProxy propertiesProxy;
 
     /**
      * 查询id最大的那条记录
@@ -277,5 +281,56 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
             result.add(resultJObj);
         }
         return result;
+    }
+    
+    /**
+     * 按ID集合获取列表
+     * 
+     * @param ids
+     * @return
+     */
+    public TableResultResponse<JSONObject> getByIds(Integer[] ids) {
+        TableResultResponse<JSONObject> restResult = new TableResultResponse<>();
+        if (BeanUtil.isEmpty(ids)) {
+            restResult.setMessage("请输入监管对象ID");
+            restResult.setStatus(400);
+            return restResult;
+        }
+
+        Example example = new Example(RegulaObject.class);
+        Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isDeleted", "0");
+        criteria.andIn("id", Arrays.asList(ids));
+
+        // 以regObjIdList为基础，查询巡查记录表
+        List<JSONObject> regulaObjCount = patrolTaskMapper.regulaObjCount(Arrays.asList(ids));
+        // 将regulaObjCount转化为key-value形式
+        Map<Integer, Integer> regObj_ID_COUNT_Map = new HashMap<>();
+        if (BeanUtil.isNotEmpty(regulaObjCount)) {
+            for (JSONObject jsonObject : regulaObjCount) {
+                regObj_ID_COUNT_Map.put(jsonObject.getInteger("regula_object_id"), jsonObject.getInteger("rcount"));
+            }
+        }
+
+        List<RegulaObject> regObjList = this.selectByExample(example);
+        List<JSONObject> resultJObj = new ArrayList<>();
+        if (BeanUtil.isNotEmpty(regObjList)) {
+            for (RegulaObject regulaObject : regObjList) {
+                try {
+                    JSONObject regulaObjectJObj =
+                        propertiesProxy.swapProperties(regulaObject, "id", "mapInfo", "objName");
+                    regulaObjectJObj.put("patrolCount", regObj_ID_COUNT_Map.get(regulaObject.getId()) == null ? 0
+                        : regObj_ID_COUNT_Map.get(regulaObject.getId()));
+                    resultJObj.add(regulaObjectJObj);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        restResult.setStatus(200);
+        restResult.setMessage("成功");
+        restResult.getData().setRows(resultJObj);
+        return restResult;
     }
 }

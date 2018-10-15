@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,6 +37,8 @@ public class CommandCenterHotlineController
 
     @Autowired
     private CommandCenterHotlineService commandCenterHotlineServoce;
+    
+    
 
     @PostMapping(value = "/cache")
     @ApiOperation("添加暂存")
@@ -83,5 +86,12 @@ public class CommandCenterHotlineController
     @ApiOperation("获取单个对象")
     public JSONObject getOne(@PathVariable("id") @ApiParam("待查询对象ID")Integer id){
         return commandCenterHotlineServoce.selectById(id);
+    }
+    
+    @RequestMapping(value = "/get/toDo/{id}", method = RequestMethod.GET)
+    @ApiOperation("查询未启动对象")
+    public ObjectRestResponse<JSONObject> getToDo(@PathVariable(value = "id") @ApiParam(name = "待查询对象ID") Integer id) {
+        ObjectRestResponse<JSONObject> restResult = commandCenterHotlineServoce.getToDo(id);
+        return restResult;
     }
 }
