@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
@@ -19,6 +20,7 @@ import com.bjzhianjia.scp.cgp.mapper.EventTypeMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
 import com.bjzhianjia.scp.merge.core.MergeCore;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 
 /**
@@ -38,6 +40,9 @@ public class CommandCenterHotlineService {
 
     @Autowired
     private PropertiesProxy propertiesProxy;
+    
+    @Autowired
+    private Environment environment;
 
     /**
      * 分页获取列表
@@ -131,5 +136,43 @@ public class CommandCenterHotlineService {
         List<JSONObject> queryAssist = queryAssist(hotlines);
 
         return queryAssist.get(0);
+    }
+    
+    /**
+     * 按ID进行精确查询
+     * 
+     * @param id
+     * @return
+     */
+    public ObjectRestResponse<JSONObject> getToDo(Integer id) {
+        ObjectRestResponse<JSONObject> restResult = new ObjectRestResponse<>();
+        CommandCenterHotline hotline = commandCenterHotlineBiz.selectById(id);
+
+        if (!environment.getProperty("root_biz_12345state_todo").equals(hotline.getExeStatus())) {
+            restResult.setStatus(400);
+            restResult.setMessage("当前记录不能修改，只有【未发起】的热线记录可修改！");
+            return restResult;
+        }
+
+        List<CommandCenterHotline> hotlines = new ArrayList<>();
+        hotlines.add(hotline);
+        try {
+            mergeCore.mergeResult(CommandCenterHotline.class, hotlines);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        List<JSONObject> queryAssist = queryAssist(hotlines);
+
+        restResult.setStatus(200);
+        restResult.setMessage("成功");
+        restResult.setData(queryAssist.get(0));
+        return restResult;
     }
 }

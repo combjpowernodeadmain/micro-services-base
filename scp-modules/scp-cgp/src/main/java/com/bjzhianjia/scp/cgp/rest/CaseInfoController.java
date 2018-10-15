@@ -12,6 +12,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -417,5 +418,13 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         TableResultResponse<CaseInfo> restResult = caserInfoService.getListSourceType(sourceTypeKeyPatrol, page, limit, false);
 
         return restResult;
+    }
+    
+    @GetMapping("/list/patrol")
+    @ApiOperation("查询类型为专项管理的事件")
+    public TableResultResponse<JSONObject> patrolCaseInfo(
+        @RequestParam(value="patrolId") Integer patrolId
+        ){
+        return this.baseBiz.patrolCaseInfo(patrolId);
     }
 }

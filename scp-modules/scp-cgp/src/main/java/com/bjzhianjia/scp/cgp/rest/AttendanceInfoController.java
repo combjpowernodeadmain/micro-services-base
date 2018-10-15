@@ -101,7 +101,7 @@ public class AttendanceInfoController extends BaseController<AttendanceInfoBiz, 
             restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
             return restResult;
         }
-        attendanceInfo.setCrtUserName(BaseContextHandler.getUsername());
+        attendanceInfo.setCrtUsername(BaseContextHandler.getUsername());
         attendanceInfoBiz.insertSelective(attendanceInfo);
 
         restResult.setMessage("成功");

@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutionException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONArray;
@@ -25,6 +26,7 @@ import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.mapper.CaseInfoMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
+import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
@@ -62,6 +64,12 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
 
     @Autowired
     private AreaGridBiz areaGridBiz;
+    
+    @Autowired
+    private Environment environment;
+    
+    @Autowired
+    private PropertiesProxy propertiesProxy;
 
     /**
      * 查询未删除的总数
@@ -533,5 +541,40 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         }
         return new TableResultResponse<Map<String, Object>>(0, null);
 
+    }
+    
+    /**
+     * 查询类型为专项管理的事件
+     * @param patrolId
+     * @return
+     */
+    public TableResultResponse<JSONObject> patrolCaseInfo(Integer patrolId){
+        TableResultResponse<JSONObject> restResult=new TableResultResponse<>();
+        
+        Example example=new Example(CaseInfo.class);
+        Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isDeleted", "0");
+        criteria.andEqualTo("sourceType", environment.getProperty("sourceTypeKeyPatrol"));
+        criteria.andEqualTo("sourceCode", patrolId);
+        
+        List<CaseInfo> caseInfo = this.selectByExample(example);
+        List<JSONObject> resultJObjList=new ArrayList<>();
+        if(BeanUtil.isNotEmpty(caseInfo)) {
+            for (CaseInfo caseInfo2 : caseInfo) {
+                try {
+                    JSONObject caseInfoJobj = propertiesProxy.swapProperties(caseInfo2, "id","caseTitle","mapInfo");
+                    resultJObjList.add(caseInfoJobj);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+            }
+            
+            restResult.setStatus(200);
+            restResult.getData().setRows(resultJObjList);
+            return restResult;
+        }
+        
+        restResult.getData().setRows(new ArrayList<>());
+        return restResult;
     }
 }
