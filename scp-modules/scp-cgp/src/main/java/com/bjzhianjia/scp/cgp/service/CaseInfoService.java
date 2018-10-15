@@ -31,6 +31,7 @@ import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
 import com.bjzhianjia.scp.cgp.biz.ExecuteInfoBiz;
 import com.bjzhianjia.scp.cgp.biz.LeadershipAssignBiz;
 import com.bjzhianjia.scp.cgp.biz.MayorHotlineBiz;
+import com.bjzhianjia.scp.cgp.biz.PatrolResBiz;
 import com.bjzhianjia.scp.cgp.biz.PatrolTaskBiz;
 import com.bjzhianjia.scp.cgp.biz.PublicOpinionBiz;
 import com.bjzhianjia.scp.cgp.biz.RegulaObjectBiz;
@@ -44,6 +45,7 @@ import com.bjzhianjia.scp.cgp.entity.EventType;
 import com.bjzhianjia.scp.cgp.entity.ExecuteInfo;
 import com.bjzhianjia.scp.cgp.entity.LeadershipAssign;
 import com.bjzhianjia.scp.cgp.entity.MayorHotline;
+import com.bjzhianjia.scp.cgp.entity.PatrolRes;
 import com.bjzhianjia.scp.cgp.entity.PatrolTask;
 import com.bjzhianjia.scp.cgp.entity.PublicOpinion;
 import com.bjzhianjia.scp.cgp.entity.RegulaObject;
@@ -69,6 +71,7 @@ import com.github.pagehelper.PageInfo;
 
 import lombok.extern.slf4j.Slf4j;
 import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.entity.Example.Criteria;
 
 /**
  * 立案管理
@@ -135,6 +138,9 @@ public class CaseInfoService {
 
     @Autowired
     private PatrolTaskBiz patrolTaskBiz;
+    
+    @Autowired
+    private PatrolResBiz patrolResBiz;
 
     @Autowired
     private MergeCore mergeCore;
@@ -197,6 +203,9 @@ public class CaseInfoService {
 
         List<CaseInfo> list = new ArrayList<>();
         list.add(caseInfo);
+        
+        String sourceType = caseInfo.getSourceType();
+        
         try {
             mergeCore.mergeResult(CaseInfo.class, list);
         } catch (NoSuchMethodException e) {
@@ -220,8 +229,26 @@ public class CaseInfoService {
         if (BeanUtil.isNotEmpty(executeInfo)) {
             caseInfoJObj.put("exePerson", executeInfo.getExePerson());
             caseInfoJObj.put("exeFinishTime", executeInfo.getFinishTime());
+            caseInfoJObj.put("exeInfoPicture",executeInfo.getPicture());
         }
 
+        // 判断事件是否为巡查上报，如果是，则需要整合巡查上报的图片
+        if (environment.getProperty("sourceTypeKeyPatrol").equals(sourceType)) {
+            PatrolTask patrolTask = patrolTaskBiz.selectById(Integer.valueOf(caseInfo.getSourceCode()));
+            String patrolTaskPicUrl = "";
+            if (BeanUtil.isNotEmpty(patrolTask)) {
+                Example resExample = new Example(PatrolRes.class);
+                Criteria resCriteria = resExample.createCriteria();
+                resCriteria.andEqualTo("patrolTaskId", patrolTask.getId());
+                List<PatrolRes> patrolRes = patrolResBiz.selectByExample(resExample);
+                if (BeanUtil.isNotEmpty(patrolRes)) {
+                    List<String> uriList =
+                        patrolRes.stream().map(o -> o.getUrl()).distinct().collect(Collectors.toList());
+                    patrolTaskPicUrl = String.join(",", uriList);
+                }
+            }
+            caseInfoJObj.put("patrolTaskPicUrl", patrolTaskPicUrl);
+        }
         restResult.setData(caseInfoJObj);
         return restResult;
     }

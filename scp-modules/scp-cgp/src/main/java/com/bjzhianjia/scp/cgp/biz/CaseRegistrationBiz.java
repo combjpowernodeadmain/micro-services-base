@@ -51,6 +51,7 @@ import com.bjzhianjia.scp.security.wf.base.monitor.entity.WfProcBackBean;
 import com.bjzhianjia.scp.security.wf.base.monitor.service.impl.WfMonitorServiceImpl;
 import com.bjzhianjia.scp.security.wf.base.task.entity.WfProcTaskHistoryBean;
 import com.bjzhianjia.scp.security.wf.base.task.service.impl.WfProcTaskServiceImpl;
+import com.bjzhianjia.scp.security.wf.base.utils.StringUtil;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -1023,13 +1024,31 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 result.put("concernedType", concernedType);
                 // 当事人详情
                 result.put("concernedResult", concernedResult);
-
-                // 业务条线
+                
+                List<String> dictKeyList = new ArrayList<>();
+                String dictKey = "";
                 if (StringUtils.isNotBlank(caseRegistration.getBizType())) {
-                    Map<String, String> bizMap = dictFeign.getByCode(caseRegistration.getBizType());
-                    if (bizMap != null && !bizMap.isEmpty()) {
-                        result.put("bizName", bizMap.get(caseRegistration.getBizType()));
-                    }
+                    dictKeyList.add(caseRegistration.getBizType());
+                }
+                if (StringUtils.isNotBlank(caseRegistration.getCaseSource())) {
+                    dictKeyList.add(caseRegistration.getCaseSource());
+                }
+                if (StringUtil.isNotBlank(caseRegistration.getDealType())) {
+                    dictKeyList.add(caseRegistration.getDealType());
+                }
+
+                dictKey = String.join(",", dictKeyList);
+
+                Map<String, String> dictValueMap = new HashMap<>();
+                if (StringUtils.isNotBlank(dictKey)) {
+                    dictValueMap = dictFeign.getByCodeIn(dictKey);
+                }
+
+                // 业务条线,案件来源,处理方式
+                if (BeanUtil.isNotEmpty(dictValueMap)) {
+                    result.put("bizName", dictValueMap.get(caseRegistration.getBizType()));
+                    result.put("caseSourceName", dictValueMap.get(caseRegistration.getCaseSource()));
+                    result.put("dealTypeName", dictValueMap.get(caseRegistration.getDealType()));
                 }
 
                 // 事件类别
@@ -1037,14 +1056,6 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                     EventType eventType = eventTypeBiz.selectById(Integer.valueOf(caseRegistration.getEventType()));
                     if (eventType != null) {
                         result.put("eventTypeName", eventType.getTypeName());
-                    }
-                }
-
-                // 案件来源
-                if (StringUtils.isNotBlank(caseRegistration.getCaseSource())) {
-                    Map<String, String> caseSourceMap = dictFeign.getByCode(caseRegistration.getCaseSource());
-                    if (caseSourceMap != null && !caseSourceMap.isEmpty()) {
-                        result.put("caseSourceName", caseSourceMap.get(caseRegistration.getCaseSource()));
                     }
                 }
 

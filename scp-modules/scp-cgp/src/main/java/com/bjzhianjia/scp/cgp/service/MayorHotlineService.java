@@ -148,7 +148,9 @@ public class MayorHotlineService {
 			return result;
 		}
 
-		caseInfoBiz.insertSelective(resultCaseInfo.getData());
+		CaseInfo caseInfo = resultCaseInfo.getData();
+		caseInfoBiz.insertSelective(caseInfo);
+		vo.setCaseId(String.valueOf(caseInfo.getId()));//将生成的立案单ID也放入到vo中一份，带出到工作流回调方法中
 
 		return result;
 	}
@@ -157,13 +159,10 @@ public class MayorHotlineService {
 		Result<CaseInfo> result = new Result<>();
 		CaseInfo maxOne = caseInfoBiz.getMaxOne();
 		
-		int nextId=maxOne==null?1:(maxOne.getId()+1);
-		
 		// 验证该登记单是否创建了预立案
 
 		// 创建预立案单
 		CaseInfo caseInfo = new CaseInfo();
-		caseInfo.setId(nextId);
 		caseInfo.setSourceType(vo.getCaseSource());// 来源事件类型
 		caseInfo.setSourceCode(vo.getId() + "");// 来源事件编号
 
@@ -175,7 +174,7 @@ public class MayorHotlineService {
 		}
 		caseInfo.setCaseCode(caseCodeResult.getData());
 		vo.setCaseCode(caseCodeResult.getData());//将生成的事件编号也放入到vo中一份，带出到工作流回调方法中
-		vo.setCaseId(nextId+"");//将生成的立案单ID也放入到vo中一份，带出到工作流回调方法中
+		
 
 		caseInfo.setCaseTitle(vo.getHotlnTitle());//  立案单.事件标题
 		caseInfo.setCaseDesc(vo.getAppealDesc());//  立案单.事件描述
