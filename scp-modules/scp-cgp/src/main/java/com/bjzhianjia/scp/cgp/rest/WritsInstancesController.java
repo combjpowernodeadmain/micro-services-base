@@ -20,6 +20,8 @@ import com.bjzhianjia.scp.cgp.entity.WritsInstances;
 import com.bjzhianjia.scp.cgp.util.DocDownUtil;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
+import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreClientToken;
+import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
@@ -156,6 +158,12 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
 
     }
 
+    /*
+     *  在gate服务里添加放行路径前缀后，需要在该接口添加@IgnoreClientToken，@IgnoreUserToken<br/>
+     *  在gate服务里添加旅行路径指gate不进行路径拦截，但在auth里会进行token验证
+     */
+    @IgnoreClientToken
+    @IgnoreUserToken
     @RequestMapping(value = "/true/instance/writsId", method = RequestMethod.GET)
     @ApiOperation("生成文书实例，并返回文书实例对应的word文档")
     public ResponseEntity<?> getTrueWritsInstancesById(@RequestParam(value = "writsId") Integer writsId,
@@ -190,6 +198,8 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
      * @param response
      * @return
      */
+    @IgnoreClientToken
+    @IgnoreUserToken
     @RequestMapping(value = "/true/instance/pdf/writsId", method = RequestMethod.GET)
     @ApiOperation("生成文书实例，并返回文书实例对应的word文档")
     public ResponseEntity<?> getTruePDFWritsInstancesById(@RequestParam(value = "writsId") Integer writsId,
