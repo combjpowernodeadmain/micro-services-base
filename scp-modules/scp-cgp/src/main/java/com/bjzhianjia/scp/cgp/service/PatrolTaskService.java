@@ -363,7 +363,8 @@ public class PatrolTaskService {
 		//当事人
 		String dictConcernedType = CommonUtil.getByCode(dictFeign,patrolTask.getConcernedType());
 		if(dictConcernedType != null) {
-			result.put("concernedType", dictConcernedType);
+			result.put("concernedType", patrolTask.getConcernedType());
+			result.put("concernedTypeName", dictConcernedType);
 			//单位
 			if(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG.equals(patrolTask.getConcernedType())) {
 				ConcernedCompany concernedCompany = concernedCompanyService.selectById(patrolTask.getConcernedId());

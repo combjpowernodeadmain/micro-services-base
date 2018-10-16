@@ -724,4 +724,26 @@ public class RegulaObjectService {
         // 缓存监管对象名称
         redisTemplate.opsForValue().set(PatrolTask.REGULA_OBJECT_NAME, result, 24, TimeUnit.DAYS);
     }
+    
+    /**
+     * 按监管对象类型集合查询监管对象
+     * 
+     * @param page
+     * @param limit
+     * @param objTypes
+     * @param name
+     * @return
+     */
+    public TableResultResponse<RegulaObjectVo> listByObjType(int page, int limit, String objTypes, String name) {
+        TableResultResponse<RegulaObject> tableResult = regulaObjectBiz.listByObjType(page, limit, objTypes, name);
+
+        List<RegulaObject> rows = tableResult.getData().getRows();
+
+        /*
+         * 进行业务条线聚和 业务条线存储结构[{"bizList","$业务条线ID"},{"bizList","$业务条线ID"}]
+         */
+        List<RegulaObjectVo> voList = queryAssist(rows);
+
+        return new TableResultResponse<>(tableResult.getData().getTotal(), voList);
+    }
 }
