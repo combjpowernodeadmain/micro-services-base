@@ -1966,6 +1966,9 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 
 				// 写入新的流程任务数据
 				insertWfProcessTasks(wfNextTasksBean);
+				
+				// 写入流程参数数据
+				insertWfProcProps(wfNextTasksBean, procVarData);
 
 				// 发送流程任务通知
 				notify(wfProcBean, wfNextTasksBean, allNotifyProcess, taskProperties);
