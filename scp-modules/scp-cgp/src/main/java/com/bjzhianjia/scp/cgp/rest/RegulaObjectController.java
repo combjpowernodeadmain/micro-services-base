@@ -220,4 +220,22 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
     public TableResultResponse<JSONObject> getByIds(@PathVariable("ids") @ApiParam("待查询列表ID集合") Integer[] ids){
         return this.baseBiz.getByIds(ids);
     }
+    
+    @RequestMapping(value = "/list/areaGrid", method = RequestMethod.GET)
+    @ApiOperation("查询分页，不进行分页")
+    public TableResultResponse<Integer> listByAreaGrid(
+        @RequestParam("areaGridIds") @ApiParam(name = "网格ID集合，多个网格ID用逗号隔开") String areaGridIds) {
+        return this.baseBiz.getListNoPage(areaGridIds);
+    }
+    
+    @RequestMapping(value = "/list/objTypes", method = RequestMethod.GET)
+    @ApiOperation("按监管对象类型集合查询监管对象")
+    public TableResultResponse<RegulaObjectVo> listByObjType(
+        @RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
+        @RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
+        @RequestParam(value="objTypes",required=false) @ApiParam(name = "监管对象类型ID集合") String objTypes,
+        @RequestParam(value="objName",required=false) @ApiParam(name = "监管对象类型名称") String name) {
+
+        return regulaObjectService.listByObjType(page, limit, objTypes, name);
+    }
 }
