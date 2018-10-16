@@ -16,6 +16,7 @@
 
 package com.bjzhianjia.scp.security.admin.mapper;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.admin.entity.User;
 import com.bjzhianjia.scp.security.common.data.Tenant;
 import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
@@ -64,4 +65,10 @@ public interface UserMapper extends CommonMapper<User> {
      */
     public List<Map<String, String>> getUserDetail(@Param("userId")String userId);
 
+    /**
+     * 按组查询用户
+     * @param groupCode 组所对应的code
+     * @return
+     */
+    public List<JSONObject> getUserByPosition(@Param("groupCode") String groupCode);
 }

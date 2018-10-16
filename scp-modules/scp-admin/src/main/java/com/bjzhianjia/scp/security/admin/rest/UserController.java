@@ -21,12 +21,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreClientToken;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -245,4 +250,9 @@ public class UserController extends BaseController<UserBiz, User, String> {
 		return this.baseBiz.selectById(userId);
 	}
 
+	@ApiOperation("按组获取用户信息")
+	@GetMapping(value="/list/squadronLeader")
+	public List<JSONObject> getSquadronLeader(){
+		return this.baseBiz.getSquadronLeader();
+	}
 }
