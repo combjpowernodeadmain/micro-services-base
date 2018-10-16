@@ -23,10 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.bjzhianjia.scp.security.admin.feign.DictFeign;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +35,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.admin.entity.User;
+import com.bjzhianjia.scp.security.admin.feign.DictFeign;
 import com.bjzhianjia.scp.security.admin.mapper.DepartMapper;
 import com.bjzhianjia.scp.security.admin.mapper.PositionMapper;
 import com.bjzhianjia.scp.security.admin.mapper.UserMapper;
@@ -72,6 +72,9 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
     private Sha256PasswordEncoder encoder = new Sha256PasswordEncoder();
     @Autowired
     private DictFeign dictFeign;
+    
+    @Autowired
+    private Environment environment;
 
     @Override
     public User selectById(Object id) {
@@ -415,5 +418,14 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
             }
         }
         return array;
+    }
+    
+    /**
+     * 获取中队长信息
+     * @return
+     */
+    public List<JSONObject> getSquadronLeader(){
+    	List<JSONObject> userList = this.mapper.getUserByPosition(environment.getProperty("gruop.code"));
+    	return userList;
     }
 }
