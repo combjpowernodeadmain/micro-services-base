@@ -597,7 +597,56 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 
         return new TableResultResponse<Map<String, Object>>(result.getTotal(), list);
     }
+    
+    /**
+     * 执法任务翻页查询
+     * 
+     * @param userName
+     *            执法者姓名
+     * @param regulaObjectName
+     *            巡查对象名称
+     * @param startTime
+     *            开始日期
+     * @param endTime
+     *            结束日期
+     * @param page
+     *            页码
+     * @param limit
+     *            页容量
+     * @return
+     */
+    public TableResultResponse<Map<String, Object>> listSimple(String userName, String regulaObjectName,
+        Date startTime, Date endTime, int page, int limit) {
 
+        Page<Object> result = PageHelper.startPage(page, limit);
+        List<Map<String, Object>> list =
+            lawTaskMapper.selectLawTaskList(userName, regulaObjectName, null, startTime,
+                endTime);
+        if (list == null) {
+            return new TableResultResponse<Map<String, Object>>(0, null);
+        }
+
+        List<String> statusCodeList =
+            list.stream().map(o -> String.valueOf(o.get("status"))).distinct().collect(Collectors.toList());
+        Map<String, String> byCodeIn = new HashMap<>();
+        if (BeanUtil.isNotEmpty(statusCodeList)) {
+            byCodeIn = dictFeign.getByCodeIn(String.join(",", statusCodeList));
+        }
+
+        List<Map<String, Object>> resultMapList = new ArrayList<>();
+        for (Map<String, Object> map : list) {
+            Map<String, Object> resultMap = new HashMap<>();
+            resultMap.put("id", map.get("lawTaskId"));
+            resultMap.put("patrolObject", map.get("patrolObject"));
+            resultMap.put("lawTitle", map.get("lawTitle"));
+            resultMap.put("statusName", byCodeIn.get(map.get("status")));
+            resultMap.put("lawTaskCode", map.get("lawTaskCode"));
+            resultMapList.add(resultMap);
+        }
+
+        return new TableResultResponse<Map<String, Object>>(result.getTotal(), resultMapList);
+    }
+    
     /**
      * 通过json获取执法分队名称（部门名称）
      * 

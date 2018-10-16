@@ -12,7 +12,10 @@
  */
 package com.bjzhianjia.scp.security.wf.base.task.service;
 
+import java.util.List;
+
 import com.alibaba.fastjson.JSONObject;
+import com.bjzhianjia.scp.security.wf.base.design.entity.WfProcPropsBean;
 import com.bjzhianjia.scp.security.wf.base.exception.WorkflowException;
 import com.bjzhianjia.scp.security.wf.base.task.entity.WfProcTaskBean;
 import com.bjzhianjia.scp.security.wf.base.task.entity.WfProcTaskHistoryBean;
@@ -168,4 +171,12 @@ public interface IWfProcTaskService {
      */
     public PageInfo<WfProcTaskHistoryBean> getProcApprovedHistory(JSONObject objs)
         throws WorkflowException;
+
+    /**
+     * 查询流程相关参数集合
+     * @param procId
+     * @param procTaskCode
+     * @return
+     */
+	List<WfProcPropsBean> getWfProcPropsList(JSONObject objs) throws WorkflowException;
 }

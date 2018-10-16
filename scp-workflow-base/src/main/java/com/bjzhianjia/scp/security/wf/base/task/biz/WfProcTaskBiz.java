@@ -49,8 +49,11 @@ import com.bjzhianjia.scp.security.wf.base.constant.Constants.WfProcParallStatus
 import com.bjzhianjia.scp.security.wf.base.constant.Constants.WfProcVotePower;
 import com.bjzhianjia.scp.security.wf.base.constant.Constants.WfProcVoteRole;
 import com.bjzhianjia.scp.security.wf.base.constant.Constants.WfProcessStartModeAttr;
+import com.bjzhianjia.scp.security.wf.base.auth.service.IWfProcUserAuthService;
 import com.bjzhianjia.scp.security.wf.base.constant.WorkflowEnumResults;
 import com.bjzhianjia.scp.security.wf.base.design.biz.WfProcDesinerBiz;
+import com.bjzhianjia.scp.security.wf.base.design.entity.WfProcPropsBean;
+import com.bjzhianjia.scp.security.wf.base.design.mapper.WfProcPropsMapper;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.exception.WorkflowException;
 import com.bjzhianjia.scp.security.wf.base.notify.service.IWfProcTaskNotify;
@@ -114,7 +117,11 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	HistoryService historyService;
 	@Autowired
 	IWfProcTaskNotify wfProcTaskNotify;
-
+	@Autowired
+	WfProcPropsMapper wfprocpropsMapper;
+	@Autowired
+	private IWfProcUserAuthService wfProcUserAuthService;
+	
 	/**
 	 * 根据流程定义Key启动对应的工作流
 	 * 
@@ -769,6 +776,9 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 
 			// 写入我的流程数据
 			insertWfMyProcess(wfMyProcBeans);
+			
+			// 写入我的流程属性定义
+			insertWfProcProps(wfProcTaskBeans,procVarData);
 
 			// 发送流程新任务到达通知
 			wfProcTaskNotify.notify(wfProcBean, wfNextTasksBean);
@@ -786,6 +796,39 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		}
 
 		return processInstance.getId();
+	}
+
+	/**
+	 * 写入我的流程属性定义
+	 * @param wfProcTaskBeans
+	 * @param procVarData
+	 */
+	private void insertWfProcProps(List<WfProcTaskBean> wfProcTaskBeans, WfProcVariableDataBean procVarData) {
+		try {
+			// 生成需要进行添加的WfProcPropsBean对象集合
+			List<WfProcPropsBean> wfProcPropsBeanList = new ArrayList<>();
+			Map<String, Object> variableData = procVarData.getVariableData();
+			for (WfProcTaskBean wfProcTaskBean : wfProcTaskBeans) {
+				for (String key : variableData.keySet()) {
+					WfProcPropsBean wfProcPropsBean = new WfProcPropsBean();
+					wfProcPropsBean.setProcId(wfProcTaskBean.getProcInstId());
+					wfProcPropsBean.setProcTaskCode(wfProcTaskBean.getProcCtaskid());
+					wfProcPropsBean.setProcPropsKey(key);
+					wfProcPropsBean.setProcPropsValue(String.valueOf(variableData.get(key)));
+					wfProcPropsBean.setProcPropsCreatetime(DateTools.getCurrTime());
+					wfProcPropsBean.setProcPropsCreator(wfProcUserAuthService.getUserId());
+					wfProcPropsBean.setProcTenantId(wfProcUserAuthService.getTenantId());
+					wfProcPropsBean.setProcDepartId(wfProcUserAuthService.getDeptId());
+					wfProcPropsBeanList.add(wfProcPropsBean);
+				}
+			}
+			
+			// 将参数添加进数据库
+			wfprocpropsMapper.insertList(wfProcPropsBeanList);
+		} catch (Exception e) {
+			// 该方法为后加逻辑，如果出现异常，在方法内将异常捕获掉，防止对之前的逻辑造成影响
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -1923,6 +1966,9 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 
 				// 写入新的流程任务数据
 				insertWfProcessTasks(wfNextTasksBean);
+				
+				// 写入流程参数数据
+				insertWfProcProps(wfNextTasksBean, procVarData);
 
 				// 发送流程任务通知
 				notify(wfProcBean, wfNextTasksBean, allNotifyProcess, taskProperties);

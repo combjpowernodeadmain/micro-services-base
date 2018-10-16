@@ -242,4 +242,30 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
             lawTaskBiz.getLawTaskToDoList(userName, regulaObjectName, _startTime, _endTimeTmp, page, limit);
         return result;
     }
+    
+    @RequestMapping(value = "/list/partical", method = RequestMethod.GET)
+    @ApiOperation("执法任务列表")
+    public TableResultResponse<Map<String, Object>> listSimple(
+        @RequestParam(defaultValue = "") @ApiParam("队员名称") String userName,
+        @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
+        @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime,
+        @RequestParam(defaultValue = "") @ApiParam("任务状态") String state,
+        @RequestParam(defaultValue = "") @ApiParam("巡查对象") String regulaObjectName,
+        @RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
+        @RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page) {
+        
+        TableResultResponse<Map<String, Object>> result = null;
+        
+        Date _startTime = null;
+        Date _endTimeTmp = null;
+        if (StringUtils.isNotBlank(startTime) && StringUtils.isNotBlank(endTime)) {
+            _startTime = DateUtil.dateFromStrToDate(startTime, "yyyy-MM-dd HH:mm:ss");
+            _endTimeTmp = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
+            _endTimeTmp = DateUtils.addDays(_endTimeTmp, 1);
+        }
+        
+        result =
+            lawTaskBiz.listSimple(userName, regulaObjectName, _startTime, _endTimeTmp, page, limit);
+        return result;
+    }
 }

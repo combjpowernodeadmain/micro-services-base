@@ -218,7 +218,7 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         if (data != null && data.size() > 0) {
             result.setData(data);
         } else {
-            result.setStatus(400);
+            result.setData(new JSONArray());
         }
         return result;
     }
@@ -391,5 +391,11 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
     public ObjectRestResponse<JSONObject> caseRegistration(@PathVariable(value="id") @ApiParam("待查询对象ID") String id){
         
         return this.baseBiz.caseRegistration(id);
+    }
+    
+    @GetMapping("/list/lawTask/{ids}")
+    @ApiOperation("获取执法任务案件")
+    public TableResultResponse<JSONObject> listLawTask(@PathVariable("ids") @ApiParam("执法任务ID集合")Integer[] ids){
+        return this.baseBiz.listLawTask(ids);
     }
 }

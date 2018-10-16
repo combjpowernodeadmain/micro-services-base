@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.cgp.biz;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
@@ -42,11 +44,13 @@ import com.bjzhianjia.scp.cgp.mapper.EventTypeMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
+import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
 import com.bjzhianjia.scp.cgp.vo.CaseRegistrationVo;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.util.UUIDUtils;
+import com.bjzhianjia.scp.security.wf.base.design.entity.WfProcPropsBean;
 import com.bjzhianjia.scp.security.wf.base.monitor.entity.WfProcBackBean;
 import com.bjzhianjia.scp.security.wf.base.monitor.service.impl.WfMonitorServiceImpl;
 import com.bjzhianjia.scp.security.wf.base.task.entity.WfProcTaskHistoryBean;
@@ -119,6 +123,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
     @Autowired
     private EnforceCertificateBiz enforceCertificateBiz;
+    
+    @Autowired
+    private Environment environment;
+    
+    @Autowired
+    private PropertiesProxy propertiesProxy;
 
     /**
      * 添加立案记录<br/>
@@ -994,130 +1004,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
             result = JSONObject.parseObject(JSONObject.toJSONString(caseRegistration));
             if (result != null) {
-                // org:单位，person:个人
-                String concernedType = "org";
-                JSONObject concernedResult = null;
-                // 当事人：单位
-                if (Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG.equals(caseRegistration.getConcernedType())) {
-                    CLEConcernedCompany concernedCompany =
-                        cLEConcernedCompanyBiz.selectById(Integer.valueOf(caseRegistration.getConcernedId()));
-                    if (concernedCompany != null) {
-                        concernedResult = JSONObject.parseObject(JSONObject.toJSONString(concernedCompany));
-                    }
-                }
-                // 当事人：个人
-                if (Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON.equals(caseRegistration.getConcernedType())) {
-                    CLEConcernedPerson concernedPerson =
-                        cLEConcernedPersonBiz.selectById(Integer.valueOf(caseRegistration.getConcernedId()));
-                    if (concernedPerson != null) {
-                        concernedResult = JSONObject.parseObject(JSONObject.toJSONString(concernedPerson));
-                        Map<String, String> credMap =
-                            dictFeign.getByCodeIn(concernedPerson.getCertType() + "," + concernedPerson.getGender());
-                        if (credMap != null && !credMap.isEmpty()) {
-                            concernedResult.put("credTypeName", credMap.get(concernedPerson.getCertType()));
-                            concernedResult.put("sexName", credMap.get(concernedPerson.getGender()));
-                        }
-                    }
-                    concernedType = "person";
-                }
-                // 当事人类型
-                result.put("concernedType", concernedType);
-                // 当事人详情
-                result.put("concernedResult", concernedResult);
-                
-                List<String> dictKeyList = new ArrayList<>();
-                String dictKey = "";
-                if (StringUtils.isNotBlank(caseRegistration.getBizType())) {
-                    dictKeyList.add(caseRegistration.getBizType());
-                }
-                if (StringUtils.isNotBlank(caseRegistration.getCaseSource())) {
-                    dictKeyList.add(caseRegistration.getCaseSource());
-                }
-                if (StringUtil.isNotBlank(caseRegistration.getDealType())) {
-                    dictKeyList.add(caseRegistration.getDealType());
-                }
-
-                dictKey = String.join(",", dictKeyList);
-
-                Map<String, String> dictValueMap = new HashMap<>();
-                if (StringUtils.isNotBlank(dictKey)) {
-                    dictValueMap = dictFeign.getByCodeIn(dictKey);
-                }
-
-                // 业务条线,案件来源,处理方式
-                if (BeanUtil.isNotEmpty(dictValueMap)) {
-                    result.put("bizName", dictValueMap.get(caseRegistration.getBizType()));
-                    result.put("caseSourceName", dictValueMap.get(caseRegistration.getCaseSource()));
-                    result.put("dealTypeName", dictValueMap.get(caseRegistration.getDealType()));
-                }
-
-                // 事件类别
-                if (StringUtils.isNotBlank(caseRegistration.getEventType())) {
-                    EventType eventType = eventTypeBiz.selectById(Integer.valueOf(caseRegistration.getEventType()));
-                    if (eventType != null) {
-                        result.put("eventTypeName", eventType.getTypeName());
-                    }
-                }
-
-                // 违法行为
-                if (BeanUtil.isNotEmpty(caseRegistration.getInspectItem())) {
-                    InspectItems inspectItems =
-                        inspectItemsBiz.selectById(Integer.valueOf(caseRegistration.getInspectItem()));
-                    if (inspectItems != null) {
-                        result.put("inspectName", inspectItems.getName());
-                    }
-                }
-
-                // 举报人姓名
-                JSONArray informerUser = new JSONArray();
-                if (StringUtils.isNotBlank(caseRegistration.getCaseInformer())) {
-                    informerUser = iUserFeign.getByUserIds(caseRegistration.getCaseInformer());
-                }
-                String caseInformerName = "";
-                if (informerUser != null && !informerUser.isEmpty()) {
-                    for (int i = 0; i < informerUser.size(); i++) {
-                        caseInformerName = informerUser.getJSONObject(i).getString("name");
-                    }
-                }
-                result.put("caseInformerName", caseInformerName);
-
-                // 执法者用户名
-                JSONArray userList = null;
-                try {
-                    if (StringUtils.isNotBlank(caseRegistration.getEnforcers())) {
-                        userList = iUserFeign.getByUserIds(caseRegistration.getEnforcers());
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                if (userList != null && !userList.isEmpty()) {
-                    StringBuilder userName = new StringBuilder();
-                    // 最后一条记录
-                    int size = userList.size() - 1;
-                    for (int i = 0; i < userList.size(); i++) {
-                        if (i == size) {
-                            userName.append(userList.getJSONObject(i).getString("name"));
-                        } else {
-                            userName.append(userList.getJSONObject(i).getString("name")).append(",");
-                        }
-
-                    }
-                    result.put("enforcersName", userName.toString());
-                }
-
-                // 网格名称
-                AreaGrid areaGrid = areaGridBiz.selectById(caseRegistration.getGirdId());
-                if (areaGrid != null) {
-                    result.put("gridName", areaGrid.getGridName());
-                }
-                // 移送部门
-                String transferDepart = caseRegistration.getTransferDepart();
-                if (StringUtils.isNotBlank(transferDepart)) {
-                    JSONObject dept = adminFeign.getByDeptId(transferDepart);
-                    if (dept != null) {
-                        result.put("transferDeptName", dept.getString("name"));
-                    }
-                }
+                getOneQueryAssist(caseRegistration, result);
 
                 // 查询流程历史记录
                 PageInfo<WfProcTaskHistoryBean> procApprovedHistory = wfProcTaskService.getProcApprovedHistory(objs);
@@ -1141,6 +1028,16 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 }
                 result.put("procHistory", procHistoryJArray);
             }
+            
+            // 向前端返回流程实例相关的流程参数
+            List<WfProcPropsBean> wfProcPropsList = wfProcTaskService.getWfProcPropsList(objs);
+            Map<String, String> procpropsMap = new HashMap<>();
+            if (BeanUtil.isNotEmpty(wfProcPropsList)) {
+                for (WfProcPropsBean wfProcPropsBean : wfProcPropsList) {
+                    procpropsMap.put(wfProcPropsBean.getProcPropsKey(), wfProcPropsBean.getProcPropsValue());
+                }
+            }
+            result.put("procProps", procpropsMap);
         }
         return result;
     }
@@ -1464,9 +1361,192 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     public ObjectRestResponse<JSONObject> caseRegistration(String id) {
         ObjectRestResponse<JSONObject> restResult = new ObjectRestResponse<>();
         CaseRegistration caseRegistration = this.selectById(id);
+        
+        JSONObject result = null;
+        
+        if(BeanUtil.isNotEmpty(caseRegistration)) {
+            result = JSONObject.parseObject(JSONObject.toJSONString(caseRegistration));
+            if (result != null) {
+                getOneQueryAssist(caseRegistration, result);
+            }
+        }
+        
+        restResult.setData(result);
+        return restResult;
+    }
 
-        JSONObject resultJObj = JSONObject.parseObject(JSON.toJSONString(caseRegistration));
-        restResult.setData(resultJObj);
+    /**
+     * 查询单条案件记录帮助处理方法，在该方法内只对案件记录的业务数据进行处理，不涉及工作流数据
+     * @param caseRegistration
+     * @param result
+     */
+    private void getOneQueryAssist(CaseRegistration caseRegistration, JSONObject result) {
+        // org:单位，person:个人
+        String concernedType = "org";
+        JSONObject concernedResult = null;
+        // 当事人：单位
+        if (Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG.equals(caseRegistration.getConcernedType())) {
+            CLEConcernedCompany concernedCompany =
+                cLEConcernedCompanyBiz.selectById(Integer.valueOf(caseRegistration.getConcernedId()));
+            if (concernedCompany != null) {
+                concernedResult = JSONObject.parseObject(JSONObject.toJSONString(concernedCompany));
+            }
+        }
+        // 当事人：个人
+        if (Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON.equals(caseRegistration.getConcernedType())) {
+            CLEConcernedPerson concernedPerson =
+                cLEConcernedPersonBiz.selectById(Integer.valueOf(caseRegistration.getConcernedId()));
+            if (concernedPerson != null) {
+                concernedResult = JSONObject.parseObject(JSONObject.toJSONString(concernedPerson));
+                Map<String, String> credMap =
+                    dictFeign.getByCodeIn(concernedPerson.getCertType() + "," + concernedPerson.getGender());
+                if (credMap != null && !credMap.isEmpty()) {
+                    concernedResult.put("credTypeName", credMap.get(concernedPerson.getCertType()));
+                    concernedResult.put("sexName", credMap.get(concernedPerson.getGender()));
+                }
+            }
+            concernedType = "person";
+        }
+        // 当事人类型
+        result.put("concernedType", concernedType);
+        // 当事人详情
+        result.put("concernedResult", concernedResult);
+        
+        List<String> dictKeyList = new ArrayList<>();
+        String dictKey = "";
+        if (StringUtils.isNotBlank(caseRegistration.getBizType())) {
+            dictKeyList.add(caseRegistration.getBizType());
+        }
+        if (StringUtils.isNotBlank(caseRegistration.getCaseSource())) {
+            dictKeyList.add(caseRegistration.getCaseSource());
+        }
+        if (StringUtil.isNotBlank(caseRegistration.getDealType())) {
+            dictKeyList.add(caseRegistration.getDealType());
+        }
+
+        dictKey = String.join(",", dictKeyList);
+
+        Map<String, String> dictValueMap = new HashMap<>();
+        if (StringUtils.isNotBlank(dictKey)) {
+            dictValueMap = dictFeign.getByCodeIn(dictKey);
+        }
+
+        // 业务条线,案件来源,处理方式
+        if (BeanUtil.isNotEmpty(dictValueMap)) {
+            result.put("bizName", dictValueMap.get(caseRegistration.getBizType()));
+            result.put("caseSourceName", dictValueMap.get(caseRegistration.getCaseSource()));
+            result.put("dealTypeName", dictValueMap.get(caseRegistration.getDealType()));
+        }
+
+        // 事件类别
+        if (StringUtils.isNotBlank(caseRegistration.getEventType())) {
+            EventType eventType = eventTypeBiz.selectById(Integer.valueOf(caseRegistration.getEventType()));
+            if (eventType != null) {
+                result.put("eventTypeName", eventType.getTypeName());
+            }
+        }
+
+        // 违法行为
+        if (BeanUtil.isNotEmpty(caseRegistration.getInspectItem())) {
+            InspectItems inspectItems =
+                inspectItemsBiz.selectById(Integer.valueOf(caseRegistration.getInspectItem()));
+            if (inspectItems != null) {
+                result.put("inspectName", inspectItems.getName());
+            }
+        }
+
+        // 举报人姓名
+        JSONArray informerUser = new JSONArray();
+        if (StringUtils.isNotBlank(caseRegistration.getCaseInformer())) {
+            informerUser = iUserFeign.getByUserIds(caseRegistration.getCaseInformer());
+        }
+        String caseInformerName = "";
+        if (informerUser != null && !informerUser.isEmpty()) {
+            for (int i = 0; i < informerUser.size(); i++) {
+                caseInformerName = informerUser.getJSONObject(i).getString("name");
+            }
+        }
+        result.put("caseInformerName", caseInformerName);
+
+        // 执法者用户名
+        JSONArray userList = null;
+        try {
+            if (StringUtils.isNotBlank(caseRegistration.getEnforcers())) {
+                userList = iUserFeign.getByUserIds(caseRegistration.getEnforcers());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (userList != null && !userList.isEmpty()) {
+            StringBuilder userName = new StringBuilder();
+            // 最后一条记录
+            int size = userList.size() - 1;
+            for (int i = 0; i < userList.size(); i++) {
+                if (i == size) {
+                    userName.append(userList.getJSONObject(i).getString("name"));
+                } else {
+                    userName.append(userList.getJSONObject(i).getString("name")).append(",");
+                }
+
+            }
+            result.put("enforcersName", userName.toString());
+        }
+
+        // 网格名称
+        AreaGrid areaGrid = areaGridBiz.selectById(caseRegistration.getGirdId());
+        if (areaGrid != null) {
+            result.put("gridName", areaGrid.getGridName());
+        }
+        // 移送部门
+        String transferDepart = caseRegistration.getTransferDepart();
+        if (StringUtils.isNotBlank(transferDepart)) {
+            JSONObject dept = adminFeign.getByDeptId(transferDepart);
+            if (dept != null) {
+                result.put("transferDeptName", dept.getString("name"));
+            }
+        }
+    }
+    
+    /**
+     * 获取执法任务案件
+     * 
+     * @param ids
+     * @return
+     */
+    public TableResultResponse<JSONObject> listLawTask(Integer[] ids) {
+        TableResultResponse<JSONObject> restResult = new TableResultResponse<>();
+
+        Example example = new Example(CaseRegistration.class);
+        Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isDeleted", "0");
+        criteria.andIn("caseSource", Arrays.asList(ids));
+        criteria.andEqualTo("caseSourceType", environment.getProperty("caseSourceTypeLawTask"));
+
+        List<CaseRegistration> caseRegi = this.selectByExample(example);
+        List<JSONObject> result = new ArrayList<>();
+        if (BeanUtil.isNotEmpty(caseRegi)) {
+            for (CaseRegistration caseRegistration : caseRegi) {
+                try {
+                    JSONObject resultJObj =
+                        propertiesProxy.swapProperties(caseRegistration, "id", "caseOngitude", "caseLatitude",
+                            "caseName");
+                    JSONObject mapInfoJObj = new JSONObject();
+                    mapInfoJObj.put("lat", caseRegistration.getCaseLatitude());
+                    mapInfoJObj.put("lng", caseRegistration.getCaseOngitude());
+                    resultJObj.put("mapInfo", mapInfoJObj.toJSONString());
+                    result.add(resultJObj);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+            }
+
+            restResult.setStatus(200);
+            restResult.setMessage("成功");
+            restResult.getData().setRows(result);
+            return restResult;
+        }
+
+        restResult.getData().setRows(new ArrayList<>());
         return restResult;
     }
 }

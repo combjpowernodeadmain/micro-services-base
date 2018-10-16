@@ -12,15 +12,18 @@
  */
 package com.bjzhianjia.scp.security.wf.base.task.service.impl;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.wf.base.auth.biz.WfProcUserAuthBiz;
-import com.bjzhianjia.scp.security.wf.base.constant.WorkflowEnumResults;
 import com.bjzhianjia.scp.security.wf.base.constant.Constants.WfRequestDataTypeAttr;
+import com.bjzhianjia.scp.security.wf.base.constant.WorkflowEnumResults;
+import com.bjzhianjia.scp.security.wf.base.design.entity.WfProcPropsBean;
+import com.bjzhianjia.scp.security.wf.base.design.mapper.WfProcPropsMapper;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.exception.WorkflowException;
 import com.bjzhianjia.scp.security.wf.base.task.biz.WfProcTaskBiz;
@@ -33,6 +36,8 @@ import com.bjzhianjia.scp.security.wf.base.vo.WfProcBizDataBean;
 import com.bjzhianjia.scp.security.wf.base.vo.WfProcVariableDataBean;
 import com.bjzhianjia.scp.security.wf.base.vo.WfProcessDataBean;
 import com.github.pagehelper.PageInfo;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Description: 工作流流程任务服务接口
@@ -54,6 +59,8 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
     WfProcTaskBiz wfProcTaskBiz;    
     @Autowired
     WfProcUserAuthBiz wfProcUserAuthBiz; 
+    @Autowired
+    private WfProcPropsMapper wfProcPropsMapper;
     
     /**
      * 根据流程定义编码启动对应的工作流，通过用户登录信息验证启动流程合法性
@@ -490,4 +497,33 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
             throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020000);
         }
     }  
+    
+	/**
+	 * 查询流程相关参数集合
+	 * 
+	 * @param procId
+	 * @param procTaskCode
+	 * @return
+	 */
+	@Override
+	public List<WfProcPropsBean> getWfProcPropsList(JSONObject objs) throws WorkflowException{
+		try {
+			WfProcessDataBean procData = this.parseProcessData(objs);
+			String procId = procData.getProcInstId();
+			String procTaskCode = procData.getProcTaskId();
+			WfProcPropsBean record = new WfProcPropsBean();
+			record.setProcId(procId);
+			record.setProcTaskCode(procTaskCode);
+
+			List<WfProcPropsBean> selectPropertyList = wfProcPropsMapper.selectPropertyList(record);
+			if (selectPropertyList == null) {
+				return new ArrayList<>();
+			}
+			return selectPropertyList;
+		} catch (WorkflowException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw e;
+		}
+	}
 }
