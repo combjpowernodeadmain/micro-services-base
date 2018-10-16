@@ -344,7 +344,10 @@ public class PatrolTaskService {
 		
 		
 		//巡查事项清单
-		List<InspectItems> inspectItemsList =inspectItemsBiz.getByEventType(patrolTask.getEventTypeId());
+		List<InspectItems> inspectItemsList =new ArrayList<>();
+		if(BeanUtil.isNotEmpty(patrolTask.getEventTypeId())) {
+		    inspectItemsList =inspectItemsBiz.getByEventType(patrolTask.getEventTypeId());
+		}
 		if(inspectItemsList!=null && inspectItemsList.size()>0) {
 			List<String> names = new ArrayList<>();
 			for(InspectItems inspectItems : inspectItemsList) {

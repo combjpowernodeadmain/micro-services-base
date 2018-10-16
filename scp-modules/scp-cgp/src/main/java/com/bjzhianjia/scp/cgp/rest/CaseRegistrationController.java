@@ -218,7 +218,7 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         if (data != null && data.size() > 0) {
             result.setData(data);
         } else {
-            result.setStatus(400);
+            result.setData(new JSONArray());
         }
         return result;
     }

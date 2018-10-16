@@ -427,4 +427,11 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         ){
         return this.baseBiz.patrolCaseInfo(patrolId);
     }
+    
+    @RequestMapping(value="/instance/{id}",method=RequestMethod.GET)
+    @ApiOperation("按ID查询案件详情，只涉及案件信息")
+    public ObjectRestResponse<JSONObject> caseInfoInstance(@PathVariable(value="id") @ApiParam("待查询对象ID") String id){
+        
+        return this.caserInfoService.caseInfoInstance(id);
+    }
 }
