@@ -531,7 +531,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             level = new HashMap<>();
         }
         Page<Object> result = PageHelper.startPage(page, limit);
-        List<Map<String, Object>> list = this.mapper.selectGrid(caseInfo, startTime, endTime, gridIds.toString());
+        List<Map<String, Object>> list = this.mapper.selectGrid(caseInfo, startTime, endTime, gridIds.toString(),gridLevel);
         if (BeanUtil.isNotEmpty(list)) {
             for (Map<String, Object> map : list) {
                 String levelName = level.get(map.get("gridLevel"));

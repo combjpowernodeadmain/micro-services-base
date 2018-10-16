@@ -95,6 +95,6 @@ public interface CaseInfoMapper extends CommonMapper<CaseInfo> {
      * @return
      */
     public List<Map<String ,Object>> selectGrid(@Param("caseInfo") CaseInfo caseInfo,@Param("startTime") String startTime, 
-        @Param("endTime") String endTime,@Param("gridIds")String gridIds);
+        @Param("endTime") String endTime,@Param("gridIds")String gridIds,@Param("gridLevel")String gridLevel);
     
 }

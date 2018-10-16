@@ -215,14 +215,14 @@
 		gridLevel,
 		ifnull(gridParentCode,'') gridParentCode,
 		ifnull(gridParentName,'') gridParentName,
-		total,
+		(CASE total WHEN total is null THEN total ELSE 0 END) total,
 		MAX(CASE isFinished WHEN '0' THEN count ELSE 0 END ) stateTodo,
 		MAX(CASE isFinished WHEN '1' THEN count ELSE 0 END ) stateFinish,
 		MAX(CASE isFinished WHEN '2' THEN count ELSE 0 END ) stateStop,
 		ifnull(overtimeCount,0) overtimeCount
 		FROM
 			(
-				SELECT
+					SELECT
 					ag1.id grid,
 					ag1.grid_code gridCode,
 					ag1.grid_name gridName,
@@ -234,19 +234,20 @@
 					count,
 					overtimeCount
 				FROM
-					(
-						SELECT
-							grid,
-							is_finished,
-							count(id) count
-						FROM
-							case_info
-						WHERE
+				area_grid ag1
+				LEFT JOIN (
+					SELECT
+						grid,
+						is_finished,
+						count(id) count
+					FROM
+						case_info
+					WHERE
 						<include refid="isParamNull"/>
-						GROUP BY
-							grid,
-							is_finished
-					) caseinfo1
+					GROUP BY
+						grid,
+						is_finished
+				) caseinfo1 ON caseinfo1.grid = ag1.id
 				LEFT JOIN (
 					SELECT
 						grid,
@@ -277,8 +278,9 @@
 					GROUP BY
 						grid
 				) caseinfo3 ON caseinfo1.grid = caseinfo3.grid
-				LEFT JOIN area_grid ag1 ON caseinfo1.grid = ag1.id
 				LEFT JOIN area_grid ag2 ON ag2.id = ag1.grid_parent
+				WHERE
+				ag1.grid_level=#{gridLevel}
 			) temp
 		GROUP BY
 			grid,

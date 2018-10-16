@@ -957,6 +957,12 @@ public class CaseInfoService {
         }
 
         CaseInfo caseInfo = caseInfoBiz.selectById(bizId);
+        queryAssist(resultJObj, procHistoryList, caseInfo);
+
+        return new ObjectRestResponse<JSONObject>().data(resultJObj);
+    }
+
+    private void queryAssist(JSONObject resultJObj, List<WfProcTaskHistoryBean> procHistoryList, CaseInfo caseInfo) {
         sourceTypeHistoryAssist(resultJObj, caseInfo);// 来源历史查询帮助
         /*
          * =================查询历史记录======附带来源信息=====结束==========
@@ -1291,8 +1297,6 @@ public class CaseInfoService {
         resultJObj.put("finishCheckJObj", finishCheckJObj);// 结束检查
         resultJObj.put("finishJObj", finishJObj);// 结束检查
         resultJObj.put("concernedCompanyJObj", concernedCompanyJObj);// 当事人(单位)
-
-        return new ObjectRestResponse<JSONObject>().data(resultJObj);
     }
 
     /**
@@ -1346,5 +1350,22 @@ public class CaseInfoService {
             return new TableResultResponse<>(pageInfo.getTotal(), rows);
         }
         return new TableResultResponse<>(0, new ArrayList<>());
+    }
+    
+    /**
+     * 查询事件记录，只涉及业务数据
+     * @param id
+     * @return
+     */
+    public ObjectRestResponse<JSONObject> caseInfoInstance(String id){
+        JSONObject resultJObj=new JSONObject();
+        
+        CaseInfo caseInfo = this.caseInfoBiz.selectById(Integer.valueOf(id));
+        
+        if(BeanUtil.isNotEmpty(caseInfo)) {
+            queryAssist(resultJObj, new ArrayList<>(), caseInfo);
+        }
+        
+        return new ObjectRestResponse<JSONObject>().data(resultJObj);
     }
 }
