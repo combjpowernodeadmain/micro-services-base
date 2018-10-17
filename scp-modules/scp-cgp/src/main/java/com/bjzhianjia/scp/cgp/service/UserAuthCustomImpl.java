@@ -14,12 +14,13 @@ package com.bjzhianjia.scp.cgp.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.bjzhianjia.scp.cgp.biz.AreaGridBiz;
 import com.bjzhianjia.scp.cgp.biz.AreaGridMemberBiz;
 import com.bjzhianjia.scp.cgp.entity.AreaGridMember;
 import com.bjzhianjia.scp.cgp.feign.IUserFeign;
@@ -40,6 +41,9 @@ public class UserAuthCustomImpl implements IWfProcUserAuthService {
     
     @Autowired
     private AreaGridMemberBiz areaGridMemberBiz;
+    
+    @Autowired
+    private AreaGridBiz areaGridBiz;
     /**
      * 空构造函数
      */
@@ -127,10 +131,17 @@ public class UserAuthCustomImpl implements IWfProcUserAuthService {
          */
         // 查询操作人所属网格,一个人可能属于多个网格
         List<AreaGridMember> areaGridList = areaGridMemberBiz.getGridByMemId(BaseContextHandler.getUserID());
+        
         List<String> areaGridIdList=new ArrayList<>();
         if(BeanUtil.isNotEmpty(areaGridList)) {
             areaGridIdList=areaGridList.stream().map(o->String.valueOf(o.getGridId())).distinct().collect(Collectors.toList());
-            String areaGridIdStr = "'" + String.join(",", areaGridIdList).replaceAll(",", "','")+"'";//拼接sql中替换点位符的字符串
+            
+            /*
+             * 合并areaGridIdList里对应网格的父级网格ID
+             */
+            Set<String> mergeParentAreaGrid = areaGridBiz.mergeParentAreaGrid(areaGridIdList);
+            
+            String areaGridIdStr = "'" + String.join(",", mergeParentAreaGrid).replaceAll(",", "','")+"'";//拼接sql中替换点位符的字符串
             return areaGridIdStr;
         }
         
