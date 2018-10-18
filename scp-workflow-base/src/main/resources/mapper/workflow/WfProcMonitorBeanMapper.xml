@@ -54,18 +54,17 @@
 			AND (
 			(
 				task.PROC_TASK_STATUS = '1' 
-				<if test="igGroupPermission == null or igGroupPermission== ''">
-						AND (
-					<if test="procTaskRoles != null and procTaskRoles.size > 0">
-						task.PROC_TASK_GROUP in
-						<foreach item="item" index="index" collection="procTaskRoles" open="("
-							separator="," close=")">
-							#{item}
-						</foreach>
-						OR
-					</if>
-						delegate.PROC_MANDATARY=#{procTaskUser} and	task.PROC_TASK_GROUP=delegate.PROC_LICENSOR_ROLE )				 
+				AND (
+				<if test="procTaskRoles != null and procTaskRoles.size > 0">
+					task.PROC_TASK_GROUP in
+					<foreach item="item" index="index" collection="procTaskRoles" open="("
+						separator="," close=")">
+						#{item}
+					</foreach>
+					OR
 				</if>
+				task.PROC_TASK_GROUP = ''
+				OR delegate.PROC_MANDATARY=#{procTaskUser} and	task.PROC_TASK_GROUP=delegate.PROC_LICENSOR_ROLE )				 
 			)
 			OR (
 				task.PROC_TASK_STATUS = '2' AND task.PROC_TASK_ASSIGNEE = #{procTaskUser} 				 
@@ -102,16 +101,15 @@
 			如果igGroupPermission有值(即忽略组策略成立)，则必须进行部门验证。
 			该处理方式对原代码进行了修改，如后续需对工作流策略进行修改时，须考虑组策略与部门策略不能同时为空，
 			 否则查询到数据不满足要求 -->
-			<choose>
-				<when test="igGroupPermission != null">
-					task.PROC_DEPTPERMISSION = '1' and task.PROC_DEPART_ID = #{procDeptId}
-				</when>
-				<otherwise>
-					task.PROC_DEPTPERMISSION = '0' OR task.PROC_DEPTPERMISSION = '1' and task.PROC_DEPART_ID = #{procDeptId}
-				</otherwise>
-		    </choose>
-			<!-- task.PROC_DEPTPERMISSION = '0' OR task.PROC_DEPTPERMISSION = '1' and 
-				task.PROC_DEPART_ID = #{procDeptId} 该注释为原代码，做保留 -->
+<!-- 			<choose> -->
+<!-- 				<when test="igGroupPermission != null"> -->
+<!-- 					task.PROC_DEPTPERMISSION = '1' and task.PROC_DEPART_ID = #{procDeptId} -->
+<!-- 				</when> -->
+<!-- 				<otherwise> -->
+<!-- 					task.PROC_DEPTPERMISSION = '0' OR task.PROC_DEPTPERMISSION = '1' and task.PROC_DEPART_ID = #{procDeptId} -->
+<!-- 				</otherwise> -->
+<!-- 		    </choose> -->
+			task.PROC_DEPTPERMISSION = '0' OR task.PROC_DEPTPERMISSION = '1' and task.PROC_DEPART_ID = #{procDeptId}
 			)
 			AND (task.PROC_SELFPERMISSION1 = '0' OR task.PROC_SELFPERMISSION1 = '1' and task.PROC_SELFDATA1 in (${procSelfPermissionData1}))<!-- procSelfPermissionData1设定为网格，一个人可能属于多个网格 -->
 			AND (task.PROC_SELFPERMISSION2 = '0' OR task.PROC_SELFPERMISSION2 = '1' and task.PROC_SELFDATA2 = #{procSelfPermissionData2})

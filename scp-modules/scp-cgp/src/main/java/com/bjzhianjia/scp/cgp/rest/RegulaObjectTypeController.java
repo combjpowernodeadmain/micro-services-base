@@ -190,7 +190,7 @@ public class RegulaObjectTypeController
         all.forEach(o -> {
             trees.add(new RegulaObjTypeTree(o.getId() + "", o.getParentObjectTypeId() + "",
                 o.getObjectTypeName(), o.getObjectTypeCode(), o.getTempletType(),
-                mapTmp.get(o.getId())));
+                mapTmp.get(o.getId()),o.getIconValue()));
         });
 
         return TreeUtil.bulid(trees, "-1", null);

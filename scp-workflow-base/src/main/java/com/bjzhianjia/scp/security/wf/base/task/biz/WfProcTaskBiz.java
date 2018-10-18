@@ -1018,12 +1018,32 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 				+ procTask.getProcCtaskname() + ")的委托关系结束.");
 
 		// 如果非委托授权处理，且候选用户组与处理用户所属角色不同时，则该用户不具有流程任务签收权限
-		// TODO 是否必须为签收人分配组
-		if (!isDelegate
+		/*
+		 * 修改组权限验证部分============开始===========================
+		 * 说明：非组策略(如部门策略)时，选择的部门所对应的人员不一定与组策略里的人员属于一个组，这时只进行组策略逻辑不能满足部门策略人员签收
+		 * 非组策略验证如下："1".equals(procTask.getProcDeptpermission()为true;
+		 * 					!isDelegate && !authData.getProcTaskRoles().contains(procTask.getProcTaskGroup())可能为true
+		 * 非部门策略时，"1".equals(procTask.getProcDeptpermission()恒为false，此时与组策略相同
+		 * 
+		 * &&!"true".equals(authData.getAuthData("igGroupPermission"))
+		 */
+		boolean pass=!isDelegate
 				&& !authData.getProcTaskRoles().contains(
-						procTask.getProcTaskGroup())) {
+						procTask.getProcTaskGroup())&&
+				!"1".equals(procTask.getProcDeptpermission())&&
+				!"1".equals(procTask.getProcSelfpermission1())&&
+				!"1".equals(procTask.getProcSelfpermission2())&&
+				!"1".equals(procTask.getProcSelfpermission3())&&
+				!"1".equals(procTask.getProcSelfpermission4())&&
+				!"1".equals(procTask.getProcSelfpermission5())
+				;
+//		System.out.println(authData.getAuthData());
+		if (pass) {
 			throw new WorkflowException(WorkflowEnumResults.WF_TASK_02020303);
 		}
+		/*
+		 * 修改组权限验证部分============结束===========================
+		 */
 
 		wfProcTaskBean.setProcCtaskid(procTask.getProcCtaskid());
 		wfProcTaskBean.setProcTaskAssignee(authData.getProcTaskUser()); // 流程任务签收人为流程任务处理人

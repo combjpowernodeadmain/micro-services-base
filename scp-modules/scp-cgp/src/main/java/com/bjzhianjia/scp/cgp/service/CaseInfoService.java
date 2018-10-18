@@ -654,12 +654,16 @@ public class CaseInfoService {
         }
         resultJObjct.put("zhaiyao", String.join("-", zhaiyaoList));
         // 上报人
-        Map<String, String> userMap = adminFeign.getUser(reportPersonId);
-        Set<String> userMapKeySet = userMap.keySet();
-        for (String string : userMapKeySet) {
-            JSONObject userJObj = JSONObject.parseObject(userMap.get(string));
-            resultJObjct.put("crtUserTel", userJObj.getString("mobilePhone"));
-        }
+        JSONArray userDetailJArray = adminFeign.getUserDetail(String.join(",", reportPersonId));
+        JSONObject userMap = userDetailJArray.getJSONObject(0);
+        resultJObjct.put("crtUserTel",
+            userMap.getString("mobilePhone") == null ? "" : userMap.getString("mobilePhone"));
+        resultJObjct.put("groupName",
+            userMap.getString("groupName") == null ? "" : userMap.getString("groupName"));
+        resultJObjct.put("deptName",
+            userMap.getString("deptName") == null ? "" : userMap.getString("deptName"));
+        resultJObjct.put("potitionName",
+            userMap.getString("positionName") == null ? "" : userMap.getString("positionName"));
 
         wfJObject.put("sourceTypeHistory", resultJObjct);
     }
@@ -916,7 +920,15 @@ public class CaseInfoService {
         List<String> procTaskAssigneeIdList =
             procHistoryList.stream().map(o -> o.getProcTaskAssignee()).distinct().collect(Collectors.toList());
         if (procTaskAssigneeIdList != null && !procTaskAssigneeIdList.isEmpty()) {
-            Map<String, String> assignMap = adminFeign.getUser(String.join(",", procTaskAssigneeIdList));
+            JSONArray userDetailJArray = adminFeign.getUserDetail(String.join(",", procTaskAssigneeIdList));
+            Map<String, JSONObject> assignMap = new HashMap<>();
+//            Map<String, String> assignMap = adminFeign.getUser(String.join(",", procTaskAssigneeIdList));
+            if(BeanUtil.isNotEmpty(userDetailJArray)) {
+                for(int i=0;i<userDetailJArray.size();i++) {
+                    JSONObject userDetailJObj = userDetailJArray.getJSONObject(i);
+                    assignMap.put(userDetailJObj.getString("userId"), userDetailJObj);
+                }
+            }
             if (assignMap != null && !assignMap.isEmpty()) {
                 for (int i = 0; i < procHistoryJArray.size(); i++) {
                     JSONObject procHistoryJObj = procHistoryJArray.getJSONObject(i);
@@ -929,12 +941,19 @@ public class CaseInfoService {
                      * procHistoryJObj.getString(
                      * "procTaskAssignee"))为空 需要进行非空判断
                      */
-                    JSONObject nameJObj =
-                        JSONObject.parseObject(assignMap.get(procHistoryJObj.getString("procTaskAssignee")));
+                    JSONObject nameJObj = assignMap.get(procHistoryJObj.getString("procTaskAssignee"));
 
                     if (nameJObj != null) {
-                        procHistoryJObj.put("procTaskAssigneeName", nameJObj.getString("name"));
-                        procHistoryJObj.put("procTaskAssigneeTel", nameJObj.getString("mobilePhone"));
+                        procHistoryJObj.put("procTaskAssigneeName",
+                            nameJObj.getString("userName") == null ? "" : nameJObj.getString("userName"));
+                        procHistoryJObj.put("procTaskAssigneeTel",
+                            nameJObj.getString("mobilePhone") == null ? "" : nameJObj.getString("mobilePhone"));
+                        procHistoryJObj.put("procTaskAssigneeGroupName",
+                            nameJObj.getString("groupName") == null ? "" : nameJObj.getString("groupName"));
+                        procHistoryJObj.put("procTaskAssigneeDeptName",
+                            nameJObj.getString("deptName") == null ? "" : nameJObj.getString("deptName"));
+                        procHistoryJObj.put("procTaskAssigneePotitionName",
+                            nameJObj.getString("positionName") == null ? "" : nameJObj.getString("positionName"));
                     }
                 }
             }

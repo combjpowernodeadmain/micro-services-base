@@ -29,7 +29,7 @@ public class ClePreCaseCallBackServiceImpl implements IWfProcTaskCallBackService
     @Override
     public void before(String dealType, Map<String, Object> procBizData) throws BizException {
         String bizType = String.valueOf(procBizData.get(PROC_BIZTYPE));
-        if (bizType == null) {
+        if ("null".equals(bizType)) {
             // 将bizTYpe置为空字符串，防止在switch时产生空指针，空字符串可进入default选项
             bizType = "";
         }
