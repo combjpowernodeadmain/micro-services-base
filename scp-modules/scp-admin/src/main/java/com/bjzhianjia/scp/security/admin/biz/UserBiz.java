@@ -392,6 +392,7 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
      * @return
      */
     public JSONArray getUserDetail(String userId) {
+		userId = "'" + userId.replaceAll(",", "','") + "'";
         List<Map<String, String>> userDetail = mapper.getUserDetail(userId);
         return JSONArray.parseArray(JSON.toJSONString(userDetail));
     }

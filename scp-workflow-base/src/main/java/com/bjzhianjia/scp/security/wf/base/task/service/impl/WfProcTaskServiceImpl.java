@@ -474,6 +474,14 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
             authData =
                 JSONUtil.toJavaObject(objs.getJSONObject(WfRequestDataTypeAttr.PROC_AUTHDATA),
                     WfProcAuthDataBean.class);
+            
+            // 向authData对象中添加是否忽略组策略的标识
+            try {
+				authData.put("igGroupPermission", objs.getJSONObject("authData").getString("igGroupPermission"));
+			} catch (Exception e) {
+				// 如果发生异常，使程序继续，不要中断程序
+				e.printStackTrace();
+			}
         }
         
         if (authData == null || authData.isEmpty()) {

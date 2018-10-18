@@ -1013,15 +1013,40 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 List<String> procTaskAssigneeIdList =
                     procHistoryList.stream().map(o -> o.getProcTaskAssignee()).distinct().collect(Collectors.toList());
                 if (procTaskAssigneeIdList != null && !procTaskAssigneeIdList.isEmpty()) {
-                    Map<String, String> assignMap = adminFeign.getUser(String.join(",", procTaskAssigneeIdList));
+                    JSONArray userDetailJArray = adminFeign.getUserDetail(String.join(",", procTaskAssigneeIdList));
+                    Map<String, JSONObject> assignMap = new HashMap<>();
+//                    Map<String, String> assignMap = adminFeign.getUser(String.join(",", procTaskAssigneeIdList));
+                    if(BeanUtil.isNotEmpty(userDetailJArray)) {
+                        for(int i=0;i<userDetailJArray.size();i++) {
+                            JSONObject userDetailJObj = userDetailJArray.getJSONObject(i);
+                            assignMap.put(userDetailJObj.getString("userId"), userDetailJObj);
+                        }
+                    }
                     if (assignMap != null && !assignMap.isEmpty()) {
                         for (int i = 0; i < procHistoryJArray.size(); i++) {
                             JSONObject procHistoryJObj = procHistoryJArray.getJSONObject(i);
-                            JSONObject nameJObj =
-                                JSONObject.parseObject(assignMap.get(procHistoryJObj.getString("procTaskAssignee")));
+                            /*
+                             * IF ( task.PROC_TASK_STATUS = '1', task.PROC_TASK_GROUP,
+                             * task.PROC_TASK_ASSIGNEE ) procTaskAssignee
+                             * 以上为查询历史任务详情的SQL，当未签收时，会将procTaskGroup作为签收人查询出来
+                             * 但用procTaskGroup去查base_user表时，查不出数据，即assignMap.get(
+                             * procHistoryJObj.getString(
+                             * "procTaskAssignee"))为空 需要进行非空判断
+                             */
+                            JSONObject nameJObj = assignMap.get(procHistoryJObj.getString("procTaskAssignee"));
                             if (nameJObj != null) {
-                                procHistoryJObj.put("procTaskAssigneeName", nameJObj.getString("name"));
-                                procHistoryJObj.put("procTaskAssigneeTel", nameJObj.getString("mobilePhone"));
+                                procHistoryJObj.put("procTaskAssigneeName",
+                                    nameJObj.getString("userName") == null ? "" : nameJObj.getString("userName"));
+                                procHistoryJObj.put("procTaskAssigneeTel",
+                                    nameJObj.getString("mobilePhone") == null ? "" : nameJObj.getString("mobilePhone"));
+                                procHistoryJObj.put("crtUserTel",
+                                    nameJObj.getString("mobilePhone") == null ? "" : nameJObj.getString("mobilePhone"));
+                                procHistoryJObj.put("procTaskAssigneeGroupName",
+                                    nameJObj.getString("groupName") == null ? "" : nameJObj.getString("groupName"));
+                                procHistoryJObj.put("procTaskAssigneeDeptName",
+                                    nameJObj.getString("deptName") == null ? "" : nameJObj.getString("deptName"));
+                                procHistoryJObj.put("procTaskAssigneePotitionName",
+                                    nameJObj.getString("positionName") == null ? "" : nameJObj.getString("positionName"));
                             }
                         }
                     }

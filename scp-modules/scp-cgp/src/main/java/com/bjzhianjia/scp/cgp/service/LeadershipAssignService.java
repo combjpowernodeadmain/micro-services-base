@@ -119,7 +119,7 @@ public class LeadershipAssignService {
 		CaseInfo maxOne = caseInfoBiz.getMaxOne();
 
 		// 立案单事件编号
-		Result<String> caseCodeResult = CommonUtil.generateCaseCode(maxOne.getCaseCode());
+		Result<String> caseCodeResult = CommonUtil.generateCaseCode(maxOne == null ? null : maxOne.getCaseCode());
 		if (!caseCodeResult.getIsSuccess()) {
 			result.setMessage(caseCodeResult.getMessage());
 			throw new Exception(caseCodeResult.getMessage());// 向外抛出异常，使事务回滚

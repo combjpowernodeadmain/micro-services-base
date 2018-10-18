@@ -72,10 +72,10 @@ public class CLEUrgeRecordBiz extends BusinessBiz<CLEUrgeRecordMapper,CLEUrgeRec
         String cleCaseId = cleUrgeRecord.getCleCaseId();
         CaseRegistration caseRegistration = caseRegistrationBiz.selectById(cleCaseId);
         if(caseRegistration != null) {
-            if(!isUrge.equals(caseRegistration.getIsSupervise())){ //没有记录催办时，修改督办状态
+            if(!isUrge.equals(caseRegistration.getIsUrge())){ //没有记录催办时，修改催办状态
                 caseRegistration = new CaseRegistration();
                 caseRegistration.setId(cleCaseId);
-                caseRegistration.setIsSupervise(isUrge);
+                caseRegistration.setIsUrge(isUrge);
                 caseRegistrationBiz.updateSelectiveById(caseRegistration);
             }
             super.insertSelective(cleUrgeRecord);

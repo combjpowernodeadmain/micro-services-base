@@ -185,6 +185,10 @@ public class EnterpriseInfo implements Serializable {
     @Column(name = "id_disabled")
     private String idDisabled;
 
+    // 
+    @Column(name="license_key")
+    private String licenseKey;
+    
     /**
      * 设置：主键
      */
@@ -758,4 +762,21 @@ public class EnterpriseInfo implements Serializable {
     public void setAddress(String address) {
         this.address = address;
     }
+
+    /**
+     * 设置：获取'许可证号
+     * 
+     */
+    public String getLicenseKey() {
+        return licenseKey;
+    }
+
+    /**
+     * 设置：获取'许可证号
+     * 
+     */
+    public void setLicenseKey(String licenseKey) {
+        this.licenseKey = licenseKey;
+    }
+    
 }
