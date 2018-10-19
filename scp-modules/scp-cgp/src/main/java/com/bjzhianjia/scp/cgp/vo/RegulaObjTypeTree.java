@@ -9,6 +9,7 @@ public class RegulaObjTypeTree extends TreeNodeVO<RegulaObjTypeTree> {
 	private String objectTypeCode;
 	private String templetType;
 	private Object regulaObjectCountPerType;
+	private String iconValue;
 	
 	public String getObjectTypeName() {
 		return objectTypeName;
@@ -22,13 +23,14 @@ public class RegulaObjTypeTree extends TreeNodeVO<RegulaObjTypeTree> {
 	public void setObjectTypeCode(String objectTypeCode) {
 		this.objectTypeCode = objectTypeCode;
 	}
-	public RegulaObjTypeTree(String id,String parentId,String objectTypeName, String objectTypeCode,String templetType,Object regulaObjectCountPerType) {
+	public RegulaObjTypeTree(String id,String parentId,String objectTypeName, String objectTypeCode,String templetType,Object regulaObjectCountPerType,String iconValue) {
 		this.objectTypeName = objectTypeName;
 		this.objectTypeCode = objectTypeCode;
 		this.id=id;
 		this.parentId=parentId;
 		this.templetType=templetType;
 		this.regulaObjectCountPerType=regulaObjectCountPerType;
+		this.iconValue=iconValue;
 	}
 	public RegulaObjTypeTree() {
 		super();
@@ -57,5 +59,13 @@ public class RegulaObjTypeTree extends TreeNodeVO<RegulaObjTypeTree> {
 	public void setRegulaObjectCountPerType(Object regulaObjectCountPerType) {
 		this.regulaObjectCountPerType = regulaObjectCountPerType;
 	}
+    
+    public String getIconValue() {
+        return iconValue;
+    }
+    
+    public void setIconValue(String iconValue) {
+        this.iconValue = iconValue;
+    }
 	
 }

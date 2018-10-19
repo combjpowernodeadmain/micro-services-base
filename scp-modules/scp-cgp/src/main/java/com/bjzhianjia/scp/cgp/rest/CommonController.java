@@ -1,5 +1,7 @@
 package com.bjzhianjia.scp.cgp.rest;
 
+import java.io.UnsupportedEncodingException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -15,6 +17,7 @@ import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * CommonController 类描述. 用于处理通用的请求
@@ -37,6 +40,7 @@ import io.swagger.annotations.ApiParam;
 @CheckClientToken
 @CheckUserToken
 @Api(tags = "通用请求")
+@Slf4j
 public class CommonController {
 
     @Autowired
@@ -52,6 +56,28 @@ public class CommonController {
         if (StringUtils.isBlank(codeValue)) {
             restResult.setStatus(400);
             restResult.setMessage("未找到与" + codeKey + "对应的值");
+            return restResult;
+        }
+        restResult.setStatus(200);
+        restResult.setData(codeValue);
+        return restResult;
+    }
+    
+    @GetMapping("/webDefault")
+    @ApiOperation("前端默认需要加载的数据")
+    public ObjectRestResponse<String> webDefault(){
+        ObjectRestResponse<String> restResult = new ObjectRestResponse<>();
+
+        String codeValue = environment.getProperty("webDefault");
+        
+        try {
+            codeValue=new String(codeValue.getBytes("ISO-8859-1"), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        
+        if (StringUtils.isBlank(codeValue)) {
+            log.warn("未找到与webDefault对应的值");
             return restResult;
         }
         restResult.setStatus(200);

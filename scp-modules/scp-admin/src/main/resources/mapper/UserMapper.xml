@@ -86,12 +86,28 @@
   <select id="getUserDetail" resultType="java.util.Map">
 	SELECT bu.`name` userName,bu.`id` userId,bu.`sex`,bu.`mobile_phone` mobilePhone,
 	bd.`name` deptName,bd.`id` deptId,
-	bp.`name` positionName,bp.`id` positionId
+	bp.`name` positionName,bp.`id` positionId,
+	bg.`name` groupName,bg.`id` groupId
 	FROM base_user bu
 	LEFT JOIN base_depart_user dbu ON dbu.`user_id`=bu.`id`
 	LEFT JOIN base_depart bd ON bd.`id`=dbu.`depart_id`
 	LEFT JOIN base_position_user bpu ON bpu.`user_id`=bu.`id`
 	LEFT JOIN base_position bp ON bp.`id`=bpu.`position_id`
-	WHERE bu.`id` =#{userId}
+	LEFT JOIN base_group_leader bgl ON bgl.`user_id`=bd.`id`
+	LEFT JOIN base_group bg ON bg.`id`=bgl.`group_id`
+	WHERE bu.`id` in (${userId})
+  </select>
+  
+  <!-- 按组查询用户 -->
+  <select id="getUserByPosition" resultType="com.alibaba.fastjson.JSONObject">
+  	SELECT bu.`id`,bu.`name` userName,bu.`mobile_phone`,bd.`name` departName,bp.`name` positionName
+	FROM base_group bg
+	JOIN base_group_leader bgl ON bgl.`group_id`=bg.`id`
+	JOIN base_user bu ON bu.`id`=bgl.`user_id`
+	LEFT JOIN base_depart_user bdu ON bdu.`user_id`=bu.`id`
+	LEFT JOIN base_depart bd ON bd.`id`=bdu.`depart_id`
+	LEFT JOIN base_position_user bpu ON bpu.`user_id`=bu.`id`
+	LEFT JOIN base_position bp ON bp.`id`=bpu.`position_id`
+	WHERE bg.`code`=#{groupCode}
   </select>
 </mapper>

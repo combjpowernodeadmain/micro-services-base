@@ -261,7 +261,7 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         // 生成与fillContext相对应的文件名
         StringBuffer destFileNameBuffer = new StringBuffer();
         destFileNameBuffer.append(WritsConstances.WRITS_PREFFIX).append(writsInstances.getCaseId()).append("_")
-            .append(fillContext.hashCode()).append(WritsConstances.WRITS_SUFFIX_DOC);
+            .append(fillContext.hashCode()).append(WritsConstances.WRITS_SUFFIX_DOCX);
 
         String destPath = propertiesConfig.getDestFilePath() + destFileNameBuffer.toString();
 
@@ -273,7 +273,7 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             ignoreFileNameList.add(destFileNameBuffer.toString());
 
             DocUtil.deletePrefix(WritsConstances.WRITS_PREFFIX + writsInstances.getCaseId() + "_",
-                WritsConstances.WRITS_SUFFIX_DOC, propertiesConfig.getDestFilePath(), ignoreFileNameList);
+                WritsConstances.WRITS_SUFFIX_DOCX, propertiesConfig.getDestFilePath(), ignoreFileNameList);
 
             // 将fillContext内的内容添加到文书模板上
             JSONObject fillJObj = JSONObject.parseObject(fillContext);

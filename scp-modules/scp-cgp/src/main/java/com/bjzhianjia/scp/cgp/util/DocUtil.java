@@ -340,7 +340,7 @@ public class DocUtil {
         // 源文件目录
         File inputFile = new File(socDoc);
         if (!inputFile.exists()) {
-            System.out.println("源文件不存在！");
+//            System.out.println("源文件不存在！");
             return;
         }
 

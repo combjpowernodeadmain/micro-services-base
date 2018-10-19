@@ -82,7 +82,7 @@
 			)
 		AND ro.gri_id IN (
 			<if test="griIds != null and griIds != ''">
-				#{griIds}
+				${griIds}
 			</if>
 		)
 	</select>

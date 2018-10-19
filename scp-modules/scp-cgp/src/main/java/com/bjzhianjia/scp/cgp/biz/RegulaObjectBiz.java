@@ -23,6 +23,7 @@ import com.bjzhianjia.scp.cgp.mapper.PatrolTaskMapper;
 import com.bjzhianjia.scp.cgp.mapper.RegulaObjectMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
+import com.bjzhianjia.scp.cgp.vo.RegulaObjectVo;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
@@ -229,6 +230,7 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
      *         监管对象列表（id，name）
      */
     public List<RegulaObject> selectByTypeAndGri(String objType, String griIds) {
+        griIds = "'" + griIds.replaceAll(",", "','") + "'";
         return mapper.selectByTypeAndGri(objType, griIds);
 
     }
@@ -332,5 +334,86 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
         restResult.setMessage("成功");
         restResult.getData().setRows(resultJObj);
         return restResult;
+    }
+
+    /**
+     * 按网格，查询该网格下有哪些监管对象类型
+     * @param areaGridIds
+     * @return 符合条件的监管对象类型ID集合
+     */
+    public TableResultResponse<Integer> getListNoPage(String areaGridIds) {
+        TableResultResponse<Integer> restResult = new TableResultResponse<>();
+
+        if (StringUtils.isBlank(areaGridIds)) {
+            restResult.setStatus(400);
+            restResult.setMessage("请选择网格");
+            return restResult;
+        }
+
+        Example example = new Example(RegulaObject.class);
+        Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isDeleted", "0");
+        criteria.andIn("griId", Arrays.asList(areaGridIds.split(",")));
+
+        List<RegulaObject> regObjList = this.selectByExample(example);
+        List<Integer> result = new ArrayList<>();
+        if (BeanUtil.isNotEmpty(regObjList)) {
+            result = regObjList.stream().map(o -> o.getObjType()).distinct().collect(Collectors.toList());
+        }
+
+        restResult.setStatus(200);
+        restResult.setMessage("成功");
+        restResult.getData().setRows(result);
+        return restResult;
+    }
+    
+    /**
+     * 按监管对象类型集合查询监管对象
+     * @param page
+     * @param limit
+     * @param objTypes
+     * @param name 
+     * @return
+     */
+    public TableResultResponse<RegulaObject> listByObjType(int page, int limit, String objTypes, String objName) {
+        TableResultResponse<RegulaObject> tableResultResponse = new TableResultResponse<>();
+
+//        if (StringUtils.isBlank(objTypes)) {
+//            tableResultResponse.setStatus(400);
+//            tableResultResponse.setMessage("请选择监管对象类型");
+//            return tableResultResponse;
+//        }
+
+        Example example = new Example(RegulaObject.class);
+        Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isDeleted", "0");
+
+        if (StringUtils.isNotBlank(objTypes)) {
+            List<RegulaObjectType> objectTypeList = regulaObjectTypeBiz.selectIdAll();
+            if (BeanUtil.isNotEmpty(objectTypeList)) {
+                // 当前对象类型子集
+                Set<Integer> ids = new HashSet<>();
+
+                String[] split = objTypes.split(",");
+                for (String objTypeId : split) {
+                    this.getSonId(objectTypeList, ids, Integer.valueOf(objTypeId));
+                }
+                if (!ids.isEmpty()) {
+                    criteria.andIn("objType", ids);
+                } else {
+                    criteria.andEqualTo("objType", Integer.valueOf(objTypes));
+                }
+            }
+        }
+
+        if (StringUtils.isNotBlank(objName)) {
+            criteria.andLike("objName", "%"+objName+"%");
+        }
+        Page<Object> pageInfo = PageHelper.startPage(page, limit);
+        List<RegulaObject> regObjList = this.selectByExample(example);
+        tableResultResponse.getData().setRows(regObjList);
+        tableResultResponse.getData().setTotal(pageInfo.getTotal());
+
+        return tableResultResponse;
     }
 }

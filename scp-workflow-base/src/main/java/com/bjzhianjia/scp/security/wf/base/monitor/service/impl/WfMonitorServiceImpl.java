@@ -331,6 +331,13 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
             authData =
                 JSONUtil.toJavaObject(objs.getJSONObject(WfRequestDataTypeAttr.PROC_AUTHDATA),
                     WfProcAuthDataBean.class);
+            
+            try {
+				authData.put("igGroupPermission", objs.getJSONObject("authData").getString("igGroupPermission"));
+			} catch (Exception e) {
+				// 如果发生异常，使程序继续，不要中断程序
+				e.printStackTrace();
+			}
         }
         
         if (authData == null || authData.isEmpty()) {
@@ -381,7 +388,7 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
 				queryObj.put(key, authData.getAuthData(key));
 			}
 		}
-		
+		System.out.println(queryObj);
 		return queryObj;
 	}
     

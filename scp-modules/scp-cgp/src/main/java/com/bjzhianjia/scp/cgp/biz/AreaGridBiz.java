@@ -2,6 +2,7 @@ package com.bjzhianjia.scp.cgp.biz;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -309,5 +310,48 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         tableResultResponse.setStatus(400);
         tableResultResponse.setMessage("未找到相应数据");
         return tableResultResponse;
+    }
+    
+    /**
+     * 合并areaGridList里网格的父级网格
+     * @param areaGridList
+     * @return
+     */
+    public Set<String> mergeParentAreaGrid(List<String> areaGridIdList) {
+        List<AreaGrid> allList = this.selectListAll();
+        Set<String> resultList=new HashSet<>();
+        
+        //把源网格先找出来
+        Set<AreaGrid> sourceAreaGridSet=new HashSet<>();
+        for(AreaGrid areaGrid:allList) {
+            if(areaGridIdList.contains(String.valueOf(areaGrid.getId()))) {
+                //表明源网格应包含当前areaGrid对象
+                sourceAreaGridSet.add(areaGrid);
+            }
+        }
+        
+        if(BeanUtil.isNotEmpty(areaGridIdList)) {
+            for (AreaGrid areaGrid : sourceAreaGridSet) {
+                mergeParentAreaGridAssist(allList,resultList,areaGrid);
+            }
+        }
+        
+        return resultList;
+    }
+
+    private void mergeParentAreaGridAssist(List<AreaGrid> allList, Set<String> resultSet, AreaGrid areaGrid) {
+        // 先把当前网格ID加入结果集
+        resultSet.add(String.valueOf(areaGrid.getId()));
+
+        for (AreaGrid tmp : allList) {
+            if (areaGrid.getGridParent().equals(tmp.getId())) {
+                // 说明tmp为areaGrid的父级网格
+                resultSet.add(String.valueOf(tmp.getId()));
+                if (!"-1".equals(String.valueOf(tmp.getGridParent()))) {
+                    // tmp还有父级网格
+                    mergeParentAreaGridAssist(allList, resultSet, tmp);
+                }
+            }
+        }
     }
 }
