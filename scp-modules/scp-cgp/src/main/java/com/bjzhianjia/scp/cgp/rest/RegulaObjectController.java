@@ -238,4 +238,10 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
 
         return regulaObjectService.listByObjType(page, limit, objTypes, name);
     }
+
+    @GetMapping("/isRegObjEnterprise/{regObjId}")
+    @ApiOperation("判断一个监管对象是否为企业")
+    public ObjectRestResponse<Boolean> isRegObjEnterprise(@PathVariable("regObjId") Integer regObjId) {
+        return this.baseBiz.isRegObjEnterprise(regObjId);
+    }
 }

@@ -1,7 +1,14 @@
 package com.bjzhianjia.scp.cgp.rest;
 
-import java.io.UnsupportedEncodingException;
-
+import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
+import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
+import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreClientToken;
+import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreUserToken;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -10,14 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
-import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
-import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import lombok.extern.slf4j.Slf4j;
+import java.io.UnsupportedEncodingException;
 
 /**
  * CommonController 类描述. 用于处理通用的请求
@@ -62,7 +62,9 @@ public class CommonController {
         restResult.setData(codeValue);
         return restResult;
     }
-    
+
+    @IgnoreClientToken
+    @IgnoreUserToken
     @GetMapping("/webDefault")
     @ApiOperation("前端默认需要加载的数据")
     public ObjectRestResponse<String> webDefault(){
