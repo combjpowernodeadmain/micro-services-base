@@ -194,8 +194,9 @@ public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
      */
     public ObjectRestResponse<List<DepartTree>> getDeptSonByDepartId(String departId, String name) {
         ObjectRestResponse<List<DepartTree>> result = new ObjectRestResponse<>();
+        //返回结果集，当前部门和子部门
         List<DepartTree> resultData = new ArrayList<>();
-        //封装当前部门信息
+        //添加当前部门信息
         Depart depart = this.selectById(departId);
         if (depart == null) {
             result.setMessage("没有匹配的部门信息！");
@@ -204,12 +205,14 @@ public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
         }
         resultData.add(this.resetBean(depart));
 
-        //封装当前子部门集
+        //添加当前部门的子部门集
         List<Depart> departList = this.selectListAll() ; //this.selectByExample(example);
         if (departList != null && !departList.isEmpty()) {
             this.getDepartSon(departId, departList, resultData,name);
         }
-
+        //构建成前台需要的树型数据
+        //bulid 方法会构建指定部门的子集，所以第二个参数需要传入当前部门的父级id， 否则无法封装当前部门信息
+        //resultData.get(0) 当前部门
         result.data(TreeUtil.bulid(resultData, resultData.get(0).getParentId(), null));
         return result;
     }
