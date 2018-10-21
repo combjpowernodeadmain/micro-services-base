@@ -36,6 +36,7 @@ import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.WritsInstances;
 import com.bjzhianjia.scp.cgp.entity.WritsTemplates;
 import com.bjzhianjia.scp.cgp.exception.BizException;
+import  com.bjzhianjia.scp.cgp.entity.RightsIssues;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.feign.IUserFeign;
@@ -130,13 +131,16 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     @Autowired
     private PropertiesProxy propertiesProxy;
 
+    @Autowired
+    private RightsIssuesBiz rightsIssuesBiz;
+
     /**
      * 添加立案记录<br/>
      * 如果 有当事人，则一并添加<br/>
      * 如果 有文书，则一并添加
      * 
      * @author 尚
-     * @param procBizData
+     * @param caseRegJObj
      */
     public Result<Void> addCase(JSONObject caseRegJObj) {
         Result<Void> result = new Result<>();
@@ -160,12 +164,39 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         // 添加附件
         addAttachments(caseRegJObj, caseId);
 
+        // 确定执法人员的部门
+        addEnforcerDept(caseRegistration);
+
         this.insertSelective(caseRegistration);
         // 将生成的立案ID装入procBizData带回工作流，在工作流中会对procBizId属性进行是否为“-1”的判断，如果是“-1”，将用该ID替换“-1”
         caseRegJObj.put("procBizId", caseId);
 
         result.setIsSuccess(true);
         return result;
+    }
+
+    /**
+     * 找出执法人员的部门，并填充到caseRegistration对象中
+     *
+     * @param caseRegistration
+     */
+    private void addEnforcerDept(CaseRegistration caseRegistration) {
+        String enforcers = caseRegistration.getEnforcers();
+
+        JSONArray enforcerJArray;
+        Set<String> enforcerDeptIdSet = new HashSet<>();
+
+        if (StringUtils.isNotEmpty(enforcers)) {
+            enforcerJArray = adminFeign.getUserDetail(enforcers);
+            if (BeanUtil.isNotEmpty(enforcerJArray)) {
+                for (int i = 0; i < enforcerJArray.size(); i++) {
+                    JSONObject enforcerDeptJObj = enforcerJArray.getJSONObject(i);
+                    enforcerDeptIdSet.add(enforcerDeptJObj.getString("deptId"));
+                }
+            }
+        }
+
+        caseRegistration.setDeptId(String.join(",", enforcerDeptIdSet));
     }
 
     /**
@@ -992,7 +1023,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     /**
      * 案件详情
      * 
-     * @param id
+     * @param objs
      * @return
      */
     public JSONObject getInfoById(JSONObject objs) {
@@ -1473,10 +1504,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
         // 违法行为
         if (BeanUtil.isNotEmpty(caseRegistration.getInspectItem())) {
-            InspectItems inspectItems =
-                inspectItemsBiz.selectById(Integer.valueOf(caseRegistration.getInspectItem()));
-            if (inspectItems != null) {
-                result.put("inspectName", inspectItems.getName());
+            RightsIssues rightsIssues = rightsIssuesBiz.selectById(caseRegistration.getInspectItem());
+//            InspectItems inspectItems =
+//                inspectItemsBiz.selectById(Integer.valueOf(caseRegistration.getInspectItem()));
+            if (rightsIssues != null) {
+//                result.put("inspectName", inspectItems.getName());
+                result.put("inspectName", rightsIssues.getUnlawfulAct());
             }
         }
 
