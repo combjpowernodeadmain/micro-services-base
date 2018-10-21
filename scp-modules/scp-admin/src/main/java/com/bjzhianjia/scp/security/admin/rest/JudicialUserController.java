@@ -129,9 +129,23 @@ public class JudicialUserController {
     public ObjectRestResponse<User> technologist(@RequestBody @ApiParam(value = "用户信息") User user) {
         ObjectRestResponse<User> result = new ObjectRestResponse<>();
         //attr2 专业 attr3 省份 departId所属检察院
-        if (StringUtils.isBlank(user.getUsername()) || StringUtils.isBlank(user.getPassword())
-                || StringUtils.isBlank(user.getAttr2()) || StringUtils.isBlank(user.getDepartId())) {
-            result.setMessage("非法参数");
+        if(StringUtils.isBlank(user.getUsername())){
+            result.setMessage("用户账号不能为空！");
+            result.setStatus(400);
+            return result;
+        }
+        if(StringUtils.isBlank(user.getPassword())){
+            result.setMessage("用户密码不能为空！");
+            result.setStatus(400);
+            return result;
+        }
+        if(StringUtils.isBlank(user.getAttr2())){
+            result.setMessage("用户专业不能为空！");
+            result.setStatus(400);
+            return result;
+        }
+        if(StringUtils.isBlank(user.getDepartId())){
+            result.setMessage("用户所属检察院不能为空！");
             result.setStatus(400);
             return result;
         }
@@ -141,7 +155,7 @@ public class JudicialUserController {
             result.setMessage(re.getMessage());
             result.setStatus(400);
         } catch (Exception e) {
-            result.setMessage("系统异常！");
+            result.setMessage("系统内部异常！");
             result.setStatus(400);
             e.printStackTrace();
         }
@@ -157,15 +171,21 @@ public class JudicialUserController {
      * @return
      */
     @ApiOperation(value = "分配分案人员")
-    @PostMapping("/role/division/{userId}")
+    @PostMapping("/role/division/{userId}/departId/{departId}")
     public ObjectRestResponse<User> division(@PathVariable("userId") @ApiParam(value = "用户id") String userId,
                                              @PathVariable("departId") @ApiParam(value = "所属检察院id") String departId) {
         ObjectRestResponse<User> result = new ObjectRestResponse<>();
-        if (StringUtils.isBlank(userId) || StringUtils.isBlank(departId)) {
-            result.setMessage("非法参数");
+        if (StringUtils.isBlank(userId)) {
+            result.setMessage("请选择分配的用户！");
             result.setStatus(400);
             return result;
         }
+        if (StringUtils.isBlank(departId)) {
+            result.setMessage("请选择分配的部门！");
+            result.setStatus(400);
+            return result;
+        }
+
         User user = new User();
         user.setId(userId);
         user.setDepartId(departId);
@@ -196,7 +216,7 @@ public class JudicialUserController {
 
         ObjectRestResponse<Void> result = new ObjectRestResponse<>();
         if (StringUtils.isBlank(userId)) {
-            result.setMessage("非法参数");
+            result.setMessage("请选择删除的用户！");
             result.setStatus(400);
             return result;
         }
@@ -222,7 +242,7 @@ public class JudicialUserController {
 
         ObjectRestResponse<Void> result = new ObjectRestResponse<>();
         if (StringUtils.isBlank(userId)) {
-            result.setMessage("非法参数");
+            result.setMessage("请选择删除的用户！");
             result.setStatus(400);
             return result;
         }
@@ -278,6 +298,7 @@ public class JudicialUserController {
             @RequestParam(value = "userName", defaultValue = "") @ApiParam("用户名称") String userName,
             @RequestParam(value = "major", defaultValue = "") @ApiParam("用户专业") String major,
             @RequestParam(value = "province", defaultValue = "") @ApiParam("省级编码") String province,
+            @RequestParam(value ="departId", defaultValue = "") @ApiParam(value = "所属检察院id") String departId,
             @RequestParam(value = "page", defaultValue = "1") @ApiParam("页码") Integer page,
             @RequestParam(value = "limit", defaultValue = "10") @ApiParam("页容量") Integer limit) {
 
@@ -285,6 +306,7 @@ public class JudicialUserController {
         user.setName(userName);
         user.setAttr2(major);
         user.setAttr3(province);
+        user.setDepartId(departId);
         return judicialUserBiz.getUserByDebarRole(user, environment.getProperty(RoleConstant.ROLE_DISTRIBUTE), page,
                 limit);
     }

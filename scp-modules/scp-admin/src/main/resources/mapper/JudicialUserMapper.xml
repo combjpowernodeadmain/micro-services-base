@@ -71,7 +71,7 @@
         WHERE
         bu.is_deleted=0
         <if test="user.name!=null and user.name!=''">
-            <bind name="userNameLike" value="'%' + user.name + '%'" />
+            <bind name="userNameLike" value="'%' + user.name + '%'"/>
             AND bu.name like #{userNameLike}
         </if>
         <if test="departIds!=null and departIds!=''">
@@ -91,7 +91,7 @@
     <select id="selectUserDebarRole" resultType="java.util.Map">
         SELECT
         bu.id userId,
-        bu.name userName,
+        bu.name name,
         bu.attr2 major,
         bu.username username,
         bu.username password,
@@ -107,7 +107,7 @@
         WHERE
         bu.is_deleted=0
         <if test="user.name!=null and user.name!=''">
-            <bind name="userNameLike" value="'%' + user.name + '%'" />
+            <bind name="userNameLike" value="'%' + user.name + '%'"/>
             AND bu.name like #{userNameLike}
         </if>
         <!--专业-->
@@ -117,6 +117,10 @@
         <!--省级-->
         <if test="user.attr3!=null and user.attr3!=''">
             AND bgm.attr3 = #{user.attr3}
+        </if>
+        <!--所属部门id-->
+        <if test="user.departId!=null and user.departId!=''">
+            AND bu.depart_id = (#{user.departId})
         </if>
     </select>
 
