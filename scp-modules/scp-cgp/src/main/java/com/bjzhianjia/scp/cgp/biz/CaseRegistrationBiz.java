@@ -1,23 +1,5 @@
 package com.bjzhianjia.scp.cgp.biz;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
-import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -30,9 +12,9 @@ import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.EnforceCertificate;
 import com.bjzhianjia.scp.cgp.entity.EventType;
-import com.bjzhianjia.scp.cgp.entity.InspectItems;
 import com.bjzhianjia.scp.cgp.entity.LawTask;
 import com.bjzhianjia.scp.cgp.entity.Result;
+import com.bjzhianjia.scp.cgp.entity.RightsIssues;
 import com.bjzhianjia.scp.cgp.entity.WritsInstances;
 import com.bjzhianjia.scp.cgp.entity.WritsTemplates;
 import com.bjzhianjia.scp.cgp.exception.BizException;
@@ -59,9 +41,25 @@ import com.bjzhianjia.scp.security.wf.base.utils.StringUtil;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
+import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 综合执法 - 案件登记
@@ -130,13 +128,16 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     @Autowired
     private PropertiesProxy propertiesProxy;
 
+    @Autowired
+    private RightsIssuesBiz rightsIssuesBiz;
+
     /**
      * 添加立案记录<br/>
      * 如果 有当事人，则一并添加<br/>
      * 如果 有文书，则一并添加
      * 
      * @author 尚
-     * @param procBizData
+     * @param caseRegJObj
      */
     public Result<Void> addCase(JSONObject caseRegJObj) {
         Result<Void> result = new Result<>();
@@ -160,12 +161,39 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         // 添加附件
         addAttachments(caseRegJObj, caseId);
 
+        // 确定执法人员的部门
+        addEnforcerDept(caseRegistration);
+
         this.insertSelective(caseRegistration);
         // 将生成的立案ID装入procBizData带回工作流，在工作流中会对procBizId属性进行是否为“-1”的判断，如果是“-1”，将用该ID替换“-1”
         caseRegJObj.put("procBizId", caseId);
 
         result.setIsSuccess(true);
         return result;
+    }
+
+    /**
+     * 找出执法人员的部门，并填充到caseRegistration对象中
+     *
+     * @param caseRegistration
+     */
+    private void addEnforcerDept(CaseRegistration caseRegistration) {
+        String enforcers = caseRegistration.getEnforcers();
+
+        JSONArray enforcerJArray;
+        Set<String> enforcerDeptIdSet = new HashSet<>();
+
+        if (StringUtils.isNotEmpty(enforcers)) {
+            enforcerJArray = adminFeign.getUserDetail(enforcers);
+            if (BeanUtil.isNotEmpty(enforcerJArray)) {
+                for (int i = 0; i < enforcerJArray.size(); i++) {
+                    JSONObject enforcerDeptJObj = enforcerJArray.getJSONObject(i);
+                    enforcerDeptIdSet.add(enforcerDeptJObj.getString("deptId"));
+                }
+            }
+        }
+
+        caseRegistration.setDeptId(String.join(",", enforcerDeptIdSet));
     }
 
     /**
@@ -992,7 +1020,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     /**
      * 案件详情
      * 
-     * @param id
+     * @param objs
      * @return
      */
     public JSONObject getInfoById(JSONObject objs) {
@@ -1244,22 +1272,62 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
         Map<String, String> dept_ID_NAME_Map = new HashMap<>();
         List<Map<String, String>> deptParam = new ArrayList<>();// 添补动态SQL的参数
+        Set<String> neatDeptIdSet = new HashSet<>();// 干净的执法人员部门ID
         List<String> deptIdList = new ArrayList<>();// 用于数据整合时判断结果集里的某一条key是否为部门ID
         for (int i = 0; i < enforcersGroup.size(); i++) {
             JSONObject enforcersJObj = enforcersGroup.getJSONObject(i);
             dept_ID_NAME_Map.put(enforcersJObj.getString("id"), enforcersJObj.getString("name"));
 
-            Map<String, String> deptParamTmp = new HashMap<>();
-            deptParamTmp.put("deptId", enforcersJObj.getString("id"));
-            deptParamTmp.put("deptName", enforcersJObj.getString("name"));
-            deptParam.add(deptParamTmp);
-
             deptIdList.add(enforcersJObj.getString("id"));
+            
+            neatDeptIdSet.add(enforcersJObj.getString("id"));
         }
 
+        // 查询执法人员部门序列
+        List<String> deptIdListInDB = this.mapper.selectDistinctDeptId();
+        if (BeanUtil.isNotEmpty(deptIdListInDB)) {
+            for (String deptIdTim : deptIdListInDB) {
+                if(StringUtils.isNotBlank(deptIdTim)){
+                    Map<String, String> deptParamTmp = new HashMap<>();
+                    deptParamTmp.put("deptId", deptIdTim);
+                    deptParam.add(deptParamTmp);
+                }
+            }
+        }
+
+        /*
+         * 一个案件可能由多个部门联合执法，在数据库中以逗号的形式将多个部门ID隔开
+         * 查到数据后，需要将多个部门联合执法的情况整合到结果集中
+         * 查询到的结果可能为以下形式：
+         * cyeay    cmonth  totla   dept1   dept2   dept3   dept1,dept3
+         * 2018     1       5       2       2       2       3
+         * 2018     2       4       1       4       5       2
+         */
         JSONArray byDept =
             this.mapper.getStatisByDept(caseRegistration, startTime, endTime, caseRegistrationJObj.getString("gridIds"),
                 deptParam);
+        
+        if (BeanUtil.isNotEmpty(byDept)) {
+            for (int i = 0; i < byDept.size(); i++) {
+                JSONObject statusJObj = byDept.getJSONObject(i);
+                for (String statusJObjKey : statusJObj.keySet()) {
+                    if (statusJObjKey.contains(",")) {
+                        // 如果key中包含逗号，说明该字段为多部门联合执法的情况
+                        for (String statusJObjKey02 : neatDeptIdSet) {
+                            if (statusJObjKey.contains(statusJObjKey02)
+                                && !statusJObjKey.equals(statusJObjKey02)) {
+                                statusJObj.put(statusJObjKey02,
+                                    statusJObj.getInteger(statusJObjKey02)// 干净的部门ID对应的案件数量，如注释中的dept1
+                                        + statusJObj.getInteger(statusJObjKey));// 不干净的部门ID对应的案件数量，如注释中的dept1,dept3
+                            }
+                        }
+                        //合并完之后，将不干净的部门ID对应的key-value移除
+                        statusJObj.remove(statusJObjKey);
+                    }
+                }
+            }
+        }
+        
         /*
          * ========进行查询操作============结束=============
          */
@@ -1473,10 +1541,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
         // 违法行为
         if (BeanUtil.isNotEmpty(caseRegistration.getInspectItem())) {
-            InspectItems inspectItems =
-                inspectItemsBiz.selectById(Integer.valueOf(caseRegistration.getInspectItem()));
-            if (inspectItems != null) {
-                result.put("inspectName", inspectItems.getName());
+            RightsIssues rightsIssues = rightsIssuesBiz.selectById(caseRegistration.getInspectItem());
+//            InspectItems inspectItems =
+//                inspectItemsBiz.selectById(Integer.valueOf(caseRegistration.getInspectItem()));
+            if (rightsIssues != null) {
+//                result.put("inspectName", inspectItems.getName());
+                result.put("inspectName", rightsIssues.getUnlawfulAct());
             }
         }
 

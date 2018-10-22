@@ -1,19 +1,5 @@
 package com.bjzhianjia.scp.cgp.rest;
 
-import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
-import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
-import com.bjzhianjia.scp.security.common.rest.BaseController;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-
-import com.bjzhianjia.scp.cgp.biz.SpecialEventBiz;
-import com.bjzhianjia.scp.cgp.entity.SpecialEvent;
-import com.bjzhianjia.scp.cgp.service.SpecialEventService;
-import com.bjzhianjia.scp.cgp.vo.SpecialEventVo;
-
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -22,9 +8,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.bjzhianjia.scp.cgp.biz.SpecialEventBiz;
+import com.bjzhianjia.scp.cgp.entity.Result;
+import com.bjzhianjia.scp.cgp.entity.SpecialEvent;
+import com.bjzhianjia.scp.cgp.service.SpecialEventService;
+import com.bjzhianjia.scp.cgp.vo.SpecialEventVo;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
+import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.common.rest.BaseController;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 @RestController
 @RequestMapping("specialEvent")
@@ -93,7 +92,32 @@ public class SpecialEventController extends BaseController<SpecialEventBiz, Spec
 		
 		return new ObjectRestResponse<SpecialEventVo>().data(one);
 	}
-	
+
+	/**
+	 * 获取单个对象，并判断该对象状态是否为未发起
+	 * @param id
+	 * @return
+	 */
+	@RequestMapping(value="/get/todo/{id}",method=RequestMethod.GET)
+	@ApiOperation("获取单个对象")
+	public ObjectRestResponse<SpecialEventVo> getOneToDo(@PathVariable("id") Integer id){
+		ObjectRestResponse<SpecialEventVo> restResult=new ObjectRestResponse<>();
+
+		Result<SpecialEventVo> result = specialEventService.getOneToDo(id);
+
+		if (!result.getIsSuccess()) {
+			restResult.setStatus(400);
+			restResult.setMessage(result.getMessage());
+			return restResult;
+		}
+
+		restResult.setMessage("成功");
+		restResult.setStatus(200);
+		restResult.setData(result.getData());
+
+		return restResult;
+	}
+
 	@RequestMapping(value="/remove/{ids}",method=RequestMethod.DELETE)
 	@ApiOperation("批量删除对象")
 	public ObjectRestResponse<SpecialEvent> remove(@PathVariable(value="ids") @ApiParam(name="待删除对象ID集合，多个ID用“，”隔开") Integer[] ids){
