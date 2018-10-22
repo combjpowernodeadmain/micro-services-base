@@ -1,18 +1,5 @@
 package com.bjzhianjia.scp.cgp.service;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.bjzhianjia.scp.cgp.biz.SpecialEventBiz;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.EventType;
@@ -27,6 +14,19 @@ import com.bjzhianjia.scp.cgp.vo.SpecialEventVo;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * 专项管理
@@ -47,6 +47,8 @@ public class SpecialEventService {
 	private SpecialEventBiz specialEventBiz;
 	@Autowired
 	private MergeCore mergeCore;
+	@Autowired
+	private Environment environment;
 
 	/**
 	 * 添加专项管理记录
@@ -293,5 +295,46 @@ public class SpecialEventService {
 		rows.add(one);
 		List<SpecialEventVo> result = queryAssist(rows);
 		return result.get(0);
+	}
+
+	/**
+	 * 获取单个对象
+	 *
+	 * @author 尚
+	 * @param id
+	 * @return
+	 */
+	public Result<SpecialEventVo> getOneToDo(Integer id) {
+        Result<SpecialEventVo> result = new Result<>();
+        result.setIsSuccess(false);
+
+        SpecialEvent one = specialEventBiz.selectById(id);
+
+        // root_biz_specialType_todo
+        if (!environment.getProperty("specialTypeTodo").equals(one.getSpeStatus())) {
+            // 该专项已不是【未启用】
+            result.setMessage("当前记录不能修改，只有【未启用】的专项记录可修改！");
+            return result;
+        }
+
+        List<SpecialEvent> rows = new ArrayList<>();
+
+        try {
+            mergeCore.mergeResult(SpecialEvent.class, rows);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        rows.add(one);
+        List<SpecialEventVo> resultVo = queryAssist(rows);
+        result.setIsSuccess(true);
+        result.setData(resultVo.get(0));
+        return result;
 	}
 }

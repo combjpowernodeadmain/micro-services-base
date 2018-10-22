@@ -304,4 +304,9 @@
 	ORDER BY
 	total DESC
 	</select>
+
+	<!-- 查询执法人员部门列 -->
+	<select id="selectDistinctDeptId" resultType="java.lang.String">
+		SELECT DISTINCT(dept_id) FROM cle_case_registration
+	</select>
 </mapper>

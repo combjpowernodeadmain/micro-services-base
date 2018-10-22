@@ -105,4 +105,9 @@ public interface CaseRegistrationMapper extends CommonMapper<CaseRegistration> {
     public List<Map<String,Object>> selectInspectItem(@Param("caseRegistration") CaseRegistration caseRegistration,
         @Param("startTime") String startTime, @Param("endTime") String endTime, @Param("gridIds") String gridIds);
 
+    /**
+     * 查询执法人员部门列
+     * @return 执法人员部门列
+     */
+    List<String> selectDistinctDeptId();
 }
