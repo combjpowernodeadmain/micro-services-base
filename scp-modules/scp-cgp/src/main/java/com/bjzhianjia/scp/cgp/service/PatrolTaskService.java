@@ -1,18 +1,5 @@
 package com.bjzhianjia.scp.cgp.service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.CaseInfoBiz;
@@ -44,9 +31,20 @@ import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 巡查任务逻辑层
@@ -397,7 +395,7 @@ public class PatrolTaskService {
 	 * 解析json 获取实体对象
 	 * 
 	 * @param objs
-	 * @param entityName
+	 * @param jsonKey
 	 * @param clazz
 	 * @return
 	 */
@@ -440,12 +438,18 @@ public class PatrolTaskService {
 		Result<Void> restResult = new Result<Void>();
 		restResult.setIsSuccess(true);
 	
-		if (StringUtils.isBlank(patrolTask.getPatrolName()) && patrolTask.getPatrolName().length() > 127) {
+		if (StringUtils.isBlank(patrolTask.getPatrolName())) {
 			restResult.setIsSuccess(false);
 			restResult.setMessage("事件名称不能为空！");
 			return restResult;
 		}
-	
+
+		if (patrolTask.getPatrolName().length() > 127) {
+			restResult.setIsSuccess(false);
+			restResult.setMessage("事件名称过长，请重新输入！");
+			return restResult;
+		}
+
 		if (StringUtils.isBlank(patrolTask.getPatrolLevel())) {
 			restResult.setIsSuccess(false);
 			restResult.setMessage("事件级别不能为空！");
@@ -458,12 +462,18 @@ public class PatrolTaskService {
 			return restResult;
 		}
 	
-		if (StringUtils.isBlank(patrolTask.getContent()) && patrolTask.getContent().length() > 1024) {
+		if (StringUtils.isBlank(patrolTask.getContent())) {
 			restResult.setIsSuccess(false);
 			restResult.setMessage("巡查事项内容不能为空！");
 			return restResult;
 		}
-		
+
+		if (patrolTask.getContent().length() > 1024) {
+			restResult.setIsSuccess(false);
+			restResult.setMessage("巡查事项内容应在1024字符以内！");
+			return restResult;
+		}
+
 		return restResult;
 	}
 	
