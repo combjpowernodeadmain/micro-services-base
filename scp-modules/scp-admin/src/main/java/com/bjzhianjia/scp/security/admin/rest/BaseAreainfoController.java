@@ -77,4 +77,22 @@ public class BaseAreainfoController {
         result.setData(resultData);
         return result;
     }
+
+    /**
+     * 通过区域id，获取区域子集
+     *
+     * @param parenId 区域等级
+     * @return 格式：  id : name
+     */
+    @ApiOperation(value = "通过ids获取区域名称")
+    @GetMapping("/son/{parenId}")
+    public ObjectRestResponse<Map<String, String>> getSonNameById(
+            @PathVariable("parenId") @ApiParam(value = "区域id集") Integer parenId) {
+        ObjectRestResponse<Map<String, String>> result = new ObjectRestResponse<>();
+        Map<String, String> resultData = baseAreainfoBiz.getSonNameById(parenId);
+        result.setData(resultData);
+        return result;
+    }
+
+
 }

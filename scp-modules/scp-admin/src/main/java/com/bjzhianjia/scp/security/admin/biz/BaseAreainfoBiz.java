@@ -4,6 +4,7 @@ import com.bjzhianjia.scp.security.admin.entity.BaseAreainfo;
 import com.bjzhianjia.scp.security.admin.mapper.BaseAreainfoMapper;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.util.BeanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
@@ -56,6 +57,25 @@ public class BaseAreainfoBiz extends BusinessBiz<BaseAreainfoMapper, BaseAreainf
         Example.Criteria criteria = example.createCriteria();
         criteria.andIn("id", ids);
 
+        List<BaseAreainfo> list = this.selectByExample(example);
+        Map<String, String> resultData = new HashMap<>();
+        if (list != null && !list.isEmpty()) {
+            for (BaseAreainfo baseAreainfo : list) {
+                resultData.put(baseAreainfo.getId().toString(), baseAreainfo.getName());
+            }
+        }
+        return resultData;
+    }
+
+    /**
+     * 通过区域id，获取区域子集
+     *
+     * @return
+     */
+    public Map<String, String> getSonNameById(Integer id) {
+        Example example = new Example(BaseAreainfo.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("parentId", id);
         List<BaseAreainfo> list = this.selectByExample(example);
         Map<String, String> resultData = new HashMap<>();
         if (list != null && !list.isEmpty()) {
