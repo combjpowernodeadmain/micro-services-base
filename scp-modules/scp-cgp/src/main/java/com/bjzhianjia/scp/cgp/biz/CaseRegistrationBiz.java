@@ -1322,7 +1322,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                             }
                         }
                         //合并完之后，将不干净的部门ID对应的key-value移除
-                        statusJObj.remove(statusJObjKey);
+//                        statusJObj.remove(statusJObjKey);
                     }
                 }
             }
