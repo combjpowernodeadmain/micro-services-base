@@ -105,6 +105,7 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
         @RequestParam(defaultValue = "") @ApiParam(name = "巡查来源类型") String sourceType,
         @RequestParam(defaultValue = "") @ApiParam(name = "巡查记录名称") String patrolName,
         @RequestParam(defaultValue = "") @ApiParam(name = "业务条线") String bizTypeId,
+        @RequestParam(required = false) @ApiParam(name="事件类别") Integer eventTypeId,
         @RequestParam(defaultValue = "") @ApiParam(name = "查询记录状态") String status,
         @RequestParam(defaultValue = "") @ApiParam(name = "开始时间") String startTime,
         @RequestParam(defaultValue = "") @ApiParam(name = "结束时间") String endTime) {
@@ -121,6 +122,7 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
         patrolTask.setSourceType(sourceType);
         patrolTask.setPatrolName(patrolName);
         patrolTask.setBizTypeId(bizTypeId);
+        patrolTask.setEventTypeId(eventTypeId);
         patrolTask.setStatus(status);
 
         return patrolTaskBiz.selectPatrolTaskList(patrolTask, speName, _startTime, _endTimeTmp, page, limit);

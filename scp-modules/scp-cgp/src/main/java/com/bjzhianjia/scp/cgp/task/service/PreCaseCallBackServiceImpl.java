@@ -1,12 +1,5 @@
 package com.bjzhianjia.scp.cgp.task.service;
 
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.CommandCenterHotlineBiz;
@@ -23,12 +16,17 @@ import com.bjzhianjia.scp.cgp.vo.MayorHotlineVo;
 import com.bjzhianjia.scp.cgp.vo.PublicOpinionVo;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.task.service.IWfProcTaskCallBackService;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
 
 /**
  * 处理预立案单
- * 
+ *
  * @author 尚
  *
  */
@@ -113,7 +111,7 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService {
 
     /**
      * 添加巡查上报
-     * 
+     *
      * @author 尚
      * @param procBizData
      */
@@ -121,6 +119,16 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService {
         JSONObject patroTaskJObj = JSONObject.parseObject(JSON.toJSONString(procBizData));
         try {
             Result<CaseInfo> result = patrolTaskService.createPatrolTask(patroTaskJObj);
+
+            if(!result.getIsSuccess()){
+                /*
+                 * result.getIsSuccess如果为false，说明在业务逻辑处理时，有不符合条件的地方
+                 * 在这些地方不一定都手动抛出的异常，而只是在result返回结果里设置了isSuccess为false
+                 * 所以在做完业务逻辑后，对result进行判断
+                 * 抛出异常目的是让事务回滚
+                 */
+                throw new BizException(result.getMessage());
+            }
 
             CaseInfo caseInfo = result.getData();
             if (caseInfo != null) {
@@ -135,7 +143,7 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService {
 
     /**
      * 添加领导交办预立案单
-     * 
+     *
      * @author 尚
      * @param procBizData
      * @throws BizException
@@ -164,7 +172,7 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService {
 
     /**
      * 添加舆情预立案单
-     * 
+     *
      * @author 尚
      * @param procBizData
      * @throws BizException

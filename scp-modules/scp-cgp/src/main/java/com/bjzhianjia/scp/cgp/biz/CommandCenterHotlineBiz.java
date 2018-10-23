@@ -1,13 +1,5 @@
 package com.bjzhianjia.scp.cgp.biz;
 
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.CommandCenterHotline;
 import com.bjzhianjia.scp.cgp.entity.Constances;
@@ -19,9 +11,15 @@ import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
+
+import java.util.List;
 
 /**
  * 记录来自指挥中心热线的事件
@@ -185,10 +183,10 @@ public class CommandCenterHotlineBiz extends BusinessBiz<CommandCenterHotlineMap
 
         criteria.andEqualTo("isDeleted", "0");
         if (StringUtils.isNotBlank(commandCenterHotline.getHotlnTitle())) {
-            criteria.andLike("hotlnTitle", commandCenterHotline.getHotlnTitle());
+            criteria.andLike("hotlnTitle", "%"+commandCenterHotline.getHotlnTitle()+"%");
         }
         if (StringUtils.isNotBlank(commandCenterHotline.getAppealPerson())) {
-            criteria.andLike("appealPerson", commandCenterHotline.getAppealPerson());
+            criteria.andLike("appealPerson", "%"+commandCenterHotline.getAppealPerson()+"%");
         }
         if (StringUtils.isNotBlank(commandCenterHotline.getBizType())) {
             criteria.andEqualTo("bizType", commandCenterHotline.getBizType());

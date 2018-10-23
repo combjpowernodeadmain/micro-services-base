@@ -1,21 +1,7 @@
 package com.bjzhianjia.scp.cgp.biz;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.alibaba.fastjson.JSONObject;
+import com.bjzhianjia.scp.cgp.entity.RegTypeRelation;
 import com.bjzhianjia.scp.cgp.entity.RegulaObject;
 import com.bjzhianjia.scp.cgp.entity.RegulaObjectType;
 import com.bjzhianjia.scp.cgp.mapper.EnterpriseInfoMapper;
@@ -23,15 +9,21 @@ import com.bjzhianjia.scp.cgp.mapper.PatrolTaskMapper;
 import com.bjzhianjia.scp.cgp.mapper.RegulaObjectMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
-import com.bjzhianjia.scp.cgp.vo.RegulaObjectVo;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * RegulaObjectBiz 监管对象
@@ -67,6 +59,9 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
     
     @Autowired
     private PropertiesProxy propertiesProxy;
+
+    @Autowired
+    private RegTypeRelationBiz regTypeRelationBiz;
 
     /**
      * 查询id最大的那条记录
@@ -372,7 +367,7 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
      * @param page
      * @param limit
      * @param objTypes
-     * @param name 
+     * @param objName
      * @return
      */
     public TableResultResponse<RegulaObject> listByObjType(int page, int limit, String objTypes, String objName) {
@@ -415,5 +410,72 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
         tableResultResponse.getData().setTotal(pageInfo.getTotal());
 
         return tableResultResponse;
+    }
+
+    /**
+     * 判断一个监管对象是否为企业
+     *
+     * @param regObjId 待判断监管对象ID
+     * @return true:如果一个监管对象属于企业<br/>
+     *          false:如果一个监管对象不属于企业
+     */
+    public ObjectRestResponse<Boolean> isRegObjEnterprise(Integer regObjId){
+        /*
+         * 1 获取类型为企业的监管对象类型
+         * 2 获取第1步查询到类型的子类型
+         * 3 查询待对比监管对象属于哪个监管对象
+         * 4 进行对比
+         */
+
+        ObjectRestResponse<Boolean> restResult=new ObjectRestResponse<>();
+
+        //查询有哪些监管对象类型属于企业
+        RegTypeRelation regTypeRelation=new RegTypeRelation("concerned_company", "z_z");
+        List<RegTypeRelation> regTypeRelationList = regTypeRelationBiz.getList(regTypeRelation);
+
+        RegTypeRelation inDB;
+
+        Set<Integer> regObjIdSet=new HashSet<>();
+        if(BeanUtil.isNotEmpty(regTypeRelationList)){
+            //按【监管对象类型与业务之间的关系】的code与projectSign联合查到的，如果不为空，则一定唯一
+            inDB=regTypeRelationList.get(0);
+            if(BeanUtil.isNotEmpty(inDB)){
+                String regObjIdStr = inDB.getRegObjId();
+                if(StringUtils.isNotBlank(regObjIdStr)){
+                    for(String regObjIdTmp:regObjIdStr.split(",")){
+                        try {
+                            regObjIdSet.add(Integer.valueOf(regObjIdTmp));
+                        } catch (NumberFormatException e) {
+                            // 如果程序在该处发生异常，不会对主逻辑造成大影响，忽略该异常，使程序继续进行
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }
+
+        //查询待对比监管对象属于哪个类型
+        RegulaObject regulaObject = this.selectById(regObjId);
+
+        // 监管对象类型集
+        List<RegulaObjectType> objectTypeList = regulaObjectTypeBiz.selectIdAll();
+        if (BeanUtil.isNotEmpty(objectTypeList)) {
+            // 当前对象类型子集
+            Set<Integer> ids = new HashSet<>();
+            if (BeanUtil.isNotEmpty(regObjIdSet)) {
+                for (Integer regObjIdTmp : regObjIdSet) {
+                    this.getSonId(objectTypeList, ids, regObjIdTmp);
+                }
+            }
+
+            if(ids.contains(regulaObject.getObjType())){
+                //如果企业包含的监管对象类型集里包含待对比的监管对象所属的类型，则返回true
+                restResult.setData(true);
+            }else{
+                restResult.setData(false);
+            }
+        }
+
+        return restResult;
     }
 }
