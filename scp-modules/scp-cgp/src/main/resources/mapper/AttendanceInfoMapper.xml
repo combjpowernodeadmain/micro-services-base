@@ -126,7 +126,7 @@
 				and crt_user_name like concat('%',#{name},'%')
 			</if>
 			<if test="departId != null and departId != ''">
-				and depart_id in(#{depart_id})
+				and depart_id in(#{departId})
 			</if>
 			<if test="startDate != null and startDate != ''">
 							<![CDATA[ and crt_time >= #{startDate} ]]>

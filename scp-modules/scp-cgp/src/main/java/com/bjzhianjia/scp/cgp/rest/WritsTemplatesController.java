@@ -1,21 +1,5 @@
 package com.bjzhianjia.scp.cgp.rest;
 
-import java.util.List;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.bjzhianjia.scp.cgp.biz.WritsTemplatesBiz;
 import com.bjzhianjia.scp.cgp.config.PropertiesConfig;
 import com.bjzhianjia.scp.cgp.entity.Result;
@@ -26,11 +10,32 @@ import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 @RestController
 @RequestMapping("writsTemplates")
@@ -110,5 +115,54 @@ public class WritsTemplatesController extends BaseController<WritsTemplatesBiz, 
         ResponseEntity<?> file =
             docDownUtil.getFile(propertiesConfig.getTemplateSrcPath(), template.getName() + ".docx");
         return file;
+    }
+
+    @ApiOperation(("分页获取列表"))
+    @GetMapping("/list")
+    public TableResultResponse<WritsTemplates> getList(
+            @RequestParam(defaultValue ="1") @ApiParam("起始页") Integer page
+            ,@RequestParam(defaultValue = "10") @ApiParam("页容量") Integer limit
+            ,@RequestParam(defaultValue = "") @ApiParam("模板名称") String name
+    ){
+        TableResultResponse<WritsTemplates> tableResult=new TableResultResponse<>();
+
+        WritsTemplates writsTemplates=new WritsTemplates();
+        writsTemplates.setName(name);
+
+        TableResultResponse<WritsTemplates> list = this.baseBiz.getList(writsTemplates, page, limit);
+
+        return list;
+    }
+
+    @PutMapping("/remove/{ids}")
+    @ApiOperation("批量删除对象")
+    public ObjectRestResponse<WritsTemplates> remove(@PathVariable("ids")Integer[] ids){
+        return this.baseBiz.remove(ids);
+    }
+
+    @PostMapping("/upload/writsTempalte")
+    @ApiOperation("上传文书模板")
+    @Deprecated
+    public ObjectRestResponse<WritsTemplates> uploadWritsTemplate(
+            @RequestParam("file") MultipartFile file
+            ,@RequestParam(value="id",required = false)Integer id
+    ){
+        ObjectRestResponse<WritsTemplates> restResult=new ObjectRestResponse<>();
+        if (file.isEmpty()) {
+            restResult.setStatus(400);
+            restResult.setMessage("请指定待上传的文件");
+            return restResult;
+        }
+
+        try {
+            // Get the file and save it somewhere
+            byte[] bytes = file.getBytes();
+            System.out.println(file.getOriginalFilename());
+            Path path = Paths.get(file.getOriginalFilename());
+            Files.write(path, bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

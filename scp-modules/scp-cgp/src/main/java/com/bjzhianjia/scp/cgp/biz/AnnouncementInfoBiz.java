@@ -1,16 +1,5 @@
 package com.bjzhianjia.scp.cgp.biz;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.bjzhianjia.scp.cgp.entity.AnnouncementInfo;
 import com.bjzhianjia.scp.cgp.mapper.AnnouncementInfoMapper;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
@@ -18,7 +7,17 @@ import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 公告信息
@@ -35,7 +34,7 @@ public class AnnouncementInfoBiz extends BusinessBiz<AnnouncementInfoMapper,Anno
 	
 	/**
 	 * 根据查询条件搜索
-	 * @param eventType
+	 * @param announcementInfo
 	 * @return
 	 */
 	public TableResultResponse<AnnouncementInfo> getList(int page, int limit, Map<String,String> announcementInfo) {
@@ -48,7 +47,7 @@ public class AnnouncementInfoBiz extends BusinessBiz<AnnouncementInfoMapper,Anno
 	     * ------------by尚------------------
 	     */
 	    if(StringUtils.isNotBlank(announcementInfo.get("title"))){
-	    	criteria.andLike("title", announcementInfo.get("title"));
+            criteria.andLike("title", "%" + announcementInfo.get("title") + "%");
 	    }
 	    if(StringUtils.isNotBlank(announcementInfo.get("status"))){
 	    	criteria.andEqualTo("status", announcementInfo.get("status"));

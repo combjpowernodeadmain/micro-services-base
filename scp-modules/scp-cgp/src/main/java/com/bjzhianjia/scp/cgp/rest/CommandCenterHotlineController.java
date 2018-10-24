@@ -94,4 +94,26 @@ public class CommandCenterHotlineController
         ObjectRestResponse<JSONObject> restResult = commandCenterHotlineServoce.getToDo(id);
         return restResult;
     }
+
+    @RequestMapping(value = "/remove/{ids}", method = RequestMethod.DELETE)
+    @ApiOperation("批量删除对象")
+    public ObjectRestResponse<CommandCenterHotline> remove(
+            @PathVariable("ids") @ApiParam(name = "待删除对象ID集合，多个ID用“，”隔开") Integer[] ids) {
+        ObjectRestResponse<CommandCenterHotline> restResult = new ObjectRestResponse<>();
+        if (ids == null || ids.length == 0) {
+            restResult.setStatus(400);
+            restResult.setMessage("请选择要删除的项");
+            return restResult;
+        }
+
+        Result<Void> result = this.baseBiz.remove(ids);
+        if (!result.getIsSuccess()) {
+            restResult.setStatus(400);
+            restResult.setMessage(result.getMessage());
+            return restResult;
+        }
+        restResult.setStatus(200);
+        restResult.setMessage("成功");
+        return restResult;
+    }
 }
