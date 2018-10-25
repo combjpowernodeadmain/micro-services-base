@@ -10,7 +10,6 @@ import com.bjzhianjia.scp.cgp.entity.CaseAttachments;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
 import com.bjzhianjia.scp.cgp.entity.Constances;
-import com.bjzhianjia.scp.cgp.entity.EnforceCertificate;
 import com.bjzhianjia.scp.cgp.entity.EventType;
 import com.bjzhianjia.scp.cgp.entity.LawTask;
 import com.bjzhianjia.scp.cgp.entity.Result;
@@ -469,25 +468,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         Example example = new Example(CaseRegistration.class);
         Criteria criteria = example.createCriteria();
 
-        // 获取具有执法证的人员在执法证管理表中的ID
-        // String _userId = CommonUtil.getValueFromJObjStr(userId, "id");
-        EnforceCertificate enforceCertificate = null;
-        if (StringUtils.isNotBlank(userId)) {
-            enforceCertificate = enforceCertificateBiz.getEnforceCertificateByUserId(userId);
-        } else {
-            restResult.setStatus(400);
-            restResult.setMessage("请指定执法人员");
-            return restResult;
-        }
-
-        if (BeanUtil.isEmpty(enforceCertificate)) {
-            restResult.getData().setTotal(0);
-            restResult.getData().setRows(new ArrayList<>());
-            return restResult;
-        }
-
         criteria.andEqualTo("isDeleted", "0");
-        criteria.andLike("enforcers", String.valueOf(enforceCertificate.getId()));
+        /*
+         * 在数据库中，执法人员使用用户ID进行保存，而不再使用执法证ID保存，故无需再通过执法人员
+         * 在执法证管理表中将相应的执法证ID找出
+         */
+        criteria.andLike("enforcers", "%"+userId+"%");
 
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<CaseRegistration> rows = this.selectByExample(example);
@@ -1253,7 +1239,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         caseRegistration.setCaseSourceType(caseRegistrationJObj.getString("caseSourceType"));
 
         ObjectRestResponse<JSONObject> restResponse = new ObjectRestResponse<>();
-        JSONObject resultJobj = new JSONObject();
+//        JSONObject resultJobj = new JSONObject();
 
         /*
          * ========进行查询操作============开始=============
@@ -1335,22 +1321,6 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         /*
          * ========进行数据整合============开始=============
          */
-        for (int i = 0; i < byDept.size(); i++) {
-            JSONObject deptJObj = byDept.getJSONObject(i);
-            JSONArray deptJArray = new JSONArray();
-            for (String deptIdKey : deptJObj.keySet()) {
-                if (deptIdList.contains(deptIdKey)) {
-                    // 说明该deptIdkey为部门ID
-                    JSONObject deptInner = new JSONObject();
-                    deptInner.put("deptId", deptIdKey);
-                    deptInner.put("deptName", dept_ID_NAME_Map.get(deptIdKey));
-                    deptInner.put("count", deptJObj.getInteger(deptIdKey));
-                    deptJArray.add(deptInner);
-                }
-            }
-            deptJObj.put("zhd", deptJArray);
-        }
-
         Date startDate = DateUtil.dateFromStrToDate(startTime, true);
         Date endDate = DateUtil.dateFromStrToDate(endTime, true);
 
@@ -1365,6 +1335,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             dateTimeIn.add(deptJObj.getString("cyear") + deptJObj.getString("cmonth"));
         }
 
+        //将没有数据的月份补0
         do {
             String sample = String.valueOf(dl1.getYear()) + String.valueOf(dl1.getMonthOfYear());
             if (!dateTimeIn.contains(sample)) {
@@ -1374,20 +1345,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 fDate3.put("cmonth", dl1.getMonthOfYear());
                 fDate3.put("total", 0);
 
-                for (int i = 0; i < byDept.size(); i++) {
-                    JSONArray deptJArray = new JSONArray();
-                    JSONObject deptJObj = byDept.getJSONObject(i);
-                    for (String deptIdKey : deptJObj.keySet()) {
-                        if (deptIdList.contains(deptIdKey)) {
-                            // 说明该deptIdkey为部门ID
-                            JSONObject deptInner = new JSONObject();
-                            deptInner.put("deptId", deptIdKey);
-                            deptInner.put("deptName", dept_ID_NAME_Map.get(deptIdKey));
-                            deptInner.put("count", 0);
-                            deptJArray.add(deptInner);
-                            fDate3.put("zhd", deptJArray);
-                        }
-                    }
+                for(String deptId:dept_ID_NAME_Map.keySet()){
+                    fDate3.put(deptId, 0);
                 }
 
                 byDept.add(fDate3);
@@ -1395,9 +1354,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             dl1 = dl1.plusMonths(1);
 
         } while (dl1.getMillis() <= endDate.getTime());
-        /*
-         * ============
-         */
+
+        //将补0后的结果集进行排序
         byDept.sort(new Comparator<Object>() {
 
             @Override
@@ -1412,10 +1370,36 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 }
             }
         });
-        resultJobj.put("byDept", byDept);
+
+        //整合数据至前端结构
+        JSONObject lastest=new JSONObject();
+
+        String[] months=new String[byDept.size()];
+        for (int i = 0; i < byDept.size(); i++) {
+            JSONObject fakeResultJobj = byDept.getJSONObject(i);
+            months[i] = fakeResultJobj.getString("cmonth") + "月份";
+        }
+
+        JSONArray countJArray=new JSONArray();
+        for (String deptId : dept_ID_NAME_Map.keySet()) {
+            JSONObject countJObj = new JSONObject();
+            countJObj.put("title", dept_ID_NAME_Map.get(deptId));//部门名称，即在图表里要显示的title
+
+            String[] ccounts=new String[byDept.size()];//保存数量
+            for (int i = 0; i < byDept.size(); i++) {
+                JSONObject fakeResultJobj = byDept.getJSONObject(i);
+                ccounts[i]=fakeResultJobj.getString(deptId);
+            }
+            countJObj.put("counth", ccounts);
+
+            countJArray.add(countJObj);
+        }
+
+        lastest.put("month", months);
+        lastest.put("counth", countJArray);
 
         restResponse.setStatus(200);
-        restResponse.setData(resultJobj);
+        restResponse.setData(lastest);
         return restResponse;
     }
 

@@ -145,10 +145,10 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             criteria.andIn("regulaObjList", Arrays.asList(caseInfo.getRegulaObjList().split(",")));
         }
         if(StringUtils.isNotBlank(caseInfo.getCaseTitle())) {
-            criteria.andLike("caseTitle", caseInfo.getCaseTitle());
+            criteria.andLike("caseTitle", "%" + caseInfo.getCaseTitle() + "%");
         }
         if(StringUtils.isNotBlank(caseInfo.getCaseCode())) {
-            criteria.andLike("caseCode", caseInfo.getCaseCode());
+            criteria.andLike("caseCode", "%" + caseInfo.getCaseCode() + "%");
         }
         example.setOrderByClause("source_type desc");
 
@@ -175,8 +175,6 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
      * 
      * @author 尚
      * @param caseInfo
-     * @param page
-     * @param limit
      * @return
      */
     public TableResultResponse<CaseInfo> getList(CaseInfo caseInfo, Set<Integer> ids, JSONObject queryData) {
