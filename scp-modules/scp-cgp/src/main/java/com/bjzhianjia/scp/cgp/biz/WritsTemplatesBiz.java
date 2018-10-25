@@ -1,27 +1,30 @@
 package com.bjzhianjia.scp.cgp.biz;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.config.PropertiesConfig;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.WritsProcessBind;
 import com.bjzhianjia.scp.cgp.entity.WritsTemplates;
 import com.bjzhianjia.scp.cgp.mapper.WritsTemplatesMapper;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.vo.WritsProcessBindVo;
+import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 文书模板
@@ -36,6 +39,8 @@ public class WritsTemplatesBiz extends BusinessBiz<WritsTemplatesMapper, WritsTe
 	private PropertiesConfig propertiesConfig;
 	@Autowired
 	private WritsProcessBindBiz writsProcessBindBiz;
+	@Autowired
+	private WritsInstancesBiz writsInstancesBiz;
 
 	/**
 	 * 添加单个对象
@@ -79,9 +84,7 @@ public class WritsTemplatesBiz extends BusinessBiz<WritsTemplatesMapper, WritsTe
 
 	/**
 	 * 按ID集合获取对象记录
-	 * 
-	 * @author 尚
-	 * @param ids
+	 * @param node
 	 * @param page
 	 * @param limit
 	 * @return
@@ -169,4 +172,68 @@ public class WritsTemplatesBiz extends BusinessBiz<WritsTemplatesMapper, WritsTe
 	    }
 	    return new ArrayList<WritsTemplates>();
 	}
+
+	/**
+	 * 按分页获取列表
+	 * @param writsTemplates 封装查询条件的对象
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+	public TableResultResponse<WritsTemplates> getList(WritsTemplates writsTemplates,int page,int limit){
+		Example example=new Example(writsTemplates.getClass());
+		Criteria criteria = example.createCriteria();
+		criteria.andEqualTo("isDeleted", "0");
+
+		if(StringUtils.isNotBlank(writsTemplates.getName())){
+			criteria.andLike("name", "%"+writsTemplates.getName()+"%");
+		}
+
+		Page<Object> pageInfo = PageHelper.startPage(page, limit);
+		List<WritsTemplates> writsTemplateList = this.selectByExample(
+
+				example);
+
+		if(BeanUtil.isNotEmpty(writsTemplateList)){
+			return new TableResultResponse<>(pageInfo.getTotal(), writsTemplateList);
+		}
+
+		return new TableResultResponse<>(0, new ArrayList<>());
+
+	}
+
+    /**
+     * 批量删除对象
+     * 
+     * @param ids
+     *            待删除对象ID
+     * @return
+     */
+    public ObjectRestResponse<WritsTemplates> remove(Integer[] ids) {
+        ObjectRestResponse<WritsTemplates> restResult = new ObjectRestResponse<>();
+
+        if (BeanUtil.isEmpty(ids)) {
+            restResult.setStatus(400);
+            restResult.setMessage("请指定待删除对象");
+            return restResult;
+        }
+
+        // 检验模板是否在使用中
+        JSONObject queryJObj = new JSONObject();
+        queryJObj.put("templateId", Arrays.asList(ids));
+        // 只要有一条记录存在，模板就不能删除
+        TableResultResponse<JSONObject> writsList = writsInstancesBiz.getList(queryJObj, 1, 1);
+        if (BeanUtil.isNotEmpty(writsList)) {
+            restResult.setStatus(400);
+            restResult.setMessage("模板下存在文书，不能删除！");
+            return restResult;
+        }
+
+        this.mapper.deleteByIds(ids, BaseContextHandler.getUserID(),
+            BaseContextHandler.getUsername(), new Date());
+
+        restResult.setStatus(200);
+        restResult.setMessage("成功");
+        return restResult;
+    }
 }

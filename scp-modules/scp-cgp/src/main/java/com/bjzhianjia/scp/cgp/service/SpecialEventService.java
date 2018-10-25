@@ -23,8 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -206,6 +208,13 @@ public class SpecialEventService {
 		TableResultResponse<SpecialEvent> restResult = specialEventBiz.getList(vo, page, limit);
 		List<SpecialEvent> rows = restResult.getData().getRows();
 
+		if(BeanUtil.isEmpty(rows)){
+			TableResultResponse<SpecialEventVo> voTableResultResponse=new TableResultResponse<>();
+			voTableResultResponse.setStatus(400);
+			voTableResultResponse.setMessage("没有相关数据");
+			return voTableResultResponse;
+		}
+
 		try {
 			mergeCore.mergeResult(SpecialEvent.class, rows);
 		} catch (NoSuchMethodException e) {
@@ -225,6 +234,37 @@ public class SpecialEventService {
 
 	public List<SpecialEventVo> queryAssist(List<SpecialEvent> rows) {
 		List<SpecialEventVo> voList = BeanUtil.copyBeanList_New(rows, SpecialEventVo.class);
+
+        // 收集相关事件类别ID,事件类别保存形式如31,32;30;-;29
+        Set<String> eventTypeSet = new HashSet<>();
+        Map<Integer, Set<String>> special_ID_EVENTTYPEID_Map = new HashMap<>();//封装专项记录里ID与对应事件类别ID集合
+        for (SpecialEventVo vo : voList) {
+            if (StringUtils.isNotBlank(vo.getEventTypeList())) {
+                Set<String> eventTypeIdSetIn = new HashSet<>();// 用于存在当前对象的事件类别ID
+                for (String eventTypeIdT1 : vo.getEventTypeList().split(";")) {
+                    if (StringUtils.isNotBlank(eventTypeIdT1) && !"-".equals(eventTypeIdT1)) {
+                        for (String eventType2 : eventTypeIdT1.split(",")) {
+                            eventTypeSet.add(eventType2);
+                            eventTypeIdSetIn.add(eventType2);
+                        }
+                    }
+                }
+
+                special_ID_EVENTTYPEID_Map.put(vo.getId(), eventTypeIdSetIn);
+            }
+        }
+        // 查询相关事件类别
+        List<EventType> eventTypes = eventTypeMapper.selectByIds(String.join(",", eventTypeSet));
+        Map<Integer, String> eventType_ID_NAME_Map = new HashMap<>();//封装事件类别ID与名称
+        if (BeanUtil.isNotEmpty(eventTypes)) {
+            for (EventType eventType : eventTypes) {
+                eventType_ID_NAME_Map.put(eventType.getId(),
+                    eventType.getTypeName().endsWith(",")
+                        ? eventType.getTypeName().substring(0, eventType.getTypeName().length() - 1)
+                        : eventType.getTypeName());
+            }
+        }
+
 		// 字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
 		Map<String, String> bizTypeMap = dictFeign.getByCode(Constances.ROOT_BIZ_TYPE);
 		for (SpecialEventVo voTmp : voList) {
@@ -238,25 +278,6 @@ public class SpecialEventService {
 				voTmp.setBizListName(String.join(",", bizTypeNameList));
 			}
 
-			// 解析专项状态
-//			String key = voTmp.getSpeStatus();
-//			
-//			voTmp.setSpeStatusId(voTmp.getSpeStatus());
-//			switch (key) {
-//			case "0":
-//				voTmp.setSpeStatus("未启动");
-//				break;
-//			case "1":
-//				voTmp.setSpeStatus("进行中");
-//				break;
-//			case "2":
-//				voTmp.setSpeStatus("已终止");
-//				break;
-//			case "3":
-//				voTmp.setSpeStatus("已完成");
-//				break;
-//			}
-
 			// 解析监管对象
 			String regObjListStr = voTmp.getRegObjList();
 			if(StringUtils.isNotBlank(regObjListStr)) {
@@ -265,6 +286,14 @@ public class SpecialEventService {
 						.collect(Collectors.toList());
 				voTmp.setRegObjTypeName(String.join(",", regObjTypeNameList));
 			}
+
+            // 聚积事件类别
+            List<String> eventTypeNameList = new ArrayList<>();
+            Set<String> eventTypeSetIn = special_ID_EVENTTYPEID_Map.get(voTmp.getId());
+            for (String eventTypeId : eventTypeSetIn) {
+                eventTypeNameList.add(eventType_ID_NAME_Map.get(Integer.valueOf(eventTypeId)));
+            }
+            voTmp.setEventTypeName(String.join(",", eventTypeNameList));
 		}
 		return voList;
 	}

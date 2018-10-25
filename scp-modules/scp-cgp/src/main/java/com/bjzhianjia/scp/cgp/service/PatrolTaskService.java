@@ -29,6 +29,7 @@ import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.wf.base.utils.StringUtil;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang.StringUtils;
@@ -302,7 +303,7 @@ public class PatrolTaskService {
 		RegulaObjectType regulaObjectType= regulaObjectTypeBiz.selectById(patrolTask.getRegulaObjectTypeId());
 		if(regulaObjectType != null)
 		{
-			result.put("regulaObject", regulaObjectType.getObjectTypeName());
+			result.put("regulaObjectType", regulaObjectType.getObjectTypeName());
 		}
 		
 		//监管对象
@@ -315,21 +316,53 @@ public class PatrolTaskService {
 				result.put("regulaObject", regulaObject.getObjName());
 			}
 		}
-		
+
+		//收集需进行字典查询的key
+		Set<String> dictKey=new HashSet<>();
+		if(StringUtils.isNotBlank(patrolTask.getPatrolLevel())){//巡查级别
+			dictKey.add(patrolTask.getPatrolLevel());
+		}
+		if(StringUtils.isNotBlank(patrolTask.getStatus())){//巡查状态
+			dictKey.add(patrolTask.getStatus());
+		}
+		if(StringUtil.isNotBlank(patrolTask.getBizTypeId())){//业务条线
+			dictKey.add(patrolTask.getBizTypeId());
+		}
+		if(StringUtils.isNotBlank(patrolTask.getConcernedType())){
+			dictKey.add(patrolTask.getConcernedType());
+		}
+		//查询字典
+		Map<String, String> byCodeIn = dictFeign.getByCodeIn(String.join(",", dictKey));
+
 		//事件级别
-		String dictPatrolLevel = CommonUtil.getByCode(dictFeign,patrolTask.getPatrolLevel());
+        String dictPatrolLevel =
+            byCodeIn.get(patrolTask.getPatrolLevel()) == null ? ""
+                : byCodeIn.get(patrolTask.getPatrolLevel());
 		if(dictPatrolLevel != null) {
 		   result.put("patrolLevel", dictPatrolLevel);
 		}
 		
 		//获取巡查任务状态
-		String dictStatus = CommonUtil.getByCode(dictFeign,patrolTask.getStatus());
-		if(dictStatus != null) {
+		System.out.println(patrolTask.getStatus());
+		System.out.println(byCodeIn);
+		System.out.println(byCodeIn.get(patrolTask.getStatus()));
+        String dictStatus =
+            byCodeIn.get(patrolTask.getStatus()) == null ? ""
+                : byCodeIn.get(patrolTask.getStatus());
+        if(dictStatus != null) {
 			result.put("status", dictStatus);
 		}
-		
-		//业务条线
-		String dictBizType = CommonUtil.getByCode(dictFeign,patrolTask.getBizTypeId());
+
+		//业务条线,可能是多选
+		String dictBizType="";
+		if(StringUtils.isNotBlank(patrolTask.getBizTypeId())){
+			List<String> bizTypeNameList=new ArrayList<>();
+			for(String key:patrolTask.getBizTypeId().split(",")){
+				String s = byCodeIn.get(patrolTask.getBizTypeId()) == null ? "" : byCodeIn.get(patrolTask.getBizTypeId());
+				bizTypeNameList.add(s);
+			}
+			dictBizType=String.join(",", bizTypeNameList);
+		}
 		if(dictBizType != null) {
 			result.put("bizType", dictBizType);
 		}
@@ -338,7 +371,11 @@ public class PatrolTaskService {
 		EventType eventType = eventTypeBiz.selectById(patrolTask.getEventTypeId());
 		if(eventType!=null) {
 			result.put("eventType", eventType.getTypeName());
-		}
+            result.put("eventTypeName",
+                eventType.getTypeName().endsWith(",")
+                    ? eventType.getTypeName().substring(0, eventType.getTypeName().length() - 1)
+                    : eventType.getTypeName());
+        }
 		
 		
 		//巡查事项清单
@@ -359,7 +396,9 @@ public class PatrolTaskService {
 		result.put("mapInfo", patrolTask.getMapInfo());
 		
 		//当事人
-		String dictConcernedType = CommonUtil.getByCode(dictFeign,patrolTask.getConcernedType());
+		String dictConcernedType =
+				byCodeIn.get(patrolTask.getConcernedType()) == null ? ""
+						: byCodeIn.get(patrolTask.getConcernedType());
 		if(dictConcernedType != null) {
 			result.put("concernedType", patrolTask.getConcernedType());
 			result.put("concernedTypeName", dictConcernedType);
@@ -387,7 +426,7 @@ public class PatrolTaskService {
 			}
 		}
 		result.put("urls", urls);
-		
+
 		return result;
 	}
 	

@@ -1,15 +1,5 @@
 package com.bjzhianjia.scp.cgp.service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.bjzhianjia.scp.cgp.biz.CaseInfoBiz;
 import com.bjzhianjia.scp.cgp.biz.MayorHotlineBiz;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
@@ -22,8 +12,17 @@ import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.vo.MayorHotlineVo;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 市长热线
@@ -360,13 +359,14 @@ public class MayorHotlineService {
 		MayorHotline mayorHotline = mayorHotlineBiz.selectById(id);
 		if (mayorHotline.getExeStatus().equals(doneExeStatus)) {
 			mayorHotline.setExeStatus(feedBackExeStatus);
+			mayorHotline.setReplyDatetime(new Date());// 记录反馈的时间
 			mayorHotlineBiz.updateSelectiveById(mayorHotline);
 			result.setIsSuccess(true);
 			result.setMessage("成功");
 			return result;
 		} else {
 			result.setIsSuccess(false);
-			result.setMessage("当前记录不能进行反馈处理，只有【已处理】的热线记录可执行反馈操作！");
+			result.setMessage("只有【已处理】的热线记录可执行反馈操作！");
 			return result;
 		}
 	}

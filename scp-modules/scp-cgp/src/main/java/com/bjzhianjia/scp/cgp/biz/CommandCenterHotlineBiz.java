@@ -4,22 +4,28 @@ import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.CommandCenterHotline;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.Result;
+import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.mapper.CommandCenterHotlineMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.CommonUtil;
+import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 记录来自指挥中心热线的事件
@@ -33,6 +39,12 @@ public class CommandCenterHotlineBiz extends BusinessBiz<CommandCenterHotlineMap
 
     @Autowired
     private CaseInfoBiz caseInfoBiz;
+
+    @Autowired
+    private Environment environment;
+
+    @Autowired
+    private DictFeign dictFeign;
 
     /**
      * 添加指挥长热线暂存<br/>
@@ -200,5 +212,42 @@ public class CommandCenterHotlineBiz extends BusinessBiz<CommandCenterHotlineMap
         List<CommandCenterHotline> list = this.selectByExample(example);
 
         return new TableResultResponse<>(pageInfo.getTotal(), list);
+    }
+
+    /**
+     * 批量删除对象
+     *
+     * @author 尚
+     * @param ids
+     *            待删除ID集合
+     */
+    public Result<Void> remove(Integer[] ids) {
+        Result<Void> result = new Result<>();
+
+        List<String> idList = new ArrayList<>();
+        for (Integer integer : ids) {
+            idList.add(String.valueOf(integer));
+        }
+
+        List<CommandCenterHotline> selectByIds = this.mapper.selectByIds(String.join(",", idList));
+
+        // 指挥中心热线状态借用市长热线的状态root_biz_12345state_todo
+        String toDoExeStatus = environment.getProperty("root_biz_12345state_todo");
+
+        for (CommandCenterHotline commandCenterHotline : selectByIds) {
+            if (!toDoExeStatus.equals(commandCenterHotline.getExeStatus())) {
+                Map<String, String> todoNameMap = dictFeign.getByCode(toDoExeStatus);
+                result.setIsSuccess(false);
+                result.setMessage("不能删除非【" + todoNameMap.get(toDoExeStatus) + "】的事件");
+                return result;
+            }
+        }
+
+        this.mapper.deleteByIds(ids, BaseContextHandler.getUserID(),
+                BaseContextHandler.getUsername(), new Date());
+
+        result.setIsSuccess(true);
+        result.setMessage("成功");
+        return result;
     }
 }

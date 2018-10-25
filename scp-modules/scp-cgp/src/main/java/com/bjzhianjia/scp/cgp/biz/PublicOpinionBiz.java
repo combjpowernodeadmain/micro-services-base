@@ -1,16 +1,5 @@
 package com.bjzhianjia.scp.cgp.biz;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.MayorHotline;
 import com.bjzhianjia.scp.cgp.entity.PublicOpinion;
@@ -24,9 +13,18 @@ import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 记录来自舆情的事件
@@ -97,7 +95,7 @@ public class PublicOpinionBiz extends BusinessBiz<PublicOpinionMapper, PublicOpi
 
         criteria.andEqualTo("isDeleted", "0");
         if (StringUtils.isNotBlank(publicOpinion.getOpinTitle())) {
-            criteria.andLike("opinTitle", publicOpinion.getOpinTitle());
+            criteria.andLike("opinTitle", "%" + publicOpinion.getOpinTitle() + "%");
         }
         if (StringUtils.isNotBlank(publicOpinion.getOpinCode())) {
             criteria.andLike("opinCode", "%" + publicOpinion.getOpinCode() + "%");

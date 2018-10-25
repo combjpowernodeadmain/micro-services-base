@@ -1,12 +1,13 @@
 package com.bjzhianjia.scp.cgp.entity;
 
-import java.io.Serializable;
-import java.util.Date;
+import com.alibaba.fastjson.annotation.JSONField;
 
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 巡查任务记录表
@@ -113,6 +114,7 @@ public class PatrolTask implements Serializable {
 
 	// 上报时间
 	@Column(name = "crt_time")
+	@JSONField(format="yyyy-MM-dd HH:mm:ss")
 	private Date crtTime;
 
 	/**

@@ -1,24 +1,5 @@
 package com.bjzhianjia.scp.cgp.service;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-
-import javax.transaction.Transactional;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -68,10 +49,26 @@ import com.bjzhianjia.scp.security.wf.base.task.service.impl.WfProcTaskServiceIm
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
+
+import javax.transaction.Transactional;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * 立案管理
@@ -488,6 +485,9 @@ public class CaseInfoService {
                 wfJObject.put("procTaskStatusName", wfProcBackBean.getProcTaskStatusName());
                 wfJObject.put("procTaskStatus", wfProcBackBean.getProcTaskStatus());
                 wfJObject.put("procCtaskcode", wfProcBackBean.getProcCtaskcode());
+                // 在返回列表里添加任务到达时间与处理时间
+                wfJObject.put("procTaskCommittime",wfProcBackBean.getProcTaskCommittime());
+                wfJObject.put("procTaskAssigntime",wfProcBackBean.getProcTaskAssigntime());
             }
 
             wfJObject.put("caseInfoId", caseInfo.getId());
@@ -1190,6 +1190,9 @@ public class CaseInfoService {
          */
         JSONArray commanderApproveJArray = new JSONArray();
         for (WfProcTaskHistoryBean wfProcTaskHistoryBean : procHistoryList) {
+            /*
+             * 指挥长相关信息用工作流表进行保存，在业务表里，只对指挥长审批意见进行了保存，弃用
+             */
             if (Constances.ProcCTaskCode.COMMANDERAPPROVE.equals(wfProcTaskHistoryBean.getProcCtaskcode())) {
                 JSONObject commanderApproveJObj = JSONObject.parseObject(JSON.toJSONString(wfProcTaskHistoryBean));
                 // 查询指挥长
@@ -1202,7 +1205,8 @@ public class CaseInfoService {
                         commanderApproveJObj.put("procTaskCommitter", wfProcTaskHistoryBean.getProcTaskCommitter());// 审批人ID
                         commanderApproveJObj.put("procTaskCommitterName", jObjTmp.getString("name"));// 审批人姓名
                         commanderApproveJObj.put("commanderTel", jObjTmp.getString("mobilePhone"));// 审批人联系方法
-                        commanderApproveJObj.put("procTaskCommittime", wfProcTaskHistoryBean.getProcTaskCommittime());// 审批时间
+                        //流程审批时间
+                        commanderApproveJObj.put("procTaskEndtime", wfProcTaskHistoryBean.getProcTaskEndtime());// 审批时间
                         commanderApproveJObj.put("procTaskApprOpinion", wfProcTaskHistoryBean.getProcTaskApprOpinion());// 审批意见
                         commanderApproveJArray.add(commanderApproveJObj);
                     }
@@ -1354,7 +1358,7 @@ public class CaseInfoService {
      * 按来源类型查询记录
      * 
      * @author 尚
-     * @param caseInfo
+     * @param sourceTypeKeyPatrol
      * @param page
      * @param limit
      * @return
