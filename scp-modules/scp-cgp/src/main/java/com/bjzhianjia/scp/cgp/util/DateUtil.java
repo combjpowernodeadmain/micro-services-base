@@ -94,4 +94,24 @@ public class DateUtil {
 
         return new Date(minusDays.getMillis());
     }
+
+	/**
+	 * 获取sourceDate明天的日期
+	 * @param sourceDate
+	 * @return
+	 */
+	public static Date theDayOfTommorrow(Date sourceDate) {
+		return theDayOfPlus(sourceDate,1);
+    }
+
+	/**
+	 * 获取sourceDate之后days天的日期
+	 * @param sourceDate
+	 * @param days
+	 * @return
+	 */
+	public static Date theDayOfPlus(Date sourceDate,int days){
+		DateTime dateTime = new DateTime(sourceDate.getTime());
+		return new Date(dateTime.plusDays(days).getMillis());
+	}
 }

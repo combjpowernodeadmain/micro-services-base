@@ -101,10 +101,10 @@ public class RightsIssuesBiz extends BusinessBiz<RightsIssuesMapper, RightsIssue
 
         criteria.andEqualTo("isDeleted", "0");
         if (StringUtils.isNotBlank(rightsIssues.getCode())) {
-            criteria.andEqualTo("code", rightsIssues.getCode());
+            criteria.andLike("code", "%" + rightsIssues.getCode() + "%");
         }
         if (StringUtils.isNotBlank(rightsIssues.getUnlawfulAct())) {
-            criteria.andEqualTo("unlawfulAct", rightsIssues.getUnlawfulAct());
+            criteria.andLike("unlawfulAct", "%" + rightsIssues.getUnlawfulAct() + "%");
         }
         if (bizTypes != null && bizTypes.size() > 0) {
             criteria.andIn("type", bizTypes);
@@ -127,10 +127,8 @@ public class RightsIssuesBiz extends BusinessBiz<RightsIssuesMapper, RightsIssue
     }
 
     /**
-     * 根据编号获取终端
-     * 
-     * @param terminalPhone
-     *            终端手机号
+     * 根据ID获取单个对象
+     * @param id 待查询对象ID
      * @return
      */
     public RightsIssues getById(Integer id) {

@@ -352,12 +352,12 @@ public class AreaGridService {
             return tableResult;
         }
 
-        queryAssist(rows);
+        _queryAssist(rows);
 
         return tableResult;
     }
 
-    public void queryAssist(List<AreaGridVo> rows) {
+    private void _queryAssist(List<AreaGridVo> rows) {
         // 如果网格有上级网格，则进行聚和
         List<Integer> gridParentIdList =
             rows.stream().map((o) -> o.getGridParent()).distinct().collect(Collectors.toList());
@@ -427,7 +427,7 @@ public class AreaGridService {
         AreaGridVo areaGridVo = BeanUtil.copyBean_New(areaGrid, new AreaGridVo());
         List<AreaGridVo> rows = new ArrayList<>();
         rows.add(areaGridVo);
-        queryAssist(rows);
+        _queryAssist(rows);
 
         // 查询网格是否有成员
         Map<String, Object> conditions = new HashMap<>();

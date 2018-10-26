@@ -77,7 +77,7 @@ public class AnnouncementInfoBiz extends BusinessBiz<AnnouncementInfoMapper,Anno
 				
 			}
 	    }
-	    example.setOrderByClause("id desc");
+	    example.setOrderByClause("is_stick DESC,id DESC");
 
 	    Page<Object> result = PageHelper.startPage(page, limit);
 	    List<AnnouncementInfo> list = announcementInfoMapper.selectByExample(example);

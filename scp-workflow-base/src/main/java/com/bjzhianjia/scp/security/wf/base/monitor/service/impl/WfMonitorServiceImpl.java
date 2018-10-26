@@ -388,7 +388,6 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
 				queryObj.put(key, authData.getAuthData(key));
 			}
 		}
-		System.out.println(queryObj);
 		return queryObj;
 	}
     
