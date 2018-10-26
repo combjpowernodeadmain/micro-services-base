@@ -60,6 +60,8 @@ mapper:
 #  qiniuAccessKey: xxxxx
 #  qiniuSecretKey: xxxxx
 #  qiniuBucketName: xxxx
+# (格式：/xxx/xxx)
+# localStoragePathPrefix: /xxx/xxx
 
 search:
   lucence:
