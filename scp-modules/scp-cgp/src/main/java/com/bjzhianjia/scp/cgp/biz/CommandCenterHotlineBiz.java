@@ -8,6 +8,7 @@ import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.mapper.CommandCenterHotlineMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.CommonUtil;
+import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
@@ -185,10 +186,12 @@ public class CommandCenterHotlineBiz extends BusinessBiz<CommandCenterHotlineMap
      * @param commandCenterHotline
      * @param page
      * @param limit
+     * @param startTime
+     * @param endTime
      * @return
      */
     public TableResultResponse<CommandCenterHotline> getList(CommandCenterHotline commandCenterHotline, int page,
-        int limit) {
+                                                             int limit, String startTime, String endTime) {
         Example example = new Example(commandCenterHotline.getClass());
 
         Criteria criteria = example.createCriteria();
@@ -205,6 +208,18 @@ public class CommandCenterHotlineBiz extends BusinessBiz<CommandCenterHotlineMap
         }
         if (StringUtils.isNotBlank(commandCenterHotline.getExeStatus())) {
             criteria.andEqualTo("exeStatus", commandCenterHotline.getExeStatus());
+        }
+        if(BeanUtil.isNotEmpty(startTime)&&BeanUtil.isNotEmpty(endTime)){
+            /*
+             * 当开始时间与结束时间都不为空时才进行按时间范围查询
+             * 查询结束时间包括当天
+             */
+            Date endTimeForQuery =
+                DateUtil.theDayOfTommorrow(
+                    DateUtil.dateFromStrToDate(endTime, DateUtil.DEFAULT_DATE_FORMAT));
+            Date startTimeForQuery =
+                DateUtil.dateFromStrToDate(startTime, DateUtil.DEFAULT_DATE_FORMAT);
+            criteria.andBetween("appealDatetime", startTimeForQuery, endTimeForQuery);
         }
 
         example.setOrderByClause("id desc");

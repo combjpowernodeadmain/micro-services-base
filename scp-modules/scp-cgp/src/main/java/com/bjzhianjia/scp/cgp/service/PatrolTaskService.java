@@ -197,15 +197,18 @@ public class PatrolTaskService {
 			}
 		}
 
-		// 提交受理中心
-		if ("submit".equals(handleStatus)) {
-			// 预立案单
-			Result<CaseInfo> caseInfoResult = this.createCaseInfo(patrolTask);
-			if (!caseInfoResult.getIsSuccess()) {
-				throw new Exception(caseInfoResult.getMessage());
-			}
-			result.setData(caseInfoResult.getData());
-		}
+		/*
+		 * 最初直接处理不发起事件登记，用“submit”来标示，现在直接处理也进工作流
+		 * 即前端传入的是“finish”的时候也要发起事件，故不进行判断
+		 */
+//		if ("submit".equals(handleStatus)) {
+        // 预立案单
+        Result<CaseInfo> caseInfoResult = this.createCaseInfo(patrolTask);
+        if (!caseInfoResult.getIsSuccess()) {
+            throw new Exception(caseInfoResult.getMessage());
+        }
+        result.setData(caseInfoResult.getData());
+        // }
 
 		result.setIsSuccess(true);
 		result.setMessage("成功");
@@ -248,6 +251,11 @@ public class PatrolTaskService {
 		caseInfo.setConcernedPerson(String.valueOf(patrolTask.getConcernedId()));
 		caseInfo.setConcernedType(String.valueOf(patrolTask.getConcernedType()));
 		caseInfo.setMapInfo(patrolTask.getMapInfo());
+
+		if(Constances.PartolTaskStatus.ROOT_BIZ_PARTOLTASKT_FINISH.equals(patrolTask)){
+			//巡查上报为【直接处理】
+            caseInfo.setIsFinished(CaseInfo.FINISHED_STATE_FINISH);
+		}
 
 		caseInfoBiz.insertSelective(caseInfo);
 		caseInfo.getId();
@@ -343,9 +351,6 @@ public class PatrolTaskService {
 		}
 		
 		//获取巡查任务状态
-		System.out.println(patrolTask.getStatus());
-		System.out.println(byCodeIn);
-		System.out.println(byCodeIn.get(patrolTask.getStatus()));
         String dictStatus =
             byCodeIn.get(patrolTask.getStatus()) == null ? ""
                 : byCodeIn.get(patrolTask.getStatus());

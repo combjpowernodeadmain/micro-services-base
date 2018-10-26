@@ -353,21 +353,18 @@ public class CaseInfoService {
         JSONObject bizData = objs.getJSONObject("bizData");
         // 事件工作流的定义代码
         bizData.put("prockey", "comprehensiveManage");
-        objs.put("bizData", bizData);
-
         if ("true".equals(queryData.getString("isQuery"))) {
             queryCaseInfo = JSONObject.parseObject(queryData.toJSONString(), CaseInfo.class);
             if (StringUtils.isNotBlank(queryData.getString("procCtaskname"))) {
                 // 是否按进度进行查找(即任务表中·PROC_CTASKNAME·字段)
-                bizData = objs.getJSONObject("bizData");
                 if (!CaseInfo.FINISHED_STATE_FINISH.equals(queryData.getString("procCtaskname"))
                     && !CaseInfo.FINISHED_STATE_STOP.equals(queryData.getString("procCtaskname"))) {
                     bizData.put("procCtaskname", queryData.getString("procCtaskname"));
                 }
 
-                objs.put("bizData", bizData);
             }
         }
+        objs.put("bizData", bizData);
 
         List<JSONObject> jObjList = new ArrayList<>();
 
@@ -448,7 +445,7 @@ public class CaseInfoService {
             }
             // eventTypeName = String.join(",", eventTypeNameList);
         }
-
+        
         for (CaseInfo caseInfo : caseInfoList) {
 
             JSONObject wfJObject = JSONObject.parseObject(JSON.toJSONString(caseInfo));
@@ -492,11 +489,20 @@ public class CaseInfoService {
 
             wfJObject.put("caseInfoId", caseInfo.getId());
             if (CaseInfo.FINISHED_STATE_FINISH.equals(caseInfo.getIsFinished())) {
-                wfJObject.put("procCtaskname", "已结案");
+                wfJObject.put("procCtaskname", wfJObject.getString("procCtaskname") + "(已结案)");
             }
 
             if (CaseInfo.FINISHED_STATE_STOP.equals(caseInfo.getIsFinished())) {
-                wfJObject.put("procCtaskname", "已终止");
+                wfJObject.put("procCtaskname", wfJObject.getString("procCtaskname") + "(已终止)");
+            }
+
+            if("1".equals(caseInfo.getIsDuplicate())){
+                CaseInfo dupCaseInfo = caseInfoBiz.selectById(caseInfo.getDuplicateWith());
+                if (BeanUtil.isNotEmpty(dupCaseInfo)) {
+                    wfJObject.put("procCtaskname", "重复事件(" + dupCaseInfo.getCaseCode() + ")");
+                } else {
+                    wfJObject.put("procCtaskname", "重复事件");
+                }
             }
 
             jObjList.add(wfJObject);

@@ -196,29 +196,36 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         Criteria criteria = example.createCriteria();
 
         criteria.andEqualTo("isDeleted", "0");
+        // 事件标题
         if (StringUtils.isNotBlank(caseInfo.getCaseTitle())) {
             if (caseInfo.getCaseTitle().length() > 127) {
                 throw new BizException("事件名称应该小于127个字符");
             }
             criteria.andLike("caseTitle", "%" + caseInfo.getCaseTitle() + "%");
         }
+        // 事件相关业务条线
         if (StringUtils.isNotBlank(caseInfo.getBizList())) {
             criteria.andLike("bizList", "%" + caseInfo.getBizList() + "%");
         }
+        // 事件相关事件类别
         if (StringUtils.isNotBlank(caseInfo.getEventTypeList())) {
             criteria.andLike("eventTypeList", "%" + caseInfo.getEventTypeList() + "%");
         }
+        // 事件来源
         if (StringUtils.isNotBlank(caseInfo.getSourceType())) {
             criteria.andEqualTo("sourceType", caseInfo.getSourceType());
         }
+        // 事发起止时间
         if (!(StringUtils.isBlank(startQueryTime) || StringUtils.isBlank(endQueryTime))) {
             Date start = DateUtil.dateFromStrToDate(startQueryTime, "yyyy-MM-dd HH:mm:ss");
             Date end = DateUtils.addDays(DateUtil.dateFromStrToDate(endQueryTime, "yyyy-MM-dd HH:mm:ss"), 1);
             criteria.andBetween("occurTime", start, end);
         }
+        // 事件级别
         if (StringUtils.isNotBlank(caseInfo.getCaseLevel())) {
             criteria.andEqualTo("caseLevel", caseInfo.getCaseLevel());
         }
+        // 按ID集合查询
         if (ids != null && !ids.isEmpty()) {
             criteria.andIn("id", ids);
         }
@@ -234,14 +241,15 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         if (StringUtils.isNotBlank(isOverTime) && "1".equals(isOverTime)) {
             // 任务没有结束，当前日期和期限日期进行判断，任务结束，则判断完成日期和期限日期
             String date = DateUtil.dateFromDateToStr(new Date(), "yyyy-MM-dd HH:mm:ss");
+            // 将OR关键字两侧条件作为一个整体
             criteria.andCondition(
-                "(dead_line < '" + date + "' and is_finished=0) or (dead_line < finish_time and is_finished in(1,2))");
+                "((dead_line < '" + date + "' and is_finished=0) or (dead_line < finish_time and is_finished in(1,2)))");
         }
         // 处理状态：已结案(0:未完成|1:已结案2:已终止)
         if (StringUtils.isNotBlank(isFinished) && !CaseInfo.FINISHED_STATE_TODO.equals(isFinished)) {
             // 只查询1:已结案2:已终止
-            if (CaseInfo.FINISHED_STATE_FINISH.equals(queryData.getString("procCtaskname"))
-                || CaseInfo.FINISHED_STATE_STOP.equals(queryData.getString("procCtaskname"))) {
+            if (CaseInfo.FINISHED_STATE_FINISH.equals(isFinished)
+                || CaseInfo.FINISHED_STATE_STOP.equals(isFinished)) {
                 criteria.andEqualTo("isFinished", isFinished);
             }
         }
@@ -249,6 +257,10 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             && Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CHECK.equals(sourceType)) {
             criteria.andEqualTo("sourceType", sourceType);
             criteria.andEqualTo("sourceCode", sourceCode);
+        }
+        // 事件编号
+        if (StringUtils.isNotBlank(caseInfo.getCaseCode())) {
+            criteria.andLike("caseCode", "%" + caseInfo.getCaseCode() + "%");
         }
         example.setOrderByClause("crt_time desc");
 
@@ -358,14 +370,14 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
     }
 
     /**
-     * 事件量趋势统计
      * 
-     * @param caseInfod
+     * @param caseInfo
      *            查询参数
      * @param startTime
      *            开始时间
      * @param endTime
      *            结束时间
+     * @param gridIds
      * @return
      */
     public List<Map<String, Object>> getStatisCaseInfo(CaseInfo caseInfo, String startTime, String endTime,

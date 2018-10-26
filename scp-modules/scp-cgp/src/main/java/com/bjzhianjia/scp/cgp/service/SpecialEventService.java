@@ -227,12 +227,12 @@ public class SpecialEventService {
 			e.printStackTrace();
 		}
 
-		List<SpecialEventVo> voList = queryAssist(rows);
+		List<SpecialEventVo> voList = _queryAssist(rows);
 
 		return new TableResultResponse<SpecialEventVo>(restResult.getData().getTotal(), voList);
 	}
 
-	public List<SpecialEventVo> queryAssist(List<SpecialEvent> rows) {
+	private List<SpecialEventVo> _queryAssist(List<SpecialEvent> rows) {
 		List<SpecialEventVo> voList = BeanUtil.copyBeanList_New(rows, SpecialEventVo.class);
 
         // 收集相关事件类别ID,事件类别保存形式如31,32;30;-;29
@@ -322,7 +322,7 @@ public class SpecialEventService {
 		}
 		
 		rows.add(one);
-		List<SpecialEventVo> result = queryAssist(rows);
+		List<SpecialEventVo> result = _queryAssist(rows);
 		return result.get(0);
 	}
 
@@ -361,7 +361,7 @@ public class SpecialEventService {
         }
 
         rows.add(one);
-        List<SpecialEventVo> resultVo = queryAssist(rows);
+        List<SpecialEventVo> resultVo = _queryAssist(rows);
         result.setIsSuccess(true);
         result.setData(resultVo.get(0));
         return result;

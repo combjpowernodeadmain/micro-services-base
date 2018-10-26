@@ -690,13 +690,21 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         JSONObject bizData = objs.getJSONObject("bizData");
         // 事件工作流的定义代码
         bizData.put("prockey", "LawEnforcementProcess");
-        objs.put("bizData", bizData);
         if (StringUtils.isNotBlank(queryData.getString("procCtaskname"))) {
-            // 是否按进度进行查找(即任务表中·PROC_CTASKNAME·字段)
-            bizData = objs.getJSONObject("bizData");
-            bizData.put("procCtaskname", queryData.getString("procCtaskname"));
-            objs.put("bizData", bizData);
+            /*
+             * 是否按进度进行查找(即任务表中·PROC_CTASKNAME·字段)
+             * 在需要中，进度除了流程图中节点进度外，还有自定义的【已结案】【已中止】进度
+             * 参数都通过procCtaskname传入,需进行判断是否为自定义进度
+             * 如果是自定义进度，则不进工作流中进行节点名称查询
+             */
+            if (!(CaseRegistration.EXESTATUS_STATE_FINISH
+                .equals(queryData.getString("procCtaskname"))
+                || CaseRegistration.EXESTATUS_STATE_STOP
+                    .equals(queryData.getString("procCtaskname")))) {
+                bizData.put("procCtaskname", queryData.getString("procCtaskname"));
+            }
         }
+        objs.put("bizData", bizData);
 
         // 查询所有工作流任务
         PageInfo<WfProcBackBean> pageInfo = wfMonitorService.getAllTasks(objs);
@@ -812,11 +820,11 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             if (wfProcBackBean != null) {
                 procCtaskname = wfProcBackBean.getProcCtaskname();
                 if (CaseRegistration.EXESTATUS_STATE_FINISH.equals(caseRegistration.getExeStatus())) {
-                    procCtaskname = "已结案";
+                    procCtaskname = procCtaskname + "(已结案)";
                 }
 
                 if (CaseRegistration.EXESTATUS_STATE_STOP.equals(caseRegistration.getExeStatus())) {
-                    procCtaskname = "已终止";
+                    procCtaskname = procCtaskname + "(已终止)";
                 }
                 objResult.put("procCtaskname", procCtaskname);
                 objResult.put("procInstId", wfProcBackBean.getProcInstId());
@@ -941,7 +949,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         if (!(StringUtils.isBlank(startQueryTime) || StringUtils.isBlank(endQueryTime))) {
             Date start = DateUtil.dateFromStrToDate(startQueryTime, "yyyy-MM-dd HH:mm:ss");
             Date end = DateUtils.addDays(DateUtil.dateFromStrToDate(endQueryTime, "yyyy-MM-dd HH:mm:ss"), 1);
-            criteria.andBetween("case_source_time", start, end);
+            // 案发时间为caseTime
+            criteria.andBetween("caseTime", start, end);
         }
         if (ids != null && !ids.isEmpty()) {
             criteria.andIn("id", ids);
@@ -958,15 +967,16 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         if (StringUtils.isNotBlank(isOverTime) && "1".equals(isOverTime)) {
             String date = DateUtil.dateFromDateToStr(new Date(), "yyyy-MM-dd HH:mm:ss");
             // 处理中，当前日期和期限日期进行判断， 结束，则判断完成日期和期限日期
+            // 将OR关键字两侧条件作为一个整体
             criteria.andCondition(
-                "('" + date + "' > case_end AND exe_status = 0) OR ( case_end < upd_time AND exe_status IN (1, 2))");
+                "(('" + date + "' > case_end AND exe_status = 0) OR ( case_end < upd_time AND exe_status IN (1, 2)))");
         }
 
         // 处理状态：0处理中|1:已结案2:已终止
         if (StringUtils.isNotBlank(exeStatus) && !CaseRegistration.EXESTATUS_STATE_TODO.equals(exeStatus)) {
             // 只查询1:已结案2:已终止
-            if (CaseRegistration.EXESTATUS_STATE_FINISH.equals(queryData.getString("procCtaskname"))
-                && CaseRegistration.EXESTATUS_STATE_STOP.equals(queryData.getString("procCtaskname"))) {
+            if (CaseRegistration.EXESTATUS_STATE_FINISH.equals(exeStatus)
+                || CaseRegistration.EXESTATUS_STATE_STOP.equals(exeStatus)) {
                 criteria.andEqualTo("exeStatus", exeStatus);
             }
         }
@@ -1495,7 +1505,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             dictKeyList.add(caseRegistration.getBizType());
         }
         if (StringUtils.isNotBlank(caseRegistration.getCaseSource())) {
-            dictKeyList.add(caseRegistration.getCaseSource());
+            dictKeyList.add(caseRegistration.getCaseSourceType());
         }
         if (StringUtil.isNotBlank(caseRegistration.getDealType())) {
             dictKeyList.add(caseRegistration.getDealType());
@@ -1511,7 +1521,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         // 业务条线,案件来源,处理方式
         if (BeanUtil.isNotEmpty(dictValueMap)) {
             result.put("bizName", dictValueMap.get(caseRegistration.getBizType()));
-            result.put("caseSourceName", dictValueMap.get(caseRegistration.getCaseSource()));
+            result.put("caseSourceName", dictValueMap.get(caseRegistration.getCaseSourceType()));
             result.put("dealTypeName", dictValueMap.get(caseRegistration.getDealType()));
         }
 
@@ -1534,18 +1544,10 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             }
         }
 
-        // 举报人姓名
-        JSONArray informerUser = new JSONArray();
-        if (StringUtils.isNotBlank(caseRegistration.getCaseInformer())) {
-            informerUser = iUserFeign.getByUserIds(caseRegistration.getCaseInformer());
-        }
-        String caseInformerName = "";
-        if (informerUser != null && !informerUser.isEmpty()) {
-            for (int i = 0; i < informerUser.size(); i++) {
-                caseInformerName = informerUser.getJSONObject(i).getString("name");
-            }
-        }
-        result.put("caseInformerName", caseInformerName);
+        /*
+         * 举报人姓名,举报人保存的为举报人的姓名，并不是系统内的人员，不能保存ID，无需转化
+         * 将之前获取举报人姓名的逻辑去掉
+         */
 
         // 执法者用户名
         JSONArray userList = null;

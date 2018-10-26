@@ -72,9 +72,9 @@ public class VhclManagementBiz extends BusinessBiz<VhclManagementMapper, VhclMan
 		Example.Criteria criteria = example.createCriteria();
 
 		criteria.andEqualTo("isDeleted", "0");
-		if (StringUtils.isNotBlank(vhcl.getVehicleNum())) {
-			criteria.andEqualTo("vehicleNum", vhcl.getVehicleNum());
-		}
+        if (StringUtils.isNotBlank(vhcl.getVehicleNum())) {
+            criteria.andLike("vehicleNum", "%" + vhcl.getVehicleNum() + "%");
+        }
 		if (StringUtils.isNotBlank(vhcl.getVehicleType())) {
 			criteria.andEqualTo("vehicleType", vhcl.getVehicleType());
 		}

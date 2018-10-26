@@ -27,6 +27,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
+import java.util.Date;
+
 @RestController
 @RequestMapping("commandCenterHotline")
 @CheckClientToken
@@ -66,12 +68,15 @@ public class CommandCenterHotlineController
 
     @GetMapping("/list")
     @ApiOperation("分页获取列表")
-    public TableResultResponse<JSONObject> getList(@RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
+    public TableResultResponse<JSONObject> getList(
+        @RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
         @RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
         @RequestParam(defaultValue = "") @ApiParam(name = "热线标题") String hotlnTitle,
         @RequestParam(defaultValue = "") @ApiParam(name = "诉求人") String appealPerson,
         @RequestParam(defaultValue = "") @ApiParam(name = "热线事件分类") String bizType,
-        @RequestParam(defaultValue = "") @ApiParam(name = "处理状态") String exeStatus) {
+        @RequestParam(defaultValue = "") @ApiParam(name = "处理状态") String exeStatus,
+        @RequestParam(required = false) @ApiParam("查询开始时间") String startTime,
+        @RequestParam(required = false) @ApiParam("查询结束时间") String endTime) {
 
         CommandCenterHotline commandCenterHotline = new CommandCenterHotline();
         commandCenterHotline.setHotlnTitle(hotlnTitle);
@@ -79,7 +84,8 @@ public class CommandCenterHotlineController
         commandCenterHotline.setBizType(bizType);
         commandCenterHotline.setExeStatus(exeStatus);
 
-        return commandCenterHotlineServoce.getList(commandCenterHotline, page, limit);
+        return commandCenterHotlineServoce.getList(commandCenterHotline, page, limit, startTime,
+            endTime);
     }
     
     @GetMapping("/one/{id}")

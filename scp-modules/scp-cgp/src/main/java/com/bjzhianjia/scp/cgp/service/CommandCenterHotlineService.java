@@ -2,6 +2,7 @@ package com.bjzhianjia.scp.cgp.service;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import com.bjzhianjia.scp.cgp.util.DateUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -57,11 +59,14 @@ public class CommandCenterHotlineService {
      * @param commandCenterHotline
      * @param page
      * @param limit
+     * @param startTime
+     * @param endTime
      * @return
      */
-    public TableResultResponse<JSONObject> getList(CommandCenterHotline commandCenterHotline, int page, int limit) {
+    public TableResultResponse<JSONObject> getList(CommandCenterHotline commandCenterHotline,
+                                                   int page, int limit, String startTime, String endTime) {
         TableResultResponse<CommandCenterHotline> restResult =
-            commandCenterHotlineBiz.getList(commandCenterHotline, page, limit);
+            commandCenterHotlineBiz.getList(commandCenterHotline, page, limit, startTime, endTime);
 
         List<CommandCenterHotline> hotLineList = restResult.getData().getRows();
         if (BeanUtil.isEmpty(hotLineList)) {
