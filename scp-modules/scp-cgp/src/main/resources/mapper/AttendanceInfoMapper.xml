@@ -113,8 +113,12 @@
 		'|'),'|',1) sign_in_map_info
 		,if(count(*)=1,'',substring_index(group_concat(map_info order by id
 		separator '|'),'|',-1)) sign_out_map_info
-		,if(count(*)=1,'',substring_index(group_concat(longitude,',',latitude
-		order by id separator '|'),'|',1)) sign_in_map
+		,
+		<!--需要上已确定，如果当天打卡只有一条的话，即为签到，所以不需要做count(*)=1的判断，就将该条作为签到的记录-->
+		<!--if(count(*)=1,'',substring_index(group_concat(longitude,',',latitude
+		order by id separator '|'),'|',1)) sign_in_map-->
+		substring_index(group_concat(longitude,',',latitude
+		order by id separator '|'),'|',1) sign_in_map
 		,if(count(*)=1,'',substring_index(group_concat(longitude,',',latitude
 		order by id separator '|'),'|',-1)) sign_out_map
 		from attendance_info
