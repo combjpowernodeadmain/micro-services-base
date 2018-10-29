@@ -201,66 +201,46 @@
 		case_info
 		WHERE
 		<include refid="isParamNull"/>
-			AND grid in(#{gridIds})
+			<!--AND grid in(#{gridIds})-->
 		GROUP BY
 		biz_list
 	</select>
-	
-	<!-- 网格事件统计  -->
-	<select id="selectGrid" resultType="java.util.Map">
+
+	<!-- 按网格查询事件分布 -->
+	<select id="selectByGrid" resultType="com.alibaba.fastjson.JSONObject">
+
 		SELECT
 		grid,
 		gridCode,
 		gridName,
 		gridLevel,
-		ifnull(gridParentCode,'') gridParentCode,
-		ifnull(gridParentName,'') gridParentName,
-		(CASE total WHEN total is null THEN total ELSE 0 END) total,
-		MAX(CASE isFinished WHEN '0' THEN count ELSE 0 END ) stateTodo,
-		MAX(CASE isFinished WHEN '1' THEN count ELSE 0 END ) stateFinish,
-		MAX(CASE isFinished WHEN '2' THEN count ELSE 0 END ) stateStop,
-		ifnull(overtimeCount,0) overtimeCount
-		FROM
-			(
-					SELECT
+		IFNULL(gridParentCode,'') gridParentCode,
+		IFNULL(gridParentName,'') gridParentName,
+		IFNULL(total_,0) total_,
+		MAX(CASE isFinished WHEN '0' THEN count_ ELSE 0 END ) stateTodo,
+		MAX(CASE isFinished WHEN '1' THEN count_ ELSE 0 END ) stateFinish,
+		MAX(CASE isFinished WHEN '2' THEN count_ ELSE 0 END ) stateStop,
+		IFNULL(overtimeCount,0) overtimeCount
+		FROM(
+
+SELECT
 					ag1.id grid,
 					ag1.grid_code gridCode,
 					ag1.grid_name gridName,
 					ag1.grid_level gridLevel,
 					ag2.grid_code gridParentCode,
 					ag2.grid_name gridParentName,
-					total,
+					total_,
 					is_finished isFinished,
-					count,
+					count_,
 					overtimeCount
 				FROM
 				area_grid ag1
-				LEFT JOIN (
-					SELECT
+
+LEFT JOIN (
+SELECT
 						grid,
-						is_finished,
-						count(id) count
-					FROM
-						case_info
-					WHERE
-						<include refid="isParamNull"/>
-					GROUP BY
-						grid,
-						is_finished
-				) caseinfo1 ON caseinfo1.grid = ag1.id
-				LEFT JOIN (
-					SELECT
-						grid,
-						count(id) total
-					FROM
-						case_info
-					GROUP BY
-						grid
-				) caseinfo2 ON caseinfo1.grid = caseinfo2.grid
-				LEFT JOIN (
-					SELECT
-						grid,
-						count(id) overtimeCount
+						COUNT(id) overtimeCount
 					FROM
 						case_info
 					WHERE
@@ -276,24 +256,51 @@
 						)
 					)
 					GROUP BY
-						grid
-				) caseinfo3 ON caseinfo1.grid = caseinfo3.grid
-				LEFT JOIN area_grid ag2 ON ag2.id = ag1.grid_parent
-				WHERE
-				ag1.grid_level=#{gridLevel}
-			) temp
-		GROUP BY
+						grid) c ON c.grid=ag1.id
+
+						LEFT JOIN(
+
+SELECT
+						grid,
+						COUNT(id) total_
+					FROM
+						case_info
+					GROUP BY
+						grid) g_m ON g_m.grid=ag1.id
+
+						LEFT JOIN (
+
+SELECT
+						grid,
+						is_finished,
+						COUNT(id) count_
+					FROM
+						case_info
+
+						WHERE
+				<include refid="isParamNull"/>
+
+					GROUP BY
+						grid,
+						is_finished) g_e ON g_e.grid=ag1.id
+
+						LEFT JOIN area_grid ag2 ON ag2.`id`=ag1.`grid_parent`
+						WHERE
+			ag1.grid_level =#{gridLevel}) tmp
+
+
+
+						GROUP BY
 			grid,
 			gridCode,
 			gridName,
 			gridLevel,
 			gridParentCode,
 			gridParentName,
-			total,
+			total_,
 			overtimeCount
 		ORDER BY
-			total desc
+			total_ DESC
+
 	</select>
-	
-	
 </mapper>

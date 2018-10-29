@@ -382,7 +382,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
     @ApiOperation("网格事件统计")
     @RequestMapping(value = "/statis/grid", method = RequestMethod.GET)
     @ResponseBody
-    public TableResultResponse<Map<String,Object>> getGrid(
+    public TableResultResponse<JSONObject> getGrid(
         @RequestParam(defaultValue = "") @ApiParam("业务条线") String bizList,
         @RequestParam(defaultValue = "") @ApiParam("事件类别") String eventTypeList,
         @RequestParam(defaultValue = "") @ApiParam("网格等级") String gridLevel,
@@ -405,7 +405,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
             _end = DateUtils.addDays(_end, 1);
             endTime = DateUtil.dateFromDateToStr(_end, "yyyy-MM-dd HH:mm:ss");
         }
-        TableResultResponse<Map<String,Object>> result  = caseInfoBiz.getGrid(caseInfo, gridLevel, startTime, endTime, page, limit);
+        TableResultResponse<JSONObject> result  = caseInfoBiz.getGrid(caseInfo, gridLevel, startTime, endTime, page, limit);
         return result;
     }
     

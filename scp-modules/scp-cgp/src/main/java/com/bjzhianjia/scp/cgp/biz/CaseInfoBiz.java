@@ -1,22 +1,5 @@
 package com.bjzhianjia.scp.cgp.biz;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
@@ -33,9 +16,25 @@ import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 /**
  * CaseInfoBiz 预立案信息.
@@ -452,17 +451,15 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         // 网格等级
         List<AreaGrid> areaGridList = null;
         // 网格ids
-        StringBuilder gridIds = new StringBuilder();
+        String gridIds="";
+        Set<String> gridIdSet=new HashSet<>();
         if (StringUtils.isNotBlank(gridLevel)) {
             areaGridList = areaGridBiz.getByGridLevel(gridLevel);
-            int size = areaGridList.size();
-            for (int i = 0; i < size; i++) {
-                AreaGrid areaGrid = areaGridList.get(i);
-                if (i == size - 1) {
-                    gridIds.append(areaGrid.getId());
-                } else {
-                    gridIds.append(areaGrid.getId()).append(",");
+            if(BeanUtil.isNotEmpty(areaGridList)){
+                for(AreaGrid areaGridTmp:areaGridList){
+                    gridIdSet.add(String.valueOf(areaGridTmp.getId()));
                 }
+                gridIds=String.join(",", gridIdSet);
             }
         }
 
@@ -483,17 +480,20 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             temp.put(key, obj);
         }
         // 封装数据库中的数据
+        System.out.println(gridIds.toString());
         List<Map<String, Object>> bizLineList =
-            this.mapper.selectBizLine(caseInfo, gridIds.toString(), startTime, endTime);
+            this.mapper.selectBizLine(caseInfo, gridIds, startTime, endTime);
         if (BeanUtil.isNotEmpty(bizLineList)) {
             for (Map<String, Object> bizLineMap : bizLineList) {
                 obj = new JSONObject();
                 String bizList = String.valueOf(bizLineMap.get("bizList"));
-                // 业务条线
-                obj.put("bizList", bizList);
-                obj.put("count", bizLineMap.get("count"));
-                obj.put("bizListName", bizType.get(bizList));
-                temp.put(bizList, obj);
+                if(StringUtils.isNotBlank(bizType.get(bizList))){
+                    // 业务条线
+                    obj.put("bizList", bizList);
+                    obj.put("count", bizLineMap.get("count"));
+                    obj.put("bizListName", bizType.get(bizList));
+                    temp.put(bizList, obj);
+                }
             }
         }
         // 封装返回集数据
@@ -517,7 +517,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
      *            结束时间
      * @return
      */
-    public TableResultResponse<Map<String, Object>> getGrid(CaseInfo caseInfo, String gridLevel, String startTime,
+    public TableResultResponse<JSONObject> getGrid(CaseInfo caseInfo, String gridLevel, String startTime,
         String endTime, Integer page, Integer limit) {
         // 网格等级
         List<AreaGrid> areaGridList = null;
@@ -541,15 +541,24 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             level = new HashMap<>();
         }
         Page<Object> result = PageHelper.startPage(page, limit);
-        List<Map<String, Object>> list = this.mapper.selectGrid(caseInfo, startTime, endTime, gridIds.toString(),gridLevel);
+        List<JSONObject> list = this.mapper.selectByGrid(caseInfo, startTime, endTime, gridIds.toString(),gridLevel);
+
         if (BeanUtil.isNotEmpty(list)) {
-            for (Map<String, Object> map : list) {
+            for (JSONObject map : list) {
                 String levelName = level.get(map.get("gridLevel"));
                 map.put("gridLevelName", levelName);
+                /*
+                 * 在mysql里，count为关键字，修改sql语句加下划线，但前端已按count字样对接
+                 * 在此做下处理
+                 */
+                map.put("total", map.getInteger("total_") == null ? 0 : map.getInteger("total_"));
+                map.put("count", map.getInteger("count_") == null ? 0 : map.getInteger("count_"));
+                map.remove("total_");
+                map.remove("count_");
             }
-            return new TableResultResponse<Map<String, Object>>(result.getTotal(), list);
+            return new TableResultResponse<>(result.getTotal(), list);
         }
-        return new TableResultResponse<Map<String, Object>>(0, null);
+        return new TableResultResponse<>(0, null);
 
     }
     

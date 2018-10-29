@@ -694,6 +694,8 @@ public class CaseInfoService {
      */
     @Transactional
     public void completeProcess(@RequestBody JSONObject objs) {
+        log.debug("进行事件审批，参数结构为："+objs.toString());
+
         // 完成已签收的任务，将工作流向下推进
         wfProcTaskService.completeProcessInstance(objs);
 

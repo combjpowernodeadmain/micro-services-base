@@ -1,12 +1,12 @@
 package com.bjzhianjia.scp.cgp.mapper;
 
-import java.util.List;
-import java.util.Map;
-
-import org.apache.ibatis.annotations.Param;
-
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * CaseInfoMapper 预立案信息.
@@ -87,14 +87,13 @@ public interface CaseInfoMapper extends CommonMapper<CaseInfo> {
         @Param("startTime") String startTime, @Param("endTime") String endTime);
     
     /**
-     * 网格事件统计 
+     * 网格事件统计
      * @param caseInfo 查询条件
      * @param gridIds 网格ids
      * @param startTime  开始时间
      * @param endTime   结束时间
      * @return
      */
-    public List<Map<String ,Object>> selectGrid(@Param("caseInfo") CaseInfo caseInfo,@Param("startTime") String startTime, 
-        @Param("endTime") String endTime,@Param("gridIds")String gridIds,@Param("gridLevel")String gridLevel);
-    
+    public List<JSONObject> selectByGrid(@Param("caseInfo") CaseInfo caseInfo,@Param("startTime") String startTime,
+                                         @Param("endTime") String endTime,@Param("gridIds")String gridIds,@Param("gridLevel")String gridLevel);
 }
