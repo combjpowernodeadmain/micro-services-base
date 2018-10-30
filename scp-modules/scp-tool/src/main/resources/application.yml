@@ -22,8 +22,9 @@ spring:
             max-active: 20
     http:
       multipart:
-        max-file-size: 10Mb
-        max-request-size: 10Mb
+        max-file-size: 120Mb
+        max-request-size: 120Mb
+
 # 配置数据库
 mybatis:
     mapper-locations: "classpath*:mapper/*.xml"

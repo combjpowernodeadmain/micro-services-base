@@ -38,9 +38,7 @@ public class FileUtil {
         StringBuffer datePath = new StringBuffer();
         datePath.append("/").append(calendar.get(Calendar.YEAR))
                 .append("/").append(calendar.get(Calendar.MONTH) + 1)
-                .append("/").append(calendar.get(Calendar.DAY_OF_MONTH))
-                .append("/").append(calendar.get(Calendar.HOUR_OF_DAY))
-                .append("/");
+                .append("/").append(calendar.get(Calendar.DAY_OF_MONTH)).append("/");
         return datePath.toString();
     }
 
