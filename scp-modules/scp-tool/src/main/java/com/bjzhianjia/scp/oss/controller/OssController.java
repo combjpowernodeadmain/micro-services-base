@@ -89,7 +89,7 @@ public class OssController {
         //上传文件
         CloudStorageService storageService = ossFactory.build();
         List<String> urls = new ArrayList<>();
-        String url = null;
+        String url = "";
         for (int i = 0; i < files.length; i++) {
             MultipartFile file = files[i];
             String suffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
