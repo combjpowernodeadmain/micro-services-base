@@ -48,7 +48,7 @@ public class InspectItemsController extends BaseController<InspectItemsBiz,Inspe
     				,@RequestParam(defaultValue = "") @ApiParam(name="巡查事项编号") String code
     				,@RequestParam(defaultValue = "") @ApiParam(name="巡查事项名称") String name
     				,@RequestParam(defaultValue = "") @ApiParam(name="业务条线") String bizType
-    				,@RequestParam(defaultValue = "eventType") @ApiParam(name="事件类别") String eventType
+    				,@RequestParam(value="eventType",defaultValue = "") @ApiParam(name="事件类别") String eventType
 	) {
 	    
 		InspectItems inspectItems = new InspectItems();

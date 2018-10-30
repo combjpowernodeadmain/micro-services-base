@@ -68,7 +68,7 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
      * 按条件查询未被删除的网格
      * 
      * @author 尚
-     * @param gridCde
+     * @param conditions
      * @return
      */
     public List<AreaGrid> getByMap(Map<String, String> conditions) {
@@ -273,25 +273,58 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         }
         return new ArrayList<>();
     }
-    
-    
+
+    /**
+     * 根据网格等级获取网格信息(mapInfo/id/gridName)
+     * @param gridLevelKey
+     * @return
+     */
     public TableResultResponse<JSONObject> getByAreaGrid(String gridLevelKey){
+        return _gridLevelAssist(gridLevelKey,true);
+    }
+
+    /**
+     * 根据网格等级获取网格信息(mapInfo/id/gridName)
+     * @param gridLevelKey
+     * @return
+     */
+    public TableResultResponse<JSONObject> getByAreaGridP(String gridLevelKey){
+        return _gridLevelAssist(gridLevelKey,false);
+    }
+
+    /**
+     * 根据网格等级获取网格信息
+     * @param gridLevelKey 网格等级，有可能是前端与后端约定的配置文件里的key
+     * @param isLoadPropertyFromProfile 是否从配置文件获取属性信息
+     * @return
+     */
+    private TableResultResponse<JSONObject> _gridLevelAssist(String gridLevelKey,boolean isLoadPropertyFromProfile) {
         TableResultResponse<JSONObject> tableResultResponse=new TableResultResponse<>();
-        
-        String property = environment.getProperty(gridLevelKey);
+
+        String property;
+        if(isLoadPropertyFromProfile){
+            property = environment.getProperty(gridLevelKey);
+        }else{
+            property=gridLevelKey;
+        }
         if(StringUtils.isBlank(property)) {
             tableResultResponse.setStatus(400);
             tableResultResponse.setMessage(gridLevelKey+"不存在");
             return tableResultResponse;
         }
-        
+
+        Set<String> properties=new HashSet<>();
+        for(String propertyKey:property.split(",")){
+            properties.add(propertyKey);
+        }
+
         Example example=new Example(AreaGrid.class);
         Criteria criteria = example.createCriteria();
         criteria.andEqualTo("isDeleted", "0");
-        criteria.andEqualTo("gridLevel", property);
-        
+        criteria.andIn("gridLevel", properties);
+
         List<AreaGrid> areaGridList = this.selectByExample(example);
-        
+
         List<JSONObject> resultJObj=new ArrayList<>();
         if(BeanUtil.isNotEmpty(areaGridList)) {
             for (AreaGrid areaGrid : areaGridList) {
@@ -306,12 +339,12 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
             tableResultResponse.getData().setRows(resultJObj);
             return tableResultResponse;
         }
-        
+
         tableResultResponse.setStatus(400);
         tableResultResponse.setMessage("未找到相应数据");
         return tableResultResponse;
     }
-    
+
     /**
      * 合并areaGridList里网格的父级网格
      * @param areaGridList

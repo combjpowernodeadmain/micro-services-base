@@ -33,7 +33,7 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
     public void before(String dealType, Map<String, Object> procBizData) throws BizException {
         String bizType = String.valueOf(procBizData.get(PROC_BIZTYPE));
         log.debug("*********************************enter into call_back program*************************************");
-        log.debug("*********************************bizType:" + bizType + "*************************************");
+        log.debug("********************参数结构为:" + procBizData.toString() + "******************");
 
         switch (bizType) {
             case PROC_APPROVE:

@@ -306,12 +306,15 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         @RequestParam(defaultValue = "") @ApiParam("网格范围") String gridIds,
         @RequestParam(defaultValue = "") @ApiParam("事件级别") String caseLevel,
         @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
-        @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime) {
+        @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime,
+        @RequestParam(defaultValue = "") @ApiParam("事件来源类型") String sourceType
+        ) {
         
         CaseInfo caseInfo = new CaseInfo();
         caseInfo.setBizList(bizList);
         caseInfo.setEventTypeList(eventTypeList);
         caseInfo.setCaseLevel(caseLevel);
+        caseInfo.setSourceType(sourceType);
         
         Calendar calendar =  Calendar.getInstance();
         String _startTime = startTime;
@@ -382,7 +385,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
     @ApiOperation("网格事件统计")
     @RequestMapping(value = "/statis/grid", method = RequestMethod.GET)
     @ResponseBody
-    public TableResultResponse<Map<String,Object>> getGrid(
+    public TableResultResponse<JSONObject> getGrid(
         @RequestParam(defaultValue = "") @ApiParam("业务条线") String bizList,
         @RequestParam(defaultValue = "") @ApiParam("事件类别") String eventTypeList,
         @RequestParam(defaultValue = "") @ApiParam("网格等级") String gridLevel,
@@ -405,7 +408,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
             _end = DateUtils.addDays(_end, 1);
             endTime = DateUtil.dateFromDateToStr(_end, "yyyy-MM-dd HH:mm:ss");
         }
-        TableResultResponse<Map<String,Object>> result  = caseInfoBiz.getGrid(caseInfo, gridLevel, startTime, endTime, page, limit);
+        TableResultResponse<JSONObject> result  = caseInfoBiz.getGrid(caseInfo, gridLevel, startTime, endTime, page, limit);
         return result;
     }
     

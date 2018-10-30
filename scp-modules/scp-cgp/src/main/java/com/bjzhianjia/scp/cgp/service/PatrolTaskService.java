@@ -41,6 +41,7 @@ import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -251,6 +252,9 @@ public class PatrolTaskService {
 		caseInfo.setConcernedPerson(String.valueOf(patrolTask.getConcernedId()));
 		caseInfo.setConcernedType(String.valueOf(patrolTask.getConcernedType()));
 		caseInfo.setMapInfo(patrolTask.getMapInfo());
+		//添加巡查事件发生时间
+        caseInfo
+            .setOccurTime(patrolTask.getCrtTime() == null ? new Date() : patrolTask.getCrtTime());
 
 		if(Constances.PartolTaskStatus.ROOT_BIZ_PARTOLTASKT_FINISH.equals(patrolTask)){
 			//巡查上报为【直接处理】
