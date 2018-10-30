@@ -1,8 +1,22 @@
 package com.bjzhianjia.scp.cgp.rest;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.alibaba.fastjson.JSONObject;
+import com.bjzhianjia.scp.cgp.biz.AreaGridBiz;
+import com.bjzhianjia.scp.cgp.entity.AreaGrid;
+import com.bjzhianjia.scp.cgp.entity.Point;
+import com.bjzhianjia.scp.cgp.entity.Result;
+import com.bjzhianjia.scp.cgp.service.AreaGridService;
+import com.bjzhianjia.scp.cgp.vo.AreaGridTree;
+import com.bjzhianjia.scp.cgp.vo.AreaGridVo;
+import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
+import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
+import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.common.rest.BaseController;
+import com.bjzhianjia.scp.security.common.util.TreeUtil;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -15,24 +29,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.alibaba.fastjson.JSONObject;
-import com.bjzhianjia.scp.cgp.biz.AreaGridBiz;
-import com.bjzhianjia.scp.cgp.entity.AreaGrid;
-import com.bjzhianjia.scp.cgp.entity.Result;
-import com.bjzhianjia.scp.cgp.service.AreaGridService;
-import com.bjzhianjia.scp.cgp.entity.Point;
-import com.bjzhianjia.scp.cgp.vo.AreaGridTree;
-import com.bjzhianjia.scp.cgp.vo.AreaGridVo;
-import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
-import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
-import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
-import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
-import com.bjzhianjia.scp.security.common.rest.BaseController;
-import com.bjzhianjia.scp.security.common.util.TreeUtil;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -66,9 +64,7 @@ public class AreaGridController extends BaseController<AreaGridBiz, AreaGrid, In
     
     /**
      * 添加单个对象
-     * 
-     * @author 尚
-     * @param areaGrid
+     * @param areaGridJObject
      * @param bindingResult
      * @return
      */
@@ -251,11 +247,28 @@ public class AreaGridController extends BaseController<AreaGridBiz, AreaGrid, In
         }
         return resut;
     }
-    
+
+    /**
+     * 当前端想查询特定网格等级下的网格时(并没有拿网格等级code值)，调用该接口
+     * @param gridLevelKey
+     * @return
+     */
     @GetMapping("/list/level")
     @ApiOperation("根据网格等级获取网格")
     public TableResultResponse<JSONObject> getByAreaGrid(@RequestParam @ApiParam("待查询网格等级") String gridLevelKey){
         TableResultResponse<JSONObject> restResult = this.baseBiz.getByAreaGrid(gridLevelKey);
+            return restResult;
+    }
+
+    /**
+     * 当前端已获取网络等级code值时(如通过网格等级列表加载的)，调用该接口
+     * @param gridLevelKey
+     * @return
+     */
+    @GetMapping("/list/gridLevel")
+    @ApiOperation("根据网格等级获取网格(已获取网格等级code)")
+    public TableResultResponse<JSONObject> getByAreaGridP(@RequestParam @ApiParam("待查询网格等级") String gridLevelKey){
+        TableResultResponse<JSONObject> restResult = this.baseBiz.getByAreaGridP(gridLevelKey);
             return restResult;
     }
 }

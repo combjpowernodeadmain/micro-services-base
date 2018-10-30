@@ -270,7 +270,9 @@
 				detailG.dealTypeCount,
 				itemG.total,
 				items.code,
-				items.name
+
+				<!-- 获取违法行为，并起别名为name，在程序中从结果集中取值时按name作为key进行取 -->
+				items.unlawful_act name
 			FROM
 				(
 					SELECT
@@ -294,7 +296,9 @@
 				GROUP BY
 					inspect_item
 			) itemG ON detailG.inspectItem = itemG.inspect_item
-			LEFT JOIN inspect_items items ON items.id = detailG.inspectItem
+
+			<!-- 违法行为为权力事项，应与权力事项表进行关联查询 -->
+			LEFT JOIN rights_issues items ON items.id = detailG.inspectItem
 		) temp
 	GROUP BY
 	inspectItem,

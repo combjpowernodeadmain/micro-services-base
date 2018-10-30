@@ -252,6 +252,10 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
                 criteria.andEqualTo("isFinished", isFinished);
             }
         }
+        // 处理状态：只查询未完成
+        if(StringUtils.isNotBlank(queryData.getString("toFinish"))){
+            criteria.andEqualTo("isFinished", queryData.getString("toFinish"));
+        }
         if (StringUtils.isNotBlank(sourceType) && StringUtils.isNotBlank(sourceCode)
             && Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CHECK.equals(sourceType)) {
             criteria.andEqualTo("sourceType", sourceType);

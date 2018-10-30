@@ -306,12 +306,15 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         @RequestParam(defaultValue = "") @ApiParam("网格范围") String gridIds,
         @RequestParam(defaultValue = "") @ApiParam("事件级别") String caseLevel,
         @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
-        @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime) {
+        @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime,
+        @RequestParam(defaultValue = "") @ApiParam("事件来源类型") String sourceType
+        ) {
         
         CaseInfo caseInfo = new CaseInfo();
         caseInfo.setBizList(bizList);
         caseInfo.setEventTypeList(eventTypeList);
         caseInfo.setCaseLevel(caseLevel);
+        caseInfo.setSourceType(sourceType);
         
         Calendar calendar =  Calendar.getInstance();
         String _startTime = startTime;
