@@ -20,8 +20,10 @@ import com.bjzhianjia.scp.cgp.exception.BizException;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.feign.IUserFeign;
+import com.bjzhianjia.scp.cgp.mapper.CaseInfoMapper;
 import com.bjzhianjia.scp.cgp.mapper.CaseRegistrationMapper;
 import com.bjzhianjia.scp.cgp.mapper.EventTypeMapper;
+import com.bjzhianjia.scp.cgp.mapper.LawTaskMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
@@ -129,6 +131,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
     @Autowired
     private RightsIssuesBiz rightsIssuesBiz;
+    
+    @Autowired
+    private LawTaskMapper lawTaskMapper;
+    
+    @Autowired
+    private CaseInfoMapper caseInfoMapper;
 
     /**
      * 添加立案记录<br/>
@@ -805,6 +813,56 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             }
         }
 
+        /*
+         * 根据不同的案件来源，收集来源编号，进行一次查询
+         */
+        // 收集来源ID
+        Set<String> caseSourceLaw = new HashSet<>();
+        Set<String> caseSourceCenter = new HashSet<>();
+        for (CaseRegistration caseRegistration : caseRegistrationList) {
+            if (CaseRegistration.CASE_SOURCE_TYPE_TASK.equals(caseRegistration.getCaseSourceType())) {
+                // 执法任务
+                if (StringUtils.isNotBlank(caseRegistration.getCaseSource())) {
+                    caseSourceLaw.add(caseRegistration.getCaseSource());
+                }
+            } else if (CaseRegistration.CASE_SOURCE_TYPE_CENTER.equals(caseRegistration.getCaseSourceType())) {
+                // 中心交办
+                if (StringUtils.isNotBlank(caseRegistration.getCaseSource())) {
+                    caseSourceCenter.add(caseRegistration.getCaseSource());
+                }
+            }
+        }
+        // 查询来源信息
+        List<LawTask> lawTaskList = null;
+        if (BeanUtil.isNotEmpty(caseSourceLaw)) {
+            lawTaskList = lawTaskMapper.selectByIds(String.join(",", caseSourceLaw));
+        }
+        List<CaseInfo> caseInfoList = null;
+        if (BeanUtil.isNotEmpty(caseSourceCenter)) {
+            caseInfoList = caseInfoMapper.selectByIds(String.join(",", caseSourceCenter));
+        }
+        // ID编号Map
+        Map<Integer, String> lawTaskIdCodeMap = new HashMap<>();
+        // ID名称Map
+        Map<Integer, String> lawTaskIdNameMap = new HashMap<>();
+        if (BeanUtil.isNotEmpty(lawTaskList)) {
+            for (LawTask lawtaskTmp : lawTaskList) {
+                lawTaskIdCodeMap.put(lawtaskTmp.getId(), lawtaskTmp.getLawTaskCode());
+                lawTaskIdNameMap.put(lawtaskTmp.getId(), lawtaskTmp.getLawTitle());
+            }
+        }
+
+        // ID编号Map
+        Map<Integer, String> caseInfoIdCodeMap = new HashMap<>();
+        // ID名称Map
+        Map<Integer, String> caseInfoIdNameMap = new HashMap<>();
+        if (BeanUtil.isNotEmpty(caseInfoList)) {
+            for (CaseInfo caseInfoTmp : caseInfoList) {
+                caseInfoIdCodeMap.put(caseInfoTmp.getId(), caseInfoTmp.getCaseCode());
+                caseInfoIdNameMap.put(caseInfoTmp.getId(), caseInfoTmp.getCaseTitle());
+            }
+        }
+
         JSONObject objResult = null;
         WfProcBackBean wfProcBackBean = null;
         for (CaseRegistration caseRegistration : caseRegistrationList) {
@@ -813,7 +871,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
             // 定位坐标
             objResult.put("mapInfo", "{\"lng\":\"" + caseRegistration.getCaseOngitude() + "\",\"lat\":\""
-                + caseRegistration.getCaseLatitude() + "\"}");
+                    + caseRegistration.getCaseLatitude() + "\"}");
 
             // 处理状态
             String procCtaskname = "";
@@ -835,12 +893,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             objResult.put("bizListName", getRootBizTypeName(caseRegistration.getBizType(), rootBizList));
             // 事件类别
             objResult.put("eventTypeListName",
-                getEventTypeName(eventType_ID_NAME_Map, caseRegistration.getEventType()));
+                    getEventTypeName(eventType_ID_NAME_Map, caseRegistration.getEventType()));
             // 事件来源
             objResult.put("sourceTypeName", getRootBizTypeName(caseRegistration.getCaseSourceType(), rootBizList));
             // 案件处理方式--后添加
             objResult.put("dealTypeName", getRootBizTypeName(caseRegistration.getDealType(), rootBizList));
-            
+
             // 具体来源id
             String sourceId = caseRegistration.getCaseSource();
             // 具体来源标题
@@ -848,15 +906,13 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             // 执法任务
             if (StringUtils.isNotBlank(sourceId)) {
                 if (CaseRegistration.CASE_SOURCE_TYPE_TASK.equals(caseRegistration.getCaseSourceType())) {
-                    LawTask lawTask = lawTaskBiz.selectById(Integer.valueOf(sourceId));
-                    if (lawTask != null) {
-                        sourceTitle = lawTask.getLawTitle();
-                    }
+                    // 替换之前在循环体内查询数据库的操作
+                    sourceTitle = lawTaskIdNameMap.get(Integer.valueOf(sourceId));
+                    objResult.put("caseSourceCode", lawTaskIdCodeMap.get(Integer.valueOf(sourceId)));
                 } else if (CaseRegistration.CASE_SOURCE_TYPE_CENTER.equals(caseRegistration.getCaseSourceType())) { // 中心交办
-                    CaseInfo caseInfo = caseInfoBiz.selectById(Integer.valueOf(sourceId));
-                    if (caseInfo != null) {
-                        sourceTitle = caseInfo.getCaseTitle();
-                    }
+                    // 替换之前在循环体内查询数据库的操作
+                    sourceTitle = caseInfoIdNameMap.get(Integer.valueOf(sourceId));
+                    objResult.put("caseSourceCode", caseInfoIdCodeMap.get(Integer.valueOf(sourceId)));
                 }
             }
             objResult.put("sourceId", sourceId);
@@ -871,7 +927,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             if (caseEnd != null) {
                 // 处理结束
                 if (CaseRegistration.EXESTATUS_STATE_STOP.equals(exeStatus)
-                    || CaseRegistration.EXESTATUS_STATE_FINISH.equals(exeStatus)) {
+                        || CaseRegistration.EXESTATUS_STATE_FINISH.equals(exeStatus)) {
                     // 结案时间
                     Date finishTime = caseRegistration.getUpdTime();
                     isOvertime = caseEnd.before(finishTime);
@@ -882,6 +938,20 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             }
             // 是否超时
             objResult.put("isOvertime", isOvertime);
+            
+            // 整合网格信息
+            if (BeanUtil.isNotEmpty(caseRegistration.getGirdId())) {
+                AreaGrid areaGrid = areaGridBiz.selectById(caseRegistration.getGirdId());
+                if (BeanUtil.isNotEmpty(areaGrid)) {
+                    String areaGridName = areaGrid.getGridName();
+                    AreaGrid parentAreaGrid = areaGridBiz.getParentAreaGrid(areaGrid);
+                    if (BeanUtil.isNotEmpty(parentAreaGrid)
+                        && StringUtils.isNotBlank(parentAreaGrid.getGridName())) {
+                        areaGridName = areaGridName + "(" + parentAreaGrid.getGridName() + ")";
+                    }
+                    objResult.put("areaGridName", areaGridName);
+                }
+            }
             result.add(objResult);
         }
         return new TableResultResponse<>(bizResult.getData().getTotal(), result);

@@ -1,17 +1,5 @@
 package com.bjzhianjia.scp.cgp.biz;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.config.PropertiesConfig;
@@ -27,10 +15,20 @@ import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -133,7 +131,7 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
      * 按网格等级获取网格列表
      * 
      * @author 尚
-     * @param areaGrid
+     * @param gridLevel
      * @return
      */
     public List<AreaGrid> getByGridLevel(String gridLevel) {
@@ -253,6 +251,15 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
                 }
             }
         }
+
+        // 合并该网格的父级网格
+        if (BeanUtil.isNotEmpty(result)) {
+            AreaGrid parentAreaGrid = getParentAreaGrid(result);
+            if (BeanUtil.isNotEmpty(parentAreaGrid)
+                && StringUtils.isNotBlank(parentAreaGrid.getGridName())) {
+                result.setGridName(result.getGridName() + "(" + parentAreaGrid.getGridName() + ")");
+            }
+        }
         return result;
     }
 
@@ -347,7 +354,7 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
 
     /**
      * 合并areaGridList里网格的父级网格
-     * @param areaGridList
+     * @param areaGridIdList
      * @return
      */
     public Set<String> mergeParentAreaGrid(List<String> areaGridIdList) {
@@ -386,5 +393,29 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
                 }
             }
         }
+    }
+
+    /**
+     * 根据子网格，查询到该子网格的父级网格
+     * 
+     * @param sunAreaGrid
+     *            待合并的子网格
+     * @return sunAreaGrid的父级网格或null
+     */
+    public AreaGrid getParentAreaGrid(AreaGrid sunAreaGrid) {
+        if (BeanUtil.isEmpty(sunAreaGrid)) {
+            return null;
+        }
+
+        if (sunAreaGrid.getGridParent() != null && !"-1".equals(sunAreaGrid.getGridParent())) {
+            AreaGrid areaGridParent = this.selectById(sunAreaGrid.getGridParent());
+            if (BeanUtil.isNotEmpty(areaGridParent)) {
+                return areaGridParent;
+            } else {
+                return null;
+            }
+        }
+
+        return null;
     }
 }

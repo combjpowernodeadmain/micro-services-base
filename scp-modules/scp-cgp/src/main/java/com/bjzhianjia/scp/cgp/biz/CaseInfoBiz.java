@@ -245,17 +245,25 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
                 "((dead_line < '" + date + "' and is_finished=0) or (dead_line < finish_time and is_finished in(1,2)))");
         }
         // 处理状态：已结案(0:未完成|1:已结案2:已终止)
-        if (StringUtils.isNotBlank(isFinished) && !CaseInfo.FINISHED_STATE_TODO.equals(isFinished)) {
-            // 只查询1:已结案2:已终止
-            if (CaseInfo.FINISHED_STATE_FINISH.equals(isFinished)
-                || CaseInfo.FINISHED_STATE_STOP.equals(isFinished)) {
-                criteria.andEqualTo("isFinished", isFinished);
-            }
+        // 为true表明需要只查询已结案或已终止
+        boolean isFinishFlag =
+            CaseInfo.FINISHED_STATE_FINISH.equals(isFinished)
+                || CaseInfo.FINISHED_STATE_STOP.equals(isFinished);
+        if (StringUtils.isNotBlank(isFinished)){
+            /*
+             * isFinished变量由procCtaskname参数自前端带入，如果该值不为空，表明前端按条件进行查询
+             */
+//            if(!CaseInfo.FINISHED_STATE_TODO.equals(isFinished)){
+                if (isFinishFlag) {
+                    // 只查询1:已结案2:已终止
+                    criteria.andEqualTo("isFinished", isFinished);
+                }else{
+                    // 处理状态：只查询未完成
+                    criteria.andEqualTo("isFinished", CaseInfo.FINISHED_STATE_TODO);
+                }
+//            }
         }
-        // 处理状态：只查询未完成
-        if(StringUtils.isNotBlank(queryData.getString("toFinish"))){
-            criteria.andEqualTo("isFinished", queryData.getString("toFinish"));
-        }
+
         if (StringUtils.isNotBlank(sourceType) && StringUtils.isNotBlank(sourceCode)
             && Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CHECK.equals(sourceType)) {
             criteria.andEqualTo("sourceType", sourceType);
