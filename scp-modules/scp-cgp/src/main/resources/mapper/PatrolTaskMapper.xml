@@ -72,9 +72,9 @@
 		</if>
 		<if test="startTime !=null or endTime != null">
 			AND (
-			#{startTime} <![CDATA[ >= ]]>
+			#{startTime} <![CDATA[ <= ]]>
 			pk.crt_time
-			OR pk.crt_time <![CDATA[ <= ]]>
+			and pk.crt_time <![CDATA[ <= ]]>
 			#{endTime}
 			)
 		</if>

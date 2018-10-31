@@ -706,15 +706,10 @@ public class CaseInfoService {
     public void completeProcess(@RequestBody JSONObject objs) {
         log.debug("进行事件审批，参数结构为："+objs.toString());
 
-        // 完成已签收的任务，将工作流向下推进
-        wfProcTaskService.completeProcessInstance(objs);
-
-        // System.out.println(1/0);//模拟异常
         /*
          * ===============更新业务数据===================开始=============
          */
         JSONObject bizDataJObject = objs.getJSONObject("bizData");
-
         JSONObject caseInfoJObj = bizDataJObject.getJSONObject("caseInfo");// 立案单参数
         JSONObject variableDataJObject = objs.getJSONObject("variableData");// 流程参数
         JSONObject concernedPersonJObj = bizDataJObject.getJSONObject("concernedPerson");// 当事人(个人信息)
@@ -841,6 +836,28 @@ public class CaseInfoService {
         }
         // 更新业务数据(caseInfo)
         caseInfoBiz.updateSelectiveById(caseInfo);
+
+        // 处理审批意见，将审批意见同步到工作流中
+        if (StringUtils.isNotBlank(caseInfo.getApproveInfo())) {
+            // 指挥长审批
+            variableDataJObject.put("procApprOpinion", caseInfo.getApproveInfo());
+        } else if (StringUtils.isNotBlank(caseInfo.getCheckOpinion())) {
+            // 立案核查意见
+            variableDataJObject.put("procApprOpinion", caseInfo.getCheckOpinion());
+        } else if (StringUtils.isNotBlank(caseInfo.getFinishCheckOpinion())) {
+            // 待结案核查
+            variableDataJObject.put("procApprOpinion", caseInfo.getFinishCheckOpinion());
+        } else if (StringUtils.isNotBlank(executeInfoJObj.getString("exeDesc"))) {
+            // 部门处理情况
+            variableDataJObject.put("procApprOpinion", executeInfoJObj.getString("exeDesc"));
+        } else if (StringUtils.isNotBlank(caseInfo.getFinishDesc())) {
+            // 结案说明
+            variableDataJObject.put("procApprOpinion", caseInfo.getFinishDesc());
+        }
+
+        objs.put("variableData", variableDataJObject);
+        // 完成已签收的任务，将工作流向下推进
+        wfProcTaskService.completeProcessInstance(objs);
     }
 
     /**
@@ -1202,7 +1219,13 @@ public class CaseInfoService {
         mapInfoJObj.put("grid", caseInfo.getGrid());
         AreaGrid grid = areaGridBiz.selectById(caseInfo.getGrid());
         if (grid != null) {
-            mapInfoJObj.put("gridName", grid.getGridName());
+            String areaGridName = grid.getGridName();
+            AreaGrid parentAreaGrid = areaGridBiz.getParentAreaGrid(grid);
+            if (BeanUtil.isNotEmpty(parentAreaGrid)
+                && StringUtils.isNotBlank(parentAreaGrid.getGridName())) {
+                areaGridName = areaGridName + "(" + parentAreaGrid.getGridName() + ")";
+            }
+            mapInfoJObj.put("gridName", areaGridName);
         }
         mapInfoJObj.put("occurAddr", caseInfo.getOccurAddr());
         mapInfoJObj.put("mapInfo", caseInfo.getMapInfo());
@@ -1341,7 +1364,7 @@ public class CaseInfoService {
             finishCheckIsExistName = "0".equals(caseInfo.getFinishCheckIsExist()) ? "不存在" : "存在";
         }
         finishCheckJObj.put("finishCheckIsExistName", finishCheckIsExistName);
-        finishCheckJObj.put("finishDesc", caseInfo.getFinishDesc());
+        finishCheckJObj.put("finishCheckOpinion", caseInfo.getFinishCheckOpinion());
         finishCheckJObj.put("finishCheckTime", caseInfo.getFinishCheckTime());
         finishCheckJObj.put("finishCheckPic", caseInfo.getFinishCheckPic());
         if (StringUtils.isNotBlank(caseInfo.getFinishCheckPerson())) {
