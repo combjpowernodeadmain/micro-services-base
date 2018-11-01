@@ -837,25 +837,6 @@ public class CaseInfoService {
         // 更新业务数据(caseInfo)
         caseInfoBiz.updateSelectiveById(caseInfo);
 
-        // 处理审批意见，将审批意见同步到工作流中
-        if (StringUtils.isNotBlank(caseInfo.getApproveInfo())) {
-            // 指挥长审批
-            variableDataJObject.put("procApprOpinion", caseInfo.getApproveInfo());
-        } else if (StringUtils.isNotBlank(caseInfo.getCheckOpinion())) {
-            // 立案核查意见
-            variableDataJObject.put("procApprOpinion", caseInfo.getCheckOpinion());
-        } else if (StringUtils.isNotBlank(caseInfo.getFinishCheckOpinion())) {
-            // 待结案核查
-            variableDataJObject.put("procApprOpinion", caseInfo.getFinishCheckOpinion());
-        } else if (StringUtils.isNotBlank(executeInfoJObj.getString("exeDesc"))) {
-            // 部门处理情况
-            variableDataJObject.put("procApprOpinion", executeInfoJObj.getString("exeDesc"));
-        } else if (StringUtils.isNotBlank(caseInfo.getFinishDesc())) {
-            // 结案说明
-            variableDataJObject.put("procApprOpinion", caseInfo.getFinishDesc());
-        }
-
-        objs.put("variableData", variableDataJObject);
         // 完成已签收的任务，将工作流向下推进
         wfProcTaskService.completeProcessInstance(objs);
     }

@@ -195,7 +195,11 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             if (BeanUtil.isNotEmpty(enforcerJArray)) {
                 for (int i = 0; i < enforcerJArray.size(); i++) {
                     JSONObject enforcerDeptJObj = enforcerJArray.getJSONObject(i);
-                    enforcerDeptIdSet.add(enforcerDeptJObj.getString("deptId"));
+                    String deptId = enforcerDeptJObj.getString("deptId");
+                    if(StringUtils.isNotBlank(deptId)){
+                        // 因人员配置不健全，导致某人员还未在“部门--人员”表进行配置，将导致将null字样插入业务数据库
+                        enforcerDeptIdSet.add(deptId);
+                    }
                 }
             }
         }
