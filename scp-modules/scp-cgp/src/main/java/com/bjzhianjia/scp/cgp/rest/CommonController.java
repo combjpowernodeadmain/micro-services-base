@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.UnsupportedEncodingException;
+
 /**
  * CommonController 类描述. 用于处理通用的请求
  *
@@ -57,5 +59,20 @@ public class CommonController {
         restResult.setStatus(200);
         restResult.setData(codeValue);
         return restResult;
+    }
+    
+    @GetMapping("/propertyValue")
+    @ApiOperation("用于请求后台配置文件中的属性值")
+    public ObjectRestResponse<String> getProperty(
+        @RequestParam(value = "propertyKey") @ApiParam("与后台约定的值") String propertyKey) {
+
+        String property = environment.getProperty(propertyKey);
+        try {
+            // 处理配置文件中的中文
+            property=new String(property.getBytes("ISO-8859-1"), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return new ObjectRestResponse<String>().data(property);
     }
 }

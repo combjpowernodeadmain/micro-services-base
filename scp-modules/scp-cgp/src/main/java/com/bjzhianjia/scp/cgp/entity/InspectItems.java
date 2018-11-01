@@ -63,7 +63,8 @@ public class InspectItems implements Serializable {
 	
 	    //权力事项编号
     @Column(name = "item_num")
-    @NotEmpty(message="权利事项编号不能为空")
+	// 巡查事项里的权力事项编号非必填
+//    @NotEmpty(message="权利事项编号不能为空")
     @Length(max=32,message="权利事项编号长度不能超过32")
     private String itemNum;
 	

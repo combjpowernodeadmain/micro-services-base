@@ -26,7 +26,6 @@ import com.bjzhianjia.scp.security.auth.jwt.user.JwtTokenUtil;
 import com.bjzhianjia.scp.security.auth.module.oauth.bean.OauthUser;
 import com.bjzhianjia.scp.security.auth.module.oauth.service.OauthUserDetailsService;
 import com.bjzhianjia.scp.security.common.util.Sha256PasswordEncoder;
-
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,17 +37,16 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configurers.GlobalAuthenticationConfigurerAdapter;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.common.OAuth2RefreshToken;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.redis.RedisTokenStore;
 import sun.security.rsa.RSAPrivateCrtKeyImpl;
@@ -85,6 +83,8 @@ public class OAuthSecurityConfig extends AuthorizationServerConfigurerAdapter {
     private KeyConfiguration keyConfiguration;
     @Autowired
     private RedisConnectionFactory redisConnectionFactory;
+    @Autowired
+    private TokenStore tokenStore;
 
 
     @Bean
@@ -110,6 +110,14 @@ public class OAuthSecurityConfig extends AuthorizationServerConfigurerAdapter {
         endpoints
                 .authenticationManager(auth)
                 .tokenStore(redisTokenStore()).accessTokenConverter(accessTokenConverter())
+
+                /*
+                 * 在刷新token时，refresh_tokenbn也会重新生成
+                 * 如果reuseRefreshTokens为true，则重生成的refresh_token新不会被保存到redis中
+                 * 需要在该实现里将reuseRefreshTokens设置为false，以将原refresh_token从redis中移除，
+                 * 将生成的新refresh_token保存到redis中
+                 */
+//        .reuseRefreshTokens(false)
         ;
     }
 
@@ -167,6 +175,27 @@ public class OAuthSecurityConfig extends AuthorizationServerConfigurerAdapter {
                 additionalInformation.put("sub", user.getUsername());
                 ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInformation);
                 OAuth2AccessToken enhancedToken = super.enhance(accessToken, authentication);
+
+                 /*
+                  * ==by尚==开始==
+                  * 当进行刷新accessToken操作时，会生成一个与原refreshToken(O_refreshToken)过期时间相同，
+                  * jti不同的新refreshToken(N_refreshToken)，该新refreshToken不会被保存到tokenStore中去，
+                  * 因此无法使用该tokenStore再次进行刷新accessToken操作
+                  *
+                  * 以下代码作用为，当tokenStore中存在refreshToken时(该refreshToken即为O_refreshToken)，即用户进行了登陆，且
+                  * accessToken未过期时，用该refreshToken替换enhancedToken对象中的新refreshToken(N_refreshToken),
+                  * 如果满足了“用户进行了登陆，且accessToken未过期”的条件，只有刷新accessToken操作才会执行到这里，
+                  * 因为可以认为以下逻辑代码针对于刷新accessToken操作
+                  *
+                  * 这样做可以使用达到以下目的：
+                  * 当用户进行刷新accessToken操作时，请求到的refreshToken永远为同一个字符序列的refreshToken
+                  */
+                OAuth2RefreshToken refreshToken = tokenStore.readRefreshToken(accessToken.getRefreshToken().getValue());
+                if (refreshToken != null) {
+                    if(enhancedToken instanceof DefaultOAuth2AccessToken){
+                        ((DefaultOAuth2AccessToken) enhancedToken).setRefreshToken(refreshToken);
+                    }
+                }
                 return enhancedToken;
             }
 

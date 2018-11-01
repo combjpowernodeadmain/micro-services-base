@@ -1,16 +1,5 @@
 package com.bjzhianjia.scp.cgp.service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSON;
 import com.bjzhianjia.scp.cgp.biz.AttendanceInfoBiz;
 import com.bjzhianjia.scp.cgp.biz.DeptUtilBiz;
@@ -21,8 +10,16 @@ import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.cgp.vo.AttendanceVo;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
-
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.util.StringUtil;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 终端服务类
@@ -117,8 +114,11 @@ public class AttendanceInfoService {
         map.put("startIndex", startIndex);
         map.put("account", userName);
         map.put("startDate", startDate);
-        map.put("endDate", endDate);
-        
+
+        // 处理查询结束日期
+        Date endDateForQuery = DateUtil.theDayOfTommorrow(DateUtil.dateFromStrToDate(endDate));
+        map.put("endDate", DateUtil.dateFromDateToStr(endDateForQuery, DateUtil.DATE_FORMAT_DF));
+
         tableResultResponse = attendanceInfoBiz.getList(map);
         
         return tableResultResponse;

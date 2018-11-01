@@ -1,12 +1,11 @@
 package com.bjzhianjia.scp.cgp.util;
 
+import com.bjzhianjia.scp.cgp.constances.CommonConstances;
+import org.joda.time.DateTime;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import org.joda.time.DateTime;
-
-import com.bjzhianjia.scp.cgp.constances.CommonConstances;
 
 /**
  * 
@@ -19,6 +18,9 @@ public class DateUtil {
      * 默认时间格式
      */
     public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
+
+    public static final String DATE_FORMAT_DF = "yyyy-MM-dd";
     
 	/**
 	 * 将字符串类型日期转化为Date类型，默认格式为"yyyy-MM-dd"
@@ -94,4 +96,24 @@ public class DateUtil {
 
         return new Date(minusDays.getMillis());
     }
+
+	/**
+	 * 获取sourceDate明天的日期
+	 * @param sourceDate
+	 * @return
+	 */
+	public static Date theDayOfTommorrow(Date sourceDate) {
+		return theDayOfPlus(sourceDate,1);
+    }
+
+	/**
+	 * 获取sourceDate之后days天的日期
+	 * @param sourceDate
+	 * @param days
+	 * @return
+	 */
+	public static Date theDayOfPlus(Date sourceDate,int days){
+		DateTime dateTime = new DateTime(sourceDate.getTime());
+		return new Date(dateTime.plusDays(days).getMillis());
+	}
 }

@@ -1,8 +1,13 @@
 package com.bjzhianjia.scp.oss.cloud;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 
 import com.bjzhianjia.scp.config.CloudStorageConfig;
+import com.bjzhianjia.scp.oss.util.FileUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 本地存储
@@ -10,6 +15,7 @@ import com.bjzhianjia.scp.config.CloudStorageConfig;
  * @author lutuo001
  *
  */
+@Slf4j
 public class LocalStorageService extends CloudStorageService {
 
 	
@@ -47,5 +53,30 @@ public class LocalStorageService extends CloudStorageService {
 		// TODO Auto-generated method stub
 		return true;
 	}
-
+	/**
+	 * 保存本地文件
+	 *
+	 * @param multipartFile 上传文件对象
+	 * @return prefix 前缀
+	 * 格式：xxx/xxxx.xxx(E:/data/text.txt)
+	 */
+	public static String saveLocalStorage(MultipartFile multipartFile, String prefix) {
+		//上传文件
+		String suffix = multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().lastIndexOf("."));
+		String filePath = FileUtil.getPath(suffix);
+		try {
+			File file = new File(prefix + filePath);
+			File fileParent = file.getParentFile();
+			//判断目录/文件，没有则创建
+			if (!fileParent.exists()) {
+				fileParent.mkdirs();
+			}
+			multipartFile.transferTo(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+			log.error("saveFile file fail,  LocalStorage throw error.", e);
+			return null;
+		}
+		return filePath;
+	}
 }

@@ -1,18 +1,16 @@
 package com.bjzhianjia.scp.cgp.task.service;
 
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.CaseRegistrationBiz;
 import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.task.service.IWfProcTaskCallBackService;
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 /**
  * 处理执法立案逻辑的回调类
@@ -28,6 +26,8 @@ public class ClePreCaseCallBackServiceImpl implements IWfProcTaskCallBackService
 
     @Override
     public void before(String dealType, Map<String, Object> procBizData) throws BizException {
+        log.debug("添加案件登陆前回调方法执行，参数结构为：" + procBizData);
+
         String bizType = String.valueOf(procBizData.get(PROC_BIZTYPE));
         if ("null".equals(bizType)) {
             // 将bizTYpe置为空字符串，防止在switch时产生空指针，空字符串可进入default选项

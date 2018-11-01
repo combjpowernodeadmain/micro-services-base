@@ -1,12 +1,5 @@
 package com.bjzhianjia.scp.cgp.biz;
 
-import java.util.Date;
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.bjzhianjia.scp.cgp.entity.InspectItems;
 import com.bjzhianjia.scp.cgp.mapper.InspectItemsMapper;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
@@ -14,9 +7,14 @@ import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * 巡查事项
@@ -83,10 +81,12 @@ public class InspectItemsBiz extends BusinessBiz<InspectItemsMapper,InspectItems
 		
 		return inspectItems;
 	}
-	
+
 	/**
-	 * 根据查询条件搜索
-	 * @param eventType
+	 * 根据查询条件分页搜索
+	 * @param page
+	 * @param limit
+	 * @param inspectItems
 	 * @return
 	 */
 	public TableResultResponse<InspectItems> getList(int page, int limit, InspectItems inspectItems) {
@@ -103,6 +103,10 @@ public class InspectItemsBiz extends BusinessBiz<InspectItemsMapper,InspectItems
 	    if(StringUtils.isNotBlank(inspectItems.getBizType())){
 	    	criteria.andEqualTo("bizType", inspectItems.getBizType());
 	    }
+        // 添加按事件类别查询巡查事项
+        if (StringUtils.isNotBlank(inspectItems.getType())) {
+            criteria.andEqualTo("type", inspectItems.getType());
+        }
 	    
 	    example.setOrderByClause("id desc");
 

@@ -38,6 +38,7 @@ import com.bjzhianjia.scp.cgp.mapper.RegulaObjectMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
+import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
@@ -353,21 +354,27 @@ public class CaseInfoService {
         JSONObject bizData = objs.getJSONObject("bizData");
         // 事件工作流的定义代码
         bizData.put("prockey", "comprehensiveManage");
-        objs.put("bizData", bizData);
-
         if ("true".equals(queryData.getString("isQuery"))) {
             queryCaseInfo = JSONObject.parseObject(queryData.toJSONString(), CaseInfo.class);
             if (StringUtils.isNotBlank(queryData.getString("procCtaskname"))) {
                 // 是否按进度进行查找(即任务表中·PROC_CTASKNAME·字段)
-                bizData = objs.getJSONObject("bizData");
                 if (!CaseInfo.FINISHED_STATE_FINISH.equals(queryData.getString("procCtaskname"))
                     && !CaseInfo.FINISHED_STATE_STOP.equals(queryData.getString("procCtaskname"))) {
                     bizData.put("procCtaskname", queryData.getString("procCtaskname"));
                 }
-
-                objs.put("bizData", bizData);
+                
+                /*
+                 * 当按状态进行查询时，待结案节点比较特殊
+                 * 1 流程走完后，状态会停留在待结案，所以无论查询待结案还是已结案，都会将该结节查出，对结果集造成混淆
+                 * 2 对查询条件进行处理，如果查询的是待结案的状态，则在与业务数据进行整合时，只整合未完成的数据，去除
+                 * 已完成数据对待结案查询的干扰
+                 */
+                if ("待结案".equals(queryData.getString("procCtaskname"))) {
+                    queryData.put("toFinish", CaseInfo.FINISHED_STATE_TODO);
+                }
             }
         }
+        objs.put("bizData", bizData);
 
         List<JSONObject> jObjList = new ArrayList<>();
 
@@ -448,7 +455,7 @@ public class CaseInfoService {
             }
             // eventTypeName = String.join(",", eventTypeNameList);
         }
-
+        
         for (CaseInfo caseInfo : caseInfoList) {
 
             JSONObject wfJObject = JSONObject.parseObject(JSON.toJSONString(caseInfo));
@@ -496,7 +503,16 @@ public class CaseInfoService {
             }
 
             if (CaseInfo.FINISHED_STATE_STOP.equals(caseInfo.getIsFinished())) {
-                wfJObject.put("procCtaskname", "已终止");
+                wfJObject.put("procCtaskname", wfJObject.getString("procCtaskname") + "(已终止)");
+            }
+
+            if("1".equals(caseInfo.getIsDuplicate())){
+                CaseInfo dupCaseInfo = caseInfoBiz.selectById(caseInfo.getDuplicateWith());
+                if (BeanUtil.isNotEmpty(dupCaseInfo)) {
+                    wfJObject.put("procCtaskname", "重复事件(" + dupCaseInfo.getCaseCode() + ")");
+                } else {
+                    wfJObject.put("procCtaskname", "重复事件");
+                }
             }
 
             jObjList.add(wfJObject);
@@ -688,15 +704,12 @@ public class CaseInfoService {
      */
     @Transactional
     public void completeProcess(@RequestBody JSONObject objs) {
-        // 完成已签收的任务，将工作流向下推进
-        wfProcTaskService.completeProcessInstance(objs);
+        log.debug("进行事件审批，参数结构为："+objs.toString());
 
-        // System.out.println(1/0);//模拟异常
         /*
          * ===============更新业务数据===================开始=============
          */
         JSONObject bizDataJObject = objs.getJSONObject("bizData");
-
         JSONObject caseInfoJObj = bizDataJObject.getJSONObject("caseInfo");// 立案单参数
         JSONObject variableDataJObject = objs.getJSONObject("variableData");// 流程参数
         JSONObject concernedPersonJObj = bizDataJObject.getJSONObject("concernedPerson");// 当事人(个人信息)
@@ -740,39 +753,111 @@ public class CaseInfoService {
 
         // 判断是否有当事人信息concernedPerson
         if (concernedPersonJObj != null) {
+            /*
+             * 该处逻辑有问题，每当进行一次受理员审批时，都会向数据库添加一条当事人的记录
+             * 1-> 如果存在与事件对应的当事人，则更新操作
+             * 2-> 如果不存在与事件对应的当事人，则进行插入操作
+             */
             ConcernedPerson concernedPerson =
                 JSON.parseObject(concernedPersonJObj.toJSONString(), ConcernedPerson.class);
-            concernedPersonBiz.insertSelective(concernedPerson);
-            caseInfo.setConcernedPerson(String.valueOf(concernedPerson.getId()));
+
+            //判断当前事件是否已关联了当事人
+            CaseInfo caseInfoInDB = caseInfoBiz.selectById(caseInfo.getId());
+            if (BeanUtil.isNotEmpty(caseInfoInDB.getConcernedPerson())
+                && Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON
+                    .equals(caseInfoInDB.getConcernedType())) {
+                // 已经关联了类别为个人的当事人,应执行更新操作
+                log.debug("事件审批，已存在以个人形式的当事人，当事人ID为" + caseInfoInDB.getConcernedPerson());
+                concernedPerson.setId(Integer.valueOf(caseInfoInDB.getConcernedPerson()));
+                concernedPersonBiz.updateSelectiveById(concernedPerson);
+            } else {
+                concernedPersonBiz.insertSelective(concernedPerson);
+                caseInfo.setConcernedPerson(String.valueOf(concernedPerson.getId()));
+            }
             // 当事人类型为"root_biz_concernedT_person"
             caseInfo.setConcernedType(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON);//
         }
 
         // 判断是否有当事人(单位)信息
         if (concernedCompanyJObj != null) {
+            /*
+             * 该处逻辑有问题，每当进行一次受理员审批时，都会向数据库添加一条当事人的记录
+             * 1-> 如果存在与事件对应的当事人，则更新操作
+             * 2-> 如果不存在与事件对应的当事人，则进行插入操作
+             */
             ConcernedCompany concernedCompany =
                 JSONObject.parseObject(concernedCompanyJObj.toJSONString(), ConcernedCompany.class);
 
-            if (concernedCompany.getId() != null) {
+            CaseInfo caseInfoInDB = caseInfoBiz.selectById(caseInfo.getId());
+            if (BeanUtil.isNotEmpty(caseInfoInDB.getConcernedPerson())
+                && Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG
+                    .equals(caseInfoInDB.getConcernedType())) {
+                // 已经关联了类别为单位的当事人,应执行更新操作
+                log.debug("事件审批，已存在以单位形式的当事人，当事人ID为" + caseInfoInDB.getConcernedPerson());
+                concernedCompany.setId(Integer.valueOf(caseInfoInDB.getConcernedPerson()));
                 concernedCompanyBiz.updateSelectiveById(concernedCompany);
-            } else {
-                concernedCompanyService.created(concernedCompany);
+            }else{
+                concernedCompanyBiz.insertSelective(concernedCompany);
+                caseInfo.setConcernedPerson(String.valueOf(concernedCompany.getId()));
             }
 
-            caseInfo.setConcernedPerson(String.valueOf(concernedCompany.getId()));
             // 当事人类型为"root_biz_concernedT_org"
             caseInfo.setConcernedType(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG);//
         }
 
         // 判断 是否有处理情况信息
+        /*
+         * 该处逻辑有问题，每当进行一次受理员审批时，都会向数据库添加一条处理情况的记录
+         * 1-> 如果存在与事件对应的处理情况，则更新操作
+         * 2-> 如果不存在与事件对应的处理情况，则进行插入操作
+         */
         JSONObject executeInfoJObj = bizDataJObject.getJSONObject("executeInfoJObj");
         if (executeInfoJObj != null) {
-            ExecuteInfo executeInfo = JSON.parseObject(executeInfoJObj.toJSONString(), ExecuteInfo.class);
-            executeInfo.setCaseId(caseInfo.getId());
-            executeInfoBiz.insertSelective(executeInfo);
+            Integer procBizId = bizDataJObject.getInteger("procBizId");
+
+            ExecuteInfo executeInfoForQuery = new ExecuteInfo();
+            executeInfoForQuery.setCaseId(procBizId);
+            List<ExecuteInfo> executeInfosInDB = executeInfoBiz.selectList(executeInfoForQuery);
+            if (BeanUtil.isNotEmpty(executeInfosInDB)) {
+                // 存在处理情况
+                ExecuteInfo executeInfoForUpdate =
+                    JSON.parseObject(executeInfoJObj.toJSONString(), ExecuteInfo.class);
+                executeInfoForUpdate.setId(executeInfosInDB.get(0).getId());
+                executeInfoForUpdate.setDepartment(BaseContextHandler.getDepartID());
+                executeInfoBiz.updateSelectiveById(executeInfoForUpdate);
+            } else {
+                ExecuteInfo executeInfoForInsert =
+                    JSON.parseObject(executeInfoJObj.toJSONString(), ExecuteInfo.class);
+                executeInfoForInsert.setCaseId(caseInfo.getId());
+                executeInfoForInsert.setDepartment(BaseContextHandler.getDepartID());
+                executeInfoBiz.insertSelective(executeInfoForInsert);
+            }
+
         }
         // 更新业务数据(caseInfo)
         caseInfoBiz.updateSelectiveById(caseInfo);
+
+        // 处理审批意见，将审批意见同步到工作流中
+        if (StringUtils.isNotBlank(caseInfo.getApproveInfo())) {
+            // 指挥长审批
+            variableDataJObject.put("procApprOpinion", caseInfo.getApproveInfo());
+        } else if (StringUtils.isNotBlank(caseInfo.getCheckOpinion())) {
+            // 立案核查意见
+            variableDataJObject.put("procApprOpinion", caseInfo.getCheckOpinion());
+        } else if (StringUtils.isNotBlank(caseInfo.getFinishCheckOpinion())) {
+            // 待结案核查
+            variableDataJObject.put("procApprOpinion", caseInfo.getFinishCheckOpinion());
+        } else if (StringUtils.isNotBlank(executeInfoJObj.getString("exeDesc"))) {
+            // 部门处理情况
+            variableDataJObject.put("procApprOpinion", executeInfoJObj.getString("exeDesc"));
+        } else if (StringUtils.isNotBlank(caseInfo.getFinishDesc())) {
+            // 结案说明
+            variableDataJObject.put("procApprOpinion", caseInfo.getFinishDesc());
+        }
+
+        objs.put("variableData", variableDataJObject);
+        // 完成已签收的任务，将工作流向下推进
+        wfProcTaskService.completeProcessInstance(objs);
     }
 
     /**
@@ -989,7 +1074,7 @@ public class CaseInfoService {
         // 通过root_biz进行模糊查询业务字典，这样查询数据量会稍大，但可以减少请求次数
         Map<String, String> manyDictValuesMap = dictFeign.getByCode(Constances.ROOT_BIZ);
 
-        List<String> adminIdList = new ArrayList<>();
+        Set<String> adminIdList = new HashSet<>();
         if (caseInfo.getCheckPerson() != null) {
             adminIdList.add(caseInfo.getCheckPerson());
         }
@@ -997,6 +1082,9 @@ public class CaseInfoService {
             if (StringUtils.isNotBlank(wfProcTaskHistoryBean.getProcTaskCommitter())) {
                 adminIdList.add(wfProcTaskHistoryBean.getProcTaskCommitter());
             }
+        }
+        for (WfProcTaskHistoryBean wfProcTaskHistoryBean : procHistoryList) {
+            adminIdList.add(wfProcTaskHistoryBean.getProcTaskAssignee());
         }
         if (StringUtils.isNotBlank(caseInfo.getFinishCheckPerson())) {
             adminIdList.add(caseInfo.getFinishCheckPerson());
@@ -1131,7 +1219,13 @@ public class CaseInfoService {
         mapInfoJObj.put("grid", caseInfo.getGrid());
         AreaGrid grid = areaGridBiz.selectById(caseInfo.getGrid());
         if (grid != null) {
-            mapInfoJObj.put("gridName", grid.getGridName());
+            String areaGridName = grid.getGridName();
+            AreaGrid parentAreaGrid = areaGridBiz.getParentAreaGrid(grid);
+            if (BeanUtil.isNotEmpty(parentAreaGrid)
+                && StringUtils.isNotBlank(parentAreaGrid.getGridName())) {
+                areaGridName = areaGridName + "(" + parentAreaGrid.getGridName() + ")";
+            }
+            mapInfoJObj.put("gridName", areaGridName);
         }
         mapInfoJObj.put("occurAddr", caseInfo.getOccurAddr());
         mapInfoJObj.put("mapInfo", caseInfo.getMapInfo());
@@ -1200,10 +1294,10 @@ public class CaseInfoService {
                     // Map<String, String> commanderApproveMap =
                     // adminFeign.getUser(wfProcTaskHistoryBean.getProcTaskCommitter());//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>查询了admin》》》》》》》》》》》》》》》》》》》》》》》》》
                     if (manyUsersMap != null && !manyUsersMap.isEmpty()) {
+                        // 流程的审批人应为procTaskAssignee
                         JSONObject jObjTmp =
-                            JSONObject.parseObject(manyUsersMap.get(wfProcTaskHistoryBean.getProcTaskCommitter()));
-                        commanderApproveJObj.put("procTaskCommitter", wfProcTaskHistoryBean.getProcTaskCommitter());// 审批人ID
-                        commanderApproveJObj.put("procTaskCommitterName", jObjTmp.getString("name"));// 审批人姓名
+                            JSONObject.parseObject(manyUsersMap.get(wfProcTaskHistoryBean.getProcTaskAssignee()));
+                        commanderApproveJObj.put("procTaskCommitterName", jObjTmp.getString("name"));
                         commanderApproveJObj.put("commanderTel", jObjTmp.getString("mobilePhone"));// 审批人联系方法
                         //流程审批时间
                         commanderApproveJObj.put("procTaskEndtime", wfProcTaskHistoryBean.getProcTaskEndtime());// 审批时间
@@ -1270,7 +1364,7 @@ public class CaseInfoService {
             finishCheckIsExistName = "0".equals(caseInfo.getFinishCheckIsExist()) ? "不存在" : "存在";
         }
         finishCheckJObj.put("finishCheckIsExistName", finishCheckIsExistName);
-        finishCheckJObj.put("finishDesc", caseInfo.getFinishDesc());
+        finishCheckJObj.put("finishCheckOpinion", caseInfo.getFinishCheckOpinion());
         finishCheckJObj.put("finishCheckTime", caseInfo.getFinishCheckTime());
         finishCheckJObj.put("finishCheckPic", caseInfo.getFinishCheckPic());
         if (StringUtils.isNotBlank(caseInfo.getFinishCheckPerson())) {

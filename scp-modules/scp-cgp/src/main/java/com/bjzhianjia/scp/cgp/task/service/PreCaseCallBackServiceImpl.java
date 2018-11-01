@@ -52,6 +52,7 @@ public class PreCaseCallBackServiceImpl implements IWfProcTaskCallBackService {
 
     @Override
     public void before(String dealType, Map<String, Object> procBizData) throws BizException {
+        log.debug("添加事件登陆前回调方法执行，参数结构为：" + procBizData);
         /*
          * 在进行预立案单处理时，业务ID还没有生成，所以将业务逻辑放在before方法进行操作，以获取业务ID
          */

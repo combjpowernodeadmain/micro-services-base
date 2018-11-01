@@ -1,22 +1,5 @@
 package com.bjzhianjia.scp.cgp.biz;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
@@ -33,9 +16,25 @@ import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 /**
  * CaseInfoBiz 预立案信息.
@@ -196,29 +195,36 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         Criteria criteria = example.createCriteria();
 
         criteria.andEqualTo("isDeleted", "0");
+        // 事件标题
         if (StringUtils.isNotBlank(caseInfo.getCaseTitle())) {
             if (caseInfo.getCaseTitle().length() > 127) {
                 throw new BizException("事件名称应该小于127个字符");
             }
             criteria.andLike("caseTitle", "%" + caseInfo.getCaseTitle() + "%");
         }
+        // 事件相关业务条线
         if (StringUtils.isNotBlank(caseInfo.getBizList())) {
             criteria.andLike("bizList", "%" + caseInfo.getBizList() + "%");
         }
+        // 事件相关事件类别
         if (StringUtils.isNotBlank(caseInfo.getEventTypeList())) {
             criteria.andLike("eventTypeList", "%" + caseInfo.getEventTypeList() + "%");
         }
+        // 事件来源
         if (StringUtils.isNotBlank(caseInfo.getSourceType())) {
             criteria.andEqualTo("sourceType", caseInfo.getSourceType());
         }
+        // 事发起止时间
         if (!(StringUtils.isBlank(startQueryTime) || StringUtils.isBlank(endQueryTime))) {
             Date start = DateUtil.dateFromStrToDate(startQueryTime, "yyyy-MM-dd HH:mm:ss");
             Date end = DateUtils.addDays(DateUtil.dateFromStrToDate(endQueryTime, "yyyy-MM-dd HH:mm:ss"), 1);
             criteria.andBetween("occurTime", start, end);
         }
+        // 事件级别
         if (StringUtils.isNotBlank(caseInfo.getCaseLevel())) {
             criteria.andEqualTo("caseLevel", caseInfo.getCaseLevel());
         }
+        // 按ID集合查询
         if (ids != null && !ids.isEmpty()) {
             criteria.andIn("id", ids);
         }
@@ -234,21 +240,38 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         if (StringUtils.isNotBlank(isOverTime) && "1".equals(isOverTime)) {
             // 任务没有结束，当前日期和期限日期进行判断，任务结束，则判断完成日期和期限日期
             String date = DateUtil.dateFromDateToStr(new Date(), "yyyy-MM-dd HH:mm:ss");
+            // 将OR关键字两侧条件作为一个整体
             criteria.andCondition(
-                "(dead_line < '" + date + "' and is_finished=0) or (dead_line < finish_time and is_finished in(1,2))");
+                "((dead_line < '" + date + "' and is_finished=0) or (dead_line < finish_time and is_finished in(1,2)))");
         }
         // 处理状态：已结案(0:未完成|1:已结案2:已终止)
-        if (StringUtils.isNotBlank(isFinished) && !CaseInfo.FINISHED_STATE_TODO.equals(isFinished)) {
-            // 只查询1:已结案2:已终止
-            if (CaseInfo.FINISHED_STATE_FINISH.equals(queryData.getString("procCtaskname"))
-                || CaseInfo.FINISHED_STATE_STOP.equals(queryData.getString("procCtaskname"))) {
-                criteria.andEqualTo("isFinished", isFinished);
-            }
+        // 为true表明需要只查询已结案或已终止
+        boolean isFinishFlag =
+            CaseInfo.FINISHED_STATE_FINISH.equals(isFinished)
+                || CaseInfo.FINISHED_STATE_STOP.equals(isFinished);
+        if (StringUtils.isNotBlank(isFinished)){
+            /*
+             * isFinished变量由procCtaskname参数自前端带入，如果该值不为空，表明前端按条件进行查询
+             */
+//            if(!CaseInfo.FINISHED_STATE_TODO.equals(isFinished)){
+                if (isFinishFlag) {
+                    // 只查询1:已结案2:已终止
+                    criteria.andEqualTo("isFinished", isFinished);
+                }else{
+                    // 处理状态：只查询未完成
+                    criteria.andEqualTo("isFinished", CaseInfo.FINISHED_STATE_TODO);
+                }
+//            }
         }
+
         if (StringUtils.isNotBlank(sourceType) && StringUtils.isNotBlank(sourceCode)
             && Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CHECK.equals(sourceType)) {
             criteria.andEqualTo("sourceType", sourceType);
             criteria.andEqualTo("sourceCode", sourceCode);
+        }
+        // 事件编号
+        if (StringUtils.isNotBlank(caseInfo.getCaseCode())) {
+            criteria.andLike("caseCode", "%" + caseInfo.getCaseCode() + "%");
         }
         example.setOrderByClause("crt_time desc");
 
@@ -358,14 +381,14 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
     }
 
     /**
-     * 事件量趋势统计
      * 
-     * @param caseInfod
+     * @param caseInfo
      *            查询参数
      * @param startTime
      *            开始时间
      * @param endTime
      *            结束时间
+     * @param gridIds
      * @return
      */
     public List<Map<String, Object>> getStatisCaseInfo(CaseInfo caseInfo, String startTime, String endTime,
@@ -440,17 +463,15 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         // 网格等级
         List<AreaGrid> areaGridList = null;
         // 网格ids
-        StringBuilder gridIds = new StringBuilder();
+        String gridIds="";
+        Set<String> gridIdSet=new HashSet<>();
         if (StringUtils.isNotBlank(gridLevel)) {
             areaGridList = areaGridBiz.getByGridLevel(gridLevel);
-            int size = areaGridList.size();
-            for (int i = 0; i < size; i++) {
-                AreaGrid areaGrid = areaGridList.get(i);
-                if (i == size - 1) {
-                    gridIds.append(areaGrid.getId());
-                } else {
-                    gridIds.append(areaGrid.getId()).append(",");
+            if(BeanUtil.isNotEmpty(areaGridList)){
+                for(AreaGrid areaGridTmp:areaGridList){
+                    gridIdSet.add(String.valueOf(areaGridTmp.getId()));
                 }
+                gridIds=String.join(",", gridIdSet);
             }
         }
 
@@ -471,17 +492,20 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             temp.put(key, obj);
         }
         // 封装数据库中的数据
+        System.out.println(gridIds.toString());
         List<Map<String, Object>> bizLineList =
-            this.mapper.selectBizLine(caseInfo, gridIds.toString(), startTime, endTime);
+            this.mapper.selectBizLine(caseInfo, gridIds, startTime, endTime);
         if (BeanUtil.isNotEmpty(bizLineList)) {
             for (Map<String, Object> bizLineMap : bizLineList) {
                 obj = new JSONObject();
                 String bizList = String.valueOf(bizLineMap.get("bizList"));
-                // 业务条线
-                obj.put("bizList", bizList);
-                obj.put("count", bizLineMap.get("count"));
-                obj.put("bizListName", bizType.get(bizList));
-                temp.put(bizList, obj);
+                if(StringUtils.isNotBlank(bizType.get(bizList))){
+                    // 业务条线
+                    obj.put("bizList", bizList);
+                    obj.put("count", bizLineMap.get("count"));
+                    obj.put("bizListName", bizType.get(bizList));
+                    temp.put(bizList, obj);
+                }
             }
         }
         // 封装返回集数据
@@ -505,7 +529,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
      *            结束时间
      * @return
      */
-    public TableResultResponse<Map<String, Object>> getGrid(CaseInfo caseInfo, String gridLevel, String startTime,
+    public TableResultResponse<JSONObject> getGrid(CaseInfo caseInfo, String gridLevel, String startTime,
         String endTime, Integer page, Integer limit) {
         // 网格等级
         List<AreaGrid> areaGridList = null;
@@ -529,15 +553,24 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             level = new HashMap<>();
         }
         Page<Object> result = PageHelper.startPage(page, limit);
-        List<Map<String, Object>> list = this.mapper.selectGrid(caseInfo, startTime, endTime, gridIds.toString(),gridLevel);
+        List<JSONObject> list = this.mapper.selectByGrid(caseInfo, startTime, endTime, gridIds.toString(),gridLevel);
+
         if (BeanUtil.isNotEmpty(list)) {
-            for (Map<String, Object> map : list) {
+            for (JSONObject map : list) {
                 String levelName = level.get(map.get("gridLevel"));
                 map.put("gridLevelName", levelName);
+                /*
+                 * 在mysql里，count为关键字，修改sql语句加下划线，但前端已按count字样对接
+                 * 在此做下处理
+                 */
+                map.put("total", map.getInteger("total_") == null ? 0 : map.getInteger("total_"));
+                map.put("count", map.getInteger("count_") == null ? 0 : map.getInteger("count_"));
+                map.remove("total_");
+                map.remove("count_");
             }
-            return new TableResultResponse<Map<String, Object>>(result.getTotal(), list);
+            return new TableResultResponse<>(result.getTotal(), list);
         }
-        return new TableResultResponse<Map<String, Object>>(0, null);
+        return new TableResultResponse<>(0, null);
 
     }
     

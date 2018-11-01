@@ -26,8 +26,11 @@ spring:
         percentage: 1
     http:
       multipart:
-        max-file-size: 10Mb
-        max-request-size: 10Mb
+        enabled: true   # 启用http上传处理
+        max-file-size: 120MB # 设置单个文件的最大长度
+        max-request-size: 120MB # 设置最大的请求文件的大小
+        # file-size-threshold: 1MB  # 当上传文件达到1MB的时候进行磁盘写入
+        #location: /  # 上传的临时目录
 
 server:
     port: 8765 #启动端口
@@ -35,7 +38,7 @@ server:
 gate:
   # 开发不进行权限校验的路径
   ignore:
-    startWith: /static,/cgp/static/,/cgp/service/,/auth/oauth/,/auth/jwt,/admin/v2/api-docs,/dict/v2/api-docs,/auth/v2/api-docs,/workflow/v2/api-docs,/cgp/v2/api-docs,/dict/dictValue/type/comm_sex,/cgp/writsInstances/true/instance,/cgp/common/webDefault,/dict/common/webDefault
+    startWith: /tool/oss/uploads/,/tool/oss/download/,/jtp/annotation/download/, /static,/cgp/static/,/cgp/service/,/auth/oauth/,/auth/jwt,/admin/v2/api-docs,/dict/v2/api-docs,/auth/v2/api-docs,/workflow/v2/api-docs,/cgp/v2/api-docs,/dict/dictValue/type/comm_sex,/cgp/writsInstances/true/instance,/cgp/common/webDefault,/dict/common/webDefault
 
 auth:
   serviceId: scp-auth

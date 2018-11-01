@@ -300,8 +300,8 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
     @RequestMapping(value = "/statis/ZhDui", method = RequestMethod.GET)
     @ApiOperation("执法中队案件量趋势分析")
     public ObjectRestResponse<JSONObject> getStatisZhDuiCase(
-        @RequestParam(value = "bizType", defaultValue = "") @ApiParam("业务条线") String bizType,
-        @RequestParam(value = "caseSourceType", defaultValue = "") @ApiParam("案件来源类型") String caseSourceType,
+        @RequestParam(value = "bizListList", defaultValue = "") @ApiParam("业务条线") String bizType,
+        @RequestParam(value = "sourceType", defaultValue = "") @ApiParam("案件来源类型") String caseSourceType,
         @RequestParam(value = "gridIds", defaultValue = "") @ApiParam("网格范围") String gridIds,
         @RequestParam(value = "startTime", defaultValue = "") @ApiParam("开始日期") String startTime,
         @RequestParam(value = "endTime", defaultValue = "") @ApiParam("结束日期") String endTime) {

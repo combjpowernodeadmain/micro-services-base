@@ -1,17 +1,5 @@
 package com.bjzhianjia.scp.cgp.biz;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.config.PropertiesConfig;
@@ -27,10 +15,20 @@ import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -68,7 +66,7 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
      * 按条件查询未被删除的网格
      * 
      * @author 尚
-     * @param gridCde
+     * @param conditions
      * @return
      */
     public List<AreaGrid> getByMap(Map<String, String> conditions) {
@@ -133,7 +131,7 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
      * 按网格等级获取网格列表
      * 
      * @author 尚
-     * @param areaGrid
+     * @param gridLevel
      * @return
      */
     public List<AreaGrid> getByGridLevel(String gridLevel) {
@@ -253,6 +251,15 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
                 }
             }
         }
+
+        // 合并该网格的父级网格
+        if (BeanUtil.isNotEmpty(result)) {
+            AreaGrid parentAreaGrid = getParentAreaGrid(result);
+            if (BeanUtil.isNotEmpty(parentAreaGrid)
+                && StringUtils.isNotBlank(parentAreaGrid.getGridName())) {
+                result.setGridName(result.getGridName() + "(" + parentAreaGrid.getGridName() + ")");
+            }
+        }
         return result;
     }
 
@@ -273,25 +280,58 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         }
         return new ArrayList<>();
     }
-    
-    
+
+    /**
+     * 根据网格等级获取网格信息(mapInfo/id/gridName)
+     * @param gridLevelKey
+     * @return
+     */
     public TableResultResponse<JSONObject> getByAreaGrid(String gridLevelKey){
+        return _gridLevelAssist(gridLevelKey,true);
+    }
+
+    /**
+     * 根据网格等级获取网格信息(mapInfo/id/gridName)
+     * @param gridLevelKey
+     * @return
+     */
+    public TableResultResponse<JSONObject> getByAreaGridP(String gridLevelKey){
+        return _gridLevelAssist(gridLevelKey,false);
+    }
+
+    /**
+     * 根据网格等级获取网格信息
+     * @param gridLevelKey 网格等级，有可能是前端与后端约定的配置文件里的key
+     * @param isLoadPropertyFromProfile 是否从配置文件获取属性信息
+     * @return
+     */
+    private TableResultResponse<JSONObject> _gridLevelAssist(String gridLevelKey,boolean isLoadPropertyFromProfile) {
         TableResultResponse<JSONObject> tableResultResponse=new TableResultResponse<>();
-        
-        String property = environment.getProperty(gridLevelKey);
+
+        String property;
+        if(isLoadPropertyFromProfile){
+            property = environment.getProperty(gridLevelKey);
+        }else{
+            property=gridLevelKey;
+        }
         if(StringUtils.isBlank(property)) {
             tableResultResponse.setStatus(400);
             tableResultResponse.setMessage(gridLevelKey+"不存在");
             return tableResultResponse;
         }
-        
+
+        Set<String> properties=new HashSet<>();
+        for(String propertyKey:property.split(",")){
+            properties.add(propertyKey);
+        }
+
         Example example=new Example(AreaGrid.class);
         Criteria criteria = example.createCriteria();
         criteria.andEqualTo("isDeleted", "0");
-        criteria.andEqualTo("gridLevel", property);
-        
+        criteria.andIn("gridLevel", properties);
+
         List<AreaGrid> areaGridList = this.selectByExample(example);
-        
+
         List<JSONObject> resultJObj=new ArrayList<>();
         if(BeanUtil.isNotEmpty(areaGridList)) {
             for (AreaGrid areaGrid : areaGridList) {
@@ -306,15 +346,15 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
             tableResultResponse.getData().setRows(resultJObj);
             return tableResultResponse;
         }
-        
+
         tableResultResponse.setStatus(400);
         tableResultResponse.setMessage("未找到相应数据");
         return tableResultResponse;
     }
-    
+
     /**
      * 合并areaGridList里网格的父级网格
-     * @param areaGridList
+     * @param areaGridIdList
      * @return
      */
     public Set<String> mergeParentAreaGrid(List<String> areaGridIdList) {
@@ -353,5 +393,29 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
                 }
             }
         }
+    }
+
+    /**
+     * 根据子网格，查询到该子网格的父级网格
+     * 
+     * @param sunAreaGrid
+     *            待合并的子网格
+     * @return sunAreaGrid的父级网格或null
+     */
+    public AreaGrid getParentAreaGrid(AreaGrid sunAreaGrid) {
+        if (BeanUtil.isEmpty(sunAreaGrid)) {
+            return null;
+        }
+
+        if (sunAreaGrid.getGridParent() != null && !"-1".equals(sunAreaGrid.getGridParent())) {
+            AreaGrid areaGridParent = this.selectById(sunAreaGrid.getGridParent());
+            if (BeanUtil.isNotEmpty(areaGridParent)) {
+                return areaGridParent;
+            } else {
+                return null;
+            }
+        }
+
+        return null;
     }
 }
