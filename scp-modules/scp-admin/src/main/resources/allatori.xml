@@ -1,0 +1,33 @@
+<config>
+    <!-- scp-xxx-compile 原始jar文件，scp-xxx 混淆后的输出的jar文件 -->
+    <input>
+        <jar in="../../../target/scp-admin-compile.jar" out="../../../target/scp-admin.jar"/>
+    </input>
+    <!-- 不替换类名、方法名、属性名 -->
+    <keep-names>
+        <class access="protected+">
+            <field access="private+"/>
+            <method access="protected+"/>
+        </class>
+    </keep-names>
+    <!-- 接口形参名保持不变 -->
+    <property name="local-variables-naming" value="keep-parameters"/>
+    <!-- 排除-->
+    <ignore-classes>
+        <!-- 排除指定路径 -->
+        <class template="class  com.bjzhianjia.scp.*.entity.*"/>
+        <class template="class  com.bjzhianjia.scp.*.vo.*"/>
+        <class template="class  com.bjzhianjia.scp.*.config.*"/>
+        <class template="class  com.bjzhianjia.scp.*.feign.*"/>
+        <class template="class  com.bjzhianjia.scp.*.mapper.*"/>
+        <class template="class  com.bjzhianjia.scp.*.constant.*"/>
+        <class template="class  com.bjzhianjia.scp.security.admin.AdminBootstrap"/>
+    </ignore-classes>
+    <!-- 广泛流混淆 最大级别混淆，混淆核心业务-->
+    <property name="extensive-flow-obfuscation" value="maximum" apply2class="class com.bjzhianjia.scp.*.service.*"/>
+    <property name="extensive-flow-obfuscation" value="maximum" apply2class="class com.bjzhianjia.scp.*.rest.*"/>
+    <!-- 其他路径正常混淆 -->
+    <property name="extensive-flow-obfuscation" value="normal"/>
+    <!-- 随机命名混淆字符-->
+    <property name="random-seed" value="cshxzf jrncbd hh"/>
+</config>
