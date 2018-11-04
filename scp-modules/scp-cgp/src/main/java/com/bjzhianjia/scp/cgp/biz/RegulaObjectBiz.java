@@ -478,4 +478,8 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 
         return restResult;
     }
+
+    public List<RegulaObject> allPotition(RegulaObject regulaObject) {
+        return null;
+    }
 }

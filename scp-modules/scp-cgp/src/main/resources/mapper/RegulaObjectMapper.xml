@@ -65,7 +65,7 @@
 		FROM
 			regula_object
     </select>
-	
+
 	<select id="selectByTypeAndGri" resultMap="regulaObjectMap">
 		SELECT
 			ro.id as id,
