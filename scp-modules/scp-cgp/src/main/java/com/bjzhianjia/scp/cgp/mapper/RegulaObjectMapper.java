@@ -1,13 +1,12 @@
 package com.bjzhianjia.scp.cgp.mapper;
 
+import com.bjzhianjia.scp.cgp.entity.RegulaObject;
+import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
+import org.apache.ibatis.annotations.Param;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.ibatis.annotations.Param;
-
-import com.bjzhianjia.scp.cgp.entity.RegulaObject;
-import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 
 /**
  * 监管对象
@@ -43,4 +42,11 @@ public interface RegulaObjectMapper extends CommonMapper<RegulaObject> {
 	 */
 	public List<RegulaObject> selectByTypeAndGri(@Param("objType")String objType,
 			@Param("griIds")String griIds);
+
+	/**
+	 * 查询全部定位
+	 * @param regulaObject
+     * @return
+	 */
+    List<RegulaObject> allPosition(@Param("regulaObject") RegulaObject regulaObject);
 }

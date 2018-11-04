@@ -244,4 +244,15 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
     public ObjectRestResponse<Boolean> isRegObjEnterprise(@PathVariable("regObjId") Integer regObjId) {
         return this.baseBiz.isRegObjEnterprise(regObjId);
     }
+
+    @GetMapping("/all/potition")
+    @ApiOperation("监管对象全部定位")
+    public TableResultResponse<RegulaObject> allPotition(
+        @RequestParam(required = false, value = "objType") Integer objType) {
+        RegulaObject regulaObject = new RegulaObject();
+        regulaObject.setObjType(objType);
+
+        TableResultResponse<RegulaObject> tableResult = this.baseBiz.allPotition(regulaObject);
+        return tableResult;
+    }
 }

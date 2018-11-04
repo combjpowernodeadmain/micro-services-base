@@ -381,9 +381,14 @@ public class DocUtil {
      *            源doc文档，全路径名
      * @param targetDoc
      *            目标路径，全路径名
+     * @param openOfficeHost
+     *            openOffice服务地址
+     * @param openOfficePort
+     *            openOffice服务端口
      * @throws IOException
      */
-    public static void WordToPDF(String socDoc, String targetDoc) throws IOException {
+    public static void WordToPDF(String socDoc, String targetDoc,String openOfficeHost,
+                                 Integer openOfficePort) throws IOException {
         // 源文件目录
         File inputFile = new File(socDoc);
         if (!inputFile.exists()) {
@@ -397,11 +402,10 @@ public class DocUtil {
             outputFile.getParentFile().exists();
         }
 
-        // 调用openoffice服务线程
         // 连接openoffice服务
-        log.debug("doc转pdf,开始建立连接："
-            + "/opt/openoffice4/program/soffice -headless -accept=\"socket,host=127.0.0.1,port=8100;urp;\"");
-        OpenOfficeConnection connection = new SocketOpenOfficeConnection("127.0.0.1", 8100);
+        log.debug("doc转pdf,开始建立连接：");
+        // 将openOffice地址及端口通过配置文件指定
+        OpenOfficeConnection connection = new SocketOpenOfficeConnection(openOfficeHost, openOfficePort);
         connection.connect();
 
         // 转换

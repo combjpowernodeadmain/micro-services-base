@@ -245,23 +245,21 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
                 "((dead_line < '" + date + "' and is_finished=0) or (dead_line < finish_time and is_finished in(1,2)))");
         }
         // 处理状态：已结案(0:未完成|1:已结案2:已终止)
-        // 为true表明需要只查询已结案或已终止
-        boolean isFinishFlag =
-            CaseInfo.FINISHED_STATE_FINISH.equals(isFinished)
-                || CaseInfo.FINISHED_STATE_STOP.equals(isFinished);
         if (StringUtils.isNotBlank(isFinished)){
+            // 为true表明需要只查询已结案或已终止
+            boolean isFinishFlag =
+                    CaseInfo.FINISHED_STATE_FINISH.equals(isFinished)
+                            || CaseInfo.FINISHED_STATE_STOP.equals(isFinished);
             /*
              * isFinished变量由procCtaskname参数自前端带入，如果该值不为空，表明前端按条件进行查询
              */
-//            if(!CaseInfo.FINISHED_STATE_TODO.equals(isFinished)){
-                if (isFinishFlag) {
-                    // 只查询1:已结案2:已终止
-                    criteria.andEqualTo("isFinished", isFinished);
-                }else{
-                    // 处理状态：只查询未完成
-                    criteria.andEqualTo("isFinished", CaseInfo.FINISHED_STATE_TODO);
-                }
-//            }
+            if (isFinishFlag) {
+                // 只查询1:已结案2:已终止
+                criteria.andEqualTo("isFinished", isFinished);
+            } else {
+                // 处理状态：只查询未完成
+                criteria.andEqualTo("isFinished", CaseInfo.FINISHED_STATE_TODO);
+            }
         }
 
         if (StringUtils.isNotBlank(sourceType) && StringUtils.isNotBlank(sourceCode)
@@ -586,8 +584,11 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         Criteria criteria = example.createCriteria();
         criteria.andEqualTo("isDeleted", "0");
         criteria.andEqualTo("sourceType", environment.getProperty("sourceTypeKeyPatrol"));
-        criteria.andEqualTo("sourceCode", patrolId);
-        
+        // 对是否输入了按patrolId进行查询进行判断，如果为null，则认为查询所有巡查事项类型的事件
+        if(patrolId!=null){
+            criteria.andEqualTo("sourceCode", patrolId);
+        }
+
         List<CaseInfo> caseInfo = this.selectByExample(example);
         List<JSONObject> resultJObjList=new ArrayList<>();
         if(BeanUtil.isNotEmpty(caseInfo)) {
@@ -601,11 +602,21 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             }
             
             restResult.setStatus(200);
+            restResult.getData().setTotal(resultJObjList.size());
             restResult.getData().setRows(resultJObjList);
             return restResult;
         }
         
         restResult.getData().setRows(new ArrayList<>());
+        restResult.getData().setTotal(0);
         return restResult;
+    }
+
+    /**
+     * 专项事件全部定位
+     * @return
+     */
+    public TableResultResponse<JSONObject> allPositionPatrol() {
+        return this.patrolCaseInfo(null);
     }
 }

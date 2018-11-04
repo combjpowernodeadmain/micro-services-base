@@ -41,21 +41,6 @@ public class PropertiesConfig {
     private String rectificationCodes;
 
     /**
-     * 责令改正处理
-     */
-    @Value("${WritsTemplateIds.INFORM}")
-    private String inform;
-
-    @Value("${WritsTemplateIds.INFORM_CODES}")
-    private String informCode;
-
-    /**
-     * openOffice执行文件所在路径
-     */
-    @Value("${openOffice.path}")
-    private String openOfficePath;
-
-    /**
      * openOffice所在主机地址
      */
     @Value("${openOffice.host}")
@@ -66,18 +51,6 @@ public class PropertiesConfig {
      */
     @Value("${openOffice.port}")
     private String openOfficePort;
-
-    /**
-     * 文件原文件路
-     */
-    @Value("${writsInstances.srcPath}")
-    private String srcPath;
-
-    /**
-     * 目的文书名
-     */
-    @Value("${writsInstances.destFileName}")
-    private String destFileName;
 
     /**
      * 目的文书路径
@@ -130,32 +103,12 @@ public class PropertiesConfig {
         return rectificationCodes;
     }
 
-    public String getInform() {
-        return inform;
-    }
-
-    public String getInformCode() {
-        return informCode;
-    }
-
-    public String getSrcPath() {
-        return srcPath;
-    }
-
-    public String getDestFileName() {
-        return destFileName;
-    }
-
     public String getDestFilePath() {
         return destFilePath;
     }
 
     public String getTemplateSrcPath() {
         return templateSrcPath;
-    }
-
-    public String getOpenOfficePath() {
-        return openOfficePath;
     }
 
     public String getOpenOfficeHost() {

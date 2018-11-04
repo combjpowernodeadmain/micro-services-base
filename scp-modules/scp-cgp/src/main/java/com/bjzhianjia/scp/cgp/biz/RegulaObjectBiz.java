@@ -479,7 +479,22 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
         return restResult;
     }
 
-    public List<RegulaObject> allPotition(RegulaObject regulaObject) {
-        return null;
+    /**
+     * 查询所有定位
+     * @param regulaObject
+     * @return
+     */
+    public TableResultResponse<RegulaObject> allPotition(RegulaObject regulaObject) {
+        List<RegulaObject> list=this.mapper.allPosition(regulaObject);
+
+        TableResultResponse<RegulaObject> tableResult=new TableResultResponse<>();
+        if(BeanUtil.isNotEmpty(list)){
+            tableResult.getData().setTotal(list.size());
+            tableResult.getData().setRows(list);
+            return tableResult;
+        }
+
+        tableResult.getData().setRows(new ArrayList<>());
+        return tableResult;
     }
 }

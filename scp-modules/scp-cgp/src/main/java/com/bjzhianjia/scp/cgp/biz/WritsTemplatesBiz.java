@@ -144,8 +144,6 @@ public class WritsTemplatesBiz extends BusinessBiz<WritsTemplatesMapper, WritsTe
 			codes = propertiesConfig.getSpotPunishmentCodes();
 		} else if (node.equals(propertiesConfig.getRectification())) {
 			codes = propertiesConfig.getRectificationCodes();
-		} else if (node.equals(propertiesConfig.getInform())) {
-			codes = propertiesConfig.getInformCode();
 		}
 
 		return codes;
