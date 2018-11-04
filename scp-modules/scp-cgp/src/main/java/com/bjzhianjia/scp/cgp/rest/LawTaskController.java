@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.rest;
 
+import com.bjzhianjia.scp.core.context.*;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
@@ -15,7 +16,7 @@ import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.Map;
@@ -25,11 +26,6 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
@@ -267,5 +263,20 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
         result =
             lawTaskBiz.listSimple(userName, regulaObjectName, _startTime, _endTimeTmp, page, limit);
         return result;
+    }
+
+    /**
+     * 获取当前执法队员的执法任务列表
+     *
+     * @param limit 页容量
+     * @param page 当前页
+     * @return
+     */
+    @ApiOperation("获取当前执法队员的执法任务列表")
+    @GetMapping("/user")
+    public TableResultResponse<Map<String, Object>> getLawTaskByUserId(
+            @RequestParam(value = "limit", defaultValue = "10") @ApiParam(name = "页容量") Integer limit,
+            @RequestParam(value = "page", defaultValue = "1") @ApiParam(name = "当前页") Integer page) {
+        return lawTaskBiz.getLawTaskByUserId(BaseContextHandler.getUserID(), LawTask.ROOT_BIZ_LAWTASKS_DOING, limit, page);
     }
 }
