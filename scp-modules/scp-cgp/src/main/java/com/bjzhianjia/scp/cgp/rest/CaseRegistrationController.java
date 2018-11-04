@@ -1,11 +1,20 @@
 package com.bjzhianjia.scp.cgp.rest;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.bjzhianjia.scp.cgp.biz.CaseRegistrationBiz;
+import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
+import com.bjzhianjia.scp.cgp.entity.Result;
+import com.bjzhianjia.scp.cgp.service.CaseRegistrationService;
+import com.bjzhianjia.scp.cgp.util.DateUtil;
+import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
+import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
+import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.common.rest.BaseController;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,22 +29,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.bjzhianjia.scp.cgp.biz.CaseRegistrationBiz;
-import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
-import com.bjzhianjia.scp.cgp.entity.Result;
-import com.bjzhianjia.scp.cgp.service.CaseRegistrationService;
-import com.bjzhianjia.scp.cgp.util.DateUtil;
-import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
-import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
-import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
-import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
-import com.bjzhianjia.scp.security.common.rest.BaseController;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Map;
 
 /**
  * 
@@ -397,5 +394,17 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
     @ApiOperation("获取执法任务案件")
     public TableResultResponse<JSONObject> listLawTask(@PathVariable("ids") @ApiParam("执法任务ID集合")Integer[] ids){
         return this.baseBiz.listLawTask(ids);
+    }
+
+    @GetMapping("/all/potition/lawTask")
+    @ApiOperation("执法任务案件全部定位")
+    public TableResultResponse<JSONObject> allPotitionLawTask(){
+        return this.baseBiz.allPotitionLawTask();
+    }
+
+    @GetMapping("/all/potition")
+    @ApiOperation("执法任务案件全部定位")
+    public TableResultResponse<JSONObject> allPotition(){
+        return this.baseBiz.allPotitionLawTask();
     }
 }

@@ -584,8 +584,11 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         Criteria criteria = example.createCriteria();
         criteria.andEqualTo("isDeleted", "0");
         criteria.andEqualTo("sourceType", environment.getProperty("sourceTypeKeyPatrol"));
-        criteria.andEqualTo("sourceCode", patrolId);
-        
+        // 对是否输入了按patrolId进行查询进行判断，如果为null，则认为查询所有巡查事项类型的事件
+        if(patrolId!=null){
+            criteria.andEqualTo("sourceCode", patrolId);
+        }
+
         List<CaseInfo> caseInfo = this.selectByExample(example);
         List<JSONObject> resultJObjList=new ArrayList<>();
         if(BeanUtil.isNotEmpty(caseInfo)) {
@@ -599,11 +602,21 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             }
             
             restResult.setStatus(200);
+            restResult.getData().setTotal(resultJObjList.size());
             restResult.getData().setRows(resultJObjList);
             return restResult;
         }
         
         restResult.getData().setRows(new ArrayList<>());
+        restResult.getData().setTotal(0);
         return restResult;
+    }
+
+    /**
+     * 专项事件全部定位
+     * @return
+     */
+    public TableResultResponse<JSONObject> allPositionPatrol() {
+        return this.patrolCaseInfo(null);
     }
 }

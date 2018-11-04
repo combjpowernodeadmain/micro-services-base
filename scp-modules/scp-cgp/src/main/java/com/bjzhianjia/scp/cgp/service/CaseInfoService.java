@@ -1466,4 +1466,31 @@ public class CaseInfoService {
         
         return new ObjectRestResponse<JSONObject>().data(resultJObj);
     }
+
+    /**
+     * 事件全部定位
+     * @return
+     * @param objs
+     */
+    public TableResultResponse<JSONObject> allPosition(JSONObject objs) {
+        TableResultResponse<JSONObject> allTasks = this.getAllTasks(objs);
+
+        List<JSONObject> resultList=new ArrayList<>();
+        if(BeanUtil.isNotEmpty(allTasks))
+        {
+            List<JSONObject> rows = allTasks.getData().getRows();
+            if(BeanUtil.isNotEmpty(rows)){
+                for(JSONObject tmpJObj:rows){
+                    JSONObject resultJObj=new JSONObject();
+                    resultJObj.put("id", tmpJObj.get("id"));
+                    resultJObj.put("procBizid", tmpJObj.get("procBizid"));
+                    resultJObj.put("procInstId", tmpJObj.get("procInstId"));
+                    resultJObj.put("mapInfo", tmpJObj.get("mapInfo"));
+                    resultList.add(resultJObj);
+                }
+            }
+        }
+
+        return new TableResultResponse<>(resultList.size(), resultList);
+    }
 }

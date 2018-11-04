@@ -2,7 +2,9 @@ package com.bjzhianjia.scp.cgp.biz;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,9 @@ public class EnforceCertificateBiz extends BusinessBiz<EnforceCertificateMapper,
 
     @Autowired
     private AdminFeign adminFeign;
+
+    @Autowired
+    private LawEnforcePathBiz lawEnforcePathBiz;
 
     /**
      * 根据证件编号获取
@@ -184,5 +189,42 @@ public class EnforceCertificateBiz extends BusinessBiz<EnforceCertificateMapper,
         enforceCertificate.setUsrId(userId);
         enforceCertificate = enforceCertificateMapper.selectOne(enforceCertificate);
         return enforceCertificate;
+    }
+
+    /**
+     * 执法人员全部定位
+     * 
+     * @return
+     */
+    public TableResultResponse<JSONObject> allPosition() {
+        List<String> userIdList = this.mapper.distinctUsrId();
+
+        Map<String, JSONObject> lawMap = new HashMap<>();
+        if (userIdList != null && userIdList.size() > 0) {
+            lawMap = lawEnforcePathBiz.getByUserIds(String.join(",", userIdList));
+        }
+
+        // usrId={"telPhone":"17600334757","id":"9aa5ffd9b2584f87a54ff73e4c279b59"}
+        // 整合与前端目前解析的数据结构相同
+        JSONArray resultJArray = new JSONArray();
+        for (String usrId : userIdList) {
+            JSONObject usrIdJObjOut = new JSONObject();
+            JSONObject usrIdJObjIn = new JSONObject();
+            usrIdJObjIn.put("id", usrId);
+            usrIdJObjOut.put("usrId", usrIdJObjIn);
+            resultJArray.add(usrIdJObjOut);
+        }
+
+        List<JSONObject> resultJObjList = new ArrayList<>();
+        for (int i = 0; i < resultJArray.size(); i++) {
+            JSONObject jsonObject = resultJArray.getJSONObject(i);
+            if (lawMap != null && !lawMap.isEmpty()) {
+                jsonObject.put("mapInfo",
+                    lawMap.get(jsonObject.getJSONObject("usrId").getString("id")));
+            }
+            resultJObjList.add(jsonObject);
+        }
+
+        return new TableResultResponse<>(resultJObjList.size(), resultJObjList);
     }
 }

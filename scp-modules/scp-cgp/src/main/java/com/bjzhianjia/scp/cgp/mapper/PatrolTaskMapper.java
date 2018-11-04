@@ -39,4 +39,14 @@ public interface PatrolTaskMapper extends CommonMapper<PatrolTask> {
 	 * @return
 	 */
 	public List<JSONObject> regulaObjCount(@Param("regulaObjIdList") List<Integer> regulaObjIdList);
+
+	/**
+	 * 全部定位
+	 * @param objs
+	 * @param page
+	 * @param limit
+	 * @return
+	 */
+    List<PatrolTask> allPosition(@Param("objs") JSONObject objs, @Param("page") Integer page,
+        @Param("limit") Integer limit);
 }

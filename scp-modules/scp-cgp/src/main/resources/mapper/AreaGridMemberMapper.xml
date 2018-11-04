@@ -58,4 +58,8 @@
 		WHERE is_deleted='0'
 		) d_c
     </select>
+
+	<select id="distinctGridMember" resultType="java.lang.String">
+		SELECT DISTINCT(area_grid_member.`grid_member`) FROM area_grid_member
+	</select>
 </mapper>

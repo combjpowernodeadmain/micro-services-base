@@ -1674,7 +1674,11 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         Example example = new Example(CaseRegistration.class);
         Criteria criteria = example.createCriteria();
         criteria.andEqualTo("isDeleted", "0");
-        criteria.andIn("caseSource", Arrays.asList(ids));
+
+        // 对是否进行了按Ids集合查询做判断，如果没有输入ids，则认为是查询所有执法任务的案件
+        if(BeanUtil.isNotEmpty(ids)){
+            criteria.andIn("caseSource", Arrays.asList(ids));
+        }
         criteria.andEqualTo("caseSourceType", environment.getProperty("caseSourceTypeLawTask"));
 
         List<CaseRegistration> caseRegi = this.selectByExample(example);
@@ -1697,11 +1701,45 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
             restResult.setStatus(200);
             restResult.setMessage("成功");
+            restResult.getData().setTotal(result.size());
             restResult.getData().setRows(result);
             return restResult;
         }
 
         restResult.getData().setRows(new ArrayList<>());
         return restResult;
+    }
+
+    /**
+     * 执法任务全部定位
+     * @return
+     */
+    public TableResultResponse<JSONObject> allPotitionLawTask() {
+        TableResultResponse<JSONObject> allTasks = this.listLawTask(null);
+        return allTasks;
+    }
+
+    /**
+     * 案件全部定位
+     * @return
+     */
+    public TableResultResponse<JSONObject> allPotition(JSONObject objs) {
+        TableResultResponse<JSONObject> allTasks = this.getAllTasks(objs);
+
+        List<JSONObject> resultList=new ArrayList<>();
+        if(BeanUtil.isNotEmpty(allTasks)){
+            List<JSONObject> rows = allTasks.getData().getRows();
+            if(BeanUtil.isNotEmpty(rows)){
+                for(JSONObject tmpJObj:rows){
+                    JSONObject resultJObj=new JSONObject();
+                    resultJObj.put("id", tmpJObj.get("id"));
+                    resultJObj.put("procBizid", tmpJObj.get("procBizid"));
+                    resultJObj.put("procInstId", tmpJObj.get("procInstId"));
+                    resultJObj.put("mapInfo", tmpJObj.get("mapInfo"));
+                    resultList.add(resultJObj);
+                }
+            }
+        }
+        return new TableResultResponse<>(resultList.size(), resultList);
     }
 }

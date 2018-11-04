@@ -14,6 +14,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -436,5 +437,19 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
     public ObjectRestResponse<JSONObject> caseInfoInstance(@PathVariable(value="id") @ApiParam("待查询对象ID") String id){
         
         return this.caserInfoService.caseInfoInstance(id);
+    }
+
+    @GetMapping("/all/potition/patrol")
+    @ApiOperation("专项事件全部定位")
+    public TableResultResponse<JSONObject> allPotitionPatrol(){
+        TableResultResponse<JSONObject> tableResult = this.baseBiz.allPositionPatrol();
+        return tableResult;
+    }
+
+    @PostMapping("/all/potition")
+    @ApiOperation("专项事件全部定位")
+    public TableResultResponse<JSONObject> allPotition(@RequestBody JSONObject objs, HttpServletRequest request){
+        TableResultResponse<JSONObject> tableResult = caserInfoService.allPosition(objs);
+        return tableResult;
     }
 }
