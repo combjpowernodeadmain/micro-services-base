@@ -57,7 +57,12 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
             restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
             return restResult;
         }
-
+        //mapinfo {"lng":"xxx","lat":"xxx"}
+        JSONObject mapinfo = JSONObject.parseObject(vo.getMapInfo());
+        if(mapinfo != null && regulaObject != null){
+            regulaObject.setLatitude(mapinfo.getFloat("lat"));
+            regulaObject.setLongitude(mapinfo.getFloat("lng"));
+        }
         Result<Void> result = regulaObjectService.createRegulaObject(regulaObject, enterpriseInfo);
         if (!result.getIsSuccess()) {
             restResult.setStatus(400);
@@ -97,7 +102,12 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
             restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
             return restResult;
         }
-
+        //mapinfo {"lng":"xxx","lat":"xxx"}
+        JSONObject mapinfo = JSONObject.parseObject(vo.getMapInfo());
+        if(mapinfo != null && regulaObject != null){
+            regulaObject.setLatitude(mapinfo.getFloat("lat"));
+            regulaObject.setLongitude(mapinfo.getFloat("lng"));
+        }
         Result<Void> result = regulaObjectService.updateRegulaObject(regulaObject, enterpriseInfo);
         if (!result.getIsSuccess()) {
             restResult.setStatus(400);
@@ -169,13 +179,17 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
         return result;
     }
 
+
     @RequestMapping(value = "distance", method = { RequestMethod.GET })
     @ApiOperation("获取指定范围内的监管对象")
     public ObjectRestResponse<List<Map<String, Object>>> distance(
         @RequestParam(value = "longitude") @ApiParam("经度") Double longitude,
         @RequestParam(value = "latitude") @ApiParam("纬度") Double latitude,
-        @RequestParam(value = "objType") @ApiParam("监管对象类型id") Integer objType,
-        @RequestParam(value = "size", defaultValue = "500") @ApiParam("监管对象范围大小（单位：米）") Double size) {
+        @RequestParam(value = "objType",defaultValue = "") @ApiParam("监管对象类型id") Integer objType,
+        @RequestParam(value = "objName",defaultValue = "") @ApiParam("监管对象名称") String objName,
+        @RequestParam(value = "size", defaultValue = "500") @ApiParam("监管对象范围大小（单位：米）") Double size,
+        @RequestParam(value = "limit", defaultValue = "10") @ApiParam(name = "页容量") Integer limit,
+        @RequestParam(value = "page", defaultValue = "1") @ApiParam(name = "当前页") Integer page) {
 
         ObjectRestResponse<List<Map<String, Object>>> result = new ObjectRestResponse<>();
 
@@ -189,12 +203,8 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
             result.setMessage("纬度不能为空！");
             return result;
         }
-        if (objType == null) {
-            result.setStatus(400);
-            result.setMessage("监管对象类型id不能为空！");
-            return result;
-        }
-        List<Map<String, Object>> objs = regulaObjectService.getByDistance(longitude, latitude, objType, size);
+        List<Map<String, Object>> objs = regulaObjectService.getByDistance(longitude, latitude, objType,objName, size
+                ,limit,page);
         result.setData(objs);
         return result;
     }

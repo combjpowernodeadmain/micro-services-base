@@ -497,4 +497,19 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
         tableResult.getData().setRows(new ArrayList<>());
         return tableResult;
     }
+
+    /**
+     * 通过监管对象类型和名称查询
+     *
+     * @param objType 对象类型id
+     * @param objName 名称查询
+     * @return
+     */
+    public List<Map<String, Object>> getObjByTypeAndName(Integer objType, String objName) {
+        if (objType == null && StringUtils.isBlank(objName)) {
+            return new ArrayList<>();
+        }
+        List<Map<String, Object>> result = this.mapper.selectByTypeAndName(objType, objName);
+        return BeanUtil.isEmpty(result) ? new ArrayList<>() : result;
+    }
 }
