@@ -254,7 +254,11 @@ public class SpecialEventService {
             }
         }
         // 查询相关事件类别
-        List<EventType> eventTypes = eventTypeMapper.selectByIds(String.join(",", eventTypeSet));
+        List<EventType> eventTypes = null;
+        if (BeanUtil.isNotEmpty(eventTypeSet)) {
+            // 在进行"in"条件查询时，如果条件集合为空，会报sql错误，需要进行非空判断
+            eventTypes = eventTypeMapper.selectByIds(String.join(",", eventTypeSet));
+        }
         Map<Integer, String> eventType_ID_NAME_Map = new HashMap<>();//封装事件类别ID与名称
         if (BeanUtil.isNotEmpty(eventTypes)) {
             for (EventType eventType : eventTypes) {

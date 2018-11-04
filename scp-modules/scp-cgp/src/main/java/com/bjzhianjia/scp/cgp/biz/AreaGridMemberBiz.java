@@ -453,4 +453,35 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
             return new ArrayList<>();
         }
     }
+
+    /**
+     * 全部定位
+     * 
+     * @return
+     */
+    public TableResultResponse<JSONObject> allPosition() {
+        List<String> gridMemIdList = this.mapper.distinctGridMember();
+
+        // 聚和网格员定位
+        Map<String, JSONObject> memMap = new HashMap<>();
+        if (gridMemIdList != null && !gridMemIdList.isEmpty()) {
+            memMap = patrolTaskPathBiz.getByUserIds(String.join(",", gridMemIdList));
+        }
+
+        List<JSONObject> jListResult = new ArrayList<>();
+        /*
+         * gridMember=7ac2dac5133747b2b3c2b2c31ee8fe69
+         * mapInfo=(null)
+         */
+        if (memMap != null && !memMap.isEmpty()) {
+            for (String gridMember : gridMemIdList) {
+                JSONObject tmpJObj = new JSONObject();
+                tmpJObj.put("gridMember", gridMember);
+                tmpJObj.put("mapInfo", memMap.get(gridMember));
+                jListResult.add(tmpJObj);
+            }
+        }
+
+        return new TableResultResponse<>(jListResult.size(), jListResult);
+    }
 }

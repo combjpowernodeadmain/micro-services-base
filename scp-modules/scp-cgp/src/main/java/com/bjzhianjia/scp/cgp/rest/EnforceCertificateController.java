@@ -1,33 +1,30 @@
 package com.bjzhianjia.scp.cgp.rest;
 
-import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
-import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
-import com.bjzhianjia.scp.security.common.rest.BaseController;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-
-import com.alibaba.fastjson.JSONObject;
-import com.bjzhianjia.scp.cgp.biz.EnforceCertificateBiz;
-import com.bjzhianjia.scp.cgp.entity.EnforceCertificate;
-import com.bjzhianjia.scp.cgp.entity.Result;
-import com.bjzhianjia.scp.cgp.service.EnforceCertificateService;
-
-import org.springframework.web.bind.annotation.RestController;
-
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.alibaba.fastjson.JSONObject;
+import com.bjzhianjia.scp.cgp.biz.EnforceCertificateBiz;
+import com.bjzhianjia.scp.cgp.entity.EnforceCertificate;
+import com.bjzhianjia.scp.cgp.entity.Result;
+import com.bjzhianjia.scp.cgp.service.EnforceCertificateService;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
+import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.common.rest.BaseController;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 
 /**
@@ -173,5 +170,12 @@ public class EnforceCertificateController extends BaseController<EnforceCertific
 	    }
 	    return result; 
 	}
-	
+
+
+	@GetMapping("/all/potition")
+	@ApiOperation("执法人员全部定位")
+	public TableResultResponse<JSONObject> allPotition(){
+		TableResultResponse<JSONObject> tableResult = this.baseBiz.allPosition();
+		return tableResult;
+	}
 }

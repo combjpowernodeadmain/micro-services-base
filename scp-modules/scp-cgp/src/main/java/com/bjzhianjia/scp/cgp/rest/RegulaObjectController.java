@@ -1,20 +1,5 @@
 package com.bjzhianjia.scp.cgp.rest;
 
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.RegulaObjectBiz;
@@ -30,10 +15,23 @@ import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("regulaObject")
@@ -243,5 +241,16 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
     @ApiOperation("判断一个监管对象是否为企业")
     public ObjectRestResponse<Boolean> isRegObjEnterprise(@PathVariable("regObjId") Integer regObjId) {
         return this.baseBiz.isRegObjEnterprise(regObjId);
+    }
+
+    @GetMapping("/all/potition")
+    @ApiOperation("监管对象全部定位")
+    public TableResultResponse<RegulaObject> allPotition(
+        @RequestParam(required = false, value = "objType") Integer objType) {
+        RegulaObject regulaObject = new RegulaObject();
+        regulaObject.setObjType(objType);
+
+        TableResultResponse<RegulaObject> tableResult = this.baseBiz.allPotition(regulaObject);
+        return tableResult;
     }
 }

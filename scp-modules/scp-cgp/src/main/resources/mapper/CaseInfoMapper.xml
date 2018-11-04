@@ -191,7 +191,7 @@
 		GROUP BY
 		is_finished
 	</select>
-	
+
 	<!-- 业务条线分布统计 -->
 	<select id="selectBizLine" resultType="java.util.Map">
 		SELECT
@@ -286,10 +286,9 @@ SELECT
 
 						LEFT JOIN area_grid ag2 ON ag2.`id`=ag1.`grid_parent`
 						WHERE
-			ag1.grid_level =#{gridLevel}) tmp
-
-
-
+			            ag1.grid_level =#{gridLevel}
+                        <!-- 使用网格表左连接其他表，保证网格表数据干净，需要剔除被删除的记录 -->
+                        AND ag1.is_deleted='0') tmp
 						GROUP BY
 			grid,
 			gridCode,

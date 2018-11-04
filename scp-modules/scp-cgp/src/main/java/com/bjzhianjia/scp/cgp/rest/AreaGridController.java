@@ -271,4 +271,16 @@ public class AreaGridController extends BaseController<AreaGridBiz, AreaGrid, In
         TableResultResponse<JSONObject> restResult = this.baseBiz.getByAreaGridP(gridLevelKey);
             return restResult;
     }
+
+    @GetMapping("/all/potition")
+    @ApiOperation("网格全部定位")
+    public TableResultResponse<AreaGrid> allPotition(
+        @RequestParam(defaultValue = "", value = "gridLevel") String gridLevel) {
+        AreaGrid areaGrid = new AreaGrid();
+        areaGrid.setGridLevel(gridLevel);
+
+        TableResultResponse<AreaGrid> areaGridTableResultResponse =
+            this.baseBiz.allPotition(areaGrid);
+        return areaGridTableResultResponse;
+    }
 }

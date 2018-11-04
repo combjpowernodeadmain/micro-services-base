@@ -1,12 +1,11 @@
 package com.bjzhianjia.scp.cgp.mapper;
 
-import java.util.Date;
-import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
-
 import com.bjzhianjia.scp.cgp.entity.EnforceCertificate;
 import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * 执法证管理
@@ -41,4 +40,6 @@ public interface EnforceCertificateMapper extends CommonMapper<EnforceCertificat
      * @return
      */
     public int countOfEnforce();
+
+    List<String> distinctUsrId();
 }
