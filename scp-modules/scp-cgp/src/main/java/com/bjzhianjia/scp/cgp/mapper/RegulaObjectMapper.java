@@ -49,4 +49,12 @@ public interface RegulaObjectMapper extends CommonMapper<RegulaObject> {
      * @return
 	 */
     List<RegulaObject> allPosition(@Param("regulaObject") RegulaObject regulaObject);
+
+	/**
+	 * 通过监管对象类型和名称查询
+	 * @param objType 对象类型id
+	 * @param objName 名称查询
+	 * @return
+	 */
+	List<Map<String,Object>> selectByTypeAndName(@Param("objType")Integer objType,@Param("objName") String objName);
 }

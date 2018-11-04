@@ -97,4 +97,27 @@
             </if>
         </where>
     </select>
+	<!-- 通过监管对象类型和名称查询 -->
+	<select id="selectByTypeAndName" resultType="java.util.Map">
+		SELECT
+			id,
+			obj_code objCode,
+			obj_type objType,
+			obj_name objName
+		FROM
+			regula_object
+		WHERE
+			is_deleted = 0
+		AND is_disabled = 0
+		<if test="objType !=null  and objType!='' ">
+			AND obj_type = #{objType}
+		</if>
+		<if test="objName !=null  and objName!='' ">
+			<bind name="title" value="'%'+objName+'%'"/>
+			AND obj_name LIKE #{title}
+		</if>
+		ORDER BY
+			crt_time DESC,
+			upd_time DESC
+	</select>
 </mapper>

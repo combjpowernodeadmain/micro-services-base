@@ -679,4 +679,23 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
         }
         return _userObjs.toJSONString();
     }
+    /**
+     * 指定用户（执法队员userId）和指定执法任务状态，获取执法任务列表
+     *
+     * @param userId 用户id
+     * @param state  执法任务状态
+     * @param limit  页容量
+     * @param page   页码
+     * @return
+     */
+    public TableResultResponse<Map<String, Object>> getLawTaskByUserId(String userId, String state,
+                                                                       int limit,int page) {
+        List<Map<String, Object>> result = null;
+        Page<Object> pageHelper = PageHelper.startPage(page,limit);
+        result = lawTaskMapper.selectLawTaskByUserId(userId, state);
+        if (BeanUtil.isEmpty(result)) {
+            return new TableResultResponse<>(0, result);
+        }
+        return new TableResultResponse<>(pageHelper.getTotal(), result);
+    }
 }
