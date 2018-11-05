@@ -109,7 +109,7 @@ pipeline {
                         verbose: false
                     ),
                     sshPublisherDesc(
-                        configName: 'XiashuIntranetServer', 
+                        configName: 'AliyunServerZZ001', 
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
