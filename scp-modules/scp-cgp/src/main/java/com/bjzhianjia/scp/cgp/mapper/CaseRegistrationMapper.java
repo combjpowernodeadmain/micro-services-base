@@ -110,4 +110,11 @@ public interface CaseRegistrationMapper extends CommonMapper<CaseRegistration> {
      * @return 执法人员部门列
      */
     List<String> selectDistinctDeptId();
+
+    /**
+     * 通过用户id获取案件列表
+     * @param userId
+     * @return
+     */
+    List<Map<String,Object>> selectCaseLog(@Param("userId") String userId,@Param("caseName") String caseName);
 }

@@ -302,4 +302,25 @@ SELECT
 			total_ DESC
 
 	</select>
+	<!-- 通过部门id查询事件列表 -->
+	<select id="selectCaseInfoByDeptId" resultType="java.util.Map">
+		SELECT
+			id,
+			crt_time crtTime,
+			case_title caseTitle,
+			case_level caseLevel,
+			is_supervise isSupervise,
+			is_urge isUrge
+		FROM
+			case_info
+		WHERE
+			is_deleted = 0
+		AND is_finished = 0
+		AND execute_dept = #{deptId}
+		<if test="caseLevel != null and caseLevel!='' ">
+			AND case_level = #{caseLevel}
+		</if>
+		ORDER BY
+			crt_time DESC
+	</select>
 </mapper>

@@ -7,6 +7,7 @@ import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.service.CaseRegistrationService;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
+import com.bjzhianjia.scp.core.context.*;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
@@ -407,4 +408,14 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
     public TableResultResponse<JSONObject> allPotition(){
         return this.baseBiz.allPotitionLawTask();
     }
+
+    @GetMapping("/userId")
+    @ApiOperation("通过用户id获取案件列表")
+    public TableResultResponse<Map<String,Object>> getCaseLog(
+            @RequestParam(value = "caseName", defaultValue = "") @ApiParam(name = "案件名称") String caseName,
+            @RequestParam(value = "page", defaultValue = "1") @ApiParam(name = "当前页") Integer page,
+            @RequestParam(value = "limit", defaultValue = "10") @ApiParam(name = "页容量") Integer limit){
+        return this.baseBiz.getCaseLog(BaseContextHandler.getUserID(),caseName,page,limit);
+    }
+
 }
