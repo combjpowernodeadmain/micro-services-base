@@ -677,6 +677,7 @@ public class RegulaObjectService {
                         resultMap = new HashMap<>();
                         resultMap.put("id", obj.get("id"));
                         resultMap.put("objName", String.valueOf(obj.get("objName")));
+                        resultMap.put("objCode", String.valueOf(obj.get("objCode")));
                         resultMap.put("objTypeName", String.valueOf(obj.get("objTypeName")));
                         result.add(resultMap);
                     }
@@ -716,6 +717,7 @@ public class RegulaObjectService {
                         // 封装id和对象名
                         distanceMap = new HashMap<>();
                         distanceMap.put("id", objId);
+                        distanceMap.put("objCode", regulaObject.getObjCode());
                         distanceMap.put("objName", regulaObject.getObjName());
                         distanceMap.put("objTypeName", tmpeType.get(regulaObject.getObjType()));
                         result.add(distanceMap);
