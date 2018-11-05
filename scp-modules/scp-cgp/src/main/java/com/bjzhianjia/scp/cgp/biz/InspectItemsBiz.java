@@ -37,7 +37,7 @@ public class InspectItemsBiz extends BusinessBiz<InspectItemsMapper,InspectItems
 	public InspectItems getByCode(String code) {
 		
 		Example example = new Example(InspectItems.class);
-		
+
 		Criteria criteria = example.createCriteria();
 		criteria.andEqualTo("code", code);
 		

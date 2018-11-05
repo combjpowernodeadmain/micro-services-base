@@ -45,4 +45,8 @@
 		WHERE is_deleted='0'
 		) d_c
     </select>
+
+    <select id="distinctUsrId" resultType="java.lang.String">
+        select distinct(usr_id) from enforce_certificate
+    </select>
 </mapper>

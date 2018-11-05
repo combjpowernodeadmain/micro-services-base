@@ -38,7 +38,8 @@
     <!-- 通过范围查询监管对象列表 -->
     <resultMap type="com.bjzhianjia.scp.cgp.entity.RegulaObject" id="regulaObjDistance">
         <result property="id" column="id"/>
-        <result property="objName" column="obj_name"/>
+        <result property="objCode" column="obj_code"/>
+	    <result property="objName" column="obj_name"/>
         <result property="objType" column="obj_type"/>
         <result property="longitude" column="longitude"/>
         <result property="latitude" column="latitude"/>
@@ -58,6 +59,7 @@
     <select id="selectDistanceAll" resultMap="regulaObjDistance">
     	SELECT
 			id,
+	        obj_code,
 			obj_name,
 			obj_type,
 			longitude,
@@ -65,7 +67,7 @@
 		FROM
 			regula_object
     </select>
-	
+
 	<select id="selectByTypeAndGri" resultMap="regulaObjectMap">
 		SELECT
 			ro.id as id,
@@ -85,5 +87,42 @@
 				${griIds}
 			</if>
 		)
+	</select>
+
+    <!-- 查询全部定位 -->
+    <select id="allPosition" resultMap="regulaObjectMap">
+        SELECT id,map_info,obj_name FROM regula_object
+        <where>
+            is_deleted='0'
+            <if test="regulaObject.objType != null">
+                and obj_type=#{regulaObject.objType}
+            </if>
+        </where>
+    </select>
+	<!-- 通过监管对象类型和名称查询 -->
+	<select id="selectByTypeAndName" resultType="java.util.Map">
+		SELECT
+			ro.id,
+			ro.obj_code objCode,
+			ro.obj_type objType,
+			ro.obj_name objName,
+            rot.object_type_name objTypeName
+		FROM
+			regula_object ro
+		LEFT JOIN regula_object_type rot
+		ON rot.id = ro.obj_type
+		WHERE
+			ro.is_deleted = 0
+		AND ro.is_disabled = 0
+		<if test="objType !=null  and objType!='' ">
+			AND ro.obj_type = #{objType}
+		</if>
+		<if test="objName !=null  and objName!='' ">
+			<bind name="title" value="'%'+objName+'%'"/>
+			AND ro.obj_name LIKE #{title}
+		</if>
+		ORDER BY
+			ro.crt_time DESC,
+			ro.upd_time DESC
 	</select>
 </mapper>

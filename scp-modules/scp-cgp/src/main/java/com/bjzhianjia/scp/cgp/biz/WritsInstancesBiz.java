@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
+import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,6 +77,9 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 
     @Autowired
     private AdminFeign adminFeign;
+
+    @Autowired
+    private CaseRegistrationBiz caseRegistrationBiz;
 
     /**
      * 分页查询记录列表
@@ -669,17 +673,75 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             propertiesConfig.getDestFilePath(), ignoreFileNameList);
 
         try {
-            // DocUtil.WordToPDF(propertiesConfig.getDestFilePath() +
-            // fullDocFileName,
-            // propertiesConfig.getDestFilePath() + fullPDFFileName,
-            // "C:\\Program Files (x86)\\OpenOffice 4\\program\\soffice.exe",
-            // "127.0.0.1", 8100);
-
+            // 将openOffice地址及端口通过配置文件指定
             DocUtil.WordToPDF(propertiesConfig.getDestFilePath() + fullDocFileName,
-                propertiesConfig.getDestFilePath() + fullPDFFileName);
+                propertiesConfig.getDestFilePath() + fullPDFFileName,
+                propertiesConfig.getOpenOfficeHost(),
+                Integer.valueOf(propertiesConfig.getOpenOfficePort()));
         } catch (IOException e) {
             e.printStackTrace();
         }
         return fullPDFFileName;
+    }
+
+    /**
+     * 添加手机端文书实例
+     * @param bizData
+     */
+    public void insertInstanceClient(JSONObject bizData) {
+        caseRegistrationBiz.insertInstanceClient(bizData);
+    }
+
+    /**
+     * 根据案件ID获取文书记录
+     * 
+     * @param caseId
+     * @return
+     */
+    public TableResultResponse<JSONObject> getByCaseId(String caseId) {
+        Example example = new Example(WritsInstances.class);
+        Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isDeleted", "0");
+        criteria.andEqualTo("caseId", caseId);
+
+        List<WritsInstances> writsInstances = this.selectByExample(example);
+        if (BeanUtil.isEmpty(writsInstances)) {
+            return new TableResultResponse<>(0, new ArrayList<>());
+        }
+
+        /*
+         * 收集文书模板ID，进行一次性查询模板，查询模板目的用于在前端页面显示文书名称
+         * 如：《立案核查1》
+         */
+        List<String> templateIdList =
+            writsInstances.stream().map(o -> String.valueOf(o.getTemplateId())).distinct()
+                .collect(Collectors.toList());
+
+        List<WritsTemplates> writsTemplates = null;
+        if (BeanUtil.isNotEmpty(templateIdList)) {
+            writsTemplates = writstTemplateMapper.selectByIds(String.join(",", templateIdList));
+        }
+
+        Map<Integer, String> templateIdNameMap = new HashMap<>();// 用于封装文书模板ID与name的Map集合
+        if (BeanUtil.isNotEmpty(writsTemplates)) {
+            for (WritsTemplates writsTemplatesTmp : writsTemplates) {
+                templateIdNameMap.put(writsTemplatesTmp.getId(), writsTemplatesTmp.getName());
+            }
+        }
+
+        // 整合需要显示的文书名称，同一个文书模板下可能有多个文书，用序号进行区分
+        int index = 1;
+        List<JSONObject> resultList = new ArrayList<>();
+        for (WritsInstances writsInstancesTmp : writsInstances) {
+            JSONObject resultJObj = new JSONObject();
+            resultJObj.put("id", writsInstancesTmp.getId());
+            String writsInstanceName =
+                templateIdNameMap.get(writsInstancesTmp.getTemplateId()) + index;
+            resultJObj.put(writsInstanceName, writsInstanceName);
+            index++;
+
+            resultList.add(resultJObj);
+        }
+        return new TableResultResponse<>(resultList.size(), resultList);
     }
 }

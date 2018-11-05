@@ -337,7 +337,10 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
             for (AreaGrid areaGrid : areaGridList) {
                 JSONObject propertiesJObj;
                 try {
-                    propertiesJObj = propertiesProxy.swapProperties(areaGrid, "gridName","id","mapInfo");
+                    // 在返回结果集中添加网格等级
+                    propertiesJObj =
+                        propertiesProxy.swapProperties(areaGrid, "gridName", "id", "mapInfo",
+                            "gridLevel");
                     resultJObj.add(propertiesJObj);
                 } catch (Throwable e) {
                     e.printStackTrace();
@@ -417,5 +420,16 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         }
 
         return null;
+    }
+
+    /**
+     * 网格全部定位
+     * 
+     * @param areaGrid
+     * @return
+     */
+    public TableResultResponse<AreaGrid> allPotition(AreaGrid areaGrid) {
+        List<AreaGrid> areaGrids = this.mapper.allPotition(areaGrid);
+        return new TableResultResponse<>(areaGrids.size(), areaGrids);
     }
 }

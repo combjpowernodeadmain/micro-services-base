@@ -228,4 +228,11 @@ public class RegulaObjectTypeBiz extends BusinessBiz<RegulaObjectTypeMapper, Reg
     public List<RegulaObjectType> selectIdAll() {
         return this.mapper.selectIdAll();
     }
+
+    /**
+     *  获取监管对象类型名称列表
+     */
+    public List<Map<String,Object>> getObjTypeAndName(){
+        return this.mapper.selectObjTypeAndName();
+    }
 }

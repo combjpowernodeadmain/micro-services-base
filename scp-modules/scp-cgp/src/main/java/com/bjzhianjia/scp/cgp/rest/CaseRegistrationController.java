@@ -1,25 +1,5 @@
 package com.bjzhianjia.scp.cgp.rest;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.CaseRegistrationBiz;
@@ -27,15 +7,35 @@ import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.service.CaseRegistrationService;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
+import com.bjzhianjia.scp.core.context.*;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Map;
 
 /**
  * 
@@ -109,10 +109,12 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
     @ApiOperation("分页获取对象列表")
     public TableResultResponse<CaseRegistration> getList(
         @RequestParam(value = "gridId", defaultValue = "") @ApiParam("网格ID") Integer gridId,
+        @RequestParam(value = "exeStatus", defaultValue = "") @ApiParam("案件状态") String exeStatus,
         @RequestParam(value = "page", defaultValue = "1") @ApiParam("当前页") Integer page,
         @RequestParam(value = "limit", defaultValue = "10") @ApiParam("页容量") Integer limit) {
         CaseRegistration caseRegistration = new CaseRegistration();
         caseRegistration.setGirdId(gridId);
+        caseRegistration.setExeStatus(exeStatus);
 
         return this.baseBiz.getList(caseRegistration, page, limit);
     }
@@ -167,8 +169,7 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
 
     /**
      * 案件详情页
-     * 
-     * @param id
+     * @param objs
      * @return
      */
     @ApiOperation("案件详情页")
@@ -398,4 +399,27 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
     public TableResultResponse<JSONObject> listLawTask(@PathVariable("ids") @ApiParam("执法任务ID集合")Integer[] ids){
         return this.baseBiz.listLawTask(ids);
     }
+
+    @GetMapping("/all/potition/lawTask")
+    @ApiOperation("执法任务案件全部定位")
+    public TableResultResponse<JSONObject> allPotitionLawTask(){
+        return this.baseBiz.allPotitionLawTask();
+    }
+
+    @PostMapping("/all/potition")
+    @ApiOperation("案件全部定位")
+    public TableResultResponse<JSONObject> allPotition(@RequestBody JSONObject objs){
+        // 案件全部定位，添加请求工作流的参数结构
+        return this.baseBiz.allPotition(objs);
+    }
+
+    @GetMapping("/userId")
+    @ApiOperation("通过用户id获取案件列表")
+    public TableResultResponse<Map<String,Object>> getCaseLog(
+            @RequestParam(value = "caseName", defaultValue = "") @ApiParam(name = "案件名称") String caseName,
+            @RequestParam(value = "page", defaultValue = "1") @ApiParam(name = "当前页") Integer page,
+            @RequestParam(value = "limit", defaultValue = "10") @ApiParam(name = "页容量") Integer limit){
+        return this.baseBiz.getCaseLog(BaseContextHandler.getUserID(),caseName,page,limit);
+    }
+
 }

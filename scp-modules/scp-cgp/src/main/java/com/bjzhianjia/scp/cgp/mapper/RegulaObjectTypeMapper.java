@@ -1,7 +1,6 @@
 package com.bjzhianjia.scp.cgp.mapper;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -40,4 +39,8 @@ public interface RegulaObjectTypeMapper extends CommonMapper<RegulaObjectType> {
      * 查询所有监管对象类型id和父id
      */
     List<RegulaObjectType> selectIdAll();
+    /**
+     *  获取监管对象类型名称列表
+      */
+    List<Map<String,Object>> selectObjTypeAndName();
 }

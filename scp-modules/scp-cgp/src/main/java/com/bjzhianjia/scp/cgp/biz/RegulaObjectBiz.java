@@ -478,4 +478,34 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 
         return restResult;
     }
+
+    /**
+     * 查询所有定位
+     * @param regulaObject
+     * @return
+     */
+    public List<RegulaObject> allPotition(RegulaObject regulaObject) {
+        List<RegulaObject> list=this.mapper.allPosition(regulaObject);
+
+        if(BeanUtil.isNotEmpty(list)){
+            return new ArrayList<>();
+        }
+
+        return list;
+    }
+
+    /**
+     * 通过监管对象类型和名称查询
+     *
+     * @param objType 对象类型id
+     * @param objName 名称查询
+     * @return
+     */
+    public List<Map<String, Object>> getObjByTypeAndName(Integer objType, String objName) {
+        if (objType == null && StringUtils.isBlank(objName)) {
+            return new ArrayList<>();
+        }
+        List<Map<String, Object>> result = this.mapper.selectByTypeAndName(objType, objName);
+        return BeanUtil.isEmpty(result) ? new ArrayList<>() : result;
+    }
 }

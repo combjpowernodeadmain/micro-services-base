@@ -29,4 +29,14 @@
 		<result property="updTime" column="upd_time" />
 		<result property="tenantId" column="tenant_id" />
 	</resultMap>
+
+	<!-- 网格全部定位 -->
+	<select id="allPotition" resultMap="areaGridMap">
+		select id,grid_name,map_info from area_grid
+		<where>
+			<if test="areaGrid.gridLevel!=null and areaGrid.gridLevel != ''">
+				grid_level=#{areaGrid.gridLevel}
+			</if>
+		</where>
+	</select>
 </mapper>

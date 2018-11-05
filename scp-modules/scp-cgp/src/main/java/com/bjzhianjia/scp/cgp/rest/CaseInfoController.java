@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.bjzhianjia.scp.core.context.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -437,4 +439,36 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         
         return this.caserInfoService.caseInfoInstance(id);
     }
+
+    @GetMapping("/all/potition/patrol")
+    @ApiOperation("专项事件全部定位")
+    public TableResultResponse<JSONObject> allPotitionPatrol(){
+        TableResultResponse<JSONObject> tableResult = this.baseBiz.allPositionPatrol();
+        return tableResult;
+    }
+
+    @PostMapping("/all/potition")
+    @ApiOperation("专项事件全部定位")
+    public TableResultResponse<JSONObject> allPotition(@RequestBody JSONObject objs, HttpServletRequest request){
+        TableResultResponse<JSONObject> tableResult = caserInfoService.allPosition(objs);
+        return tableResult;
+    }
+
+    /**
+     * 通过事件等级和部门id查询
+     * @param page 页码
+     * @param limit 页数
+     * @param caseLevel 事件等级
+     * @return
+     */
+    @GetMapping("/caseLevel")
+    @ApiOperation("通过事件等级查询事件列表")
+    public TableResultResponse<Map<String,Object>> getCaseInfoByDeptId(
+            @RequestParam(value = "page", defaultValue = "1") @ApiParam(name = "当前页") Integer page,
+            @RequestParam(value = "limit", defaultValue = "10") @ApiParam(name = "页容量") Integer limit,
+            @RequestParam(value = "caseLevel", defaultValue = "") @ApiParam(name = "案件等级") String caseLevel){
+        //TODO 多个部门
+        return caseInfoBiz.getCaseInfoByDeptId(caseLevel, BaseContextHandler.getDepartID(),page,limit);
+    }
+
 }
