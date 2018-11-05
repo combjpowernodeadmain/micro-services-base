@@ -1756,7 +1756,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
     /**
      * 手机端案件登记
-     * 
+     *
      * @param caseRegJObj
      */
     @Transactional(rollbackFor = Exception.class,propagation = Propagation.REQUIRED)
@@ -1841,5 +1841,25 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      */
     public void insertInstanceClient(JSONObject bizData) {
         this.addWritsInstances(bizData, bizData.getString("caseId"));
+    }
+
+    /**
+     *  通过用户id获取案件列表
+     * @param userId
+     * @param page
+     * @param limit
+     * @return
+     */
+    public TableResultResponse<Map<String, Object>> getCaseLog(String userId,String caseName, int page, int limit) {
+        Page<Object> pageHelper = PageHelper.startPage(page, limit);
+        List<Map<String, Object>> result = this.mapper.selectCaseLog(userId,caseName);
+        if(BeanUtil.isEmpty(result)){
+            return new TableResultResponse<>(0,new ArrayList<>());
+        }
+        Map<String,String> dictTemp = dictFeign.getByCode(Constances.CASE_SOURCE_TYPE);
+        for(Map<String,Object> map : result){
+            map.put("sourceTypeName",dictTemp.get(map.get("caseSourceType")));
+        }
+        return new TableResultResponse<>(pageHelper.getTotal(),result);
     }
 }

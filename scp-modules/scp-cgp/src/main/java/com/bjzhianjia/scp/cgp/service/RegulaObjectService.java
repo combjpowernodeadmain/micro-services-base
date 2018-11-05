@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -631,58 +632,58 @@ public class RegulaObjectService {
      *            纬度
      * @param objType
      *            监管对象类型
+     * @param objName
+     *             监管对象名称
      * @param size
      *            范围（单位：米）
      * @return
      */
     @SuppressWarnings("unchecked")
-    public List<Map<String, Object>> getByDistance(double longitude, double latitude, Integer objType, Double size) {
+    public List<Map<String, Object>> getByDistance(double longitude, double latitude, Integer objType,
+                                                   String objName , Double size , Integer limit,Integer page) {
         List<Map<String, Object>> result = new ArrayList<>();
 
-        // 监管对象列表
-        List<Map<String, Object>> objNameList =
-            (List<Map<String, Object>>) redisTemplate.opsForValue().get(PatrolTask.REGULA_OBJECT_NAME);
-        if (objNameList == null) {
-            this.initCacheData();
-            objNameList = (List<Map<String, Object>>) redisTemplate.opsForValue().get(PatrolTask.REGULA_OBJECT_NAME);
-        }
-
-        // 获取指定范围的所有监管对象
-        Circle within = new Circle(new Point(longitude, latitude), new Distance(size, DistanceUnit.METERS));
-        GeoResults<GeoLocation<Object>> geoResults =
-            redisTemplate.opsForGeo().geoRadius(PatrolTask.REGULA_OBJECT_LOCATION, within);
-        // 指定范围内的ids
-        List<Integer> ids = new ArrayList<>();
-        geoResults.forEach(geoLocation -> {
-            ids.add((Integer) geoLocation.getContent().getName());
-        });
-
-        // 筛选指定监控类型和指定范围内的数据
-        Map<String, Object> resultMap = null;
-        RegulaObject regulaObject = null;
-        if (objNameList.size() > 0 && (ids != null && ids.size() > 0)) {
-            // 数据筛选，匹配符合监管对象类型
-            Map<String, RegulaObject> objs = new HashMap<>();
-            for (Map<String, Object> obj : objNameList) {
-                if (objType.equals(obj.get("objType"))) { // 匹配类型
-                    regulaObject = new RegulaObject();
-                    regulaObject.setId(new Integer(obj.get("id").toString()));
-                    regulaObject.setObjName(String.valueOf(obj.get("objName")));
-                    objs.put(String.valueOf(obj.get("id")), regulaObject);
-                }
+        //如果有监管对象名称和监管对象类型，则全库查询，否则查询指定范围内的对象
+        if(objType != null || StringUtils.isNotBlank(objName)) {
+            PageHelper.startPage(page,limit);
+            result = this.regulaObjectBiz.getObjByTypeAndName(objType,objName);
+        }else{
+            // 监管对象列表
+            List<Map<String, Object>> objNameList =
+                (List<Map<String, Object>>) redisTemplate.opsForValue().get(PatrolTask.REGULA_OBJECT_NAME);
+            if (objNameList == null) {
+                this.initCacheData();
+                objNameList = (List<Map<String, Object>>) redisTemplate.opsForValue().get(PatrolTask.REGULA_OBJECT_NAME);
             }
 
-            for (Integer id : ids) { // 匹配范围内id
-                regulaObject = objs.get(String.valueOf(id));
-                if (regulaObject != null) {
-                    resultMap = new HashMap<>();
-                    resultMap.put("id", regulaObject.getId());
-                    resultMap.put("objName", regulaObject.getObjName());
-                    result.add(resultMap);
+            // 获取指定范围的所有监管对象
+            Circle within = new Circle(new Point(longitude, latitude), new Distance(size, DistanceUnit.METERS));
+            GeoResults<GeoLocation<Object>> geoResults =
+                redisTemplate.opsForGeo().geoRadius(PatrolTask.REGULA_OBJECT_LOCATION, within);
+            // 指定范围内的ids
+            Map<Integer,String> temp = new HashMap<>();
+            geoResults.forEach(geoLocation -> {
+                temp.put((Integer)geoLocation.getContent().getName(),"");
+            });
+
+            // 筛选指定监控类型和指定范围内的数据
+            Map<String, Object> resultMap = null;
+            if (BeanUtil.isNotEmpty(objNameList)) {
+
+                for (Map<String, Object> obj : objNameList) {
+                    String objId = String.valueOf(obj.get("id"));
+                    //当前id和缓存中的id匹配，成功则表示在指定范围内
+                    if(temp.get(Integer.valueOf(objId)) != null){
+                        resultMap = new HashMap<>();
+                        resultMap.put("id", obj.get("id"));
+                        resultMap.put("objName", String.valueOf(obj.get("objName")));
+                        resultMap.put("objCode", String.valueOf(obj.get("objCode")));
+                        resultMap.put("objTypeName", String.valueOf(obj.get("objTypeName")));
+                        result.add(resultMap);
+                    }
                 }
             }
         }
-
         return result;
     }
 
@@ -702,13 +703,23 @@ public class RegulaObjectService {
 
                 public Boolean doInRedis(RedisConnection connection) throws DataAccessException {
                     Map<String, Object> distanceMap = null;
+
+                    //监管对象类型列表
+                    List<Map<String,Object>> objTypeList = regulaObjectTypeBiz.getObjTypeAndName();
+                    Map<Integer,String> tmpeType = new HashMap<>();
+                    for(Map<String,Object> map : objTypeList){
+                        tmpeType.put(Integer.valueOf(String.valueOf(map.get("objType"))),
+                                String.valueOf(map.get("objTypeName")));
+                    }
+
                     for (RegulaObject regulaObject : regulaObjects) {
                         String objId = String.valueOf(regulaObject.getId());
                         // 封装id和对象名
                         distanceMap = new HashMap<>();
                         distanceMap.put("id", objId);
+                        distanceMap.put("objCode", regulaObject.getObjCode());
                         distanceMap.put("objName", regulaObject.getObjName());
-                        distanceMap.put("objType", regulaObject.getObjType());
+                        distanceMap.put("objTypeName", tmpeType.get(regulaObject.getObjType()));
                         result.add(distanceMap);
                         // 缓存经纬度
                         if (regulaObject.getLongitude() != null && regulaObject.getLatitude() != null) {

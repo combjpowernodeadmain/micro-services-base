@@ -10,6 +10,7 @@ import com.bjzhianjia.scp.cgp.mapper.CaseInfoMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
+import com.bjzhianjia.scp.core.context.*;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
@@ -618,5 +619,31 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
      */
     public TableResultResponse<JSONObject> allPositionPatrol() {
         return this.patrolCaseInfo(null);
+    }
+
+    /**
+     * 通过部门id和事件等级获取事件列表
+     *
+     * @param caseLevel 事件等级
+     * @param page
+     * @param limit
+     * @return
+     */
+    public TableResultResponse<Map<String, Object>> getCaseInfoByDeptId(String caseLevel, String deptId, int page,
+                                                                        int limit) {
+        Page<Object> pageHelper = PageHelper.startPage(page, limit);
+        List<Map<String, Object>> result = this.mapper.selectCaseInfoByDeptId(deptId, caseLevel);
+        if (BeanUtil.isEmpty(result)) {
+            return new TableResultResponse<>(0, new ArrayList<>());
+        }
+        Map<String,String>  dictTemp = dictFeign.getByCode(Constances.ROOT_BIZ_EVENTLEVEL);
+
+        for(Map<String,Object> map : result){
+            String caseLevelName = dictTemp.get(map.get("caseLevel"));
+            map.put("caseLevelName",caseLevelName);
+            map.put("isSupervise","0".equals(map.get("isSupervise"))?false:true);
+            map.put("isUrge","0".equals(map.get("isUrge"))?false:true);
+        }
+        return new TableResultResponse<>(pageHelper.getTotal(), result);
     }
 }

@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.bjzhianjia.scp.core.context.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -452,4 +453,22 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         TableResultResponse<JSONObject> tableResult = caserInfoService.allPosition(objs);
         return tableResult;
     }
+
+    /**
+     * 通过事件等级和部门id查询
+     * @param page 页码
+     * @param limit 页数
+     * @param caseLevel 事件等级
+     * @return
+     */
+    @GetMapping("/caseLevel")
+    @ApiOperation("通过事件等级查询事件列表")
+    public TableResultResponse<Map<String,Object>> getCaseInfoByDeptId(
+            @RequestParam(value = "page", defaultValue = "1") @ApiParam(name = "当前页") Integer page,
+            @RequestParam(value = "limit", defaultValue = "10") @ApiParam(name = "页容量") Integer limit,
+            @RequestParam(value = "caseLevel", defaultValue = "") @ApiParam(name = "案件等级") String caseLevel){
+        //TODO 多个部门
+        return caseInfoBiz.getCaseInfoByDeptId(caseLevel, BaseContextHandler.getDepartID(),page,limit);
+    }
+
 }

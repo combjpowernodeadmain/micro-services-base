@@ -36,6 +36,15 @@
     <select id="selectIdAll" resultMap="regulaObjectTypeMap">
    	 select id,parent_object_type_id from regula_object_type
     </select>
-    
+    <!-- 获取监管对象类型名称列表 -->
+	<select id="selectObjTypeAndName" resultType="java.util.Map">
+		SELECT DISTINCT
+			rot.id objType,
+			object_type_name objTypeName
+		FROM
+			regula_object ro
+		INNER JOIN regula_object_type rot
+		ON rot.id = ro.obj_type
+	</select>
     
 </mapper>

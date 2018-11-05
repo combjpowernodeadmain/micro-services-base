@@ -313,4 +313,27 @@
 	<select id="selectDistinctDeptId" resultType="java.lang.String">
 		SELECT DISTINCT(dept_id) FROM cle_case_registration
 	</select>
+	<!-- 案件记录-->
+	<select id="selectCaseLog" resultType="java.util.Map">
+		<bind name="id" value="'%'+userId+'%'"/>
+		SELECT
+			id,
+			case_name caseName,
+			case_time caseTime,
+			case_source_type caseSourceType
+		FROM
+			cle_case_registration
+		WHERE
+			is_deleted = 0
+		AND (
+			crt_user_id = #{userId}
+			OR enforcers LIKE "%"#{id}"%"
+		)
+		<if test="caseName != null  and caseName!='' ">
+			<bind name="title" value="'%'+caseName+'%'"/>
+			AND case_name LIKE #{title}
+		</if>
+		ORDER BY
+			crt_time DESC
+	</select>
 </mapper>

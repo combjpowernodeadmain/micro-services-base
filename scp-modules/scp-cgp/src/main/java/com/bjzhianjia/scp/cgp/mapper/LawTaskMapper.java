@@ -45,4 +45,11 @@ public interface LawTaskMapper extends CommonMapper<LawTask> {
 			@Param("state") String state,
 			@Param("startTime") Date startTime,
 			@Param("endTime") Date endTime);
+	/**
+	 *  指定用户（执法队员userId）和指定执法任务状态，获取执法任务列表
+	 * @param userId 用户id
+	 * @param state 执法任务状态
+	 * @return
+	 */
+	List<Map<String,Object>> selectLawTaskByUserId(@Param("userId") String userId , @Param("state") String state);
 }

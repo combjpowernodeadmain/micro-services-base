@@ -66,4 +66,23 @@
 			lk.end_time,
 			lk.state
 	</select>
+	<!-- 执法人员（userId）执法任务列表 -->
+	<select id="selectLawTaskByUserId" resultType="java.util.Map">
+		<bind name="user" value="'%'+userId+'%'"/>
+		SELECT
+			id ,
+			law_title lawTitle,
+			start_time startTime,
+			end_time endTime
+		FROM
+			law_task
+		WHERE
+			is_deleted = 0
+			<!-- 状态： 处理中'root_biz_lawTaskS_doing' -->
+			AND state = #{state}
+		AND execute_person LIKE #{user}
+		ORDER BY
+			crt_time DESC,
+			upd_time DESC
+	</select>
 </mapper>
