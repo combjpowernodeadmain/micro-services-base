@@ -96,4 +96,13 @@ public interface CaseInfoMapper extends CommonMapper<CaseInfo> {
      */
     public List<JSONObject> selectByGrid(@Param("caseInfo") CaseInfo caseInfo,@Param("startTime") String startTime,
                                          @Param("endTime") String endTime,@Param("gridIds")String gridIds,@Param("gridLevel")String gridLevel);
+
+    /**
+     * 通过部门id和事件等级获取事件列表
+     *
+     * @param deptId 部门id
+     * @param caseLevel 事件等级
+     * @return
+     */
+    List<Map<String, Object>> selectCaseInfoByDeptId(@Param("deptId") String deptId, @Param("caseLevel") String caseLevel);
 }
