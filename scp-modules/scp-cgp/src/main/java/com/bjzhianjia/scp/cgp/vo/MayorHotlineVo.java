@@ -12,6 +12,7 @@ public class MayorHotlineVo extends MayorHotline {
 	private String exeStatusName;
 	private String caseCode;
 	private String caseId;
+	private String hotlnSourceName;
 
 	public String getCaseSource() {
 		return caseSource;
@@ -44,5 +45,12 @@ public class MayorHotlineVo extends MayorHotline {
 	public void setCaseId(String caseId) {
 		this.caseId = caseId;
 	}
-	
+
+	public String getHotlnSourceName() {
+		return hotlnSourceName;
+	}
+
+	public void setHotlnSourceName(String hotlnSourceName) {
+		this.hotlnSourceName = hotlnSourceName;
+	}
 }
