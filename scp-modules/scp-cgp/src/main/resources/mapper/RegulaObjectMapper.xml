@@ -91,7 +91,7 @@
 
     <!-- 查询全部定位 -->
     <select id="allPosition" resultMap="regulaObjectMap">
-        SELECT id,map_info FROM regula_object
+        SELECT id,map_info,obj_name FROM regula_object
         <where>
             is_deleted='0'
             <if test="regulaObject.objType != null">

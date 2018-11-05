@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -214,5 +215,39 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
 
         ResponseEntity<?> file = docDownUtil.getFile(propertiesConfig.getDestFilePath(), fullPDFFileName);
         return file;
+    }
+
+    /**
+     * 该接口用于手机APP端添加文书实例
+     * 
+     * @param bizData
+     * @param bindingResult
+     * @return
+     */
+    @RequestMapping(value = "/mobile", method = RequestMethod.POST)
+    @ApiOperation("手机端添加文书实例接口")
+    public ObjectRestResponse<WritsInstances> instancesClient(
+        @RequestBody @ApiParam(name = "待添加对象实例") @Validated JSONObject bizData,
+        BindingResult bindingResult) {
+
+        ObjectRestResponse<WritsInstances> restResult = new ObjectRestResponse<>();
+
+        if (bindingResult.hasErrors()) {
+            restResult.setStatus(400);
+            restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            return restResult;
+        }
+
+        writsInstancesBiz.insertInstanceClient(bizData);
+
+        restResult.setMessage("成功");
+        return restResult;
+    }
+
+    @ApiOperation("按案件ID获取文书记录")
+    @GetMapping("/instance/byCaseId")
+    public TableResultResponse<JSONObject> getByCaseId(@RequestParam(value="caseId")String caseId){
+        TableResultResponse<JSONObject> tableresult = this.baseBiz.getByCaseId(caseId);
+        return tableresult;
     }
 }

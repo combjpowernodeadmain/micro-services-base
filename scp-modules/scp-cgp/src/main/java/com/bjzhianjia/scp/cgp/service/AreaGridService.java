@@ -420,7 +420,7 @@ public class AreaGridService {
 
         if (areaGrid == null || areaGrid.getIsDeleted().equals("1")) {
             result.setStatus(400);
-            result.setMessage("该记录不存在或已删除");
+            result.setMessage("该网格不存在或已删除");
             return result;
         }
 

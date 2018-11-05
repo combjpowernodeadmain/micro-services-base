@@ -4,25 +4,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.EnforceTerminalBiz;
 import com.bjzhianjia.scp.cgp.biz.VhclManagementBiz;
-import com.bjzhianjia.scp.cgp.entity.Depart;
 import com.bjzhianjia.scp.cgp.entity.EnforceTerminal;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.VhclManagement;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.mapper.EnforceTerminalMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
-import com.bjzhianjia.scp.cgp.vo.DeptBizTypeVo;
 import com.bjzhianjia.scp.cgp.vo.VhclManagementVo;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;

@@ -12,6 +12,7 @@ import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.EventType;
 import com.bjzhianjia.scp.cgp.entity.LawTask;
+import com.bjzhianjia.scp.cgp.entity.Point;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.RightsIssues;
 import com.bjzhianjia.scp.cgp.entity.WritsInstances;
@@ -48,6 +49,8 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
 
@@ -239,6 +242,10 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      */
     private void addWritsInstances(JSONObject caseRegJObj, String caseId) {
         JSONArray writsInstancesJArray = caseRegJObj.getJSONArray("writsInstances");
+
+        if(BeanUtil.isEmpty(writsInstancesJArray)){
+            return;
+        }
 
         // 收集前端传入的模板tcode值，可能没有传入，如果没传，则该操作为更新操作
         List<String> tcodeList = new ArrayList<>();
@@ -512,8 +519,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         if (caseRegistration.getGirdId() != null) {
             criteria.andEqualTo("girdId", caseRegistration.getGirdId());
         }
+        // 添加按案件状态查询的逻辑
+        if (StringUtils.isNotBlank(caseRegistration.getExeStatus())) {
+            criteria.andEqualTo("exeStatus", caseRegistration.getExeStatus());
+        }
 
-        example.setOrderByClause("id desc");
+        example.setOrderByClause("crt_time desc");
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<CaseRegistration> rows = this.selectByExample(example);
 
@@ -1741,6 +1752,95 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             }
         }
         return new TableResultResponse<>(resultList.size(), resultList);
+    }
+
+    /**
+     * 手机端案件登记
+     *
+     * @param caseRegJObj
+     */
+    @Transactional(rollbackFor = Exception.class,propagation = Propagation.REQUIRED)
+    public Result<Void> addCaseClient(JSONObject caseRegJObj) {
+        Result<Void> result = new Result<>();
+
+        CaseRegistration caseRegistration =
+            JSON.parseObject(caseRegJObj.toJSONString(), CaseRegistration.class);
+
+        result = _addCaseRegistrationClient(caseRegJObj, result, caseRegistration);
+
+        return result;
+    }
+
+    /**
+     * 手机端添加案件信息帮助方法
+     * 当案件没有进行暂存过时调用该方法
+     * @param caseRegJObj
+     * @param result
+     * @param caseRegistration
+     * @return
+     */
+    private Result<Void> _addCaseRegistrationClient(JSONObject caseRegJObj, Result<Void> result,
+        CaseRegistration caseRegistration) {
+        // 添加当事人
+        int concernedId = addConcerned(caseRegJObj);
+
+        /*
+         * 对于网格：1 如果有网格ID，则直接拿过来 2 如果没有，则通过经纬度定位到相应网格
+         * 3 如果不满足第1第2 ，则提示前端
+         */
+        if (BeanUtil.isEmpty(caseRegistration.getGirdId())) {
+            // 前端没有传入网格数据，定位获取
+            JSONObject mapInfoJObj = caseRegJObj.getJSONObject("mapInfo");
+            if (BeanUtil.isEmpty(mapInfoJObj)) {
+                throw new BizException("添加案件登记失败，未找到相应网格信息。");
+            }
+            Point point = new Point(mapInfoJObj.getDouble("lng"), mapInfoJObj.getDouble("lat"));
+            AreaGrid areaGridReturn = areaGridBiz.isPolygonContainsPoint(point);
+            if(BeanUtil.isNotEmpty(areaGridReturn)){
+                caseRegistration.setGirdId(areaGridReturn.getId());
+            }
+        }
+
+        /*
+         * 生成caseRegistration主键
+         * 手机端有可能发起了案件暂存，以前端是否传入了案件ID来判断是否进行过案件暂存
+         */
+        String caseId = caseRegistration.getId();
+        if(StringUtils.isBlank(caseId)){
+            throw new BizException("请指定案件ID");
+        }
+
+        // 当事人主键
+        if (concernedId != -1) {
+            caseRegistration.setConcernedId(concernedId);
+        }
+
+        caseRegistration.setId(caseId);
+
+        // 添加文书
+        addWritsInstances(caseRegJObj, caseId);
+
+        // 添加附件
+        addAttachments(caseRegJObj, caseId);
+
+        // 确定执法人员的部门
+        addEnforcerDept(caseRegistration);
+
+        this.insertSelective(caseRegistration);
+        // 将生成的立案ID装入procBizData带回工作流，在工作流中会对procBizId属性进行是否为“-1”的判断，如果是“-1”，将用该ID替换“-1”
+        caseRegJObj.put("procBizId", caseId);
+
+        result.setIsSuccess(true);
+
+        return result;
+    }
+
+    /**
+     * 添加手机端文书实例
+     * @param bizData
+     */
+    public void insertInstanceClient(JSONObject bizData) {
+        this.addWritsInstances(bizData, bizData.getString("caseId"));
     }
 
     /**

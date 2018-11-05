@@ -757,4 +757,32 @@ public class RegulaObjectService {
 
         return new TableResultResponse<>(tableResult.getData().getTotal(), voList);
     }
+
+    /**
+     * 监管对象全部定位
+     * @param regulaObject
+     * @return
+     */
+    public TableResultResponse<RegulaObjectVo> allPotition(RegulaObject regulaObject) {
+        List<RegulaObject> regulaObjectList = regulaObjectBiz.allPotition(regulaObject);
+
+        // 整合每个监管对象被巡查的次数
+        // 以regObjIdList为基础，查询巡查记录表
+        List<JSONObject> regulaObjCount = patrolTaskMapper.regulaObjCount(null);
+        // 将regulaObjCount转化为key-value形式
+        Map<Integer, Integer> regObjIdCountMap = new HashMap<>();
+        if (BeanUtil.isNotEmpty(regulaObjCount)) {
+            for (JSONObject jsonObject : regulaObjCount) {
+                regObjIdCountMap.put(jsonObject.getInteger("regula_object_id"), jsonObject.getInteger("rcount"));
+            }
+        }
+
+        List<RegulaObjectVo> voList = BeanUtil.copyBeanList_New(regulaObjectList, RegulaObjectVo.class);
+        for (RegulaObjectVo tmp : voList) {
+            tmp.setPatrolCount(
+                    BeanUtil.isEmpty(regObjIdCountMap.get(tmp.getId())) ? 0 : regObjIdCountMap.get(tmp.getId()));
+        }
+
+        return new TableResultResponse<>(voList.size(), voList);
+    }
 }

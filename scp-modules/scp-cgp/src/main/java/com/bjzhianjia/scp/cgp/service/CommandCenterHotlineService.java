@@ -147,6 +147,10 @@ public class CommandCenterHotlineService {
      */
     public JSONObject selectById(Integer id) {
         CommandCenterHotline hotline = commandCenterHotlineBiz.selectById(id);
+        
+        if (BeanUtil.isEmpty(hotline)) {
+            return null;
+        }
 
         List<CommandCenterHotline> hotlines = new ArrayList<>();
         hotlines.add(hotline);
