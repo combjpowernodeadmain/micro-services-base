@@ -487,7 +487,7 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
     public List<RegulaObject> allPotition(RegulaObject regulaObject) {
         List<RegulaObject> list=this.mapper.allPosition(regulaObject);
 
-        if(BeanUtil.isNotEmpty(list)){
+        if(BeanUtil.isEmpty(list)){
             return new ArrayList<>();
         }
 

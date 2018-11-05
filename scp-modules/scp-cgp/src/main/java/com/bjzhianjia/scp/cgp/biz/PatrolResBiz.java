@@ -36,4 +36,12 @@ public class PatrolResBiz extends BusinessBiz<PatrolResMapper,PatrolRes> {
 		criteria.andEqualTo("patrolTaskId", patrolTaskId);
 		return patrolResMapper.selectByExample(example);
 	}
+
+	/**
+	 * 批量添加记录
+	 * @param patrolResList
+	 */
+	public void insertList(List<PatrolRes> patrolResList) {
+		this.mapper.insertList(patrolResList);
+	}
 }
