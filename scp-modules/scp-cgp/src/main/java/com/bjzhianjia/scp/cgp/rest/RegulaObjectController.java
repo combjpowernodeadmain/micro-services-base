@@ -247,12 +247,12 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
 
     @GetMapping("/all/potition")
     @ApiOperation("监管对象全部定位")
-    public TableResultResponse<RegulaObject> allPotition(
+    public TableResultResponse<RegulaObjectVo> allPotition(
         @RequestParam(required = false, value = "objType") Integer objType) {
         RegulaObject regulaObject = new RegulaObject();
         regulaObject.setObjType(objType);
 
-        TableResultResponse<RegulaObject> tableResult = this.baseBiz.allPotition(regulaObject);
+        TableResultResponse<RegulaObjectVo> tableResult = regulaObjectService.allPotition(regulaObject);
         return tableResult;
     }
 }

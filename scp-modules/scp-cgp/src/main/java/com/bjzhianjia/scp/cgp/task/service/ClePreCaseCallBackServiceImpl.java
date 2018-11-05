@@ -29,15 +29,23 @@ public class ClePreCaseCallBackServiceImpl implements IWfProcTaskCallBackService
         log.debug("添加案件登陆前回调方法执行，参数结构为：" + procBizData);
 
         String bizType = String.valueOf(procBizData.get(PROC_BIZTYPE));
+        // 加入手机端案件登记，需要判断请求来自手机端还是WEB端
+        String queryFrom = String.valueOf(procBizData.get("queryFrom"));
+
         if ("null".equals(bizType)) {
             // 将bizTYpe置为空字符串，防止在switch时产生空指针，空字符串可进入default选项
             bizType = "";
         }
         log.debug("*********************************案件办理，进入回调类程序*************************************");
         log.debug("*********************************bizType:" + bizType + "*************************************");
+        log.debug("*********************************queryFrom:" + queryFrom + "*************************************");
 
         JSONObject bizData = JSONObject.parseObject(JSON.toJSONString(procBizData));
 
+        /*
+         * PROC_END表示案件一发起就停止的情况，如现场处理……
+         * 当不说明一发起就停止时，默认进入【一般程序】，案件状态为【待处理】
+         */
         switch (bizType) {
             case PROC_END:
                 bizData.put("exeStatus", CaseRegistration.EXESTATUS_STATE_FINISH);
@@ -47,7 +55,16 @@ public class ClePreCaseCallBackServiceImpl implements IWfProcTaskCallBackService
                 break;
         }
         // 添加立案
-        caseResistrationBiz.addCase(bizData);
+        /*
+         * 加入手机端案件登记，需要判断请求来自手机商还是WEB端
+         * 与APP商约定请求来源，手机端定义为“client”(借用Auth服务中对手机端的标识)
+         */
+        if("client".equals(queryFrom)){
+            caseResistrationBiz.addCaseClient(bizData);
+        }else{
+            caseResistrationBiz.addCase(bizData);
+        }
+
         procBizData.put("procBizId", bizData.getString("procBizId"));
     }
 

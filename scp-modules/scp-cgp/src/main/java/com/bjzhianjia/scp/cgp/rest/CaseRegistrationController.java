@@ -17,11 +17,13 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -106,10 +108,12 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
     @ApiOperation("分页获取对象列表")
     public TableResultResponse<CaseRegistration> getList(
         @RequestParam(value = "gridId", defaultValue = "") @ApiParam("网格ID") Integer gridId,
+        @RequestParam(value = "exeStatus", defaultValue = "") @ApiParam("案件状态") String exeStatus,
         @RequestParam(value = "page", defaultValue = "1") @ApiParam("当前页") Integer page,
         @RequestParam(value = "limit", defaultValue = "10") @ApiParam("页容量") Integer limit) {
         CaseRegistration caseRegistration = new CaseRegistration();
         caseRegistration.setGirdId(gridId);
+        caseRegistration.setExeStatus(exeStatus);
 
         return this.baseBiz.getList(caseRegistration, page, limit);
     }
@@ -401,9 +405,10 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         return this.baseBiz.allPotitionLawTask();
     }
 
-    @GetMapping("/all/potition")
-    @ApiOperation("执法任务案件全部定位")
-    public TableResultResponse<JSONObject> allPotition(){
-        return this.baseBiz.allPotitionLawTask();
+    @PostMapping("/all/potition")
+    @ApiOperation("案件全部定位")
+    public TableResultResponse<JSONObject> allPotition(@RequestBody JSONObject objs){
+        // 案件全部定位，添加请求工作流的参数结构
+        return this.baseBiz.allPotition(objs);
     }
 }

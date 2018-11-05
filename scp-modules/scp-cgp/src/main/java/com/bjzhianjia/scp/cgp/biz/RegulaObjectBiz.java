@@ -484,17 +484,13 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
      * @param regulaObject
      * @return
      */
-    public TableResultResponse<RegulaObject> allPotition(RegulaObject regulaObject) {
+    public List<RegulaObject> allPotition(RegulaObject regulaObject) {
         List<RegulaObject> list=this.mapper.allPosition(regulaObject);
 
-        TableResultResponse<RegulaObject> tableResult=new TableResultResponse<>();
         if(BeanUtil.isNotEmpty(list)){
-            tableResult.getData().setTotal(list.size());
-            tableResult.getData().setRows(list);
-            return tableResult;
+            return new ArrayList<>();
         }
 
-        tableResult.getData().setRows(new ArrayList<>());
-        return tableResult;
+        return list;
     }
 }
