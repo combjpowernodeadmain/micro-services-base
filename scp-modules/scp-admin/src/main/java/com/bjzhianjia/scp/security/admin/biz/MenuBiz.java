@@ -18,6 +18,8 @@ package com.bjzhianjia.scp.security.admin.biz;
 
 import com.ace.cache.annotation.Cache;
 import com.ace.cache.annotation.CacheClear;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.admin.constant.AdminCommonConstant;
 import com.bjzhianjia.scp.security.admin.entity.Menu;
 import com.bjzhianjia.scp.security.admin.mapper.MenuMapper;
@@ -29,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -107,5 +110,18 @@ public class MenuBiz extends BusinessBiz<MenuMapper, Menu> {
      */
     public List<Menu> getUserAuthoritySystemByUserId(String id) {
         return mapper.selectAuthoritySystemByUserId(id, AdminCommonConstant.RESOURCE_TYPE_VIEW);
+    }
+
+    /**
+     * 通过部门ID查询与该部门里人员对应的权限
+     * @param deptId
+     */
+    public List<JSONObject> getAuthoritiesByDept(String deptId) {
+        List<JSONObject> result = this.mapper.selectAuthoritiesByDept(deptId);
+        if(result==null){
+            return new ArrayList<>();
+        }
+
+        return result;
     }
 }

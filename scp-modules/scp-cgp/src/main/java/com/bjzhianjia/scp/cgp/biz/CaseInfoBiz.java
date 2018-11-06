@@ -150,7 +150,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         if(StringUtils.isNotBlank(caseInfo.getCaseCode())) {
             criteria.andLike("caseCode", "%" + caseInfo.getCaseCode() + "%");
         }
-        example.setOrderByClause("source_type desc");
+        example.setOrderByClause("crt_time desc");
 
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<CaseInfo> list = this.mapper.selectByExample(example);

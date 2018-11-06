@@ -214,7 +214,7 @@ public class AreaGridService {
      * 更新单个对象
      * 
      * @author 尚
-     * @param areaGrid
+     * @param areaGridJObject
      * @return
      */
     public Result<Void> updateAreaGrid(JSONObject areaGridJObject) {
@@ -397,7 +397,7 @@ public class AreaGridService {
      * 按网格等级获取网格列表
      * 
      * @author 尚
-     * @param areaGrid
+     * @param gridLevel
      * @return
      */
     public List<AreaGrid> getByGridLevel(String gridLevel) {
@@ -418,7 +418,13 @@ public class AreaGridService {
         ObjectRestResponse<JSONObject> result = new ObjectRestResponse<>();
         AreaGrid areaGrid = areaGridBiz.selectById(id);
 
-        if (areaGrid == null || areaGrid.getIsDeleted().equals("1")) {
+        // 根据不同情况，向前端返回不同提交
+        if ("1".equals(areaGrid.getIsDeleted())) {
+            result.setStatus(400);
+            result.setMessage("网格" + areaGrid.getGridName() + "已删除");
+            return result;
+        }
+        if (areaGrid == null) {
             result.setStatus(400);
             result.setMessage("该网格不存在或已删除");
             return result;

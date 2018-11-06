@@ -71,4 +71,24 @@
         and ra.type = #{type}
         where t.parent_id = -1
     </select>
+
+    <!-- 通过部门ID查询与该部门里人员对应的权限 -->
+    <select id="selectAuthoritiesByDept" resultType="com.alibaba.fastjson.JSONObject">
+        select DISTINCT(bm.code)
+        from base_menu bm
+        inner join (
+            SELECT bra.resource_id resourceId,bra.resource_type,groupIdTmp.groupId,groupIdTmp.deptId
+            FROM base_resource_authority bra
+            INNER JOIN (
+                SELECT bgl.group_id groupId,deptTmp.deptId
+                FROM base_group_leader bgl
+                INNER JOIN (
+                    SELECT bdu.user_id userId,bdu.depart_id deptId
+                    FROM base_depart_user bdu
+                    WHERE bdu.depart_id=#{deptId}
+                    ) deptTmp ON deptTmp.userId=bgl.user_id
+            ) groupIdTmp ON groupIdTmp.groupId=bra.authority_id
+            where bra.resource_type='menu'
+        )resourceIdTmp on resourceIdTmp.resourceId=bm.id
+    </select>
 </mapper>
