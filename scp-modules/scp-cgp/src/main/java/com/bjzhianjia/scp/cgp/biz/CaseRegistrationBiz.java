@@ -1583,6 +1583,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         result.put("concernedType", concernedType);
         // 当事人详情
         result.put("concernedResult", concernedResult);
+
+        result.put("caseCheckTime", caseRegistration.getCaseCheckTime());
+        result.put("caseSpotCheck", caseRegistration.getCaseSpotCheck());
         
         List<String> dictKeyList = new ArrayList<>();
         String dictKey = "";
