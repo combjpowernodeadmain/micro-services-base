@@ -16,13 +16,12 @@
 
 package com.bjzhianjia.scp.security.admin.biz;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+import com.bjzhianjia.scp.security.common.util.BeanUtils;
+import com.bjzhianjia.scp.security.common.util.BooleanUtil;
+import com.bjzhianjia.scp.security.common.util.EntityUtils;
+import com.bjzhianjia.scp.security.common.util.Query;
+import com.bjzhianjia.scp.security.common.util.Sha256PasswordEncoder;
+import com.bjzhianjia.scp.security.common.util.UUIDUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -43,15 +42,17 @@ import com.bjzhianjia.scp.security.admin.vo.PositionVo;
 import com.bjzhianjia.scp.security.common.biz.BaseBiz;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
-import com.bjzhianjia.scp.security.common.util.BooleanUtil;
-import com.bjzhianjia.scp.security.common.util.EntityUtils;
-import com.bjzhianjia.scp.security.common.util.Query;
-import com.bjzhianjia.scp.security.common.util.Sha256PasswordEncoder;
-import com.bjzhianjia.scp.security.common.util.UUIDUtils;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
 import tk.mybatis.mapper.entity.Example;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * ${DESCRIPTION}
@@ -428,5 +429,19 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
     public List<JSONObject> getSquadronLeader(){
     	List<JSONObject> userList = this.mapper.getUserByPosition(environment.getProperty("gruop.code"));
     	return userList;
+    }
+
+    /**
+     * 获取通讯录（排除超级管理员）
+     * @param userName 用户名称
+     * @param deptIds 部门ids
+     * @return
+     */
+    public TableResultResponse<Map<String,Object>> getPhoneList(String userName , List<String> deptIds,int page,
+                                                              int limit){
+        Page<Object> pageHelper = PageHelper.startPage(page,limit);
+        List<Map<String,Object>> result = this.mapper.selectPhoneList(userName,deptIds);
+        result = BeanUtils.isEmpty(result)?new ArrayList<>():result;
+        return new TableResultResponse<>(pageHelper.getTotal(),result);
     }
 }

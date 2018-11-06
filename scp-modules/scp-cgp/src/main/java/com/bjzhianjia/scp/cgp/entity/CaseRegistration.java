@@ -225,6 +225,18 @@ public class CaseRegistration implements Serializable {
     @Column(name = "is_urge")
     private String isUrge;
 
+    // 现场照片
+    @Column(name="case_spot_pic")
+    private String caseSpotPic;
+
+    // 案件检查时间
+    @Column(name="case_check_time")
+    private Date caseCheckTime;
+
+    // 现场检查情况
+    @Column(name="case_spot_check")
+    private String caseSpotCheck;
+
     /**
      * 设置：主键
      */
@@ -740,5 +752,47 @@ public class CaseRegistration implements Serializable {
      */
     public void setCaseCode(String caseCode) {
         this.caseCode = caseCode;
+    }
+
+    /**
+     * 获取：现场照片
+     */
+    public String getCaseSpotPic() {
+        return caseSpotPic;
+    }
+
+    /**
+     * 设置：现场照片
+     */
+    public void setCaseSpotPic(String caseSpotPic) {
+        this.caseSpotPic = caseSpotPic;
+    }
+
+    /**
+     * 获取：案件检查时间
+     */
+    public Date getCaseCheckTime() {
+        return caseCheckTime;
+    }
+
+    /**
+     * 设置：现场检查时间
+     */
+    public void setCaseCheckTime(Date caseCheckTime) {
+        this.caseCheckTime = caseCheckTime;
+    }
+
+    /**
+     * 获取：现场检查情况
+     */
+    public String getCaseSpotCheck() {
+        return caseSpotCheck;
+    }
+
+    /**
+     * 设置：现场检查情况
+     */
+    public void setCaseSpotCheck(String caseSpotCheck) {
+        this.caseSpotCheck = caseSpotCheck;
     }
 }
