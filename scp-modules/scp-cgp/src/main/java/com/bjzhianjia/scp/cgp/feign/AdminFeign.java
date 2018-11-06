@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.feign;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
@@ -80,4 +81,8 @@ public interface AdminFeign {
     @GetMapping("/depart/list/ids")
     @ApiOperation("以部门ID集合批量查询部门信息")
     public JSONArray getDeptByIds(@RequestParam("deptIds") @ApiParam("以字符串形式表示 的部门ID集合，多个ID之间用逗号隔开")String deptIds);
+
+	@GetMapping("/depart/menu/BydeptId")
+	@ApiOperation("过部门ID查询与该部门里人员对应的权限")
+	List<JSONObject> getAuthoritiesByDept(@RequestParam(value = "deptId") String deptId);
 }

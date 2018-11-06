@@ -893,11 +893,11 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             if (wfProcBackBean != null) {
                 procCtaskname = wfProcBackBean.getProcCtaskname();
                 if (CaseRegistration.EXESTATUS_STATE_FINISH.equals(caseRegistration.getExeStatus())) {
-                    procCtaskname = procCtaskname + "(已结案)";
+                    procCtaskname = "已结案(" + procCtaskname + ")";
                 }
 
                 if (CaseRegistration.EXESTATUS_STATE_STOP.equals(caseRegistration.getExeStatus())) {
-                    procCtaskname = procCtaskname + "(已终止)";
+                    procCtaskname = "已终止(" + procCtaskname + ")";
                 }
                 objResult.put("procCtaskname", procCtaskname);
                 objResult.put("procInstId", wfProcBackBean.getProcInstId());

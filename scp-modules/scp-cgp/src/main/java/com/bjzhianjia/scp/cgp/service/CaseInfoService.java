@@ -739,19 +739,23 @@ public class CaseInfoService {
         String flowDirection = variableDataJObject.getString("flowDirection");
 
         // 判断流向是否走向部门处理中
-//        if(environment.getProperty("isCheckProcessingAuth").equals(flowDirection)){
-//            String deptId = objs.getJSONObject("authData").getString("procDeptId");
-//            if(StringUtils.isBlank(deptId)){
-//                throw new BizException("请指定部门ID");
-//            }
-//            List<JSONObject> authoritiesByDept = adminFeign.getAuthoritiesByDept(deptId);
-//            List<String> codeList = authoritiesByDept.stream().map(o -> o.getString("code")).distinct().collect(Collectors.toList());
-//            if(!codeList.contains(environment.getProperty("wfTodoList"))){
-//                result.setMessage("该部门尚无权限处理该事件，请更换部门。");
-//                result.setIsSuccess(false);
-//                return result;
-//            }
-//        }
+        if (environment.getProperty("isCheckProcessingAuth").equals(flowDirection)) {
+            String deptId = objs.getJSONObject("authData").getString("procDeptId");
+            if (StringUtils.isBlank(deptId)) {
+                throw new BizException("请指定部门ID");
+            }
+            List<JSONObject> authoritiesByDept = adminFeign.getAuthoritiesByDept(deptId);
+            if (BeanUtil.isNotEmpty(authoritiesByDept)) {
+                List<String> codeList =
+                    authoritiesByDept.stream().map(o -> o.getString("code")).distinct()
+                        .collect(Collectors.toList());
+                if (!codeList.contains(environment.getProperty("wfTodoList"))) {
+                    result.setMessage("该部门尚无权限处理该事件，请更换部门。");
+                    result.setIsSuccess(false);
+                    return result;
+                }
+            }
+        }
 
         if (Constances.ProcFlowWork.TOFINISHWORKFLOW.equals(flowDirection)) {
             /*

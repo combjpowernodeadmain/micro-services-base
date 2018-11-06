@@ -162,7 +162,7 @@
 							swp1.PROC_INST_ID,
 							swpt1.PROC_KEY,
 							FROM_UNIXTIME(
-								MAX(swpt1.PROC_TASK_COMMITTIME),
+								MAX(swpt1.PROC_TASK_ENDTIME),<!-- 完成任务时间字段为PROC_TASK_ENDTIME -->
 								'%Y/%m/%d'
 							) cmonth
 						FROM
