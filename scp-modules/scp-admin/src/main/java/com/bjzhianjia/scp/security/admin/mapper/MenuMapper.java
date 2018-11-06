@@ -16,6 +16,7 @@
 
 package com.bjzhianjia.scp.security.admin.mapper;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.admin.entity.Menu;
 import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 
@@ -48,4 +49,11 @@ public interface MenuMapper extends CommonMapper<Menu> {
      * @return
      */
     public List<Menu> selectAuthoritySystemByUserId(@Param("userId") String userId, @Param("type") String type);
+
+    /**
+     * 通过部门ID查询与该部门里人员对应的权限
+     * @param deptId
+     * @return
+     */
+    List<JSONObject> selectAuthoritiesByDept(@Param("deptId")String deptId);
 }
