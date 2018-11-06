@@ -39,4 +39,22 @@
 			</if>
 		</where>
 	</select>
+	<!--  通过用户ids获取网格信息列表-->
+	<select id="selectByUserIds" resultType="java.util.Map">
+		SELECT
+			ag.id gridId,
+			ag.grid_name gridName,
+			agm.grid_member userId,
+			agm.grid_role gridRole
+		FROM
+			area_grid ag
+		INNER JOIN area_grid_member agm ON agm.grid_id = ag.id
+		WHERE
+			agm.is_deleted = 0
+		AND agm.is_disabled = 0
+		AND agm.grid_member IN
+		<foreach collection="userIds" item="userId" open="(" separator="," close=")">
+			#{userId}
+		</foreach>
+	</select>
 </mapper>

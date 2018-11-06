@@ -17,6 +17,7 @@
 package com.bjzhianjia.scp.security.admin.rest;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -254,5 +255,19 @@ public class UserController extends BaseController<UserBiz, User, String> {
 	@GetMapping(value="/list/squadronLeader")
 	public List<JSONObject> getSquadronLeader(){
 		return this.baseBiz.getSquadronLeader();
+	}
+
+	@ApiOperation("通讯录列表")
+	@GetMapping(value="/phoneList")
+	public TableResultResponse<Map<String,Object>> phoneList(
+			@RequestParam(value = "userName",defaultValue = "") @ApiParam("用户名称")  String userName,
+			@RequestParam(value ="deptIds",defaultValue = "") @ApiParam("用户部门ids")  String deptIds,
+        	@RequestParam(value="page", defaultValue="1") Integer page,
+			@RequestParam(value="limit", defaultValue="10") Integer limit){
+		List<String> ids = null;
+		if(StringUtils.isNotEmpty(deptIds)){
+			ids = Arrays.asList(deptIds.split(","));
+		}
+		return this.baseBiz.getPhoneList(userName,ids,page,limit);
 	}
 }

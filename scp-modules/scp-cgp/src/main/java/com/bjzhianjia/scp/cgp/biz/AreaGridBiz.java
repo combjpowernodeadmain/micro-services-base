@@ -13,6 +13,7 @@ import com.bjzhianjia.scp.cgp.vo.AreaGridVo;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.common.util.BeanUtils;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -431,5 +432,18 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
     public TableResultResponse<AreaGrid> allPotition(AreaGrid areaGrid) {
         List<AreaGrid> areaGrids = this.mapper.allPotition(areaGrid);
         return new TableResultResponse<>(areaGrids.size(), areaGrids);
+    }
+
+    /**
+     * 通过用户ids获取网格信息列表
+     *
+     * @return
+     */
+    public List<Map<String, Object>> getByUserIds(List<String> userIds) {
+        if (BeanUtils.isEmpty(userIds)) {
+            userIds = new ArrayList<>();
+        }
+        List<Map<String, Object>> result = this.mapper.selectByUserIds(userIds);
+        return BeanUtils.isEmpty(result) ? new ArrayList<>() : result;
     }
 }

@@ -1,15 +1,20 @@
 package com.bjzhianjia.scp.cgp.feign;
 
-import java.util.List;
 
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
+import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
+
+import com.alibaba.fastjson.JSONArray;
+import com.bjzhianjia.scp.security.auth.client.config.FeignApplyConfiguration;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.alibaba.fastjson.JSONArray;
-import com.bjzhianjia.scp.security.auth.client.config.FeignApplyConfiguration;
-import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author scp
@@ -71,4 +76,25 @@ public interface IUserFeign {
      */
     @RequestMapping(value="/user/ids",method=RequestMethod.GET)
     public JSONArray getByUserIds(@RequestParam(value="userIds") String userIds) ;
+
+    /**
+     * 获取通讯录用户列表
+     * @param userName
+     * @param deptIds
+     * @param page
+     * @param limit
+     * @return
+     */
+    @GetMapping(value="/user/phoneList")
+    TableResultResponse<Map<String,Object>> phoneList(
+            @RequestParam(value = "userName") String userName,@RequestParam(value ="deptIds") String deptIds,
+            @RequestParam(value="page") Integer page,@RequestParam(value="limit") Integer limit);
+
+    /**
+     * 获取用户基本信息
+     * @param userId 用户Id
+     * @return
+     */
+    @GetMapping(value="/user/{userId}/info")
+    Map<String,Object> getUserByUserId(@PathVariable(value="userId") String userId);
 }
