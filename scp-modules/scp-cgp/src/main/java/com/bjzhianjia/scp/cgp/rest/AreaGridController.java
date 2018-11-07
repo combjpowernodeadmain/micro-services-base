@@ -6,6 +6,7 @@ import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.Point;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.service.AreaGridService;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.vo.AreaGridTree;
 import com.bjzhianjia.scp.cgp.vo.AreaGridVo;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
@@ -31,6 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 /**
@@ -163,13 +166,20 @@ public class AreaGridController extends BaseController<AreaGridBiz, AreaGrid, In
     @RequestMapping(value = "/tree", method = RequestMethod.GET)
     @ApiOperation("获取网格树")
     public List<AreaGridTree> getTree() {
-        TableResultResponse<AreaGridVo> list = areaGridService.getList(1, 2147483647, new AreaGrid());
-        List<AreaGridVo> all = list.getData().getRows();
+        List<AreaGrid> allAreaGrids = this.baseBiz.selectListAll();
+        
+        if(BeanUtil.isEmpty(allAreaGrids)){
+            return new ArrayList<>();
+        }
 
         List<AreaGridTree> trees = new ArrayList<>();
 
-        all.forEach(o -> {
-            trees.add(new AreaGridTree(o.getId(), o.getGridParent(), o.getGridName(), o.getGridCode()));
+        Map<Integer, String> gridIdNameMap = allAreaGrids.stream().collect(Collectors.toMap(AreaGrid::getId, AreaGrid::getGridName));
+
+        allAreaGrids.forEach(o -> {
+            trees.add(
+                new AreaGridTree(o.getId(), o.getGridParent(), o.getGridName(), o.getGridCode(),
+                    o.getGridName() + "(" + gridIdNameMap.get(o.getGridParent()) + ")"));
         });
 
         return TreeUtil.bulid(trees, -1, null);

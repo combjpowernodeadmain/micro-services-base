@@ -1313,14 +1313,27 @@ public class CaseInfoService {
                     // adminFeign.getUser(wfProcTaskHistoryBean.getProcTaskCommitter());//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>查询了admin》》》》》》》》》》》》》》》》》》》》》》》》》
                     if (manyUsersMap != null && !manyUsersMap.isEmpty()) {
                         // 流程的审批人应为procTaskAssignee
+
+
+                        /*
+                         * IF ( task.PROC_TASK_STATUS = '1',
+                         * task.PROC_TASK_GROUP,
+                         * task.PROC_TASK_ASSIGNEE ) procTaskAssignee
+                         * 以上为查询历史任务详情的SQL，当未签收时，会将procTaskGroup作为签收人查询出来
+                         * 但用procTaskGroup去查base_user表时，查不出数据，即manyUsersMap.get(
+                         * wfProcTaskHistoryBean.getProcTaskAssignee())为空
+                         * 需要进行非空判断
+                         */
                         JSONObject jObjTmp =
                             JSONObject.parseObject(manyUsersMap.get(wfProcTaskHistoryBean.getProcTaskAssignee()));
-                        commanderApproveJObj.put("procTaskCommitterName", jObjTmp.getString("name"));
-                        commanderApproveJObj.put("commanderTel", jObjTmp.getString("mobilePhone"));// 审批人联系方法
-                        //流程审批时间
-                        commanderApproveJObj.put("procTaskEndtime", wfProcTaskHistoryBean.getProcTaskEndtime());// 审批时间
-                        commanderApproveJObj.put("procTaskApprOpinion", wfProcTaskHistoryBean.getProcTaskApprOpinion());// 审批意见
-                        commanderApproveJArray.add(commanderApproveJObj);
+                        if(BeanUtil.isNotEmpty(jObjTmp)){
+                            commanderApproveJObj.put("procTaskCommitterName", jObjTmp.getString("name"));
+                            commanderApproveJObj.put("commanderTel", jObjTmp.getString("mobilePhone"));// 审批人联系方法
+                            //流程审批时间
+                            commanderApproveJObj.put("procTaskEndtime", wfProcTaskHistoryBean.getProcTaskEndtime());// 审批时间
+                            commanderApproveJObj.put("procTaskApprOpinion", wfProcTaskHistoryBean.getProcTaskApprOpinion());// 审批意见
+                            commanderApproveJArray.add(commanderApproveJObj);
+                        }
                     }
                 }
             }

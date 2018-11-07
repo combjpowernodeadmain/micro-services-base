@@ -127,6 +127,7 @@ public class CaseRegistration implements Serializable {
 
     // 来源时间
     @Column(name = "case_source_time")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     private Date caseSourceTime;
 
     // 举报人
@@ -231,6 +232,7 @@ public class CaseRegistration implements Serializable {
 
     // 案件检查时间
     @Column(name="case_check_time")
+    @JSONField(format="yyyy-MM-dd HH:mm:ss")
     private Date caseCheckTime;
 
     // 现场检查情况
