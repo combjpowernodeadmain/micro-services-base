@@ -42,6 +42,7 @@ public class AnnouncementInfoBiz extends BusinessBiz<AnnouncementInfoMapper,Anno
 	    Example.Criteria criteria = example.createCriteria();
 	    
 	    criteria.andEqualTo("isDeleted", "0");
+	    criteria.andEqualTo("status", "1");// 公告的隐藏状态，1-展示;0-隐藏
 	    /*
 	     * ------------!StringUtils.isNotBlank(announcementInfo.get("title"))将“！”号去掉
 	     * ------------by尚------------------

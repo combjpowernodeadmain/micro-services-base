@@ -2,9 +2,12 @@ package com.bjzhianjia.scp.cgp.task.service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.bjzhianjia.scp.cgp.biz.CaseInfoBiz;
 import com.bjzhianjia.scp.cgp.biz.CaseRegistrationBiz;
+import com.bjzhianjia.scp.cgp.biz.LawTaskBiz;
 import com.bjzhianjia.scp.cgp.biz.WritsInstancesBiz;
 import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
+import com.bjzhianjia.scp.cgp.entity.LawTask;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.task.service.IWfProcTaskCallBackService;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +31,12 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
 
     @Autowired
     private CaseRegistrationBiz caseRegistrationBiz;
+    
+    @Autowired
+    private LawTaskBiz lawTaskBiz;
+    
+    @Autowired
+    private CaseInfoBiz caseInfoBiz;
 
     @Override
     public void before(String dealType, Map<String, Object> procBizData) throws BizException {
@@ -62,6 +71,10 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
         log.debug("流程回调处理完毕");
     }
 
+    /**
+     * 结束案件
+     * @param procBizData
+     */
     private void endCase(Map<String, Object> procBizData) {
         String caseId = (String) procBizData.get("procBizId");
         
@@ -74,8 +87,52 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
         caseRegistration.setId(caseId);
         caseRegistration.setExeStatus(CaseRegistration.EXESTATUS_STATE_FINISH);
         caseRegistrationBiz.updateSelectiveById(caseRegistration);
+
+        // 对于结案及中止的案件-->更新来源状态
+        updateCaseSource(caseId,PROC_END);
     }
 
+    /**
+     * 对于结案及中止的案件-->更新来源状态
+     *  @param caseId
+     * @param bizType
+     */
+    private void updateCaseSource(String caseId, String bizType) {
+        CaseRegistration caseRegistrationInDB = caseRegistrationBiz.selectById(caseId);
+        String caseSourceType = caseRegistrationInDB.getCaseSourceType();
+
+        switch (caseSourceType) {
+            case CaseRegistration.CASE_SOURCE_TYPE_TASK:
+                LawTask lawTaskToUpdate = new LawTask();
+                lawTaskToUpdate.setId(Integer.valueOf(caseRegistrationInDB.getCaseSource()));
+
+                // 执法任务
+                if (PROC_END.equals(bizType)) {
+                    // 结案操作
+                    lawTaskToUpdate.setState(LawTask.ROOT_BIZ_LAWTASKS_FINISH);
+                } else if ("termination".equals(bizType)) {
+                    // 中止操作
+                    lawTaskToUpdate.setState(LawTask.ROOT_BIZ_LAWTASKS_STOP);
+                }
+
+                lawTaskBiz.updateSelectiveById(lawTaskToUpdate);
+                break;
+
+            case CaseRegistration.CASE_SOURCE_TYPE_CENTER:
+                // 中心交办
+                if (PROC_END.equals(bizType)) {
+                    // 结案操作
+                } else if ("termination".equals(bizType)) {
+                    // 中止操作
+                }
+                break;
+        }
+    }
+
+    /**
+     * 中止案件
+     * @param procBizData
+     */
     private void terminationCase(Map<String, Object> procBizData) {
         String caseId = (String) procBizData.get("procBizId");
         
@@ -88,6 +145,9 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
         caseRegistration.setId(caseId);
         caseRegistration.setExeStatus(CaseRegistration.EXESTATUS_STATE_STOP);
         caseRegistrationBiz.updateSelectiveById(caseRegistration);
+
+        // 对于结案及中止的案件-->更新来源状态
+        updateCaseSource(caseId,"termination");
     }
 
     @Override
