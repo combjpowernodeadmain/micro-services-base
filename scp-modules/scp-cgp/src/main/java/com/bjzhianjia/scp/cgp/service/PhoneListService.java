@@ -130,7 +130,6 @@ public class PhoneListService {
         //缓存网格信息
         Map<String, String> tempAridMap = new HashMap<>();
         String gridInfo, userId, gridName, gridRole;
-        //List<Map<String, Object>> userAridList = areaGridBiz.getByUserIds(userIds);
         for (Map<String, Object> map : userAridList) {
             userId = String.valueOf(map.get("userId"));
             gridInfo = tempAridMap.get(userId);

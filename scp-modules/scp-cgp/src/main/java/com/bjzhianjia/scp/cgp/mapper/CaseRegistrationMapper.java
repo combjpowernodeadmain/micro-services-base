@@ -117,4 +117,10 @@ public interface CaseRegistrationMapper extends CommonMapper<CaseRegistration> {
      * @return
      */
     List<Map<String,Object>> selectCaseLog(@Param("userId") String userId,@Param("caseName") String caseName);
+    /**
+     * 通过案件id获取案件基本信息
+     * @param caseId 案件id
+     * @return
+     */
+    Map<String,Object> selectBaseInfoById(@Param("caseId") String caseId);
 }
