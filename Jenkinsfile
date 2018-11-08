@@ -152,6 +152,27 @@ pipeline {
                         usePromotionTimestamp: false, 
                         useWorkspaceInPromotion: false, 
                         verbose: false
+                    ),
+                    sshPublisherDesc(
+                        configName: 'XiashuIntranetServer', 
+                        transfers: [
+                            sshTransfer(
+                                excludes: '', 
+                                execCommand: 'mv /data/scp/7_tool/scp-tool.jar /data/scp/7_tool/scp-tool.${BUILD_ID}.jar', 
+                                execTimeout: 120000, 
+                                flatten: false, 
+                                makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: '', 
+                                sourceFiles: ''
+                            )
+                        ], 
+                        usePromotionTimestamp: false, 
+                        useWorkspaceInPromotion: false, 
+                        verbose: false
                     )
                 ])
 
@@ -211,6 +232,17 @@ pipeline {
                                 remoteDirectorySDF: false, 
                                 removePrefix: 'scp-modules/scp-cgp/target/', 
                                 sourceFiles: 'scp-modules/scp-cgp/target/scp-cgp.jar'
+                            ), 
+                            sshTransfer(excludes: '', 
+                                execCommand: '', 
+                                execTimeout: 120000, 
+                                flatten: false, makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '6_cgp', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: 'scp-modules/scp-tool/target/', 
+                                sourceFiles: 'scp-modules/scp-tool/target/scp-tool.jar'
                             )
                         ], 
                         usePromotionTimestamp: false, 
