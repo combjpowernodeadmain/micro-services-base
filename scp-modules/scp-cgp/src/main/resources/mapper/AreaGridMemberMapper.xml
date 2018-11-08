@@ -60,6 +60,6 @@
     </select>
 
 	<select id="distinctGridMember" resultType="java.lang.String">
-		SELECT DISTINCT(area_grid_member.`grid_member`) FROM area_grid_member
+		SELECT DISTINCT(area_grid_member.grid_member) FROM area_grid_member WHERE is_deleted='0'
 	</select>
 </mapper>

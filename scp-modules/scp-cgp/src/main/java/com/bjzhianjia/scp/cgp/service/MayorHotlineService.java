@@ -20,8 +20,10 @@ import tk.mybatis.mapper.entity.Example;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -293,12 +295,20 @@ public class MayorHotlineService {
 			return voList;
 		}
 
-		// 聚和处理状态
-		//字典在业务库里存在形式(ID-->code)，代码需要进行相应修改--getByCode
-		Map<String, String> dictIdMap = dictFeign.getByCode(Constances.ROOT_BIZ_12345STATE);
-		if (dictIdMap != null && !dictIdMap.isEmpty()) {
+		// 收集字典中的code
+		Set<String> dictCodes=new HashSet<>();
+		for(MayorHotlineVo voTmp:voList){
+			dictCodes.add(voTmp.getHotlnSource());
+			dictCodes.add(voTmp.getExeStatus());
+		}
+
+		Map<String, String> dictValueMap = dictFeign.getByCodeIn(String.join(",", dictCodes));
+
+		// 聚积字典名称
+		if(BeanUtil.isNotEmpty(dictValueMap)){
 			for (MayorHotlineVo vo : voList) {
-				vo.setExeStatusName(dictIdMap.get(vo.getExeStatus()));
+				vo.setExeStatusName(dictValueMap.get(vo.getExeStatus()));
+				vo.setHotlnSourceName(dictValueMap.get(vo.getHotlnSource()));
 			}
 		}
 

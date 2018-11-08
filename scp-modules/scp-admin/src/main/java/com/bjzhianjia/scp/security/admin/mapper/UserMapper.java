@@ -71,4 +71,13 @@ public interface UserMapper extends CommonMapper<User> {
      * @return
      */
     public List<JSONObject> getUserByPosition(@Param("groupCode") String groupCode);
+
+    /**
+     * 获取通讯录（排除超级管理员）
+     * @param userName 用户名称
+     * @param deptIds 部门ids
+     * @return
+     */
+    List<Map<String,Object>> selectPhoneList(@Param("userName") String userName ,
+                                             @Param("deptIds") List<String> deptIds);
 }

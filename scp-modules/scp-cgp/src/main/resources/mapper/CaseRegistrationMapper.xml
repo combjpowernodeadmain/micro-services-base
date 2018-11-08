@@ -336,4 +336,43 @@
 		ORDER BY
 			crt_time DESC
 	</select>
+	<!-- 案件基本信息-->
+	<select id="selectBaseInfoById" resultType="java.util.Map">
+		SELECT
+			ccr.id id,
+			ccr.concerned_type concernedType,
+			ccr.concerned_id concernedId,
+			ccr.case_name caseName,
+			ccr.case_address caseAddress,
+			ccr.case_time caseTime,
+			ccr.case_end caseEnd,
+			ccr.case_source caseSource,
+			ccr.case_informer caseInformerv,
+			ccr.case_informer_addr caseInformerAddr,
+			ccr.case_informer_phone caseInformerPhone,
+			ccr.enforcers enforcers,
+			ccr.case_content caseContent,
+			ccr.case_ongitude ongitude,
+			ccr.case_latitude latitude,
+			ccr.case_address caseAddress,
+			ccr.deal_type dealType,
+			ccr.transfer_depart transferDepart,
+			ccr.deal_suggest dealSuggest,
+			ccr.biz_type bizType,
+			ccr.case_spot_pic caseSpotPic,
+			ccr.case_spot_check caseSpotCheck,
+			ccr.case_check_time caseCheckTime,
+			ccr.case_source_type caseSourceType,
+			et.type_name eventName,
+			ii.`name` inspectName,
+			ag.grid_name gridName
+		FROM
+			cle_case_registration ccr
+		LEFT JOIN event_type et ON et.id = ccr.event_type
+		LEFT JOIN inspect_items ii ON ii.id = ccr.inspect_item
+		LEFT JOIN area_grid ag ON ag.id = ccr.gird_id
+		WHERE
+			ccr.is_deleted = 0
+		AND ccr.id = #{caseId}
+	</select>
 </mapper>

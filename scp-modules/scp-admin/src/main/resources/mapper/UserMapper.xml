@@ -110,4 +110,34 @@
 	LEFT JOIN base_position bp ON bp.`id`=bpu.`position_id`
 	WHERE bg.`code`=#{groupCode}
   </select>
+	<!-- 获取用户列表，排除超级管理员 -->
+	<select id="selectPhoneList" resultType="java.util.Map">
+		SELECT
+			bu.id userId,
+			bu.`name` userName,
+			bu.mobile_phone mobilePhone,
+			bd.`name` deptName,
+			bu.attr1 image
+		FROM
+			base_user bu
+		INNER JOIN base_depart_user bdu ON bdu.user_id = bu.id
+		INNER JOIN base_depart bd ON bd.id = bdu.depart_id
+		WHERE
+			bu.is_deleted = 0
+		AND bu.is_disabled = 0
+		AND bu.is_super_admin = 0
+		<if test="userName != null and userName != '' ">
+			<bind name="name" value="'%'+userName+'%'"/>
+			AND bu.name LIKE #{name}
+		</if>
+		<if test="deptIds != null and deptIds.size > 0 ">
+			AND bd.id IN
+			<foreach collection="deptIds" item="id" open="(" separator="," close=")">
+				#{id}
+			</foreach>
+		</if>
+		ORDER BY
+			bu.crt_time DESC,
+			bu.upd_time DESC
+	</select>
 </mapper>

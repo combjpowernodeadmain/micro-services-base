@@ -118,6 +118,9 @@ public class MayorHotlineBiz extends BusinessBiz<MayorHotlineMapper, MayorHotlin
             Date _endDate = DateUtils.addDays(_endDateTmp, 1);
             criteria.andBetween("appealDatetime", _startTime, _endDate);
         }
+        if(StringUtils.isNotBlank(mayorHotline.getHotlnSource())){
+            criteria.andEqualTo("hotlnSource", mayorHotline.getHotlnSource());
+        }
 
         example.setOrderByClause("id desc");
         Page<Object> pageInfo = PageHelper.startPage(page, limit);

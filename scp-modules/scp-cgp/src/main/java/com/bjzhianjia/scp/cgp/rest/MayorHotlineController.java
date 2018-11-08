@@ -151,6 +151,7 @@ public class MayorHotlineController extends BaseController<MayorHotlineBiz, Mayo
         @RequestParam(defaultValue = "") @ApiParam(name = "诉求人") String appealPerson,
         @RequestParam(defaultValue = "") @ApiParam(name = "热线事件分类") String hotlnType,
         @RequestParam(defaultValue = "") @ApiParam(name = "处理状态") String exeStatus,
+        @RequestParam(defaultValue = "") @ApiParam(name = "热线来源") String hotlnSource,
         @RequestParam(defaultValue = "") @ApiParam(name = "按时间查询(起始时间)") String startTime,
         @RequestParam(defaultValue = "") @ApiParam(name = "按时间查询 (终止时间)") String endTime) {
         MayorHotline mayorHotline = new MayorHotline();
@@ -158,6 +159,7 @@ public class MayorHotlineController extends BaseController<MayorHotlineBiz, Mayo
         mayorHotline.setAppealPerson(appealPerson);
         mayorHotline.setHotlnType(hotlnType);
         mayorHotline.setExeStatus(exeStatus);
+        mayorHotline.setHotlnSource(hotlnSource);
         TableResultResponse<MayorHotlineVo> list =
             mayorHotlineService.getList(mayorHotline, page, limit, startTime, endTime);
         return list;

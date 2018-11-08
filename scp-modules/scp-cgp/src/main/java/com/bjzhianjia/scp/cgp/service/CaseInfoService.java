@@ -550,70 +550,79 @@ public class CaseInfoService {
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345:
                 // 市长热线
                 MayorHotline mayorHotline = mayorHotlineBiz.selectById(Integer.valueOf(caseInfo.getSourceCode()));
-                reportPersonId = mayorHotline.getCrtUserId();
-                resultJObjct = JSONObject.parseObject(JSON.toJSONString(mayorHotline));
-                resultJObjct.put("eventSourceType", "市长热线12345");
-                resultJObjct.put("sourceCode", mayorHotline.getHotlnCode());
-                //添加主办人姓名
-                resultJObjct.put("crtUserName", mayorHotline.getCrtUserName());
+                // 对查到的来源进行非空判断
+                if (mayorHotline != null) {
+                    reportPersonId = mayorHotline.getCrtUserId();
+                    resultJObjct = JSONObject.parseObject(JSON.toJSONString(mayorHotline));
+                    resultJObjct.put("eventSourceType", "市长热线12345");
+                    resultJObjct.put("sourceCode", mayorHotline.getHotlnCode());
+                    //添加主办人姓名
+                    resultJObjct.put("crtUserName", mayorHotline.getCrtUserName());
 
-                zhaiyaoList.add(mayorHotline.getHotlnType());
-                zhaiyaoList.add(mayorHotline.getHotlnSubType());
-                zhaiyaoList.add(mayorHotline.getAppealTel());
-                if (mayorHotline.getReplyDatetime() != null) {
-                    zhaiyaoList.add(DateUtil.dateFromDateToStr(mayorHotline.getReplyDatetime(), "yyyy-MM-dd HH:mm:ss"));
+                    zhaiyaoList.add(mayorHotline.getHotlnType());
+                    zhaiyaoList.add(mayorHotline.getHotlnSubType());
+                    zhaiyaoList.add(mayorHotline.getAppealTel());
+                    if (mayorHotline.getReplyDatetime() != null) {
+                        zhaiyaoList.add(DateUtil.dateFromDateToStr(mayorHotline.getReplyDatetime(), "yyyy-MM-dd HH:mm:ss"));
+                    }
                 }
                 break;
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CONSENSUS:
                 // 舆情
                 PublicOpinion poinion = publicOpinionBiz.selectById(Integer.valueOf(caseInfo.getSourceCode()));
 
-                reportPersonId = poinion.getCrtUserId();
+                // 对查到的数据进行非空判断
+                if (poinion != null) {
+                    reportPersonId = poinion.getCrtUserId();
 
-                // 查询字典里对应的值
-                List<String> dictIdList = new ArrayList<>();
-                dictIdList.add(poinion.getOpinType());
-                dictIdList.add(poinion.getOpinLevel());
-                resultJObjct = JSONObject.parseObject(JSON.toJSONString(poinion));
-                resultJObjct.put("eventSourceType", "舆情");
-                resultJObjct.put("sourceCode", poinion.getOpinCode());
-                //添加主办人姓名
-                resultJObjct.put("crtUserName", poinion.getCrtUserName());
+                    // 查询字典里对应的值
+                    List<String> dictIdList = new ArrayList<>();
+                    dictIdList.add(poinion.getOpinType());
+                    dictIdList.add(poinion.getOpinLevel());
+                    resultJObjct = JSONObject.parseObject(JSON.toJSONString(poinion));
+                    resultJObjct.put("eventSourceType", "舆情");
+                    resultJObjct.put("sourceCode", poinion.getOpinCode());
+                    //添加主办人姓名
+                    resultJObjct.put("crtUserName", poinion.getCrtUserName());
 
-                Map<String, String> dictValueMap = dictFeign.getByCodeIn(String.join(",", dictIdList));
-                if (dictValueMap != null && !dictValueMap.isEmpty()) {
-                    zhaiyaoList.add(dictValueMap.get(poinion.getOpinType()));
-                    zhaiyaoList.add(dictValueMap.get(poinion.getOpinLevel()));
-                    zhaiyaoList.add(poinion.getOpinPort());
+                    Map<String, String> dictValueMap = dictFeign.getByCodeIn(String.join(",", dictIdList));
+                    if (dictValueMap != null && !dictValueMap.isEmpty()) {
+                        zhaiyaoList.add(dictValueMap.get(poinion.getOpinType()));
+                        zhaiyaoList.add(dictValueMap.get(poinion.getOpinLevel()));
+                        zhaiyaoList.add(poinion.getOpinPort());
+                    }
                 }
                 break;
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_LEADER:
                 // 领导交办
                 LeadershipAssign leadershipAssign =
                     leadershipAssignBiz.selectById(Integer.valueOf(caseInfo.getSourceCode()));
-                resultJObjct = JSONObject.parseObject(JSON.toJSONString(leadershipAssign));
-                resultJObjct.put("eventSourceType", "领导交办");
-                resultJObjct.put("sourceCode", leadershipAssign.getTaskCode());
-                //添加主办人姓名
-                resultJObjct.put("crtUserName", leadershipAssign.getCrtUserName());
+                // 对查到的数据进行非空判断
+                if(leadershipAssign!=null){
+                    resultJObjct = JSONObject.parseObject(JSON.toJSONString(leadershipAssign));
+                    resultJObjct.put("eventSourceType", "领导交办");
+                    resultJObjct.put("sourceCode", leadershipAssign.getTaskCode());
+                    //添加主办人姓名
+                    resultJObjct.put("crtUserName", leadershipAssign.getCrtUserName());
 
-                reportPersonId = leadershipAssign.getCrtUserId();
+                    reportPersonId = leadershipAssign.getCrtUserId();
 
-                // 涉及监管对象名称
-                String regulaObjList = leadershipAssign.getRegulaObjList();
-                List<RegulaObject> regulaObjectList = new ArrayList<>();
-                if (StringUtils.isNotBlank(regulaObjList)) {
-                    regulaObjectList = regulaObjectMapper.selectByIds(regulaObjList);
-                }
-                List<String> regulaObjNameList = new ArrayList<>();
-                if (regulaObjectList != null && !regulaObjectList.isEmpty()) {
-                    for (RegulaObject regulaObject : regulaObjectList) {
-                        regulaObjNameList.add(regulaObject.getObjName());
+                    // 涉及监管对象名称
+                    String regulaObjList = leadershipAssign.getRegulaObjList();
+                    List<RegulaObject> regulaObjectList = new ArrayList<>();
+                    if (StringUtils.isNotBlank(regulaObjList)) {
+                        regulaObjectList = regulaObjectMapper.selectByIds(regulaObjList);
                     }
-                }
+                    List<String> regulaObjNameList = new ArrayList<>();
+                    if (regulaObjectList != null && !regulaObjectList.isEmpty()) {
+                        for (RegulaObject regulaObject : regulaObjectList) {
+                            regulaObjNameList.add(regulaObject.getObjName());
+                        }
+                    }
 
-                zhaiyaoList.add(String.join(",", leadershipAssign.getTaskLeader()));
-                zhaiyaoList.add(String.join(",", regulaObjNameList));
+                    zhaiyaoList.add(String.join(",", leadershipAssign.getTaskLeader()));
+                    zhaiyaoList.add(String.join(",", regulaObjNameList));
+                }
                 break;
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CHECK:
                 // 巡查上报
@@ -637,24 +646,28 @@ public class CaseInfoService {
                     commandCenterHotlineService.selectById(Integer.valueOf(caseInfo.getSourceCode()));
 
                 resultJObjct = centerHotlineJObj;
-                resultJObjct.put("eventSourceType", "指挥中心热线");
-                resultJObjct.put("sourceCode", centerHotlineJObj.getString("hotlnCode"));
-                //添加主办人姓名
-                resultJObjct.put("crtUserName", centerHotlineJObj.getString("crtUserName"));
 
-                reportPersonId = centerHotlineJObj.getString("crtUserId");
+                // 对查询到的数据进行非空判断
+                if (resultJObjct != null) {
+                    resultJObjct.put("eventSourceType", "指挥中心热线");
+                    resultJObjct.put("sourceCode", centerHotlineJObj.getString("hotlnCode"));
+                    //添加主办人姓名
+                    resultJObjct.put("crtUserName", centerHotlineJObj.getString("crtUserName"));
 
-                zhaiyaoList
-                    .add(centerHotlineJObj.getString("bizType") == null ? "" : centerHotlineJObj.getString("bizType"));
-                zhaiyaoList.add(centerHotlineJObj.getString("eventTypeName") == null ? ""
-                    : centerHotlineJObj.getString("eventTypeName"));
-                zhaiyaoList.add(
-                    centerHotlineJObj.getString("appealType") == null ? "" : centerHotlineJObj.getString("appealType"));
-                zhaiyaoList.add(
-                    centerHotlineJObj.getString("appealTel") == null ? "" : centerHotlineJObj.getString("appealTel"));
-                if (centerHotlineJObj.getDate("appealDatetime") != null) {
+                    reportPersonId = centerHotlineJObj.getString("crtUserId");
+
+                    zhaiyaoList
+                            .add(centerHotlineJObj.getString("bizType") == null ? "" : centerHotlineJObj.getString("bizType"));
+                    zhaiyaoList.add(centerHotlineJObj.getString("eventTypeName") == null ? ""
+                            : centerHotlineJObj.getString("eventTypeName"));
                     zhaiyaoList.add(
-                        DateUtil.dateFromDateToStr(centerHotlineJObj.getDate("appealDatetime"), "yyyy-MM-dd HH:mm:ss"));
+                            centerHotlineJObj.getString("appealType") == null ? "" : centerHotlineJObj.getString("appealType"));
+                    zhaiyaoList.add(
+                            centerHotlineJObj.getString("appealTel") == null ? "" : centerHotlineJObj.getString("appealTel"));
+                    if (centerHotlineJObj.getDate("appealDatetime") != null) {
+                        zhaiyaoList.add(
+                                DateUtil.dateFromDateToStr(centerHotlineJObj.getDate("appealDatetime"), "yyyy-MM-dd HH:mm:ss"));
+                    }
                 }
                 break;
             default:
@@ -703,8 +716,9 @@ public class CaseInfoService {
      * @param objs
      */
     @Transactional
-    public void completeProcess(@RequestBody JSONObject objs) {
+    public Result<Void> completeProcess(@RequestBody JSONObject objs) {
         log.debug("进行事件审批，参数结构为："+objs.toString());
+        Result<Void> result=new Result<>();
 
         /*
          * ===============更新业务数据===================开始=============
@@ -723,6 +737,26 @@ public class CaseInfoService {
 
         // 获取流程走向，以判断流程是否结束
         String flowDirection = variableDataJObject.getString("flowDirection");
+
+        // 判断流向是否走向部门处理中
+        if (environment.getProperty("isCheckProcessingAuth").equals(flowDirection)) {
+            String deptId = objs.getJSONObject("authData").getString("procDeptId");
+            if (StringUtils.isBlank(deptId)) {
+                throw new BizException("请指定部门ID");
+            }
+            List<JSONObject> authoritiesByDept = adminFeign.getAuthoritiesByDept(deptId);
+            if (BeanUtil.isNotEmpty(authoritiesByDept)) {
+                List<String> codeList =
+                    authoritiesByDept.stream().map(o -> o.getString("code")).distinct()
+                        .collect(Collectors.toList());
+                if (!codeList.contains(environment.getProperty("wfTodoList"))) {
+                    result.setMessage("该部门尚无权限处理该事件，请更换部门。");
+                    result.setIsSuccess(false);
+                    return result;
+                }
+            }
+        }
+
         if (Constances.ProcFlowWork.TOFINISHWORKFLOW.equals(flowDirection)) {
             /*
              * 任务已走向结束<br/> 去执行相应业务应该完成的操作<br/> 1 立案单isFinished：1<br/> 2 来源各变化
@@ -839,6 +873,9 @@ public class CaseInfoService {
 
         // 完成已签收的任务，将工作流向下推进
         wfProcTaskService.completeProcessInstance(objs);
+
+        result.setIsSuccess(true);
+        return result;
     }
 
     /**
@@ -1276,14 +1313,27 @@ public class CaseInfoService {
                     // adminFeign.getUser(wfProcTaskHistoryBean.getProcTaskCommitter());//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>查询了admin》》》》》》》》》》》》》》》》》》》》》》》》》
                     if (manyUsersMap != null && !manyUsersMap.isEmpty()) {
                         // 流程的审批人应为procTaskAssignee
+
+
+                        /*
+                         * IF ( task.PROC_TASK_STATUS = '1',
+                         * task.PROC_TASK_GROUP,
+                         * task.PROC_TASK_ASSIGNEE ) procTaskAssignee
+                         * 以上为查询历史任务详情的SQL，当未签收时，会将procTaskGroup作为签收人查询出来
+                         * 但用procTaskGroup去查base_user表时，查不出数据，即manyUsersMap.get(
+                         * wfProcTaskHistoryBean.getProcTaskAssignee())为空
+                         * 需要进行非空判断
+                         */
                         JSONObject jObjTmp =
                             JSONObject.parseObject(manyUsersMap.get(wfProcTaskHistoryBean.getProcTaskAssignee()));
-                        commanderApproveJObj.put("procTaskCommitterName", jObjTmp.getString("name"));
-                        commanderApproveJObj.put("commanderTel", jObjTmp.getString("mobilePhone"));// 审批人联系方法
-                        //流程审批时间
-                        commanderApproveJObj.put("procTaskEndtime", wfProcTaskHistoryBean.getProcTaskEndtime());// 审批时间
-                        commanderApproveJObj.put("procTaskApprOpinion", wfProcTaskHistoryBean.getProcTaskApprOpinion());// 审批意见
-                        commanderApproveJArray.add(commanderApproveJObj);
+                        if(BeanUtil.isNotEmpty(jObjTmp)){
+                            commanderApproveJObj.put("procTaskCommitterName", jObjTmp.getString("name"));
+                            commanderApproveJObj.put("commanderTel", jObjTmp.getString("mobilePhone"));// 审批人联系方法
+                            //流程审批时间
+                            commanderApproveJObj.put("procTaskEndtime", wfProcTaskHistoryBean.getProcTaskEndtime());// 审批时间
+                            commanderApproveJObj.put("procTaskApprOpinion", wfProcTaskHistoryBean.getProcTaskApprOpinion());// 审批意见
+                            commanderApproveJArray.add(commanderApproveJObj);
+                        }
                     }
                 }
             }

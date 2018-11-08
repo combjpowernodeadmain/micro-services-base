@@ -104,7 +104,10 @@ public class MayorHotline implements Serializable {
     	//处理状态
     @Column(name="exe_status")
     private String exeStatus;
-	
+
+    // 热线事件来源(字典)
+    @Column(name="hotln_source")
+    private String hotlnSource;
 
 	/**
 	 * 设置：主键
@@ -339,5 +342,20 @@ public class MayorHotline implements Serializable {
 	}
 	public void setExeStatus(String exeStatus) {
 		this.exeStatus = exeStatus;
+	}
+
+	/**
+	 * 获取：热线事件来源
+	 * @return
+	 */
+	public String getHotlnSource() {
+		return hotlnSource;
+	}
+
+	/**
+	 * 设置：热线事件来源
+	 */
+	public void setHotlnSource(String hotlnSource) {
+		this.hotlnSource = hotlnSource;
 	}
 }

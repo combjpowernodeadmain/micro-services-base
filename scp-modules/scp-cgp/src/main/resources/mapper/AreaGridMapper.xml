@@ -31,12 +31,31 @@
 	</resultMap>
 
 	<!-- 网格全部定位 -->
-	<select id="allPotition" resultMap="areaGridMap">
-		select id,grid_name,map_info from area_grid
-		<where>
-			<if test="areaGrid.gridLevel!=null and areaGrid.gridLevel != ''">
-				grid_level=#{areaGrid.gridLevel}
-			</if>
-		</where>
+    <select id="allPotition" resultMap="areaGridMap">
+        select id,grid_name,map_info from area_grid
+        <where>
+            is_deleted='0'
+            <if test="areaGrid.gridLevel!=null and areaGrid.gridLevel != ''">
+                and grid_level=#{areaGrid.gridLevel}
+            </if>
+        </where>
+    </select>
+	<!--  通过用户ids获取网格信息列表-->
+	<select id="selectByUserIds" resultType="java.util.Map">
+		SELECT
+			ag.id gridId,
+			ag.grid_name gridName,
+			agm.grid_member userId,
+			agm.grid_role gridRole
+		FROM
+			area_grid ag
+		INNER JOIN area_grid_member agm ON agm.grid_id = ag.id
+		WHERE
+			agm.is_deleted = 0
+		AND agm.is_disabled = 0
+		AND agm.grid_member IN
+		<foreach collection="userIds" item="userId" open="(" separator="," close=")">
+			#{userId}
+		</foreach>
 	</select>
 </mapper>

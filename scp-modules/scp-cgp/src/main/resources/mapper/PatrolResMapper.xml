@@ -10,4 +10,17 @@
         <result property="url" column="url"/>
     </resultMap>
 
+    <insert id="insertList" parameterType="java.util.List">
+        INSERT INTO patrol_res (
+        patrol_res.patrol_task_id,
+        patrol_res.url)
+        VALUES
+        <foreach collection="areaGridMembers" index="index" item="item"
+                 separator=",">
+            (
+            #{item.patrolTaskId},
+            #{item.url}
+            )
+        </foreach>
+    </insert>
 </mapper>

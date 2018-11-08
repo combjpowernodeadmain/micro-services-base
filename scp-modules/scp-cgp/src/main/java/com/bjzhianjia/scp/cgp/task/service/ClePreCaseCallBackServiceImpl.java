@@ -3,7 +3,9 @@ package com.bjzhianjia.scp.cgp.task.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.CaseRegistrationBiz;
+import com.bjzhianjia.scp.cgp.biz.LawTaskBiz;
 import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
+import com.bjzhianjia.scp.cgp.entity.LawTask;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.task.service.IWfProcTaskCallBackService;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,9 @@ public class ClePreCaseCallBackServiceImpl implements IWfProcTaskCallBackService
     @Autowired
     private CaseRegistrationBiz caseResistrationBiz;
 
+    @Autowired
+    private LawTaskBiz lawTaskBiz;
+
     @Override
     public void before(String dealType, Map<String, Object> procBizData) throws BizException {
         log.debug("添加案件登陆前回调方法执行，参数结构为：" + procBizData);
@@ -41,6 +46,22 @@ public class ClePreCaseCallBackServiceImpl implements IWfProcTaskCallBackService
         log.debug("*********************************queryFrom:" + queryFrom + "*************************************");
 
         JSONObject bizData = JSONObject.parseObject(JSON.toJSONString(procBizData));
+
+        String caseSourceType = bizData.getString("caseSourceType");
+        if (caseSourceType == null) {
+            caseSourceType = "";
+        }
+        switch (caseSourceType) {
+            case CaseRegistration.CASE_SOURCE_TYPE_TASK:
+                // 执法任务
+                // 处理执法任务业务逻辑
+                updateTask(bizData);
+                break;
+            case CaseRegistration.CASE_SOURCE_TYPE_CENTER:
+                // 中心交办
+                updateCaseInfo(bizData);
+                break;
+        }
 
         /*
          * PROC_END表示案件一发起就停止的情况，如现场处理……
@@ -66,6 +87,26 @@ public class ClePreCaseCallBackServiceImpl implements IWfProcTaskCallBackService
         }
 
         procBizData.put("procBizId", bizData.getString("procBizId"));
+    }
+
+    /**
+     * 修改中心交办数据
+     * @param bizData
+     */
+    private void updateCaseInfo(JSONObject bizData) {
+    }
+
+    /**
+     * 修改执法任务数据
+     * 
+     * @param bizData
+     */
+    private void updateTask(JSONObject bizData) {
+        Integer caseSource = bizData.getInteger("caseSource");
+        LawTask lawTask = new LawTask();
+        lawTask.setId(caseSource);
+        lawTask.setState(LawTask.ROOT_BIZ_LAWTASKS_DOING);
+        lawTaskBiz.updateSelectiveById(lawTask);
     }
 
     @Override

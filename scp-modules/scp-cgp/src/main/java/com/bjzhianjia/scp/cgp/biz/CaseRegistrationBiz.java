@@ -893,11 +893,11 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             if (wfProcBackBean != null) {
                 procCtaskname = wfProcBackBean.getProcCtaskname();
                 if (CaseRegistration.EXESTATUS_STATE_FINISH.equals(caseRegistration.getExeStatus())) {
-                    procCtaskname = procCtaskname + "(已结案)";
+                    procCtaskname = "已结案(" + procCtaskname + ")";
                 }
 
                 if (CaseRegistration.EXESTATUS_STATE_STOP.equals(caseRegistration.getExeStatus())) {
-                    procCtaskname = procCtaskname + "(已终止)";
+                    procCtaskname = "已终止(" + procCtaskname + ")";
                 }
                 objResult.put("procCtaskname", procCtaskname);
                 objResult.put("procInstId", wfProcBackBean.getProcInstId());
@@ -1583,6 +1583,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         result.put("concernedType", concernedType);
         // 当事人详情
         result.put("concernedResult", concernedResult);
+
+        result.put("caseCheckTime", caseRegistration.getCaseCheckTime());
+        result.put("caseSpotCheck", caseRegistration.getCaseSpotCheck());
         
         List<String> dictKeyList = new ArrayList<>();
         String dictKey = "";
@@ -1861,5 +1864,103 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             map.put("sourceTypeName",dictTemp.get(map.get("caseSourceType")));
         }
         return new TableResultResponse<>(pageHelper.getTotal(),result);
+    }
+
+    /**
+     * 案件基本信息
+     *
+     * @param id 案件id
+     * @return
+     */
+    public Map<String, Object> getCaseRegistrationInfo(String id) {
+        Map<String, Object> caseRegistration = this.mapper.selectBaseInfoById(id);
+        if (caseRegistration == null) {
+            throw new RuntimeException("没有找到案件信息！");
+        }
+        StringBuilder dictCodes = new StringBuilder();
+        //业务条线、案件来源、处理方式，数据字典查询
+        dictCodes.append(caseRegistration.get("bizType")).append(",")
+                .append(caseRegistration.get("caseSourceType")).append(",")
+                .append(caseRegistration.get("dealType"));
+
+        Map<String, String> dictMap = dictFeign.getByCodeIn(dictCodes.toString());
+
+        //返回结果集
+        Map<String, Object> result = new HashMap<>();
+        result.putAll(caseRegistration);
+
+        //当事人类型（默认：个人）
+        String concernedType="person";
+        //当事人信息
+        Map<String, Object> concernedResult = new HashMap<>();
+        switch (String.valueOf(caseRegistration.get("concernedType"))) {
+            case Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON:
+                //个人
+                CLEConcernedPerson cLEConcernedPerson = cLEConcernedPersonBiz.selectById(caseRegistration.get("concernedId"));
+                concernedResult.put("name",cLEConcernedPerson.getName());
+                Map<String, String> credMap = dictFeign.getByCodeIn(cLEConcernedPerson.getCertType() + ","
+                        + cLEConcernedPerson.getGender());
+                if(cLEConcernedPerson != null){
+                    concernedResult.put("name",cLEConcernedPerson.getName());
+                    concernedResult.put("credTypeName", credMap.get(cLEConcernedPerson.getCertType()));
+                    concernedResult.put("sexName", credMap.get(cLEConcernedPerson.getGender()));
+                    concernedResult.put("age", cLEConcernedPerson.getAge());
+                    concernedResult.put("address", cLEConcernedPerson.getAddress());
+                    concernedResult.put("phone", cLEConcernedPerson.getPhone());
+                }
+                break;
+            case Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG:
+                //单位
+                concernedType="org";
+                CLEConcernedCompany cLEConcernedCompany = cLEConcernedCompanyBiz.selectById(caseRegistration.get("concernedId"));
+                if(cLEConcernedCompany != null){
+                    concernedResult.put("name", cLEConcernedCompany.getName());
+                    concernedResult.put("address", cLEConcernedCompany.getAddress());
+                    concernedResult.put("legalPerson", cLEConcernedCompany.getLegalPerson());
+                    concernedResult.put("leadPerson", cLEConcernedCompany.getLeadPerson());
+                    concernedResult.put("duties", cLEConcernedCompany.getDuties());
+                    concernedResult.put("phone", cLEConcernedCompany.getPhone());
+                    concernedResult.put("info", cLEConcernedCompany.getInfo());
+                }
+                break;
+        }
+
+        //移送部门名称
+        String transferDepartName = "";
+        String deptId = String.valueOf(caseRegistration.get("transferDepart"));
+        JSONObject deptInfo = adminFeign.getByDeptId(deptId);
+        if(deptInfo != null){
+            transferDepartName = deptInfo.getString("name");
+        }
+        result.put("transferDepartName", transferDepartName);
+
+        result.put("concernedType", concernedType);
+        result.put("concernedResult", concernedResult);
+        //业务条线
+        result.put("bizName", dictMap.get(caseRegistration.get("bizType")));
+        //案件来源
+        result.put("sourceTypeName", dictMap.get(caseRegistration.get("caseSourceType")));
+        //处理方式
+        result.put("dealTypeName", dictMap.get(caseRegistration.get("dealType")));
+
+        //拼接执法者用户列表
+        JSONArray userList = iUserFeign.getByUserIds(String.valueOf(caseRegistration.get("enforcers")));
+        StringBuilder enforcersName = new StringBuilder();
+        if (userList != null) {
+            JSONObject obj;
+            for (int i = 0; i < userList.size(); i++) {
+                obj = userList.getJSONObject(i);
+                if(obj == null){
+                    continue;
+                }
+                enforcersName.append(obj.getString("name"));
+                if(i < userList.size()-1){
+                    enforcersName.append(",");
+                }
+            }
+        }
+        //执法者
+        result.put("enforcersName", enforcersName.toString());
+        return result;
     }
 }

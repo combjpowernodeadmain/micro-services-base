@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.bjzhianjia.scp.security.common.util.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -226,5 +227,24 @@ public class EnforceCertificateBiz extends BusinessBiz<EnforceCertificateMapper,
         }
 
         return new TableResultResponse<>(resultJObjList.size(), resultJObjList);
+    }
+
+    /**
+     * 获取指定用户ids集的执法执法证
+     *
+     * @param userId 用户ids
+     * @return
+     */
+    public List<EnforceCertificate> getEnforceByUserIds(List<String> userId) {
+        if(BeanUtils.isEmpty(userId)){
+            return new ArrayList<>();
+        }
+        Example example = new Example(EnforceCertificate.class).selectProperties("id", "usrId", "certCode");
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isDeleted", "0");
+        criteria.andEqualTo("isDeleted", "0");
+        criteria.andNotIn("usrId", userId);
+        List<EnforceCertificate> result = this.mapper.selectByExample(example);
+        return BeanUtils.isEmpty(result) ? new ArrayList<>() : result;
     }
 }

@@ -189,13 +189,18 @@ public class PatrolTaskService {
 		patrolTask.setCrtUserId(BaseContextHandler.getUserID());//上报人姓名
 		patrolTaskBiz.insertSelective(patrolTask);
 		// 巡查任务记录资源
+        List<PatrolRes> patrolResList = new ArrayList<>();
 		for (int i = 0; urls != null && i < urls.length; i++) {
-			PatrolRes patrolRes = new PatrolRes();
-			patrolRes.setPatrolTaskId(patrolTask.getId());
-			patrolRes.setUrl(urls[i]);
 			if (StringUtils.isNotBlank(urls[i])) {
-				patrolResService.created(patrolRes);
+				PatrolRes patrolRes = new PatrolRes();
+				patrolRes.setPatrolTaskId(patrolTask.getId());
+				patrolRes.setUrl(StringUtils.trim(urls[i]));
+				patrolResList.add(patrolRes);
 			}
+		}
+		// 将巡查资源批量添加到数据库
+		if(BeanUtil.isNotEmpty(patrolResList)){
+			patrolResBiz.insertList(patrolResList);
 		}
 
 		/*

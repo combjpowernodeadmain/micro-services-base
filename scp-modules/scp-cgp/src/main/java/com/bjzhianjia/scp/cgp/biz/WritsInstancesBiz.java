@@ -237,13 +237,9 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
     }
 
     /**
-     * =获取文书<br/>
-     * =该方法生成一个以.docx为后缀名的word文档，将该文档保存至某一地址，并将该地址返回<br/>
-     * 
-     * 
-     * @param tcode
-     * @param caseId
-     * @param procTaskId
+     * 获取文书<br/>
+     * 该方法生成一个以.docx为后缀名的word文档，将该文档保存至某一地址，并将该地址返回<br/>
+     * @param id
      * @return
      */
     public ObjectRestResponse<String> getWritsInstance(Integer id) {
@@ -282,13 +278,11 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             // 将fillContext内的内容添加到文书模板上
             JSONObject fillJObj = JSONObject.parseObject(fillContext);
 
-            // StringBuffer ziHao = new StringBuffer();
-            // ziHao.append(writsInstances.getRefEnforceType()).append("[").append(writsInstances.getRefYear()).append("]")
-            // .append(writsInstances.getRefNo());
-            // fillJObj.put("ZiHao", ziHao.toString());
-
             @SuppressWarnings({ "unchecked", "rawtypes" })
             Map<String, String> map = (Map) fillJObj;
+            // 文书模板“执法任务”“中队信息”去除，不再使用fillContext字段中的“zHiHao”作案件文号
+            map.put("refYear", writsInstances.getRefYear());
+            map.put("refNo", writsInstances.getRefNo());
 
             try {
                 writsPath =
@@ -303,7 +297,6 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         }
 
         restResult.setData(writsPath);
-        // restResult.setData("http://www.xdocin.com/demo/demo.docx");//测试时用
         return restResult;
     }
 

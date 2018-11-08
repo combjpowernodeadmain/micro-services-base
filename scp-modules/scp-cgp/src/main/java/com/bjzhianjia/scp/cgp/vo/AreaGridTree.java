@@ -11,6 +11,7 @@ import com.bjzhianjia.scp.security.common.vo.TreeNodeVO;
 public class AreaGridTree extends TreeNodeVO<AreaGridTree> {
 	private String gridName;
 	private String gridCode;
+	private String gridWithParentName;// 带有父节点名称的节点名称，如：第三网格(社士村)
 
 	public String getGridName() {
 		return gridName;
@@ -28,13 +29,22 @@ public class AreaGridTree extends TreeNodeVO<AreaGridTree> {
 		this.gridCode = gridCode;
 	}
 
-	public AreaGridTree(Object id, Object parentId, String gridName, String gridCode) {
+	public AreaGridTree(Object id, Object parentId, String gridName, String gridCode, String gridWithParentName) {
 		this.gridName = gridName;
 		this.gridCode = gridCode;
+		this.gridWithParentName = gridWithParentName;
 		super.setId(id);
 		super.setParentId(parentId);
 	}
 
 	public AreaGridTree() {
 	}
+
+    public String getGridWithParentName() {
+        return gridWithParentName;
+    }
+
+    public void setGridWithParentName(String gridWithParentName) {
+        this.gridWithParentName = gridWithParentName;
+    }
 }

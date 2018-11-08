@@ -190,7 +190,12 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         log.debug("SCP信息---开始启动并提交工作流...");
 
         ObjectRestResponse<JSONObject> restResult = new ObjectRestResponse<>();
-        caserInfoService.completeProcess(objs);
+        Result<Void> result = caserInfoService.completeProcess(objs);
+        if(!result.getIsSuccess()){
+            restResult.setMessage(result.getMessage());
+            restResult.setStatus(400);
+            return restResult;
+        }
 
         restResult.setMessage("成功");
         return restResult;

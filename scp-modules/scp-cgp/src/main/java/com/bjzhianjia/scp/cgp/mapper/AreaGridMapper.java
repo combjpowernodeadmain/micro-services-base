@@ -5,6 +5,8 @@ import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
+
 
 /**
  * 网格
@@ -23,4 +25,10 @@ public interface AreaGridMapper extends CommonMapper<AreaGrid> {
      * @return
      */
     List<AreaGrid> allPotition(@Param("areaGrid") AreaGrid areaGrid);
+
+    /**
+     *  通过用户ids获取网格信息列表
+     * @return
+     */
+    List<Map<String,Object>> selectByUserIds(@Param("userIds") List<String> userIds);
 }

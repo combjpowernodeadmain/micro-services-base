@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.admin.biz.DepartBiz;
+import com.bjzhianjia.scp.security.admin.biz.MenuBiz;
 import com.bjzhianjia.scp.security.admin.entity.Depart;
 import com.bjzhianjia.scp.security.admin.entity.User;
 import com.bjzhianjia.scp.security.admin.vo.DepartTree;
@@ -38,6 +39,9 @@ import java.util.Map;
 public class DepartController extends BaseController<DepartBiz, Depart, String> {
     @Autowired
     private DepartBiz departBiz;
+
+    @Autowired
+    private MenuBiz menuBiz;
 
     @ApiOperation("获取部门树")
     @RequestMapping(value = "/tree", method = RequestMethod.GET)
@@ -154,4 +158,9 @@ public class DepartController extends BaseController<DepartBiz, Depart, String> 
     	return this.baseBiz.getDeptByIds(deptIds);
     }
 
+    @GetMapping("/menu/BydeptId")
+    @ApiOperation("过部门ID查询与该部门里人员对应的权限")
+    public List<JSONObject> getAuthoritiesByDept(@RequestParam(value="deptId")String deptId){
+        return this.menuBiz.getAuthoritiesByDept(deptId);
+    }
 }
