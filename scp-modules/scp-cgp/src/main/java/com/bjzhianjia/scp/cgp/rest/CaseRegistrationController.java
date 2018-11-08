@@ -422,4 +422,21 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         return this.baseBiz.getCaseLog(BaseContextHandler.getUserID(),caseName,page,limit);
     }
 
+    /**
+     * 案件基本详情
+     * @param id 案件id
+     * @return
+     */
+    @ApiOperation("案件基本详情")
+    @GetMapping("/{id}/info")
+    public ObjectRestResponse<Map<String,Object>> getInfoById(@PathVariable("id") @ApiParam("案件id") String id) {
+        ObjectRestResponse<Map<String,Object>> result = new ObjectRestResponse<>();
+        try{
+            result.setData(this.baseBiz.getCaseRegistrationInfo(id));
+        }catch (Exception e){
+            result.setMessage(e.getMessage());
+            result.setStatus(400);
+        }
+        return result;
+    }
 }
