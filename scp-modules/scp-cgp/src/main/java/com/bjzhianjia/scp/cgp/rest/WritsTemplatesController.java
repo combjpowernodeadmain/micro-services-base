@@ -7,9 +7,12 @@ import com.bjzhianjia.scp.cgp.entity.WritsTemplates;
 import com.bjzhianjia.scp.cgp.util.DocDownUtil;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
+import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreClientToken;
+import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
+import com.bjzhianjia.scp.security.common.util.UUIDUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -164,5 +167,49 @@ public class WritsTemplatesController extends BaseController<WritsTemplatesBiz, 
             e.printStackTrace();
         }
         return null;
+    }
+
+    @IgnoreClientToken
+    @IgnoreUserToken
+    @RequestMapping(value = "/downLoads", method = RequestMethod.GET)
+    @ApiOperation("生成文书实例，并返回文书实例对应的word文档")
+    public ResponseEntity<?> downLoadTemplate(
+        @RequestParam(value = "id", required = false) @ApiParam(value = "待下载文书模板的ID") Integer id,
+        @RequestParam(value = "tcode", required = false) @ApiParam(value = "待下载文书模板的code") String tcode,
+        @RequestParam(value = "isOrigin", defaultValue = "false") @ApiParam(value = "为true表示下载的为原始模板") Boolean isOrigin,
+        HttpServletResponse response) {
+        log.debug("文书模板下载");
+
+        WritsTemplates writsTemplates = new WritsTemplates();
+        writsTemplates.setId(id);
+        writsTemplates.setTcode(tcode);
+
+        Result<WritsTemplates> result = null;
+        if (isOrigin) {
+            result = this.baseBiz.downLoadTemplate(writsTemplates);
+        } else {
+        }
+
+        if (!result.getIsSuccess()) {
+            throw new RuntimeException(result.getMessage());
+        }
+
+        WritsTemplates templates = result.getData();
+        String originDocUrl = templates.getOriginDocUrl();
+
+        // 中文乱码问题尚未解决，为使前端不报错，暂时使用UUID
+        String templatesName =
+            UUIDUtils.generateUuid() + originDocUrl.substring(originDocUrl.lastIndexOf("."));
+//        String templatesName =
+//            originDocUrl.substring(originDocUrl.lastIndexOf("/")+1);
+
+        log.debug("文书模板路径为："+templatesName);
+        // 设置响应头为响应一个word文档
+        response.setContentType(
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        response.setHeader("Content-Disposition", "attachment; filename=" + templatesName);
+
+        ResponseEntity<?> file = docDownUtil.getFile(originDocUrl);
+        return file;
     }
 }

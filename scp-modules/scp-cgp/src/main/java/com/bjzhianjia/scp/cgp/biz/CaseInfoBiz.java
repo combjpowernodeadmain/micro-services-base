@@ -646,4 +646,56 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         }
         return new TableResultResponse<>(pageHelper.getTotal(), result);
     }
+
+    /**
+     * 执法片区事件统计
+     * @return
+     */
+    public List<JSONObject> getGridZFPQ(){
+        List<JSONObject> gridZFPQListTodo = this.mapper.getGridZFPQ("0");
+        List<JSONObject> gridZFPQListFinish = this.mapper.getGridZFPQ("1");
+
+        List<AreaGrid> areaGridList=areaGridBiz.getByGridLevel(environment.getProperty("areaGrid.gridLevel.zrwg.zfpq"));
+
+        List<JSONObject> resultJObjList = new ArrayList<>();
+        if (BeanUtil.isNotEmpty(areaGridList)) {
+            Map<Integer, JSONObject> zfpqIdJObjMapTodo = new HashMap<>();
+            Map<Integer, JSONObject> zfpqIdJObjMapFinish = new HashMap<>();
+            if (BeanUtil.isNotEmpty(gridZFPQListTodo)) {
+                for (JSONObject gridJobjTmp : gridZFPQListTodo) {
+                    zfpqIdJObjMapTodo.put(gridJobjTmp.getInteger("zfqp"), gridJobjTmp);
+                }
+            }
+            if (BeanUtil.isNotEmpty(gridZFPQListFinish)) {
+                for (JSONObject gridJobjTmp : gridZFPQListFinish) {
+                    zfpqIdJObjMapFinish.put(gridJobjTmp.getInteger("zfqp"), gridJobjTmp);
+                }
+            }
+
+            // 整合处理结果
+            for (AreaGrid areaGridTmp : areaGridList) {
+                JSONObject resultJobj = new JSONObject();
+
+                JSONObject jsonObjectTodo =
+                    zfpqIdJObjMapTodo.get(areaGridTmp.getId()) == null ? new JSONObject()
+                        : zfpqIdJObjMapTodo.get(areaGridTmp.getId());
+                JSONObject jsonObjectFinish =
+                    zfpqIdJObjMapFinish.get(areaGridTmp.getId()) == null ? new JSONObject()
+                        : zfpqIdJObjMapFinish.get(areaGridTmp.getId());
+
+                resultJobj.put("grid", areaGridTmp.getId());
+                resultJobj.put("stateTodo", jsonObjectTodo.getInteger("ccount") == null ? 0
+                    : jsonObjectTodo.getInteger("ccount"));
+                resultJobj.put("stateFinish", jsonObjectFinish.getInteger("ccount") == null ? 0
+                    : jsonObjectFinish.getInteger("ccount"));
+                resultJobj.put("gridLevel", areaGridTmp.getGridLevel());
+                resultJobj.put("gridName", areaGridTmp.getGridName());
+                resultJobj.put("gridCode", areaGridTmp.getGridCode());
+
+                resultJObjList.add(resultJobj);
+            }
+        }
+
+        return resultJObjList;
+    }
 }
