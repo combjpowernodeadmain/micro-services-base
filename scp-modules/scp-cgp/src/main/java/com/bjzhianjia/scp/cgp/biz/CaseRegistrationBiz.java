@@ -1942,6 +1942,25 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         result.put("sourceTypeName", dictMap.get(caseRegistration.get("caseSourceType")));
         //处理方式
         result.put("dealTypeName", dictMap.get(caseRegistration.get("dealType")));
+
+        //拼接执法者用户列表
+        JSONArray userList = iUserFeign.getByUserIds(String.valueOf(caseRegistration.get("enforcers")));
+        StringBuilder enforcersName = new StringBuilder();
+        if (userList != null) {
+            JSONObject obj;
+            for (int i = 0; i < userList.size(); i++) {
+                obj = userList.getJSONObject(i);
+                if(obj == null){
+                    continue;
+                }
+                enforcersName.append(obj.getString("name"));
+                if(i < userList.size()-1){
+                    enforcersName.append(",");
+                }
+            }
+        }
+        //执法者
+        result.put("enforcersName", enforcersName.toString());
         return result;
     }
 }
