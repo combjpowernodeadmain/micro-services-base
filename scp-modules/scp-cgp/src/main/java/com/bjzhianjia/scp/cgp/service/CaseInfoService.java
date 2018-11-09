@@ -33,6 +33,7 @@ import com.bjzhianjia.scp.cgp.entity.RegulaObject;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
+import com.bjzhianjia.scp.cgp.mapper.CaseInfoMapper;
 import com.bjzhianjia.scp.cgp.mapper.EventTypeMapper;
 import com.bjzhianjia.scp.cgp.mapper.RegulaObjectMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
@@ -152,6 +153,8 @@ public class CaseInfoService {
     @Autowired
     private Environment environment;
 
+    @Autowired
+    private CaseInfoMapper caseInfoMapper;
     /**
      * 更新单个对象
      * 
@@ -198,6 +201,8 @@ public class CaseInfoService {
             restResult.setData(new JSONObject());
             return restResult;
         }
+        //业务条线code
+        String bizListCode = caseInfo.getBizList();
 
         List<CaseInfo> list = new ArrayList<>();
         list.add(caseInfo);
@@ -1542,5 +1547,37 @@ public class CaseInfoService {
         }
 
         return new TableResultResponse<>(resultList.size(), resultList);
+    }
+
+    /**
+     * 通过部门id和事件等级获取事件列表
+     *
+     * @param caseLevel 事件等级
+     * @param page
+     * @param limit
+     * @return
+     */
+    public TableResultResponse<Map<String, Object>> getCaseInfoByDeptId(JSONObject objs,String caseLevel,
+                                                                        String deptId,int page,int limit) {
+        Page<Object> pageHelper = PageHelper.startPage(page, limit);
+
+        // 查询待办工作流任务
+        PageInfo<WfProcBackBean> pageInfo = wfMonitorService.getAllTasks(objs);
+        List<WfProcBackBean> list = pageInfo.getList();
+
+
+        List<Map<String, Object>> result = caseInfoMapper.selectCaseInfoByDeptId(deptId, caseLevel);
+        if (BeanUtil.isEmpty(result)) {
+            return new TableResultResponse<>(0, new ArrayList<>());
+        }
+        Map<String,String>  dictTemp = dictFeign.getByCode(Constances.ROOT_BIZ_EVENTLEVEL);
+
+        for(Map<String,Object> map : result){
+            String caseLevelName = dictTemp.get(map.get("caseLevel"));
+            map.put("caseLevelName",caseLevelName);
+            map.put("isSupervise","0".equals(map.get("isSupervise"))?false:true);
+            map.put("isUrge","0".equals(map.get("isUrge"))?false:true);
+        }
+        return new TableResultResponse<>(pageHelper.getTotal(), result);
     }
 }

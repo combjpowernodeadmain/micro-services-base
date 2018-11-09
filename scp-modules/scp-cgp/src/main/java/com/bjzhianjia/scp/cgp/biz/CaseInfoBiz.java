@@ -14,7 +14,10 @@ import com.bjzhianjia.scp.core.context.*;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.common.util.BeanUtils;
+import com.bjzhianjia.scp.security.wf.base.constant.Constants;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
+import com.bjzhianjia.scp.security.wf.base.monitor.service.impl.WfMonitorServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang3.StringUtils;
@@ -70,6 +73,9 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
     
     @Autowired
     private PropertiesProxy propertiesProxy;
+
+    @Autowired
+    private WfMonitorServiceImpl wfMonitorService;
 
     /**
      * 查询未删除的总数
@@ -636,6 +642,35 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         if (BeanUtil.isEmpty(result)) {
             return new TableResultResponse<>(0, new ArrayList<>());
         }
+        //拼接业务ids
+        StringBuilder procBizid = new StringBuilder();
+        Map<String, Object> tmap;
+        for (int i = 0; i < result.size(); i++) {
+            tmap = result.get(i);
+            if (BeanUtils.isEmpty(tmap)) {
+                continue;
+            }
+            procBizid.append("'").append(tmap.get("id")).append("'");
+            if (i < result.size() - 1) {
+                procBizid.append(",");
+            }
+        }
+        //工作流业务
+        JSONObject  bizData = new JSONObject();
+        //事件流程编码
+        bizData.put("procKey","comprehensiveManage");
+        //业务ids
+        bizData.put(Constants.WfProcessBizDataAttr.PROC_BIZID,procBizid.toString());
+        JSONObject objs = this.initWorkflowQuery(bizData);
+
+        //缓存工作流实例id
+        Map<String,String> tempProcInstIds = new HashMap<>();
+        List<Map<String,Object>>  procInstIdList = wfMonitorService.getProcInstIdByUserId(objs);
+        for(Map<String,Object> map : procInstIdList){
+            //procInstId实例id , procBizid 业务id
+            tempProcInstIds.put(String.valueOf(map.get(Constants.WfProcessBizDataAttr.PROC_BIZID)),String.valueOf(map.get("procInstId")));
+        }
+
         Map<String,String>  dictTemp = dictFeign.getByCode(Constances.ROOT_BIZ_EVENTLEVEL);
 
         for(Map<String,Object> map : result){
@@ -643,10 +678,32 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             map.put("caseLevelName",caseLevelName);
             map.put("isSupervise","0".equals(map.get("isSupervise"))?false:true);
             map.put("isUrge","0".equals(map.get("isUrge"))?false:true);
+            map.put("procInstId",tempProcInstIds.get(String.valueOf(map.get("id"))));
         }
         return new TableResultResponse<>(pageHelper.getTotal(), result);
     }
-
+    /**
+     * 初始化工作流参数
+     * @param bizData 工作流参数
+     * @return
+     */
+    private JSONObject initWorkflowQuery(JSONObject  bizData){
+        JSONObject objs = new JSONObject();
+        //流程参数
+        JSONObject  procData = new JSONObject();
+        //用户认证方式
+        JSONObject  authData = new JSONObject();
+        authData.put("procAuthType",2);
+        authData.put(Constants.WfProcessAuthData.PROC_DEPATID, BaseContextHandler.getDepartID());
+        //流程变量
+        JSONObject  variableData = new JSONObject();
+        //工作流参数
+        objs.put(Constants.WfRequestDataTypeAttr.PROC_BIZDATA,bizData);
+        objs.put(Constants.WfRequestDataTypeAttr.PROC_PROCDATA,procData);
+        objs.put(Constants.WfRequestDataTypeAttr.PROC_AUTHDATA,authData);
+        objs.put(Constants.WfRequestDataTypeAttr.PROC_VARIABLEDATA,variableData);
+        return objs;
+    }
     /**
      * 执法片区事件统计
      * @return
