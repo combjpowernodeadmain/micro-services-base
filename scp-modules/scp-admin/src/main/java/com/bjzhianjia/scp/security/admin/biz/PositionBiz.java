@@ -9,6 +9,7 @@ import com.bjzhianjia.scp.security.admin.entity.User;
 import com.bjzhianjia.scp.security.admin.mapper.PositionMapper;
 import com.bjzhianjia.scp.security.admin.vo.DepartTree;
 import com.bjzhianjia.scp.security.admin.vo.GroupTree;
+import com.bjzhianjia.scp.security.admin.vo.PositionVo;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.util.UUIDUtils;
 
@@ -108,5 +109,18 @@ public class PositionBiz extends BusinessBiz<PositionMapper,Position> {
         super.insertSelective(entity);
         entity.setDepartId(departId);
         updateSelectiveById(entity);
+    }
+
+    /**
+     * 通过用户id获取岗位列表
+     * @param userId 用户id
+     * @return
+     */
+    public List<PositionVo> getPositionByUserId(String userId) {
+        if (StringUtils.isBlank(userId)) {
+            return new ArrayList<>();
+        }
+        List<PositionVo> result = mapper.selectPositionByUserId(userId);
+        return com.bjzhianjia.scp.security.common.util.BeanUtils.isNotEmpty(result) ? result : new ArrayList<>();
     }
 }

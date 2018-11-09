@@ -18,6 +18,7 @@ import com.bjzhianjia.scp.security.common.util.TreeUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.collections4.map.HashedMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -166,8 +167,8 @@ public class AreaGridController extends BaseController<AreaGridBiz, AreaGrid, In
     @RequestMapping(value = "/tree", method = RequestMethod.GET)
     @ApiOperation("获取网格树")
     public List<AreaGridTree> getTree() {
-        List<AreaGrid> allAreaGrids = this.baseBiz.selectListAll();
-        
+        List<AreaGrid> allAreaGrids = this.baseBiz.getByMap(new HashedMap<>());
+
         if(BeanUtil.isEmpty(allAreaGrids)){
             return new ArrayList<>();
         }

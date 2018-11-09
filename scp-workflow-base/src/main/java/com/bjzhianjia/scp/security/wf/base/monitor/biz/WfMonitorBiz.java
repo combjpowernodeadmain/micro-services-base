@@ -269,4 +269,18 @@ public class WfMonitorBiz extends WfBaseBiz {
             logger.info("流程汇总查询--查询流程汇总信息完成.");
         }
     }
+    /**
+     * 通过业务ids查询流程实例id
+     * @param objs
+     * @return
+     */
+    public List<Map<String,Object>> getProcInstIdByUserId(JSONObject objs) throws WorkflowException {
+        logger.info("流程查询--开始查询流程实例ids...");
+        try {
+            return iqbWfMyProcBeanMapper.selectProcInstIdByUserId(objs);
+        } finally {
+            logger.info("流程查询--查询流程实例ids完成.");
+        }
+    }
+
 }

@@ -33,6 +33,7 @@ import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.impl.pvm.process.TransitionImpl;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Isolation;
@@ -1026,10 +1027,25 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		 * 非部门策略时，"1".equals(procTask.getProcDeptpermission()恒为false，此时与组策略相同
 		 * 
 		 * &&!"true".equals(authData.getAuthData("igGroupPermission"))
+		 *
+		 * 某人所在组可能为:group1,group2;工作流节点配的候选组可能为:group1,group3
+		 * 这种情况下符合签收条件
 		 */
+		List<String> procTaskRoles = authData.getProcTaskRoles();
+		String procTaskGroup = procTask.getProcTaskGroup();
+		boolean isGroupMatch=false;
+		if(StringUtils.isNotBlank(procTaskGroup)){
+			for(String procTaskGroupTmp:procTaskGroup.split(",")){
+				if(procTaskRoles.contains(procTaskGroupTmp)){
+				    // 当前用户所属的组包含工作流节点配的一个候选组，即可认识该用户可进行签收操作
+					isGroupMatch=true;
+					break;
+				}
+			}
+		}
 		boolean pass=!isDelegate
-				&& !authData.getProcTaskRoles().contains(
-						procTask.getProcTaskGroup())&&
+				&& !isGroupMatch &&
+                // 用"1"进行策略判断原因：目前工作流中只涉及状态为"1"的策略，对于非"1"或非"0"的策略尚不明确
 				!"1".equals(procTask.getProcDeptpermission())&&
 				!"1".equals(procTask.getProcSelfpermission1())&&
 				!"1".equals(procTask.getProcSelfpermission2())&&

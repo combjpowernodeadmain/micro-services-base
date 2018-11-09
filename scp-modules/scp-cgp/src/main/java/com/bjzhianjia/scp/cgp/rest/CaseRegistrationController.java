@@ -413,6 +413,13 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         return this.baseBiz.allPotition(objs);
     }
 
+    /**
+     * 查询当前用户参与或创建的案件列表
+     * @param caseName
+     * @param page
+     * @param limit
+     * @return
+     */
     @GetMapping("/userId")
     @ApiOperation("通过用户id获取案件列表")
     public TableResultResponse<Map<String,Object>> getCaseLog(

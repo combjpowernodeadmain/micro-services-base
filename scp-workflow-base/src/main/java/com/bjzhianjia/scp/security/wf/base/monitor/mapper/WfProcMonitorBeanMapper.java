@@ -98,4 +98,8 @@ public interface WfProcMonitorBeanMapper {
      * @return
      */
     List<WfMyProcBackBean> selectMyProcessDelegate(JSONObject objs);
+    /**
+     *  通过业务ids查询流程实例id
+     */
+    List<Map<String,Object>> selectProcInstIdByUserId(JSONObject objs);
 }

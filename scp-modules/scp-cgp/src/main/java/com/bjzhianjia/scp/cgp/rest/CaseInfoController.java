@@ -476,4 +476,15 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         return caseInfoBiz.getCaseInfoByDeptId(caseLevel, BaseContextHandler.getDepartID(),page,limit);
     }
 
+    /**
+     * 执法片区网格事件统计
+     *
+     * @return
+     */
+    @ApiOperation("执法片区网格事件统计")
+    @RequestMapping(value = "/statis/grid/zfpq", method = RequestMethod.GET)
+    @ResponseBody
+    public List<JSONObject> getGridZFPQ(){
+        return this.baseBiz.getGridZFPQ();
+    }
 }

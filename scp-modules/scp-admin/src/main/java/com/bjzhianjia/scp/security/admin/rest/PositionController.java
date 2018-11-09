@@ -5,6 +5,7 @@ import com.bjzhianjia.scp.security.admin.entity.Position;
 import com.bjzhianjia.scp.security.admin.entity.User;
 import com.bjzhianjia.scp.security.admin.vo.DepartTree;
 import com.bjzhianjia.scp.security.admin.vo.GroupTree;
+import com.bjzhianjia.scp.security.admin.vo.PositionVo;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
@@ -66,5 +67,11 @@ public class PositionController extends BaseController<PositionBiz, Position,Str
     @ApiOperation("获取岗位管辖部门列表")
     public ObjectRestResponse<List<DepartTree>> getDeparts(@PathVariable("id") String positionId) {
         return new ObjectRestResponse<List<DepartTree>>().data(baseBiz.getPositionDeparts(positionId));
+    }
+
+    @GetMapping("/userId/{userId}")
+    @ApiOperation("通过用户id获取岗位列表")
+    public ObjectRestResponse<List<PositionVo>> getPositionByUserId(@PathVariable("userId") String userId){
+        return new ObjectRestResponse<List<PositionVo>>().data(baseBiz.getPositionByUserId(userId));
     }
 }

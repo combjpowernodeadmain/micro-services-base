@@ -84,6 +84,14 @@ public class WritsTemplates implements Serializable {
 	@Column(name = "tcode")
 	private String tcode;
 
+	// 是否允许录入(1:可录入|0:不可录入)
+	@Column(name="is_allowed_record")
+	private String isAllowedRecord;
+
+	// 原始模板下载地址
+	@Column(name="origin_doc_url")
+	private String originDocUrl;
+
 	/**
 	 * 设置：主键
 	 */
@@ -320,5 +328,33 @@ public class WritsTemplates implements Serializable {
 	 */
 	public void setTcode(String tcode) {
 		this.tcode = tcode;
+	}
+
+	/**
+	 * 获取：是否允许录入(0:可录入|1:不可录入)
+	 */
+	public String getIsAllowedRecord() {
+		return isAllowedRecord;
+	}
+
+	/**
+	 * 设置：是否允许录入(0:可录入|1:不可录入)
+	 */
+	public void setIsAllowedRecord(String isAllowedRecord) {
+		this.isAllowedRecord = isAllowedRecord;
+	}
+
+	/**
+	 * 获取：原始模板下载地址
+	 */
+	public String getOriginDocUrl() {
+		return originDocUrl;
+	}
+
+	/**
+	 * 设置：原始模板下载地址
+	 */
+	public void setOriginDocUrl(String originDocUrl) {
+		this.originDocUrl = originDocUrl;
 	}
 }
