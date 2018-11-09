@@ -664,11 +664,11 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         JSONObject objs = this.initWorkflowQuery(bizData);
 
         //缓存工作流实例id
-        Map<String,String> tempProcInstIds = new HashMap<>();
+        Map<String,Map<String,Object>> tempProcInstIds = new HashMap<>();
         List<Map<String,Object>>  procInstIdList = wfMonitorService.getProcInstIdByUserId(objs);
         for(Map<String,Object> map : procInstIdList){
             //procInstId实例id , procBizid 业务id
-            tempProcInstIds.put(String.valueOf(map.get(Constants.WfProcessBizDataAttr.PROC_BIZID)),String.valueOf(map.get("procInstId")));
+            tempProcInstIds.put(String.valueOf(map.get(Constants.WfProcessBizDataAttr.PROC_BIZID)),map);
         }
 
         Map<String,String>  dictTemp = dictFeign.getByCode(Constances.ROOT_BIZ_EVENTLEVEL);
@@ -678,7 +678,14 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             map.put("caseLevelName",caseLevelName);
             map.put("isSupervise","0".equals(map.get("isSupervise"))?false:true);
             map.put("isUrge","0".equals(map.get("isUrge"))?false:true);
-            map.put("procInstId",tempProcInstIds.get(String.valueOf(map.get("id"))));
+
+            // 向结果集添加工作流数据
+            Map<String, Object> wfTaskMap = tempProcInstIds.get(String.valueOf(map.get("id")));
+            if(BeanUtil.isNotEmpty(wfTaskMap)){
+                map.put("procInstId",wfTaskMap.get("procInstId"));
+                map.put("procTaskCommittime",wfTaskMap.get("procTaskCommittime"));
+                map.put("procCtaskName",wfTaskMap.get("procCtaskName"));
+            }
         }
         return new TableResultResponse<>(pageHelper.getTotal(), result);
     }

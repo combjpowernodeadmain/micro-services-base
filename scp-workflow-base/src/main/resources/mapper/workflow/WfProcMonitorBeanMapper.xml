@@ -813,7 +813,10 @@
 	<select id="selectProcInstIdByUserId" resultType="java.util.Map" parameterType="java.util.Map">
 	SELECT
 		PROC_INST_ID procInstId,
-		PROC_BIZID procBizId
+		PROC_BIZID procBizId,
+		<!-- 添加当前节点名称及任务提交时间 -->
+		PROC_CTASKNAME procCtaskName,
+		FROM_UNIXTIME(PROC_TASK_COMMITTIME, '%Y-%m-%d %H:%i:%s') procTaskCommittime
 	FROM
 		scp_wf_proc_task
 	WHERE
@@ -821,6 +824,8 @@
 	AND PROC_BIZID IN (${procBizId})
 	GROUP BY
 		PROC_INST_ID,
-		PROC_BIZID
+		PROC_BIZID,
+        procCtaskName,
+        procTaskCommittime
 	</select>
 </mapper>

@@ -759,6 +759,11 @@ public class CaseInfoService {
                     result.setIsSuccess(false);
                     return result;
                 }
+            } else {
+                // 如果authoritiesByDept为空，也认为是无处理权限
+                result.setMessage("该部门尚无权限处理该事件，请更换部门。");
+                result.setIsSuccess(false);
+                return result;
             }
         }
 
@@ -1127,6 +1132,7 @@ public class CaseInfoService {
         baseInfoJObj.put("caseCode", caseInfo.getCaseCode());
         baseInfoJObj.put("caseTitle", caseInfo.getCaseTitle());
         baseInfoJObj.put("caseLevel", caseInfo.getCaseLevel());
+        baseInfoJObj.put("id", caseInfo.getId());
         if (caseInfo.getCaseLevel() != null) {
             if (manyDictValuesMap != null && !manyDictValuesMap.isEmpty()) {
                 baseInfoJObj.put("caseLevelName", manyDictValuesMap.get(caseInfo.getCaseLevel()));
