@@ -5,9 +5,11 @@ import com.bjzhianjia.scp.cgp.biz.AreaGridBiz;
 import com.bjzhianjia.scp.cgp.biz.EnforceCertificateBiz;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.EnforceCertificate;
+import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.feign.IUserFeign;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.util.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,9 @@ public class PhoneListService {
     private DictFeign dictFeign;
 
     @Autowired
+    private AdminFeign adminFeign;
+
+    @Autowired
     private EnforceCertificateBiz enforceCertificateBiz;
 
 
@@ -62,7 +67,7 @@ public class PhoneListService {
             }
             //缓存网格信息
             Map<String, String> tempAridMap = this.getAridInfo(areaGridBiz.getByUserIds(userIds));
-
+            System.out.println(tempAridMap.toString());
             //缓存执法证
             Map<String, String> tempEnforce = new HashMap<>();
             List<EnforceCertificate> enforceList = enforceCertificateBiz.getEnforceByUserIds(userIds);
@@ -73,8 +78,11 @@ public class PhoneListService {
             //封装前台结果集
             for (Map<String, Object> map : result) {
                 //网格信息
-                map.put("gridName", tempAridMap.get(map.get("userId")));
-                map.put("certCode", tempEnforce.get(map.get("userId")));
+                map.put("gridName", tempAridMap.get(String.valueOf(map.get("userId"))));
+
+                System.out.println("userId "+String.valueOf(map.get("userId")));
+
+                map.put("certCode", tempEnforce.get(String.valueOf(map.get("userId"))));
             }
         }
         return new TableResultResponse<>(userList.getData().getTotal(), result);
@@ -93,6 +101,25 @@ public class PhoneListService {
         if(BeanUtils.isEmpty(result)){
             return resultData;
         }
+        //获取用户岗位信息
+        ObjectRestResponse<List<Map<String, Object>>> positionResult = adminFeign.getPositionByUserId(userId);
+        List<Map<String, Object>> positionList = positionResult.getData();
+        if (BeanUtil.isNotEmpty(positionList)) {
+            StringBuilder positions = new StringBuilder();
+            Map<String, Object> map;
+            for (int i = 0; i < positionList.size(); i++) {
+                map = positionList.get(i);
+                if(BeanUtils.isEmpty(map)){
+                    continue;
+                }
+                positions.append(map.get("name"));
+                if(i < positionList.size()-1){
+                    positions.append(",");
+                }
+            }
+            resultData.put("positions", positions.toString());
+        }
+
         //基本信息
         resultData.put("name", result.get("name"));
         JSONObject deptInfo = JSONObject.parseObject(String.valueOf(result.get("departId")));
@@ -129,17 +156,18 @@ public class PhoneListService {
         Map<String, String> dictMap = dictFeign.getByCode(Constances.ROOT_BIZ_GRID_ROLE);
         //缓存网格信息
         Map<String, String> tempAridMap = new HashMap<>();
-        String gridInfo, userId, gridName, gridRole;
+        String gridInfo, userId, gridName, gridRole,parentGridName;
         for (Map<String, Object> map : userAridList) {
             userId = String.valueOf(map.get("userId"));
             gridInfo = tempAridMap.get(userId);
             gridName = String.valueOf(map.get("gridName"));
             gridRole = BeanUtils.isEmpty(dictMap) ? "" : dictMap.get(String.valueOf(map.get("gridRole")));
+            parentGridName = String.valueOf(map.get("parentGridName"));
             //一个用户可能存在多个网格信息
             if (tempAridMap.get(userId) != null) {
-                gridInfo += ";" + gridName + "-" + gridRole;
+                gridInfo += ";" + gridName + "（"+ parentGridName+"）" + gridRole;
             } else {
-                gridInfo = gridName + "-" + gridRole;
+                gridInfo = gridName + "（"+ parentGridName+"）" + gridRole;
             }
             tempAridMap.put(userId, gridInfo);
         }

@@ -115,4 +115,14 @@
 			and bu.`id` IN (${userIds})
 		</where>
 	</select>
+
+	<!-- 通过用户id获取岗位列表 -->
+	<select id="selectPositionByUserId" resultMap="positionMapVo">
+		SELECT bp.*,bu.`id` userId FROM base_user bu
+		LEFT JOIN base_position_user bpu ON bu.id =bpu.`user_id`
+		LEFT JOIN base_position bp ON bpu.`position_id`=bp.`id`
+		<where>
+			and bu.`id`=#{userId}
+		</where>
+	</select>
 </mapper>

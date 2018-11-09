@@ -3,6 +3,7 @@ package com.bjzhianjia.scp.cgp.feign;
 import java.util.List;
 import java.util.Map;
 
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -85,4 +86,13 @@ public interface AdminFeign {
 	@GetMapping("/depart/menu/BydeptId")
 	@ApiOperation("过部门ID查询与该部门里人员对应的权限")
 	List<JSONObject> getAuthoritiesByDept(@RequestParam(value = "deptId") String deptId);
+
+	/**
+	 * 通过用户id获取岗位列表
+	 * @param userId 用户id
+	 * @return
+	 */
+	@GetMapping("/position/userId/{userId}")
+	@ApiOperation("通过用户id获取岗位列表")
+	ObjectRestResponse<List<Map<String,Object>>> getPositionByUserId(@PathVariable("userId") String userId);
 }

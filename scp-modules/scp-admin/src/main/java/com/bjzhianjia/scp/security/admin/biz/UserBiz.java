@@ -433,15 +433,55 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
 
     /**
      * 获取通讯录（排除超级管理员）
+     *
      * @param userName 用户名称
-     * @param deptIds 部门ids
+     * @param deptIds  部门ids
      * @return
      */
-    public TableResultResponse<Map<String,Object>> getPhoneList(String userName , List<String> deptIds,int page,
-                                                              int limit){
-        Page<Object> pageHelper = PageHelper.startPage(page,limit);
-        List<Map<String,Object>> result = this.mapper.selectPhoneList(userName,deptIds);
-        result = BeanUtils.isEmpty(result)?new ArrayList<>():result;
-        return new TableResultResponse<>(pageHelper.getTotal(),result);
+    public TableResultResponse<Map<String, Object>> getPhoneList(String userName, List<String> deptIds, int page,
+                                                                 int limit) {
+        Page<Object> pageHelper = PageHelper.startPage(page, limit);
+        List<Map<String, Object>> result = this.mapper.selectPhoneList(userName, deptIds);
+        //拼接用户id
+        StringBuilder userIds = new StringBuilder();
+        if (BeanUtils.isNotEmpty(result)) {
+            Map<String, Object> map;
+            for (int i = 0; i < result.size(); i++) {
+                map = result.get(i);
+                if (map == null) {
+                    continue;
+                }
+                userIds.append("'").append(map.get("userId")).append("'");
+                if (i < result.size() - 1) {
+                    userIds.append(",");
+                }
+            }
+
+            //获取用户职位信息
+            List<PositionVo> positionList;
+            if(StringUtils.isNotBlank(userIds.toString())){
+                positionList = positionMapper.selectPositionByUser(userIds.toString());
+            }else{
+                positionList = new ArrayList<>();
+            }
+            //positionMap 格式：userid：position,position2
+            Map<String, String> positionMap = new HashMap<>();
+            for (PositionVo positionVo : positionList) {
+                String positions = positionMap.get(positionVo.getUserId());
+                if (positions == null) {
+                    positionMap.put(positionVo.getUserId(), positionVo.getName());
+                } else {
+                    positionMap.put(positionVo.getUserId(), positions + "," + positionVo.getName());
+                }
+            }
+            //结果集封装岗位信息
+            for (Map<String, Object> tmap : result) {
+                String positions = positionMap.get(tmap.get("userId"));
+                tmap.put("positions", positions);
+            }
+        }
+
+        result = BeanUtils.isEmpty(result) ? new ArrayList<>() : result;
+        return new TableResultResponse<>(pageHelper.getTotal(), result);
     }
 }
