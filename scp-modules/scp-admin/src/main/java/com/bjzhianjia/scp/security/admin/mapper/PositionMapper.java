@@ -97,4 +97,12 @@ public interface PositionMapper extends CommonMapper<Position> {
      * @return
      */
     List<PositionVo> selectPositionByUser(@Param("userIds")String userIds);
+
+    /**
+     * 通过用户id获取岗位列表
+     * @param userId 用户id
+     * @return
+     */
+    List<PositionVo> selectPositionByUserId(@Param("userId")String userId);
+
 }

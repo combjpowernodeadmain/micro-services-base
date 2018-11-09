@@ -105,4 +105,10 @@ public interface CaseInfoMapper extends CommonMapper<CaseInfo> {
      * @return
      */
     List<Map<String, Object>> selectCaseInfoByDeptId(@Param("deptId") String deptId, @Param("caseLevel") String caseLevel);
+
+    /**
+     * 查询执法片区任务量
+     * @return
+     */
+    List<JSONObject> getGridZFPQ(@Param("isFinish")String isFinish);
 }

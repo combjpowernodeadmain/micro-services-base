@@ -101,6 +101,10 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
         CaseRegistration caseRegistrationInDB = caseRegistrationBiz.selectById(caseId);
         String caseSourceType = caseRegistrationInDB.getCaseSourceType();
 
+        if(caseSourceType==null){
+            return;
+        }
+
         switch (caseSourceType) {
             case CaseRegistration.CASE_SOURCE_TYPE_TASK:
                 LawTask lawTaskToUpdate = new LawTask();

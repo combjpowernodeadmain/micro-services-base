@@ -2,6 +2,8 @@ package com.bjzhianjia.scp.cgp.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +40,6 @@ public class BeanUtil {
      * @author By尚
      * @param source
      *            源对象
-     * @param target
-     *            目标对象实例
      * @return 目标对象
      */
     public static <T> List<T> copyBeanList_New(Object source, Class<?> clazz) {
@@ -186,5 +186,36 @@ public class BeanUtil {
      */
     public static boolean isNotEmpty(Object obj) {
         return !isEmpty(obj);
+    }
+
+    /**
+     * 将clazz类中，包含skipFields内的属性去除掉
+     * 该方法通常用于：
+     * 在进行查询数据库中指定字段时，如果不被查询的字段较少，可使用该方法将不进行查询的字段去除掉
+     * 
+     * @author By尚
+     * @param clazz
+     * @param skipFields
+     * @return clazz中去除skipFields中属性后的属性数组
+     */
+    public static String[] skipFields(Class<?> clazz, String... skipFields) {
+        if (BeanUtil.isEmpty(skipFields)) {
+            return new String[0];
+        }
+
+        Field[] declaredFields = clazz.getDeclaredFields();
+
+        List<String> originFieldsList = new ArrayList<>();
+        if (BeanUtil.isNotEmpty(declaredFields)) {
+            for (Field field : declaredFields) {
+                originFieldsList.add(field.getName());
+            }
+        }
+
+        List<String> skipFieldsList = Arrays.asList(skipFields);
+
+        originFieldsList.removeAll(skipFieldsList);
+
+        return originFieldsList.toArray(new String[originFieldsList.size()]);
     }
 }

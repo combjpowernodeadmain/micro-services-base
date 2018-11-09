@@ -234,4 +234,37 @@ public class WritsTemplatesBiz extends BusinessBiz<WritsTemplatesMapper, WritsTe
         restResult.setMessage("成功");
         return restResult;
     }
+
+	/**
+	 * 下载原始模板
+	 * @param writsTemplates
+	 * @return
+	 */
+	public Result<WritsTemplates> downLoadTemplate(WritsTemplates writsTemplates){
+    	Result<WritsTemplates> result=new Result<>();
+    	if(writsTemplates.getId()!=null && StringUtils.isNotBlank(writsTemplates.getTcode())){
+    		result.setIsSuccess(false);
+    		result.setMessage("请明确待下载文书模板");
+    		return result;
+		}
+
+		WritsTemplates writsTemplatesInDB = null;
+		if(writsTemplates.getId()!=null){
+			// 按ID进行下载文书模板
+			writsTemplatesInDB = this.selectById(writsTemplates.getId());
+		}else if(StringUtils.isNotBlank(writsTemplates.getTcode())){
+			// 按code下载
+			writsTemplatesInDB=this.selectOne(writsTemplates);
+		}
+
+		if(BeanUtil.isEmpty(writsTemplatesInDB)){
+			result.setIsSuccess(false);
+			result.setMessage("未找到文书模板或文书模板不唯一");
+			return result;
+		}
+
+		result.setData(writsTemplatesInDB);
+		result.setIsSuccess(true);
+		return result;
+	}
 }

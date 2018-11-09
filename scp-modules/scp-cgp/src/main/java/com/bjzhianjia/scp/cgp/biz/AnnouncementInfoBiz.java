@@ -38,8 +38,11 @@ public class AnnouncementInfoBiz extends BusinessBiz<AnnouncementInfoMapper,Anno
 	 * @return
 	 */
 	public TableResultResponse<AnnouncementInfo> getList(int page, int limit, Map<String,String> announcementInfo) {
-		Example example = new Example(AnnouncementInfo.class);
-	    Example.Criteria criteria = example.createCriteria();
+        Example example =
+            new Example(AnnouncementInfo.class)
+                // 选择性查询字段
+                .selectProperties("id", "title", "publisher", "status", "isStick", "crtTime");
+        Example.Criteria criteria = example.createCriteria();
 	    
 	    criteria.andEqualTo("isDeleted", "0");
 	    criteria.andEqualTo("status", "1");// 公告的隐藏状态，1-展示;0-隐藏
@@ -54,11 +57,9 @@ public class AnnouncementInfoBiz extends BusinessBiz<AnnouncementInfoMapper,Anno
 	    	criteria.andEqualTo("status", announcementInfo.get("status"));
 	    }
 	    if(StringUtils.isNotBlank(announcementInfo.get("isStick"))){
-//	    	criteria.andEqualTo("is_stick", announcementInfo.get("isStick"));
 	    	criteria.andEqualTo("isStick", announcementInfo.get("isStick"));
 	    }
 	    if(StringUtils.isNotBlank(announcementInfo.get("startDate"))) {
-//	    	criteria.andGreaterThanOrEqualTo("crt_tme", announcementInfo.get("startDate"));
 	    	criteria.andGreaterThanOrEqualTo("crtTime", announcementInfo.get("startDate"));
 	    }
 	    if(StringUtils.isNotBlank(announcementInfo.get("endDate"))) {
@@ -72,7 +73,6 @@ public class AnnouncementInfoBiz extends BusinessBiz<AnnouncementInfoMapper,Anno
 				calendar.setTime(newDate);
 				calendar.add(Calendar.DATE, 1);
 				endDate = sdf.format(calendar.getTime());
-//				criteria.andLessThan("crt_time", endDate);
 				criteria.andLessThan("crtTime", endDate);
 			} catch (ParseException e) {
 				

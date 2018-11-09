@@ -30,10 +30,13 @@ import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
 import com.bjzhianjia.scp.cgp.vo.CaseRegistrationVo;
+import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.common.util.BeanUtils;
 import com.bjzhianjia.scp.security.common.util.UUIDUtils;
+import com.bjzhianjia.scp.security.wf.base.constant.Constants;
 import com.bjzhianjia.scp.security.wf.base.design.entity.WfProcPropsBean;
 import com.bjzhianjia.scp.security.wf.base.monitor.entity.WfProcBackBean;
 import com.bjzhianjia.scp.security.wf.base.monitor.service.impl.WfMonitorServiceImpl;
@@ -47,6 +50,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -1859,13 +1863,65 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         if(BeanUtil.isEmpty(result)){
             return new TableResultResponse<>(0,new ArrayList<>());
         }
+        //拼接业务ids
+        StringBuilder procBizid = new StringBuilder();
+        Map<String, Object> tmap;
+        for (int i = 0; i < result.size(); i++) {
+            tmap = result.get(i);
+            if (BeanUtils.isEmpty(tmap)) {
+                continue;
+            }
+            procBizid.append("'").append(tmap.get("id")).append("'");
+            if (i < result.size() - 1) {
+                procBizid.append(",");
+            }
+        }
+        //工作流业务
+        JSONObject  bizData = new JSONObject();
+        //案件流程编码
+        bizData.put("procKey","LawEnforcementProcess");
+        //业务ids
+        bizData.put(Constants.WfProcessBizDataAttr.PROC_BIZID,procBizid.toString());
+        JSONObject objs = this.initWorkflowQuery(bizData);
+
+        //缓存工作流实例id
+        Map<String,String> tempProcInstIds = new HashMap<>();
+        List<Map<String,Object>>  procInstIdList = wfMonitorService.getProcInstIdByUserId(objs);
+        for(Map<String,Object> map : procInstIdList){
+            //procInstId实例id , procBizid 业务id
+            tempProcInstIds.put(String.valueOf(map.get(Constants.WfProcessBizDataAttr.PROC_BIZID)),String.valueOf(map.get("procInstId")));
+        }
+
         Map<String,String> dictTemp = dictFeign.getByCode(Constances.CASE_SOURCE_TYPE);
         for(Map<String,Object> map : result){
             map.put("sourceTypeName",dictTemp.get(map.get("caseSourceType")));
+            map.put("procInstId",tempProcInstIds.get(String.valueOf(map.get("id"))));
         }
         return new TableResultResponse<>(pageHelper.getTotal(),result);
     }
 
+    /**
+     * 初始化工作流参数
+     * @param bizData 工作流参数
+     * @return
+     */
+    private JSONObject initWorkflowQuery(JSONObject  bizData){
+        JSONObject objs = new JSONObject();
+        //流程参数
+        JSONObject  procData = new JSONObject();
+        //用户认证方式
+        JSONObject  authData = new JSONObject();
+        authData.put("procAuthType",2);
+        authData.put(Constants.WfProcessAuthData.PROC_DEPATID, BaseContextHandler.getDepartID());
+        //流程变量
+        JSONObject  variableData = new JSONObject();
+        //工作流参数
+        objs.put(Constants.WfRequestDataTypeAttr.PROC_BIZDATA,bizData);
+        objs.put(Constants.WfRequestDataTypeAttr.PROC_PROCDATA,procData);
+        objs.put(Constants.WfRequestDataTypeAttr.PROC_AUTHDATA,authData);
+        objs.put(Constants.WfRequestDataTypeAttr.PROC_VARIABLEDATA,variableData);
+        return objs;
+    }
     /**
      * 案件基本信息
      *

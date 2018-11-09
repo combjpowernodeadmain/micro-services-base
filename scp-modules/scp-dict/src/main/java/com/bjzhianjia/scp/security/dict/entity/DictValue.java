@@ -18,6 +18,8 @@
 
 package com.bjzhianjia.scp.security.dict.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -42,6 +44,7 @@ public class DictValue implements Serializable {
 	private Integer orderNum;
 
 	@Column(name = "tenant_id")
+	@JsonIgnore
 	private String tenantId;
 
 	//编码
@@ -75,28 +78,34 @@ public class DictValue implements Serializable {
     @Column(name = "label_attr3")
     private String labelAttr3;
 	
-	    //创建人
+	    //创建人 在序列化时忽略该字段
     @Column(name = "crt_user_name")
+	@JsonIgnore
     private String crtUserName;
 	
 	    //创建人ID
     @Column(name = "crt_user_id")
+	@JsonIgnore
     private String crtUserId;
 	
 	    //创建时间
     @Column(name = "crt_time")
+	@JsonIgnore
     private Date crtTime;
 	
 	    //最后更新人
     @Column(name = "upd_user_name")
+	@JsonIgnore
     private String updUserName;
 	
 	    //最后更新人ID
     @Column(name = "upd_user_id")
+	@JsonIgnore
     private String updUserId;
 	
 	    //最后更新时间
     @Column(name = "upd_time")
+	@JsonIgnore
     private Date updTime;
 	
 	    //

@@ -46,10 +46,12 @@
 			ag.id gridId,
 			ag.grid_name gridName,
 			agm.grid_member userId,
-			agm.grid_role gridRole
+			agm.grid_role gridRole,
+			pag.grid_name parentGridName
 		FROM
 			area_grid ag
 		INNER JOIN area_grid_member agm ON agm.grid_id = ag.id
+		LEFT JOIN area_grid pag ON pag.id=ag.grid_parent
 		WHERE
 			agm.is_deleted = 0
 		AND agm.is_disabled = 0

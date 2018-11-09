@@ -323,4 +323,51 @@ SELECT
 		ORDER BY
 			crt_time DESC
 	</select>
+
+	<select id="getGridZFPQ" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT COUNT(*) ccount,zfqpName,zfqpLevel,zfqp FROM (
+		SELECT
+		CASE
+		WHEN gridParent='-1' THEN gridId
+		WHEN gridGrandParent='-1' THEN gridParent
+		WHEN gridGrandGrandParent='-1' THEN gridGrandParent
+		END zfqp,
+		CASE
+		WHEN gridParent='-1' THEN gridLevel
+		WHEN gridGrandParent='-1' THEN parentGridLevel
+		WHEN gridGrandGrandParent='-1' THEN grandParentGridLevel
+		END zfqpLevel,
+		CASE
+		WHEN gridParent='-1' THEN gridName
+		WHEN gridGrandParent='-1' THEN gridParentName
+		WHEN gridGrandGrandParent='-1' THEN gridGrandParentName
+		END zfqpName
+		FROM(
+            <!-- 整合网格父父父网格 -->
+            SELECT ci.`id` caseId,gridId,gridLevel,gridParent,gridName,parentGridLevel,gridGrandParent,gridParentName,grandParentGridLevel,gridGrandGrandParent,gridGrandParentName
+            FROM case_info ci
+            LEFT JOIN (
+            SELECT gridId,gridLevel,gridParent,gridName,parentGridLevel,gridGrandParent,gridParentName,ag3.grid_level grandParentGridLevel,ag3.`grid_parent` gridGrandGrandParent,ag3.grid_name gridGrandParentName
+            FROM(
+                <!-- 整合网格父父网格 -->
+                SELECT gridId,gridLevel,gridParent,ag2.`grid_parent` gridGrandParent,ag2.grid_name gridParentName,ag2.grid_level parentGridLevel,ag2.id id2,gridName
+                FROM (
+                    <!-- 查询在用的网格 -->
+                    SELECT ag.`id` gridId,ag.`grid_level` gridLevel,ag.`grid_parent` gridParent,ag.`grid_name` gridName
+                    FROM area_grid ag
+                    WHERE is_deleted='0'
+                    ORDER BY ag.`grid_level`
+                ) parentTmp
+                LEFT JOIN area_grid ag2 ON ag2.id=parentTmp.gridParent
+            ) grandParentTmp
+            LEFT JOIN area_grid ag3 ON ag3.id=grandParentTmp.gridGrandParent
+		) grandGrandParentTmp ON grandGrandParentTmp.gridId=ci.`grid`
+		WHERE grid IS NOT NULL
+        <if test="isFinish != null and isFinish != ''">
+            AND ci.is_finished=#{isFinish}
+        </if>
+		) result
+		)countResult
+		GROUP BY zfqp,zfqpName,zfqpLevel
+	</select>
 </mapper>
