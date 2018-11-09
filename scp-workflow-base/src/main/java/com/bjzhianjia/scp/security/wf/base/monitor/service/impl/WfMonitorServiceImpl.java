@@ -13,11 +13,14 @@
 package com.bjzhianjia.scp.security.wf.base.monitor.service.impl;
 
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
@@ -474,4 +477,21 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
 
         return wb;
     }
+
+    /**
+     * 通过业务ids查询流程实例id
+     * @param objs
+     * @return
+     */
+    public List<Map<String,Object>> getProcInstIdByUserId(JSONObject objs){
+        WfProcAuthDataBean authData = parseAuthData(objs);
+        WfProcBizDataBean bizData = parseBizData(objs);
+        if( StringUtils.isBlank(bizData.getProcBizId())){
+            return new ArrayList<>();
+        }
+        wfProcUserAuthBiz.userAuthenticate(authData, false, false, false);
+        JSONObject queryObj = parseQueryData(authData, bizData);
+        return wfMonitorBiz.getProcInstIdByUserId(queryObj);
+    }
+
 }

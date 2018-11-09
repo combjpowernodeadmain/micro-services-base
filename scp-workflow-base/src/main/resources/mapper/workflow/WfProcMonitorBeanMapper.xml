@@ -809,4 +809,18 @@
 		</if>
 		ORDER BY proc.PROC_CREATETIME DESC, task.PROC_TASK_COMMITTIME DESC
 	</select>
+	<!-- 通过业务ids查询流程实例id -->
+	<select id="selectProcInstIdByUserId" resultType="java.util.Map" parameterType="java.util.Map">
+	SELECT
+		PROC_INST_ID procInstId,
+		PROC_BIZID procBizId
+	FROM
+		scp_wf_proc_task
+	WHERE
+		PROC_KEY = #{procKey}
+	AND PROC_BIZID IN (${procBizId})
+	GROUP BY
+		PROC_INST_ID,
+		PROC_BIZID
+	</select>
 </mapper>
