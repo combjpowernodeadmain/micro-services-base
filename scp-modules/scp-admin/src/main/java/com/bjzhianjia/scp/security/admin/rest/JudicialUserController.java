@@ -124,7 +124,7 @@ public class JudicialUserController {
      * @param user 用户信息
      * @return
      */
-    @ApiOperation(value = "分配技术人员")
+    @ApiOperation(value = "添加（分配）技术人员")
     @PostMapping("/role/technologist")
     public ObjectRestResponse<User> technologist(@RequestBody @ApiParam(value = "用户信息") User user) {
         ObjectRestResponse<User> result = new ObjectRestResponse<>();
@@ -162,7 +162,32 @@ public class JudicialUserController {
         result.setData(user);
         return result;
     }
-
+    /**
+     * 直接分配技术人员
+     * 添加用户和角色的关系
+     *
+     * @param userId 用户id
+     * @return
+     */
+    @ApiOperation(value = "直接分配技术人员")
+    @PostMapping("/role/technologist/userId/{userId}")
+    public ObjectRestResponse<Void> division(@PathVariable("userId") @ApiParam(value = "用户id") String userId) {
+        ObjectRestResponse<Void> result = new ObjectRestResponse<>();
+        if (StringUtils.isBlank(userId)) {
+            result.setMessage("请选择分配的用户！");
+            result.setStatus(400);
+            return result;
+        }
+        User user = new User();
+        user.setId(userId);
+        try {
+            judicialUserBiz.distributionRole(user, environment.getProperty(RoleConstant.ROLE_TECHNICIST));
+        } catch (RuntimeException re) {
+            result.setMessage(re.getMessage());
+            result.setStatus(400);
+        }
+        return result;
+    }
     /**
      * 分配分案人员
      * 添加用户和角色的关系
@@ -269,6 +294,7 @@ public class JudicialUserController {
     @GetMapping("/debar/technologist")
     public TableResultResponse<Map<String, Object>> getUserDebarTechnologist(
             @RequestParam(value = "userName", defaultValue = "") @ApiParam("用户名称") String userName,
+            @RequestParam(value = "departId", defaultValue = "") @ApiParam("部门id") String departId,
             @RequestParam(value = "major", defaultValue = "") @ApiParam("用户专业") String major,
             @RequestParam(value = "province", defaultValue = "") @ApiParam("省级编码") String province,
             @RequestParam(value = "page", defaultValue = "1") @ApiParam("页码") Integer page,
@@ -276,8 +302,11 @@ public class JudicialUserController {
 
         User user = new User();
         user.setName(userName);
+        //专业
         user.setAttr2(major);
+        //省份
         user.setAttr3(province);
+        user.setDepartId(departId);
         return judicialUserBiz.getUserByDebarRole(user, environment.getProperty(RoleConstant.ROLE_TECHNICIST), page,
                 limit);
     }
@@ -309,5 +338,38 @@ public class JudicialUserController {
         user.setDepartId(departId);
         return judicialUserBiz.getUserByDebarRole(user, environment.getProperty(RoleConstant.ROLE_DISTRIBUTE), page,
                 limit);
+    }
+
+    /**
+     * 编辑技术人员信息
+     * 专业和手机号
+     *
+     * @param userId 用户id
+     * @return
+     */
+    @ApiOperation(value = "编辑技术人员信息")
+    @PutMapping("/role/technologist/{userId}")
+    public ObjectRestResponse<Void> upTechnologist(
+            @PathVariable("userId") @ApiParam(value = "用户id") String userId,
+            @RequestParam(value = "mobilePhone", defaultValue = "") @ApiParam("手机号") String mobilePhone,
+            @RequestParam(value = "major", defaultValue = "") @ApiParam("用户专业") String major) {
+
+        ObjectRestResponse<Void> result = new ObjectRestResponse<>();
+        if (StringUtils.isBlank(userId)) {
+            result.setMessage("请选择编辑的用户！");
+            result.setStatus(400);
+            return result;
+        }
+        try {
+            User user = new User();
+            user.setId(userId);
+            user.setAttr2(major);
+            user.setMobilePhone(mobilePhone);
+            judicialUserBiz.upTechnologist(user);
+        } catch (RuntimeException re) {
+            result.setMessage(re.getMessage());
+            result.setStatus(400);
+        }
+        return result;
     }
 }
