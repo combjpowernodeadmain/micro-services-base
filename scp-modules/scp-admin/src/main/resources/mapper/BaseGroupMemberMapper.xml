@@ -27,5 +27,23 @@
         <result property="attr8" column="attr8"/>
         <result property="tenantId" column="tenant_id"/>
     </resultMap>
-
+    <!-- 用户角色列表 -->
+    <select id="selectNameByUserId" resultType="java.util.Map">
+        SELECT
+            bgm.id,
+            bg.`name`
+        FROM
+            base_group_member bgm
+        LEFT JOIN base_group bg ON bg.id = bgm.group_id
+        WHERE
+            bgm.user_id = #{userId}
+    </select>
+    <!-- 删除用户角色关系 -->
+    <delete id="deleteByUserId" parameterType="String">
+        DELETE
+        FROM
+            base_group_member
+        WHERE
+            user_id = #{userId}
+    </delete>
 </mapper>
