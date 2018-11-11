@@ -67,7 +67,6 @@ public class PhoneListService {
             }
             //缓存网格信息
             Map<String, String> tempAridMap = this.getAridInfo(areaGridBiz.getByUserIds(userIds));
-            System.out.println(tempAridMap.toString());
             //缓存执法证
             Map<String, String> tempEnforce = new HashMap<>();
             List<EnforceCertificate> enforceList = enforceCertificateBiz.getEnforceByUserIds(userIds);
@@ -79,9 +78,6 @@ public class PhoneListService {
             for (Map<String, Object> map : result) {
                 //网格信息
                 map.put("gridName", tempAridMap.get(String.valueOf(map.get("userId"))));
-
-                System.out.println("userId "+String.valueOf(map.get("userId")));
-
                 map.put("certCode", tempEnforce.get(String.valueOf(map.get("userId"))));
             }
         }
