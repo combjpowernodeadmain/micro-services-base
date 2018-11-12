@@ -297,6 +297,8 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 
         List<WritsInstances> writsInstancesLis = this.selectByExample(example);
 
+        Map<Integer, String> templateIdNameMap = temTemplatesList.stream().collect(Collectors.toMap(WritsTemplates::getId, WritsTemplates::getName));
+
         // 模板与模板下的文书结合
         List<JSONObject> templateJObjList = new ArrayList<>();
         int count = 1;
@@ -312,7 +314,9 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
                     writsInstancesJObj.put("writsInstancesId", tmpW.getId());
 
                     if (StringUtils.isBlank(tmpW.getRefAbbrev())) {
-                        writsInstancesJObj.put("writsInstancesName", "实例" + count);
+                        writsInstancesJObj.put("writsInstancesName",
+                            templateIdNameMap.get(tmpW.getTemplateId()) == null ? "实例"
+                                : templateIdNameMap.get(tmpW.getTemplateId()) + count);
                         count++;
                     } else {
                         writsInstancesJObj.put("writsInstancesName", tmpW.getRefAbbrev());
@@ -426,6 +430,11 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 
         List<WritsInstances> writsInstanceList = getWrtisInstances(caseId);
         List<CaseAttachments> attachmentsList = getAttachments(caseId);
+        List<WritsTemplates> templateList= _getTemplates(writsInstanceList);
+        Map<Integer, String> templateIdNameMap=new HashMap<>();
+        if(BeanUtil.isNotEmpty(templateList)){
+            templateIdNameMap = templateList.stream().collect(Collectors.toMap(WritsTemplates::getId, WritsTemplates::getName));
+        }
 
         // 收集需要查询的人
         Set<String> userIdList = new HashSet<>();
@@ -453,7 +462,9 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             tmp.put("type", "writs");
 
             if (StringUtils.isBlank(writsInstances.getRefAbbrev())) {
-                tmp.put("templateName", "实例" + count);
+                tmp.put("templateName",
+                        templateIdNameMap.get(writsInstances.getTemplateId()) == null ? "实例"
+                                : templateIdNameMap.get(writsInstances.getTemplateId()) + count);
                 count++;
             } else {
                 tmp.put("templateName", writsInstances.getRefAbbrev());
@@ -474,6 +485,29 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         restResult.setStatus(200);
         restResult.setData(resultJArray);
         return restResult;
+    }
+
+    /**
+     * 查询与 writsInstanceList文书对应的模板
+     * @param writsInstanceList
+     * @return
+     */
+    private List<WritsTemplates> _getTemplates(List<WritsInstances> writsInstanceList) {
+        if (BeanUtil.isEmpty(writsInstanceList)) {
+            return new ArrayList<>();
+        }
+
+        List<String> templatesIdList =
+            writsInstanceList.stream().map(o -> String.valueOf(o.getTemplateId())).distinct()
+                .collect(Collectors.toList());
+        if (BeanUtil.isNotEmpty(templatesIdList)) {
+            Example example = new Example(WritsTemplates.class).selectProperties("id", "name");
+            example.createCriteria().andIn("id", templatesIdList);
+            List<WritsTemplates> writsTemplates = writsTemplatesBiz.selectByExample(example);
+            return writsTemplates;
+        }
+
+        return new ArrayList<>();
     }
 
     private List<CaseAttachments> getAttachments(String caseId) {
