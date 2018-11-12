@@ -164,4 +164,15 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
         return new TableResultResponse<>(pageList.getTotal(), userList);
     }
 
+    /**
+     * 更新用户专业和手机号
+     * @param user
+     */
+    public void upTechnologist(User user){
+        User _user = this.selectById(user.getId());
+        if(_user == null){
+            throw new  RuntimeException("未找到用户信息！");
+        }
+        userBiz.updateSelectiveById(user);
+    }
 }

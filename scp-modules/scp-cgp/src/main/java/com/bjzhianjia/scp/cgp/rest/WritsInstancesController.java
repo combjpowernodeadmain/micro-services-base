@@ -174,7 +174,7 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
          * getWritsInstances(String,
          * HttpServletResponse)进行文书下载时，会出现下载一个空word文档情况
          * 所以提供该方法，直接提供下载
-         * 
+         *
          * 该方法处理两个逻辑<br/>
          * 1 生成文书实例<br/>
          * 2 将文书实例对应的word文档返回到前端，以提供下载
@@ -249,5 +249,25 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
     public TableResultResponse<JSONObject> getByCaseId(@RequestParam(value="caseId")String caseId){
         TableResultResponse<JSONObject> tableresult = this.baseBiz.getByCaseId(caseId);
         return tableresult;
+    }
+
+    @IgnoreClientToken
+    @IgnoreUserToken
+    @RequestMapping(value = "/true/instance/temporary", method = RequestMethod.POST)
+    @ApiOperation("生成文书实例，并返回文书实例对应的word文档")
+    public ResponseEntity<?> getTrueWritsInstancesTemporary(
+        @RequestBody JSONObject writsInstanceJObj, HttpServletResponse response) {
+
+        // 生成文书实例
+        ObjectRestResponse<String> _fileNameRest =
+            this.baseBiz.getTemporaryWritsInstance(writsInstanceJObj);
+        // 设置响应头为响应一个word文档--doc
+        response.setContentType("application/msword");
+
+        response.setHeader("Content-Disposition",
+            "attachment; filename=" + _fileNameRest.getData());
+        ResponseEntity<?> file =
+            docDownUtil.getFile(propertiesConfig.getDestFilePath(), _fileNameRest.getData());
+        return file;
     }
 }

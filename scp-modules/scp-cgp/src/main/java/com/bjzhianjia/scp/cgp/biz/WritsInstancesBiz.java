@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
-import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -257,43 +256,10 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         String writsPath = "";
 
         String fillContext = writsInstances.getFillContext();
-
-        // 生成与fillContext相对应的文件名
-        StringBuffer destFileNameBuffer = new StringBuffer();
-        destFileNameBuffer.append(WritsConstances.WRITS_PREFFIX).append(writsInstances.getCaseId()).append("_")
-            .append(fillContext.hashCode()).append(WritsConstances.WRITS_SUFFIX_DOCX);
-
-        String destPath = propertiesConfig.getDestFilePath() + destFileNameBuffer.toString();
-
-        if (DocUtil.exists(destPath)) {
-            writsPath = destFileNameBuffer.toString();
-        } else {
-            // 说明可能已存在过旧文件，将所有旧文件进行删除，将生成的新文件进行生成并返回路径
-            List<String> ignoreFileNameList = new ArrayList<>();
-            ignoreFileNameList.add(destFileNameBuffer.toString());
-
-            DocUtil.deletePrefix(WritsConstances.WRITS_PREFFIX + writsInstances.getCaseId() + "_",
-                WritsConstances.WRITS_SUFFIX_DOCX, propertiesConfig.getDestFilePath(), ignoreFileNameList);
-
-            // 将fillContext内的内容添加到文书模板上
-            JSONObject fillJObj = JSONObject.parseObject(fillContext);
-
-            @SuppressWarnings({ "unchecked", "rawtypes" })
-            Map<String, String> map = (Map) fillJObj;
-            // 文书模板“执法任务”“中队信息”去除，不再使用fillContext字段中的“zHiHao”作案件文号
-            map.put("refYear", writsInstances.getRefYear());
-            map.put("refNo", writsInstances.getRefNo());
-
-            try {
-                writsPath =
-                    DocUtil.getDestUrlAfterReplaceWord(writsTemplate.getDocUrl(), destFileNameBuffer.toString(),
-                        propertiesConfig.getDestFilePath(), map);
-            } catch (Exception e) {
-                e.printStackTrace();
-                restResult.setStatus(400);
-                restResult.setMessage(e.getMessage());
-                return restResult;
-            }
+        try {
+            writsPath = _getWritsInstancesAssist(writsInstances, writsTemplate, fillContext);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         restResult.setData(writsPath);
@@ -331,6 +297,8 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 
         List<WritsInstances> writsInstancesLis = this.selectByExample(example);
 
+        Map<Integer, String> templateIdNameMap = temTemplatesList.stream().collect(Collectors.toMap(WritsTemplates::getId, WritsTemplates::getName));
+
         // 模板与模板下的文书结合
         List<JSONObject> templateJObjList = new ArrayList<>();
         int count = 1;
@@ -346,7 +314,9 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
                     writsInstancesJObj.put("writsInstancesId", tmpW.getId());
 
                     if (StringUtils.isBlank(tmpW.getRefAbbrev())) {
-                        writsInstancesJObj.put("writsInstancesName", "实例" + count);
+                        writsInstancesJObj.put("writsInstancesName",
+                            templateIdNameMap.get(tmpW.getTemplateId()) == null ? "实例"
+                                : templateIdNameMap.get(tmpW.getTemplateId()) + count);
                         count++;
                     } else {
                         writsInstancesJObj.put("writsInstancesName", tmpW.getRefAbbrev());
@@ -460,6 +430,11 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 
         List<WritsInstances> writsInstanceList = getWrtisInstances(caseId);
         List<CaseAttachments> attachmentsList = getAttachments(caseId);
+        List<WritsTemplates> templateList= _getTemplates(writsInstanceList);
+        Map<Integer, String> templateIdNameMap=new HashMap<>();
+        if(BeanUtil.isNotEmpty(templateList)){
+            templateIdNameMap = templateList.stream().collect(Collectors.toMap(WritsTemplates::getId, WritsTemplates::getName));
+        }
 
         // 收集需要查询的人
         Set<String> userIdList = new HashSet<>();
@@ -487,7 +462,9 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             tmp.put("type", "writs");
 
             if (StringUtils.isBlank(writsInstances.getRefAbbrev())) {
-                tmp.put("templateName", "实例" + count);
+                tmp.put("templateName",
+                        templateIdNameMap.get(writsInstances.getTemplateId()) == null ? "实例"
+                                : templateIdNameMap.get(writsInstances.getTemplateId()) + count);
                 count++;
             } else {
                 tmp.put("templateName", writsInstances.getRefAbbrev());
@@ -508,6 +485,29 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         restResult.setStatus(200);
         restResult.setData(resultJArray);
         return restResult;
+    }
+
+    /**
+     * 查询与 writsInstanceList文书对应的模板
+     * @param writsInstanceList
+     * @return
+     */
+    private List<WritsTemplates> _getTemplates(List<WritsInstances> writsInstanceList) {
+        if (BeanUtil.isEmpty(writsInstanceList)) {
+            return new ArrayList<>();
+        }
+
+        List<String> templatesIdList =
+            writsInstanceList.stream().map(o -> String.valueOf(o.getTemplateId())).distinct()
+                .collect(Collectors.toList());
+        if (BeanUtil.isNotEmpty(templatesIdList)) {
+            Example example = new Example(WritsTemplates.class).selectProperties("id", "name");
+            example.createCriteria().andIn("id", templatesIdList);
+            List<WritsTemplates> writsTemplates = writsTemplatesBiz.selectByExample(example);
+            return writsTemplates;
+        }
+
+        return new ArrayList<>();
     }
 
     private List<CaseAttachments> getAttachments(String caseId) {
@@ -539,7 +539,7 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
     /**
      * 批量添加记录
      * 
-     * @param writsInstancesList
+     * @param writsInstancesJArray
      * @return
      */
     @Deprecated
@@ -567,7 +567,6 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
      * 将请求信息中文书信息进行保存
      * 
      * @param caseRegJObj
-     * @param caseId
      */
     public void addWritsInstances(JSONObject caseRegJObj) {
         String caseId = caseRegJObj.getString("procBizId");
@@ -736,5 +735,87 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             resultList.add(resultJObj);
         }
         return new TableResultResponse<>(resultList.size(), resultList);
+    }
+
+    /**
+     * 获取文书<br/>
+     * 该方法生成一个以.docx为后缀名的word文档，将该文档保存至某一地址，并将该地址返回<br/>
+     * @param writsInstancesJObj
+     * @return
+     */
+    public ObjectRestResponse<String> getTemporaryWritsInstance(JSONObject writsInstancesJObj) {
+        ObjectRestResponse<String> restResult = new ObjectRestResponse<>();
+
+        WritsInstances writsInstances = JSONObject.parseObject(writsInstancesJObj.toJSONString(), WritsInstances.class);
+
+        if (writsInstances == null) {
+            restResult.setMessage("生成临时文书失败");
+            restResult.setStatus(400);
+            return restResult;
+        }
+
+        List<WritsTemplates> templatesList = writsTemplatesBiz.getByTcodes(writsInstancesJObj.getString("tcode"));
+
+        if(BeanUtil.isEmpty(templatesList)){
+            restResult.setMessage("请指定文书模板");
+            restResult.setStatus(400);
+            return restResult;
+        }
+
+        WritsTemplates writsTemplate = templatesList.get(0);
+
+        String writsPath = "";
+
+        String fillContext = writsInstances.getFillContext();
+        try {
+            writsPath = _getWritsInstancesAssist(writsInstances, writsTemplate, fillContext);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        restResult.setData(writsPath);
+        return restResult;
+    }
+
+    /**
+     * 生成文书实例(word文档)帮助方法
+     * @param writsInstances
+     * @param writsTemplate
+     * @param fillContext
+     * @return
+     * @throws Exception
+     */
+    private String _getWritsInstancesAssist(WritsInstances writsInstances, WritsTemplates writsTemplate, String fillContext) throws Exception {
+        String writsPath;// 生成与fillContext相对应的文件名
+        StringBuffer destFileNameBuffer = new StringBuffer();
+        destFileNameBuffer.append(WritsConstances.WRITS_PREFFIX).append(writsInstances.getCaseId()).append("_")
+                .append(fillContext.hashCode()).append(WritsConstances.WRITS_SUFFIX_DOCX);
+
+        String destPath = propertiesConfig.getDestFilePath() + destFileNameBuffer.toString();
+
+        if (DocUtil.exists(destPath)) {
+            writsPath = destFileNameBuffer.toString();
+        } else {
+            // 说明可能已存在过旧文件，将所有旧文件进行删除，将生成的新文件进行生成并返回路径
+            List<String> ignoreFileNameList = new ArrayList<>();
+            ignoreFileNameList.add(destFileNameBuffer.toString());
+
+            DocUtil.deletePrefix(WritsConstances.WRITS_PREFFIX + writsInstances.getCaseId() + "_",
+                    WritsConstances.WRITS_SUFFIX_DOCX, propertiesConfig.getDestFilePath(), ignoreFileNameList);
+
+            // 将fillContext内的内容添加到文书模板上
+            JSONObject fillJObj = JSONObject.parseObject(fillContext);
+
+            @SuppressWarnings({ "unchecked", "rawtypes" })
+            Map<String, String> map = (Map) fillJObj;
+            // 文书模板“执法任务”“中队信息”去除，不再使用fillContext字段中的“zHiHao”作案件文号
+            map.put("refYear", writsInstances.getRefYear());
+            map.put("refNo", writsInstances.getRefNo());
+
+            writsPath =
+                    DocUtil.getDestUrlAfterReplaceWord(writsTemplate.getDocUrl(),
+                            destFileNameBuffer.toString(), propertiesConfig.getDestFilePath(), map);
+        }
+        return writsPath;
     }
 }

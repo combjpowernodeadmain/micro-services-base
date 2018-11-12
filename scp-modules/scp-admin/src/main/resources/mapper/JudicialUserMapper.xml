@@ -102,7 +102,7 @@
         bu.tenant_id
         FROM
         base_user bu
-        LEFT JOIN base_group_member bgm ON bgm.user_id = bu.id
+        INNER JOIN base_group_member bgm ON bgm.user_id = bu.id
         AND bgm.group_id != #{groupId}
         LEFT JOIN base_depart bd ON bu.depart_id = bd.id
         LEFT JOIN base_areainfo ba1 ON bu.attr3=ba1.id
@@ -122,7 +122,7 @@
         </if>
         <!--所属部门id-->
         <if test="user.departId!=null and user.departId!=''">
-            AND bu.depart_id = (#{user.departId})
+            AND bu.depart_id = #{user.departId}
         </if>
         GROUP BY
         userId,
