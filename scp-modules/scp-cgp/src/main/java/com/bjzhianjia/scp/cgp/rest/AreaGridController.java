@@ -130,10 +130,6 @@ public class AreaGridController extends BaseController<AreaGridBiz, AreaGrid, In
             restResult.setMessage(result.getMessage());
             return restResult;
         }
-        // AreaGrid areaGrid = new AreaGrid();
-        // areaGrid.setId(id);
-        // areaGrid.setIsDeleted("1");
-        // this.baseBiz.updateSelectiveById(areaGrid);
         restResult.setStatus(200);
         restResult.setMessage("成功");
         return restResult;
@@ -175,12 +171,15 @@ public class AreaGridController extends BaseController<AreaGridBiz, AreaGrid, In
 
         List<AreaGridTree> trees = new ArrayList<>();
 
-        Map<Integer, String> gridIdNameMap = allAreaGrids.stream().collect(Collectors.toMap(AreaGrid::getId, AreaGrid::getGridName));
+        Map<Integer, String> gridIdNameMap =
+            allAreaGrids.stream().collect(Collectors.toMap(AreaGrid::getId, AreaGrid::getGridName));
 
         allAreaGrids.forEach(o -> {
-            trees.add(
-                new AreaGridTree(o.getId(), o.getGridParent(), o.getGridName(), o.getGridCode(),
-                    o.getGridName() + "(" + gridIdNameMap.get(o.getGridParent()) + ")"));
+            String gridWithParent =
+                gridIdNameMap.get(o.getGridParent()) == null ? o.getGridName()
+                    : o.getGridName() + "(" + gridIdNameMap.get(o.getGridParent()) + ")";
+            trees.add(new AreaGridTree(o.getId(), o.getGridParent(), o.getGridName(),
+                o.getGridCode(), gridWithParent));
         });
 
         return TreeUtil.bulid(trees, -1, null);

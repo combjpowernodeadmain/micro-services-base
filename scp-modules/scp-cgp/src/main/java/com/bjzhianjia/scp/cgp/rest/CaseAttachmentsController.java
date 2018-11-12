@@ -64,10 +64,16 @@ public class CaseAttachmentsController extends BaseController<CaseAttachmentsBiz
         return restResult;
     }
 
+    /**
+     * 该方法支持一次添加多个附件记录
+     * @param caseAttachments
+     * @param bindingResult
+     * @return
+     */
     @RequestMapping(value="/add",method=RequestMethod.POST)
-    @ApiOperation("添加单个对象")
+    @ApiOperation("添加多个对象")
     public ObjectRestResponse<CaseAttachments> add(
-        @RequestBody @Validated @ApiParam("待添加对象实例") List<CaseAttachments> caseAttachments, BindingResult bindingResult) {
+        @RequestBody @Validated @ApiParam("待添加对象实例集合") List<CaseAttachments> caseAttachments, BindingResult bindingResult) {
         ObjectRestResponse<CaseAttachments> restResult = new ObjectRestResponse<>();
         this.baseBiz.add(caseAttachments);
         return restResult;

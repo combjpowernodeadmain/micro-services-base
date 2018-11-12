@@ -65,11 +65,11 @@ public class ClePreCaseCallBackServiceImpl implements IWfProcTaskCallBackService
 
         /*
          * PROC_END表示案件一发起就停止的情况，如现场处理……
-         * 当不说明一发起就停止时，默认进入【一般程序】，案件状态为【待处理】
+         * 当不说明一发起就停止时，默认进入【一般程序】，案件状态为【处理中】
          */
         switch (bizType) {
-            case PROC_END:
-                bizData.put("exeStatus", CaseRegistration.EXESTATUS_STATE_FINISH);
+            case "terminate":
+                bizData.put("exeStatus", CaseRegistration.EXESTATUS_STATE_STOP);
                 break;
             default:
                 bizData.put("exeStatus", CaseRegistration.EXESTATUS_STATE_TODO);

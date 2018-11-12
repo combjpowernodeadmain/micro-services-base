@@ -156,19 +156,22 @@ public class WritsTemplatesBiz extends BusinessBiz<WritsTemplatesMapper, WritsTe
 	 */
 	public List<WritsTemplates> getByTcodes(String tcode) {
 	    if(StringUtils.isBlank(tcode)) {
-	        return null;
+	        return new ArrayList<>();
 	    }
-	    
-	    Example example=new Example(WritsTemplates.class);
-	    Criteria criteria = example.createCriteria();
-	    criteria.andEqualTo("isDeleted", "0");
-	    criteria.andIn("tcode", Arrays.asList(tcode.split(",")));
-	    
-	    List<WritsTemplates> list = this.selectByExample(example);
-	    if(list!=null&&!list.isEmpty()) {
-	        return list;
+
+	    // 只返回前端需要的字段
+        Example example =
+            new Example(WritsTemplates.class).selectProperties("id", "originDocUrl",
+                "isAllowedRecord", "tcode", "docUrl", "name");
+        Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isDeleted", "0");
+        criteria.andIn("tcode", Arrays.asList(tcode.split(",")));
+
+        List<WritsTemplates> list = this.selectByExample(example);
+        if (list != null && !list.isEmpty()) {
+            return list;
 	    }
-	    return new ArrayList<WritsTemplates>();
+	    return new ArrayList<>();
 	}
 
 	/**
