@@ -437,6 +437,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                     // 当事人以单位形式存在
                     CLEConcernedCompany concernedCompany =
                         JSON.parseObject(concernedJObj.toJSONString(), CLEConcernedCompany.class);
+                    concernedCompany.setId(null);//避免前端传入当事人ID，在此设置为null
                     cLEConcernedCompanyBiz.insertSelective(concernedCompany);
                     resultId = concernedCompany.getId();
                     break;
@@ -444,6 +445,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                     // 当事人以人个形式存在
                     CLEConcernedPerson concernedPerson =
                         JSON.parseObject(concernedJObj.toJSONString(), CLEConcernedPerson.class);
+                    concernedPerson.setId(null);//避免前端传入当事人ID，在此设置为null
                     cLEConcernedPersonBiz.insertSelective(concernedPerson);
                     resultId = concernedPerson.getId();
                     break;
@@ -1799,7 +1801,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             // 前端没有传入网格数据，定位获取
             JSONObject mapInfoJObj = caseRegJObj.getJSONObject("mapInfo");
             if (BeanUtil.isEmpty(mapInfoJObj)) {
-                throw new BizException("添加案件登记失败，未找到相应网格信息。");
+//                throw new BizException("添加案件登记失败，未找到相应网格信息。");
             }
             Point point = new Point(mapInfoJObj.getDouble("lng"), mapInfoJObj.getDouble("lat"));
             AreaGrid areaGridReturn = areaGridBiz.isPolygonContainsPoint(point);
@@ -2018,5 +2020,15 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         //执法者
         result.put("enforcersName", enforcersName.toString());
         return result;
+    }
+
+    /**
+     * 在进行案件审批操作时，添加附件(文书模板上传)
+     * @param jobjs
+     */
+    public void addAttachments(JSONObject jobjs) {
+        if (BeanUtil.isNotEmpty(jobjs)) {
+            this.addAttachments(jobjs, jobjs.getString("procBizId"));
+        }
     }
 }

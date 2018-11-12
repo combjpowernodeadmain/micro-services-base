@@ -271,7 +271,7 @@ public class CaseInfo implements Serializable {
     //是否催办（0否| 1是）
     @Column(name="is_urge")
     private String isUrge;
-    
+
 
 	public String getIsDuplicate() {
 		return isDuplicate;

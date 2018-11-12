@@ -2,7 +2,6 @@ package com.bjzhianjia.scp.cgp.task.service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.bjzhianjia.scp.cgp.biz.CaseInfoBiz;
 import com.bjzhianjia.scp.cgp.biz.CaseRegistrationBiz;
 import com.bjzhianjia.scp.cgp.biz.LawTaskBiz;
 import com.bjzhianjia.scp.cgp.biz.WritsInstancesBiz;
@@ -35,9 +34,6 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
     @Autowired
     private LawTaskBiz lawTaskBiz;
     
-    @Autowired
-    private CaseInfoBiz caseInfoBiz;
-
     @Override
     public void before(String dealType, Map<String, Object> procBizData) throws BizException {
         String bizType = String.valueOf(procBizData.get(PROC_BIZTYPE));
@@ -48,6 +44,7 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
             case PROC_APPROVE:
                 // 审批操作
                 writsInstanceBiz.addWritsInstances(JSONObject.parseObject(JSON.toJSONString(procBizData)));
+                caseRegistrationBiz.addAttachments(JSONObject.parseObject(JSON.toJSONString(procBizData)));
                 break;
             case PROC_CLAIM:
                 // 签收操作
@@ -59,10 +56,13 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
             case PROC_END:
                 //将文书提交后流程走向结束
                 writsInstanceBiz.addWritsInstances(JSONObject.parseObject(JSON.toJSONString(procBizData)));
+                caseRegistrationBiz.addAttachments(JSONObject.parseObject(JSON.toJSONString(procBizData)));
                 // 流程走向结束
                 endCase(procBizData);
                 break;
             case "termination":
+                writsInstanceBiz.addWritsInstances(JSONObject.parseObject(JSON.toJSONString(procBizData)));
+                caseRegistrationBiz.addAttachments(JSONObject.parseObject(JSON.toJSONString(procBizData)));
                 terminationCase(procBizData);
                 break;
             default:
@@ -98,38 +98,42 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
      * @param bizType
      */
     private void updateCaseSource(String caseId, String bizType) {
-        CaseRegistration caseRegistrationInDB = caseRegistrationBiz.selectById(caseId);
-        String caseSourceType = caseRegistrationInDB.getCaseSourceType();
+        try {
+            CaseRegistration caseRegistrationInDB = caseRegistrationBiz.selectById(caseId);
+            String caseSourceType = caseRegistrationInDB.getCaseSourceType();
 
-        if(caseSourceType==null){
-            return;
-        }
+            if(caseSourceType==null){
+                return;
+            }
 
-        switch (caseSourceType) {
-            case CaseRegistration.CASE_SOURCE_TYPE_TASK:
-                LawTask lawTaskToUpdate = new LawTask();
-                lawTaskToUpdate.setId(Integer.valueOf(caseRegistrationInDB.getCaseSource()));
+            switch (caseSourceType) {
+                case CaseRegistration.CASE_SOURCE_TYPE_TASK:
+                    LawTask lawTaskToUpdate = new LawTask();
+                    lawTaskToUpdate.setId(Integer.valueOf(caseRegistrationInDB.getCaseSource()));
 
-                // 执法任务
-                if (PROC_END.equals(bizType)) {
-                    // 结案操作
-                    lawTaskToUpdate.setState(LawTask.ROOT_BIZ_LAWTASKS_FINISH);
-                } else if ("termination".equals(bizType)) {
-                    // 中止操作
-                    lawTaskToUpdate.setState(LawTask.ROOT_BIZ_LAWTASKS_STOP);
-                }
+                    // 执法任务
+                    if (PROC_END.equals(bizType)) {
+                        // 结案操作
+                        lawTaskToUpdate.setState(LawTask.ROOT_BIZ_LAWTASKS_FINISH);
+                    } else if ("termination".equals(bizType)) {
+                        // 中止操作
+                        lawTaskToUpdate.setState(LawTask.ROOT_BIZ_LAWTASKS_STOP);
+                    }
 
-                lawTaskBiz.updateSelectiveById(lawTaskToUpdate);
-                break;
+                    lawTaskBiz.updateSelectiveById(lawTaskToUpdate);
+                    break;
 
-            case CaseRegistration.CASE_SOURCE_TYPE_CENTER:
-                // 中心交办
-                if (PROC_END.equals(bizType)) {
-                    // 结案操作
-                } else if ("termination".equals(bizType)) {
-                    // 中止操作
-                }
-                break;
+                case CaseRegistration.CASE_SOURCE_TYPE_CENTER:
+                    // 中心交办
+                    if (PROC_END.equals(bizType)) {
+                        // 结案操作
+                    } else if ("termination".equals(bizType)) {
+                        // 中止操作
+                    }
+                    break;
+            }
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
         }
     }
 

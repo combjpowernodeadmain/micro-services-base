@@ -1,10 +1,12 @@
 package com.bjzhianjia.scp.cgp.util;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -98,8 +100,8 @@ public class BeanUtil {
     private static Object getFieldValue(Object bean, String fieldName) {
         StringBuffer result = new StringBuffer();
         String methodName =
-            result.append("get").append(fieldName.substring(0, 1).toUpperCase()).append(fieldName.substring(1))
-                .toString();
+            result.append("get").append(fieldName.substring(0, 1).toUpperCase())
+                .append(fieldName.substring(1)).toString();
 
         Object rObject = null;
         Method method = null;
@@ -125,8 +127,8 @@ public class BeanUtil {
     private static void setFieldValue(Object bean, String fieldName, Object value) {
         StringBuffer result = new StringBuffer();
         String methodName =
-            result.append("set").append(fieldName.substring(0, 1).toUpperCase()).append(fieldName.substring(1))
-                .toString();
+            result.append("set").append(fieldName.substring(0, 1).toUpperCase())
+                .append(fieldName.substring(1)).toString();
 
         /**
          * 利用发射调用bean.set方法将value设置到字段
@@ -199,10 +201,6 @@ public class BeanUtil {
      * @return clazz中去除skipFields中属性后的属性数组
      */
     public static String[] skipFields(Class<?> clazz, String... skipFields) {
-        if (BeanUtil.isEmpty(skipFields)) {
-            return new String[0];
-        }
-
         Field[] declaredFields = clazz.getDeclaredFields();
 
         List<String> originFieldsList = new ArrayList<>();
@@ -212,10 +210,129 @@ public class BeanUtil {
             }
         }
 
-        List<String> skipFieldsList = Arrays.asList(skipFields);
+        List<String> skipFieldsList;
+        if (skipFields == null) {
+            skipFieldsList = Arrays.asList("");
+        } else {
+            skipFieldsList = Arrays.asList(skipFields);
+        }
 
         originFieldsList.removeAll(skipFieldsList);
 
         return originFieldsList.toArray(new String[originFieldsList.size()]);
+    }
+
+    /**
+     * 在对象o中，如果某一属性为NULL，则将其填充为空字符串
+     * @param o
+     * @return
+     */
+    public static JSONObject fillNullToEmpty(Object o) {
+        String[] validataFields = skipFields(o.getClass(), null);
+        return fillNullToEmptyInFields(o, validataFields);
+    }
+
+    /**
+     * 在对象o中，将排除fields属性的值返回<br/>
+     * 在返回过程中，如果o中某一属性值为NULL，则将其填充为空字符串<br/>
+     * @param o
+     * @param fields
+     * @return
+     */
+    public static JSONObject fillNullToEmptyExcludeFields(Object o, String... fields) {
+        String[] validateFields = skipFields(o.getClass(), fields);
+        return fillNullToEmptyInFields(o, validateFields);
+    }
+
+    /**
+     * 在对象o中，如果将包含fields的属性返回<br/>
+     * 在返回的过程中，如果与fields中某一字段对应的属性值为NULL，则将其填充为空字符串<br/>
+     * 该方法通常用在需要将数据返回前端页面时调用<br/>
+     * @param o
+     * @param fields
+     * @return
+     */
+    public static JSONObject fillNullToEmptyInFields(Object o,String... fields){
+        List<String> fieldList = Arrays.asList(fields);
+
+        Field[] declaredFields = o.getClass().getDeclaredFields();
+        Method[] declaredMethods = o.getClass().getDeclaredMethods();
+
+        Map<String,Method> getMethodMap=new HashMap<>();
+        if(BeanUtil.isNotEmpty(declaredFields)) {
+            for (Method method : declaredMethods) {
+                boolean isGet = method.getName().startsWith("get") && _isListContainIgnoreCase(fieldList, method.getName().replace("get", ""));
+                if(isGet){
+                    getMethodMap.put(_captureName(method.getName().replace("get", "")), method);
+                }
+            }
+        }
+
+        JSONObject resultJObj = new JSONObject();
+        if (BeanUtil.isNotEmpty(declaredFields)) {
+            for (Field field : declaredFields) {
+                if (fieldList.contains(field.getName())) {
+                    try {
+                        if (BeanUtil.isEmpty(getMethodMap.get(field.getName()).invoke(o, null))) {
+                            resultJObj.put(field.getName(), "");
+                        } else {
+                            resultJObj.put(field.getName(),
+                                getMethodMap.get(field.getName()).invoke(o, null));
+                        }
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    } catch (InvocationTargetException e) {
+                        e.printStackTrace();
+                    } catch (NullPointerException e) {
+                        // 如果发生空指针异常，是因为方法代理时没找到导致的，使程序不中断，在此做处理
+                    }
+                }
+            }
+        }
+
+        return resultJObj;
+    }
+
+    /**
+     * 判断fieldList中是否包含suffixMethod字符串
+     * 在进行比较时，忽略suffixMethod首字符
+     * @param fieldList
+     * @param suffixMethod
+     * @return
+     */
+    private static boolean _isListContainIgnoreCase(List<String> fieldList, String suffixMethod) {
+        if (fieldList.contains(_captureName(suffixMethod))) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 如果name以大写字母开头，则将其首字母小写后，将name返回
+     *
+     * @param name
+     * @return
+     */
+    private static String _captureName(String name) {
+        char[] cs = name.toCharArray();
+        if(cs[0]>='A'&&cs[0]<='Z'){
+            cs[0] += 32;
+        }
+        return String.valueOf(cs);
+    }
+
+    /**
+     * 在进行选择性查询数据库字段或是填充空字符串时，默认在排除的字段
+     */
+    public static List<String> defaultSkipFields=new ArrayList<>();
+
+    static{
+        defaultSkipFields.add("crtTime");
+        defaultSkipFields.add("crtUserId");
+        defaultSkipFields.add("crtUserName");
+        defaultSkipFields.add("updTime");
+        defaultSkipFields.add("updUserId");
+        defaultSkipFields.add("updUserName");
+        defaultSkipFields.add("tenantId");
     }
 }
