@@ -51,6 +51,10 @@ public class CaseAttachments implements Serializable {
 	    //上传人名
     @Column(name = "crt_user_name")
     private String crtUserName;
+
+    	// 附件名称
+    @Column(name="attachments_name")
+    private String attachmentsName;
 	
 
 	/**
@@ -160,5 +164,19 @@ public class CaseAttachments implements Serializable {
 	 */
 	public String getCrtUserName() {
 		return crtUserName;
+	}
+
+	/**
+	 * 获取：附件名称
+	 */
+	public String getAttachmentsName() {
+		return attachmentsName;
+	}
+
+	/**
+	 * 设置：附件名称
+	 */
+	public void setAttachmentsName(String attachmentsName) {
+		this.attachmentsName = attachmentsName;
 	}
 }
