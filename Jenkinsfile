@@ -40,7 +40,7 @@ pipeline {
             steps {
                 sshPublisher(publishers: [
                     sshPublisherDesc(
-                        configName: 'XinqiaoIntranetServer', 
+                        configName: 'XiashuIntranetServer', 
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
@@ -70,7 +70,7 @@ pipeline {
                 sshPublisher(publishers: [
 
                     sshPublisherDesc(
-                        configName: 'XinqiaoIntranetServer', 
+                        configName: 'XiashuIntranetServer', 
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
@@ -91,7 +91,7 @@ pipeline {
                         verbose: false
                     ),
                     sshPublisherDesc(
-                        configName: 'XinqiaoIntranetServer', 
+                        configName: 'XiashuIntranetServer', 
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
@@ -112,7 +112,7 @@ pipeline {
                         verbose: false
                     ),
                     sshPublisherDesc(
-                        configName: 'XinqiaoIntranetServer', 
+                        configName: 'XiashuIntranetServer', 
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
@@ -133,7 +133,7 @@ pipeline {
                         verbose: false
                     ),
                     sshPublisherDesc(
-                        configName: 'XinqiaoIntranetServer', 
+                        configName: 'XiashuIntranetServer', 
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
@@ -183,7 +183,7 @@ pipeline {
                 sh 'echo Deploy to Xiashu'
                 sshPublisher(publishers: [
                     sshPublisherDesc(
-                        configName: 'XinqiaoIntranetServer', 
+                        configName: 'XiashuIntranetServer', 
                         transfers: [
                              
                             sshTransfer(excludes: '', 
@@ -239,7 +239,7 @@ pipeline {
                                 flatten: false, makeEmptyDirs: false, 
                                 noDefaultExcludes: false, 
                                 patternSeparator: '[, ]+', 
-                                remoteDirectory: '6_cgp', 
+                                remoteDirectory: '7_tool', 
                                 remoteDirectorySDF: false, 
                                 removePrefix: 'scp-modules/scp-tool/target/', 
                                 sourceFiles: 'scp-modules/scp-tool/target/scp-tool.jar'
@@ -259,7 +259,7 @@ pipeline {
             steps {
                 sshPublisher(publishers: [
                     sshPublisherDesc(
-                        configName: 'XinqiaoIntranetServer', 
+                        configName: 'XiashuIntranetServer', 
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
