@@ -48,6 +48,7 @@ import com.bjzhianjia.scp.security.wf.base.monitor.entity.WfProcBackBean;
 import com.bjzhianjia.scp.security.wf.base.monitor.service.impl.WfMonitorServiceImpl;
 import com.bjzhianjia.scp.security.wf.base.task.entity.WfProcTaskHistoryBean;
 import com.bjzhianjia.scp.security.wf.base.task.service.impl.WfProcTaskServiceImpl;
+import com.bjzhianjia.scp.security.wf.base.utils.StringUtil;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -229,6 +230,24 @@ public class CaseInfoService {
         }
 
         JSONObject caseInfoJObj = JSONObject.parseObject(JSON.toJSONString(caseInfo));
+        // 将业务条线code回填
+        caseInfoJObj.put("bizListCode", bizListCode);
+
+        // 整合事件类别
+        String eventTypeList = caseInfo.getEventTypeList();
+        if (StringUtils.isNotBlank(eventTypeList)) {
+            List<EventType> eventTypes = eventTypeMapper.selectByIds(eventTypeList);
+            if (BeanUtil.isNotEmpty(eventTypeList)) {
+                List<String> eventTypeName =
+                    eventTypes.stream().map(o -> o.getTypeName()).distinct()
+                        .collect(Collectors.toList());
+                caseInfoJObj.put("eventTypeListName", String.join(",", eventTypeName));
+            }
+        }
+        if (StringUtil.isBlank(caseInfoJObj.getString("eventTypeListName"))) {
+            caseInfoJObj.put("eventTypeListName", "");
+        }
+
         if (BeanUtil.isNotEmpty(executeInfo)) {
             caseInfoJObj.put("exePerson", executeInfo.getExePerson());
             caseInfoJObj.put("exeFinishTime", executeInfo.getFinishTime());

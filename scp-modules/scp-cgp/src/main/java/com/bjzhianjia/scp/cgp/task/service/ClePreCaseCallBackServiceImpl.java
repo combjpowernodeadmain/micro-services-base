@@ -6,6 +6,7 @@ import com.bjzhianjia.scp.cgp.biz.CaseRegistrationBiz;
 import com.bjzhianjia.scp.cgp.biz.LawTaskBiz;
 import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
 import com.bjzhianjia.scp.cgp.entity.LawTask;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.task.service.IWfProcTaskCallBackService;
 import lombok.extern.slf4j.Slf4j;
@@ -56,20 +57,22 @@ public class ClePreCaseCallBackServiceImpl implements IWfProcTaskCallBackService
                 // 执法任务
                 // 处理执法任务业务逻辑
                 updateTask(bizData);
+                checkCaseRegistration(bizData,CaseRegistration.CASE_SOURCE_TYPE_TASK);
                 break;
             case CaseRegistration.CASE_SOURCE_TYPE_CENTER:
                 // 中心交办
                 updateCaseInfo(bizData);
+                checkCaseRegistration(bizData,CaseRegistration.CASE_SOURCE_TYPE_CENTER);
                 break;
         }
 
         /*
          * PROC_END表示案件一发起就停止的情况，如现场处理……
-         * 当不说明一发起就停止时，默认进入【一般程序】，案件状态为【待处理】
+         * 当不说明一发起就停止时，默认进入【一般程序】，案件状态为【处理中】
          */
         switch (bizType) {
-            case PROC_END:
-                bizData.put("exeStatus", CaseRegistration.EXESTATUS_STATE_FINISH);
+            case "terminate":
+                bizData.put("exeStatus", CaseRegistration.EXESTATUS_STATE_STOP);
                 break;
             default:
                 bizData.put("exeStatus", CaseRegistration.EXESTATUS_STATE_TODO);
@@ -87,6 +90,34 @@ public class ClePreCaseCallBackServiceImpl implements IWfProcTaskCallBackService
         }
 
         procBizData.put("procBizId", bizData.getString("procBizId"));
+    }
+
+    /**
+     * 如果案件登记来自于中心交办或是执法任务，检验案件是否存在
+     * @param bizData
+     * @param caseSourceType
+     */
+    private void checkCaseRegistration(JSONObject bizData,String caseSourceType) {
+        CaseRegistration caseRegistration;
+        if(BeanUtil.isNotEmpty(bizData.getString("caseSource"))){
+            // 当存在caseSource时，说明该逻辑为中心交办或执法任务，需要判断是否是由同一事件发起
+            CaseRegistration caseRegistrationToCheck=new CaseRegistration();
+            caseRegistrationToCheck.setCaseSource(bizData.getString("caseSource"));
+
+            switch (caseSourceType) {
+                case CaseRegistration.CASE_SOURCE_TYPE_TASK:
+                    caseRegistrationToCheck.setCaseSourceType(CaseRegistration.CASE_SOURCE_TYPE_TASK);
+                    break;
+                case CaseRegistration.CASE_SOURCE_TYPE_CENTER:
+                    caseRegistrationToCheck.setCaseSourceType(CaseRegistration.CASE_SOURCE_TYPE_CENTER);
+                    break;
+            }
+
+            caseRegistration = caseResistrationBiz.selectOne(caseRegistrationToCheck);
+            if(BeanUtil.isNotEmpty(caseRegistration)){
+                throw new BizException("该案件已存在，请进行确认。");
+            }
+        }
     }
 
     /**

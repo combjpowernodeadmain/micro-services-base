@@ -818,7 +818,7 @@
 		PROC_CTASKNAME procCtaskName,
 		FROM_UNIXTIME(PROC_TASK_COMMITTIME, '%Y-%m-%d %H:%i:%s') procTaskCommittime
 	FROM
-		scp_wf_proc_task
+		SCP_WF_PROC_TASK
 	WHERE
 		PROC_KEY = #{procKey}
 	AND PROC_BIZID IN (${procBizId})
