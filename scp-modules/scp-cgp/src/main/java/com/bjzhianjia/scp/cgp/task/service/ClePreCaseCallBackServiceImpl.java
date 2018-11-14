@@ -74,6 +74,9 @@ public class ClePreCaseCallBackServiceImpl implements IWfProcTaskCallBackService
             case "terminate":
                 bizData.put("exeStatus", CaseRegistration.EXESTATUS_STATE_STOP);
                 break;
+            case PROC_END:
+                bizData.put("exeStatus", CaseRegistration.EXESTATUS_STATE_FINISH);
+                break;
             default:
                 bizData.put("exeStatus", CaseRegistration.EXESTATUS_STATE_TODO);
                 break;

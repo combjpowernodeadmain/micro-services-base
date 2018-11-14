@@ -479,6 +479,7 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             tmp.put("crtTime", caseAttachments.getCrtTime());// 上传时间
             tmp.put("type", "attachment");
             tmp.put("docUrl", caseAttachments.getDocUrl());
+            tmp.put("attachmentsName", caseAttachments.getAttachmentsName());//附件名称(文书名称)
             resultJArray.add(tmp);
         }
 
