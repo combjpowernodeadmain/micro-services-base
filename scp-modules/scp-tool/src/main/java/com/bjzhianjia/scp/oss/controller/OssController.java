@@ -71,11 +71,11 @@ public class OssController {
         if (storageService instanceof LocalStorageService) {
             //添加本地文件存储
             url = LocalStorageService.saveLocalStorage(file,cloudStorageConfig.getLocalStoragePathPrefix());
+            return new ObjectRestResponse<String>().data(Base64.getUrlEncoder().encodeToString(url.getBytes()));
         } else {
             url = storageService.uploadSuffix(file.getBytes(), suffix);
-
+            return new ObjectRestResponse<String>().data(url);
         }
-        return new ObjectRestResponse<String>().data(Base64.getUrlEncoder().encodeToString(url.getBytes()));
     }
 
     /**
@@ -101,7 +101,13 @@ public class OssController {
             }
             urls.add(url);
         }
-        return new ObjectRestResponse<String>().data(Base64.getUrlEncoder().encodeToString(url.getBytes()));
+        if(storageService instanceof LocalStorageService){
+            //本地下载
+            return new ObjectRestResponse<String>().data(Base64.getUrlEncoder().encodeToString(url.getBytes()));
+        }else{
+            //fastdfs下载
+            return new ObjectRestResponse<String>().data(urls.toString());
+        }
     }
 
     /**
