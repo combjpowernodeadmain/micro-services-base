@@ -30,7 +30,9 @@
 		cle_case_attachments.`crt_time`,
 		cle_case_attachments.`crt_user_id`,
 		cle_case_attachments.is_deleted,
-		cle_case_attachments.`crt_user_name`)
+		cle_case_attachments.`crt_user_name`,
+		cle_case_attachments.`attachments_name`
+		)
 		VALUES
 		<foreach collection="attaList" index="index"
 			item="item" separator=",">
@@ -42,7 +44,8 @@
 			#{item.crtTime},
 			#{item.crtUserId},
 			#{item.isDeleted},
-			#{item.crtUserName}
+			#{item.crtUserName},
+			#{item.attachmentsName}
 			)
 		</foreach>
 	</insert>
