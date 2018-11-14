@@ -22,7 +22,7 @@ pipeline {
         stage ('Build') {
             steps {
                 withMaven(globalMavenSettingsConfig: 'MavenNexusLutuoSettings', jdk: 'JDK8', maven: 'MAVEN', mavenSettingsConfig: 'MavenNexusLutuoSettings', publisherStrategy: 'EXPLICIT') {
-                    sh 'mvn clean package –Prelease  -Dmven.test.skip=true -U'   
+                    sh 'mvn clean install –P release  -Dmven.test.skip=true -U'   
                 }
                 
             }
