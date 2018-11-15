@@ -351,8 +351,8 @@ public class JudicialUserController {
     @PutMapping("/role/technologist/{userId}")
     public ObjectRestResponse<Void> upTechnologist(
             @PathVariable("userId") @ApiParam(value = "用户id") String userId,
-            @RequestParam(value = "mobilePhone", defaultValue = "") @ApiParam("手机号") String mobilePhone,
-            @RequestParam(value = "major",required = false) @ApiParam("用户专业") String major) {
+            @RequestParam(value = "mobilePhone") @ApiParam("手机号") String mobilePhone,
+            @RequestParam(value = "major") @ApiParam("用户专业") String major) {
 
         ObjectRestResponse<Void> result = new ObjectRestResponse<>();
         if (StringUtils.isBlank(userId)) {
