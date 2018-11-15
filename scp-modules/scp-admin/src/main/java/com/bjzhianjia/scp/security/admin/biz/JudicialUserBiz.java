@@ -77,7 +77,7 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
      */
     public TableResultResponse<Map<String, Object>> getMajorUsers(User user, String roleId, String departIds, int page,
                                                                   int limit) {
-        Page<Object> pageList = PageHelper.startPage(page, limit);
+        //Page<Object> pageList = PageHelper.startPage(page, limit);
         List<Map<String, Object>> userList = this.mapper.selectMajorUser(user, departIds, roleId);
         Map<String, String> dictMajorMap = dictFeign.getByCode(User.JUDICIAL_PROFESSIONAL);
         if (userList != null && !userList.isEmpty()) {
@@ -91,7 +91,7 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
         } else {
             userList = new ArrayList<>();
         }
-        return new TableResultResponse<>(pageList.getTotal(), userList);
+        return new TableResultResponse<>(userList.size(), userList);
     }
 
     /**

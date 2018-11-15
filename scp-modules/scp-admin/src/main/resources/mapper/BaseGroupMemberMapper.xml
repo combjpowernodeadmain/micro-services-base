@@ -30,7 +30,7 @@
     <!-- 用户角色列表 -->
     <select id="selectNameByUserId" resultType="java.util.Map">
         SELECT
-            bgm.id,
+            bgm.group_id groupId,
             bg.`name`
         FROM
             base_group_member bgm
