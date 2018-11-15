@@ -57,6 +57,7 @@
         SELECT
         bu.id userId,
         bu.name userName,
+        bu.mobile_phone mobilePhone,
         bu.attr2 major,
         ba1.name areaProvince,
         ba2.name areaCity,
