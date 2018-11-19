@@ -68,6 +68,34 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
     }
 
     /**
+     * 获取会检人员列表
+     *
+     * @param roleId    角色id
+     * @param departIds 用户部门ids
+     * @param page      页码
+     * @param limit     页容量
+     * @return
+     */
+    public TableResultResponse<Map<String, Object>> getPartnerList(User user, String roleId, String departIds, int page,
+                                                                  int limit) {
+        Page<Object> pageList = PageHelper.startPage(page, limit);
+        List<Map<String, Object>> userList = this.mapper.selectMajorUser(user, departIds, roleId);
+        Map<String, String> dictMajorMap = dictFeign.getByCode(User.JUDICIAL_PROFESSIONAL);
+        if (userList != null && !userList.isEmpty()) {
+            if (dictMajorMap != null && !dictMajorMap.isEmpty()) {
+                for (Map<String, Object> userMap : userList) {
+                    //专业名称
+                    String majorName = dictMajorMap.get(userMap.get("major"));
+                    userMap.put("majorName", majorName);
+                }
+            }
+        } else {
+            userList = new ArrayList<>();
+        }
+        return new TableResultResponse<>(pageList.getTotal(), userList);
+    }
+
+    /**
      * 获取指定角色列表
      *
      * @param roleId    角色id
@@ -94,6 +122,7 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
         }
         return new TableResultResponse<>(userList.size(), userList);
     }
+
 
     /**
      * 用户配置指定角色

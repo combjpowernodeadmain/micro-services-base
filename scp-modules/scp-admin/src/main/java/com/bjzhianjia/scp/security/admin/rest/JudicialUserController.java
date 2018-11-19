@@ -90,6 +90,31 @@ public class JudicialUserController {
     }
 
     /**
+     * 获取会检人员列表
+     *
+     * @param userName  用户名称
+     * @param departIds 用户部门ids
+     * @param major     用户专业
+     * @param page      页码
+     * @param limit     页容量
+     * @return
+     */
+    @ApiOperation("获取会检人员列表")
+    @GetMapping("/partner/list")
+    public TableResultResponse<Map<String, Object>> getPartnerList(
+            @RequestParam(value = "userName", defaultValue = "") @ApiParam("用户名称") String userName,
+            @RequestParam(value = "departIds", defaultValue = "") @ApiParam("用户部门ids") String departIds,
+            @RequestParam(value = "major", defaultValue = "") @ApiParam("用户专业") String major,
+            @RequestParam(value = "page", defaultValue = "1") @ApiParam("页码") Integer page,
+            @RequestParam(value = "limit", defaultValue = "10") @ApiParam("页容量") Integer limit) {
+
+        User user = new User();
+        user.setName(userName);
+        user.setAttr2(major);
+        return judicialUserBiz.getPartnerList(user, environment.getProperty(RoleConstant.ROLE_TECHNICIST), departIds,
+                page, limit);
+    }
+    /**
      * 获取分案人员列表
      *
      * @param userName  用户名称
