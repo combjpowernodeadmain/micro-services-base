@@ -10,6 +10,7 @@ import com.bjzhianjia.scp.security.admin.mapper.GroupMapper;
 import com.bjzhianjia.scp.security.admin.mapper.JudicialUserMapper;
 import com.bjzhianjia.scp.security.common.biz.BaseBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.common.util.BooleanUtil;
 import com.bjzhianjia.scp.security.common.util.UUIDUtils;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -107,8 +108,15 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
             User _user = new User();
             _user.setUsername(user.getUsername());
             _user = this.selectOne(_user);
+            //数据库中存在指定username用户
             if (_user != null) {
-                throw new RuntimeException("用户账号存在，请重新填写！");
+                //存在并且逻辑删除了，则修改username值（userId+"_"+userName)
+                if (BooleanUtil.BOOLEAN_TRUE.equals(_user.getIsDeleted())) {
+                    _user.setUsername(_user.getId() + "_" + _user.getUsername());
+                    this.updateSelectiveById(_user);
+                } else {
+                    throw new RuntimeException("用户账户已存在，请重新填写！");
+                }
             }
             userBiz.insertSelective(user);
         } else {
@@ -166,12 +174,13 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
 
     /**
      * 更新用户专业和手机号
+     *
      * @param user
      */
-    public void upTechnologist(User user){
+    public void upTechnologist(User user) {
         User _user = this.selectById(user.getId());
-        if(_user == null){
-            throw new  RuntimeException("未找到用户信息！");
+        if (_user == null) {
+            throw new RuntimeException("未找到用户信息！");
         }
         userBiz.updateSelectiveById(user);
     }

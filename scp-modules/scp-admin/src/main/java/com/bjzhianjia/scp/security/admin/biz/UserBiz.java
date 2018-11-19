@@ -1,18 +1,3 @@
-/*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
-
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
-
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
 
 package com.bjzhianjia.scp.security.admin.biz;
 
@@ -47,6 +32,7 @@ import com.github.pagehelper.PageHelper;
 
 import tk.mybatis.mapper.entity.Example;
 
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -73,7 +59,7 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
     private Sha256PasswordEncoder encoder = new Sha256PasswordEncoder();
     @Autowired
     private DictFeign dictFeign;
-    
+
     @Autowired
     private Environment environment;
 
@@ -131,6 +117,20 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
 
     @Override
     public void insertSelective(User entity) {
+        //判断是否存在旧用户
+        User user = new User();
+        user.setUsername(entity.getUsername());
+        User oldUser = mapper.selectOne(user);
+        if (oldUser != null) {
+            //存在并且逻辑删除了，则修改username值（userId+"_"+userName)
+            if (BooleanUtil.BOOLEAN_TRUE.equals(oldUser.getIsDeleted())) {
+                oldUser.setUsername(oldUser.getId() + "_" + oldUser.getUsername());
+                this.updateSelectiveById(oldUser);
+            } else {
+                throw new RuntimeException("当前账户已存在，请重新填写！");
+            }
+        }
+        //添加新用户
         String password = encoder.encode(entity.getPassword());
         String departId = entity.getDepartId();
         EntityUtils.setCreatAndUpdatInfo(entity);
@@ -224,10 +224,15 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
         if (query.entrySet().size() > 0) {
             for (Map.Entry<String, Object> entry : query.entrySet()) {
                 Example.Criteria criteria = example.createCriteria();
+                //查询未删除的用户
+                criteria.andEqualTo("isDeleted",BooleanUtil.BOOLEAN_FALSE);
                 criteria.andLike(entry.getKey(), "%" + entry.getValue().toString() + "%");
                 example.or(criteria);
             }
         }
+        //更新，创建时间降序
+        example.setOrderByClause(" upd_time desc");
+        example.setOrderByClause(" crt_time desc");
     }
 
     public List<String> getUserDataDepartIds(String userId) {
@@ -421,7 +426,7 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
         }
         return array;
     }
-    
+
     /**
      * 获取中队长信息
      * @return
