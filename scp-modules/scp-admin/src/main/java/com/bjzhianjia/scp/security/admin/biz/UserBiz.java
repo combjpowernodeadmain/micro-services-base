@@ -50,8 +50,10 @@ import tk.mybatis.mapper.entity.Example;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -483,5 +485,33 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
 
         result = BeanUtils.isEmpty(result) ? new ArrayList<>() : result;
         return new TableResultResponse<>(pageHelper.getTotal(), result);
+    }
+
+    /**
+     * 按组ID集合获取用户
+     * @param groupIds
+     * @return
+     */
+    public List<JSONObject> selectLeaderOrMemberByGroupId(String groupIds){
+        if(org.apache.commons.lang3.StringUtils.isBlank(groupIds)){
+            return new ArrayList<>();
+        }
+
+        Set<String> groupIdSet=new HashSet<>(Arrays.asList(groupIds.split(",")));
+        return this.mapper.selectLeaderOrMemberByGroupId(groupIdSet);
+    }
+
+    /**
+     * 按部门ID集合获取用户
+     * @param deptIds
+     * @return
+     */
+    public List<JSONObject> getUsersByDeptIds(String deptIds){
+        if(org.apache.commons.lang3.StringUtils.isBlank(deptIds)){
+            return new ArrayList<>();
+        }
+
+        Set<String> deptIdSet=new HashSet<>(Arrays.asList(deptIds.split(",")));
+        return this.mapper.selectUserListByDepts(deptIdSet);
     }
 }

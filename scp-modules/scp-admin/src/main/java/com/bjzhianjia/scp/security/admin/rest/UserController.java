@@ -270,4 +270,17 @@ public class UserController extends BaseController<UserBiz, User, String> {
 		}
 		return this.baseBiz.getPhoneList(userName,ids,page,limit);
 	}
+
+	@ApiOperation("按组ID集合获取用户")
+	@RequestMapping(value = "/list/groupIds", method = RequestMethod.GET)
+	@ResponseBody
+	public List<JSONObject> getUsersForReturnJObj(@RequestParam("groupIds") String groupIds) {
+		return baseBiz.selectLeaderOrMemberByGroupId(groupIds);
+	}
+
+	@GetMapping("/list/byDeptIds")
+	@ApiOperation("按部门ID集合查询用户")
+	public List<JSONObject> getUsersByDeptIds(@RequestParam("deptIds") String deptIds){
+		return baseBiz.getUsersByDeptIds(deptIds);
+	}
 }
