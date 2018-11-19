@@ -136,11 +136,17 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-jwt</artifactId>
         </dependency>
-
+        <!-- allatori -->
+        <dependency>
+			<groupId>com.bjzhianjia.allatori</groupId>
+			<artifactId>allatori</artifactId>
+			<version>1.0</version>
+			<scope>provided</scope>
+		</dependency>
     </dependencies>
 
     <build>
-        <finalName>scp-auth</finalName>
+        <finalName>scp-auth-compile</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -184,6 +190,32 @@
                 <version>2.8.2</version>
                 <configuration>
                     <skip>true</skip>
+                </configuration>
+            </plugin>
+            <!-- Allatori 代码混淆 -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <executions>
+                    <execution>
+                        <id>run-allatori</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <executable>java</executable>
+                    <arguments>
+                        <argument>-Xms128m</argument>
+                        <argument>-Xmx512m</argument>
+                        <argument>-jar</argument>
+                        <argument>${settings.localRepository}/com/bjzhianjia/allatori/allatori/1.0/allatori-1.0.jar
+                        </argument>
+                        <argument>${basedir}/src/main/resources/allatori.xml</argument>
+                    </arguments>
                 </configuration>
             </plugin>
         </plugins>
