@@ -484,4 +484,25 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
 
         return new TableResultResponse<>(jListResult.size(), jListResult);
     }
+
+    /**
+     * 按网格ID获取网格员列表
+     * 
+     * @param gridIds
+     * @return
+     */
+    public List<AreaGridMember> getByGridIds(Set<String> gridIds) {
+        Example example =
+            new Example(AreaGridMember.class).selectProperties("id", "gridId", "gridMember",
+                "gridRole", "isDeleted");
+        example.createCriteria().andEqualTo("isDeleted", "0").andIn("gridId", gridIds);
+
+        List<AreaGridMember> areaGridMembers = this.selectByExample(example);
+
+        if (BeanUtil.isNotEmpty(areaGridMembers)) {
+            return areaGridMembers;
+        }
+
+        return new ArrayList<>();
+    }
 }

@@ -2,16 +2,13 @@ package com.bjzhianjia.scp.cgp.task.service;
 
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
+import com.bjzhianjia.scp.cgp.biz.MessageCenterBiz;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.alibaba.fastjson.JSON;
-import com.bjzhianjia.scp.cgp.entity.CaseInfo;
-import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.exception.BizException;
-import com.bjzhianjia.scp.cgp.service.CaseInfoService;
 import com.bjzhianjia.scp.security.wf.base.task.service.IWfProcTaskCallBackService;
 
 /**
@@ -21,34 +18,30 @@ import com.bjzhianjia.scp.security.wf.base.task.service.IWfProcTaskCallBackServi
  */
 @Service
 @Transactional
+@Slf4j
 public class CaseCallBackServiceImpl implements IWfProcTaskCallBackService{
-	@Autowired
-	private CaseInfoService caseInfoService;
+    @Autowired
+    private MessageCenterBiz messageCenterBiz;
 
 	@Override
-	public void before(String dealType, Map<String, Object> procBizData) throws BizException {
-		
-	}
-
-	private void check(Map<String, Object> procBizData, CaseInfo caseInfo) throws BizException {
-		Integer caseInfoId1 = caseInfo.getId();
-		String caseInfoId2 = String.valueOf(procBizData.get("procBizId"));
-
-		if (caseInfoId1==null && !StringUtils.isBlank(caseInfoId2)) {
-			caseInfo.setId(Integer.valueOf(caseInfoId2));
-		}
-	}
+	public void before(String dealType, Map<String, Object> procBizData) throws BizException {}
 
 	@Override
-	public void after(String dealType, Map<String, Object> procBizData) throws BizException {
-//		CaseInfo caseInfo = JSON.parseObject(JSON.toJSONString(procBizData), CaseInfo.class);
-//
-//		//对procBizDate的procBizId及caseInfo.getId进行验证，避免前端未在caseInfo中添加ID
-//		check(procBizData, caseInfo);
-//
-//		Result<Void> result = caseInfoService.update(caseInfo);
-//		if(!result.getIsSuccess()) {
-//			throw new BizException(result.getMessage());
-//		}
-	}
+    public void after(String dealType, Map<String, Object> procBizData) throws BizException {
+        // 添加消息通知
+        addMsgCenter(dealType, procBizData);
+    }
+
+    private void addMsgCenter(String dealType,Map<String, Object> procBizData){
+        if (PROC_END.equals(dealType) || "termination".equals(dealType)) {
+            // 如果流程结束，则不进行添加消息通知
+            return;
+        }
+        try {
+            messageCenterBiz.addMsgCenterRecord(procBizData);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.debug("添加消息通知失败，数组结构为：" + procBizData);
+        }
+    }
 }
