@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.security.admin.biz;
 
+import com.ace.cache.annotation.CacheClear;
 import com.bjzhianjia.scp.security.common.util.UUIDUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -85,6 +86,7 @@ public class BaseGroupMemberBiz extends BusinessBiz<BaseGroupMemberMapper, BaseG
      * @param groupIds 角色id
      * @return
      */
+    @CacheClear(pre = "permission")
     public void update(String userId, String groupIds) {
         if (StringUtils.isEmpty(userId)) {
             throw new RuntimeException("请选择需要修改的用户！");

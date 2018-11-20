@@ -197,6 +197,12 @@
 			<artifactId>jodconverter</artifactId>
 			<version>2.2.1</version>
 		</dependency>
+		<dependency>
+			<groupId>com.bjzhianjia.allatori</groupId>
+			<artifactId>allatori</artifactId>
+			<version>1.0</version>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 	<!--依赖管理，用于管理spring-cloud的依赖，其中Camden.SR3是版本号 -->
 	<dependencyManagement>
@@ -220,67 +226,122 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-	<build>
-		<finalName>scp-cgp</finalName>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
-			<!-- <plugin> -->
-			<!-- <groupId>org.apache.maven.plugins</groupId> -->
-			<!-- <artifactId>maven-resources-plugin</artifactId> -->
-			<!-- <executions> -->
-			<!-- <execution> -->
-			<!-- <id>prepare-dockerfile</id> -->
-			<!-- <phase>validate</phase> -->
-			<!-- <goals> -->
-			<!-- <goal>copy-resources</goal> -->
-			<!-- </goals> -->
-			<!-- <configuration> -->
-			<!-- <outputDirectory>${project.build.directory}/docker</outputDirectory> -->
-			<!-- <resources> -->
-			<!-- <resource> -->
-			<!-- <directory>${project.basedir}/src/main/docker</directory> -->
-			<!-- <filtering>true</filtering> -->
-			<!-- </resource> -->
-			<!-- </resources> -->
-			<!-- </configuration> -->
-			<!-- </execution> -->
-			<!-- </executions> -->
-			<!-- </plugin> -->
-			<!-- <plugin> -->
-			<!-- <groupId>com.spotify</groupId> -->
-			<!-- <artifactId>docker-maven-plugin</artifactId> -->
-			<!-- <version>${docker.plugin.version}</version> -->
-			<!-- <executions> -->
-			<!-- <execution> -->
-			<!-- <phase>package</phase> -->
-			<!-- <goals> -->
-			<!-- <goal>build</goal> -->
-			<!-- </goals> -->
-			<!-- </execution> -->
-			<!-- </executions> -->
-			<!-- <configuration> -->
-			<!-- <imageName>${docker.image.prefix}/${project.build.finalName}</imageName> -->
-			<!-- <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory> -->
-			<!-- <resources> -->
-			<!-- <resource> -->
-			<!-- <targetPath>/</targetPath> -->
-			<!-- <directory>${project.build.directory}</directory> -->
-			<!-- <include>${project.build.finalName}.jar</include> -->
-			<!-- </resource> -->
-			<!-- </resources> -->
-			<!-- </configuration> -->
-			<!-- </plugin> -->
-		</plugins>
-	</build>
+
+	 <profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+	        <build>
+				<finalName>scp-cgp</finalName>
+				<plugins>
+					<plugin>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-maven-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-compiler-plugin</artifactId>
+						<configuration>
+							<source>1.8</source>
+							<target>1.8</target>
+						</configuration>
+					</plugin>
+					<!-- <plugin> -->
+					<!-- <groupId>org.apache.maven.plugins</groupId> -->
+					<!-- <artifactId>maven-resources-plugin</artifactId> -->
+					<!-- <executions> -->
+					<!-- <execution> -->
+					<!-- <id>prepare-dockerfile</id> -->
+					<!-- <phase>validate</phase> -->
+					<!-- <goals> -->
+					<!-- <goal>copy-resources</goal> -->
+					<!-- </goals> -->
+					<!-- <configuration> -->
+					<!-- <outputDirectory>${project.build.directory}/docker</outputDirectory> -->
+					<!-- <resources> -->
+					<!-- <resource> -->
+					<!-- <directory>${project.basedir}/src/main/docker</directory> -->
+					<!-- <filtering>true</filtering> -->
+					<!-- </resource> -->
+					<!-- </resources> -->
+					<!-- </configuration> -->
+					<!-- </execution> -->
+					<!-- </executions> -->
+					<!-- </plugin> -->
+					<!-- <plugin> -->
+					<!-- <groupId>com.spotify</groupId> -->
+					<!-- <artifactId>docker-maven-plugin</artifactId> -->
+					<!-- <version>${docker.plugin.version}</version> -->
+					<!-- <executions> -->
+					<!-- <execution> -->
+					<!-- <phase>package</phase> -->
+					<!-- <goals> -->
+					<!-- <goal>build</goal> -->
+					<!-- </goals> -->
+					<!-- </execution> -->
+					<!-- </executions> -->
+					<!-- <configuration> -->
+					<!-- <imageName>${docker.image.prefix}/${project.build.finalName}</imageName> -->
+					<!-- <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory> -->
+					<!-- <resources> -->
+					<!-- <resource> -->
+					<!-- <targetPath>/</targetPath> -->
+					<!-- <directory>${project.build.directory}</directory> -->
+					<!-- <include>${project.build.finalName}.jar</include> -->
+					<!-- </resource> -->
+					<!-- </resources> -->
+					<!-- </configuration> -->
+					<!-- </plugin> -->
+				</plugins>
+			</build>
+        </profile>
+		 <profile>
+			  <id>release</id>
+			   <build>
+					<finalName>scp-cgp-compile</finalName>
+					<plugins>
+						<plugin>
+							<groupId>org.springframework.boot</groupId>
+							<artifactId>spring-boot-maven-plugin</artifactId>
+						</plugin>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-compiler-plugin</artifactId>
+							<configuration>
+								<source>1.8</source>
+								<target>1.8</target>
+							</configuration>
+						</plugin>
+						<!-- Allatori 代码混淆 -->
+						<plugin>
+						    <groupId>org.codehaus.mojo</groupId>
+						    <artifactId>exec-maven-plugin</artifactId>
+						    <version>1.2.1</version>
+						    <executions>
+						        <execution>
+						            <id>run-allatori</id>
+						            <phase>package</phase>
+						            <goals>
+						                <goal>exec</goal>
+						            </goals>
+						        </execution>
+						    </executions>
+						    <configuration>
+						        <executable>java</executable>
+						        <arguments>
+						            <argument>-Xms128m</argument>
+						            <argument>-Xmx512m</argument>
+						            <argument>-jar</argument>
+						            <argument>${settings.localRepository}/com/bjzhianjia/allatori/allatori/1.0/allatori-1.0.jar
+						            </argument>
+						            <argument>${basedir}/src/main/resources/allatori.xml</argument>
+						        </arguments>
+						    </configuration>
+						</plugin>
+					</plugins>
+				</build>
+		 </profile>
+	 </profiles>
 </project>

@@ -96,7 +96,12 @@ public class UserController extends BaseController<UserBiz, User, String> {
 	@RequestMapping(value = "/info", method = RequestMethod.POST)
 	public ObjectRestResponse<AuthUser> validate(String username) {
 		AuthUser user = new AuthUser();
-		BeanUtils.copyProperties(baseBiz.getUserByUsername(username), user);
+		User oldUser = baseBiz.getUserByUsername(username);
+		//没有查询到数据，则返回对象
+		if(oldUser == null){
+			return new ObjectRestResponse<AuthUser>().data(user);
+		}
+		BeanUtils.copyProperties(oldUser, user);
 		return new ObjectRestResponse<AuthUser>().data(user);
 	}
 	
