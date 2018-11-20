@@ -95,4 +95,18 @@ public interface AdminFeign {
 	@GetMapping("/position/userId/{userId}")
 	@ApiOperation("通过用户id获取岗位列表")
 	ObjectRestResponse<List<Map<String,Object>>> getPositionByUserId(@PathVariable("userId") String userId);
+
+	@GetMapping("/user/list/groupIds")
+	@ApiOperation("按组获取用户列表")
+	List<JSONObject> selectLeaderOrMemberByGroup(@RequestParam("groupIds") String groupIds);
+
+    /**
+     * 按部门ID集合查询用户信息<br/>
+     * 目前该接口只返回用户ID与用户名(帐号)，如有需要，可在admin服务sql里添加字段
+     * @param deptIds
+     * @return
+     */
+	@GetMapping("/user/list/byDeptIds")
+	@ApiOperation("按部门ID集合查询用户")
+	public List<JSONObject> getUsersByDeptIds(@RequestParam("deptIds") String deptIds);
 }

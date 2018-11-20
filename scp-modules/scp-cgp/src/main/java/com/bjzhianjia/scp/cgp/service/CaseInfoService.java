@@ -1247,14 +1247,19 @@ public class CaseInfoService {
         }
         // 监管对象,为多选
         List<String> regulaObjectNameList = new ArrayList<>();
+        List<String> regulaObjectAddrList=new ArrayList<>();
         if (StringUtils.isNotBlank(caseInfo.getRegulaObjList())) {
             List<RegulaObject> regulaObjList = regulaObjectMapper.selectByIds(caseInfo.getRegulaObjList());
             for (RegulaObject regulaObject : regulaObjList) {
                 regulaObjectNameList.add(regulaObject.getObjName());
+                //在返回集中新加监管对象地址信息，用于自动填充
+                regulaObjectAddrList.add(regulaObject.getObjAddress());
             }
         }
         eventTypeJObj.put("regulaObjList", caseInfo.getRegulaObjList());
         eventTypeJObj.put("regulaObjListName", String.join(",", regulaObjectNameList));
+        //在返回集中新加监管对象地址信息，用于自动填充
+        eventTypeJObj.put("regulaObjListAddr", String.join(",", regulaObjectAddrList));
         /*
          * =================事件分类===========结束==========
          */
