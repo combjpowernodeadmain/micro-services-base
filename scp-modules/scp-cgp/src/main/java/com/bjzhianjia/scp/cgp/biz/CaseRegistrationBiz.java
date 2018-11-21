@@ -564,6 +564,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         }
         queryCaseRegistration.setIsSupervise(queryData.getString("isSupervise"));
         queryCaseRegistration.setIsUrge(queryData.getString("isUrge"));
+        queryCaseRegistration.setCaseName(queryData.getString("caseName"));
 
         // 工作流查询条件
         JSONObject bizData = objs.getJSONObject("bizData");

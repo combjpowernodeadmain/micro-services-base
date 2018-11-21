@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.cgp.biz;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -295,7 +296,9 @@ public class MessageCenterBiz extends BusinessBiz<MessageCenterMapper, MessageCe
      * 
      * @return
      */
-    public TableResultResponse<JSONObject> getUnReadList(MessageCenter messageCenter,int page, int limit) {
+    public JSONObject getUnReadList(MessageCenter messageCenter,int page, int limit) {
+        JSONObject jObjResult=new JSONObject();
+
         Example example = new Example(MessageCenter.class);
         Criteria criteria = example.createCriteria();
         criteria.andEqualTo("isDeleted", "0");
@@ -303,27 +306,39 @@ public class MessageCenterBiz extends BusinessBiz<MessageCenterMapper, MessageCe
         //消息提醒经个人为查询依据
         criteria.andEqualTo("crtUserId", BaseContextHandler.getUserID());
         if(StringUtils.isNotBlank(messageCenter.getMsgSourceType())){
-            criteria.andEqualTo("msgSourceType", messageCenter.getMsgSourceType());
+            criteria.andIn("msgSourceType",
+                Arrays.asList(messageCenter.getMsgSourceType().split(",")));
         }
 
         example.setOrderByClause("task_time asc");
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<MessageCenter> messageCenterList = this.selectByExample(example);
+        
+        // 查询与我相关的消息的总条数
+        example.clear();
+        example.createCriteria().andEqualTo("isDeleted", "0").andEqualTo("isRead", "0")
+            .andEqualTo("crtUserId", BaseContextHandler.getUserID());
+        int allTotal = this.selectCountByExample(example);
+
         List<JSONObject> result = new ArrayList<>();
         if (BeanUtil.isNotEmpty(messageCenterList)) {
             for (MessageCenter messageCenterTmp : messageCenterList) {
                 try {
                     JSONObject swapProperties =
-                        propertiesProxy.swapProperties(messageCenterTmp, "id", "msgName", "msgDesc", "taskTime");
+                        propertiesProxy.swapProperties(messageCenterTmp, "id", "msgName", "msgDesc", "taskTime","msgSourceId","msgSourceType");
                     result.add(swapProperties);
                 } catch (Throwable e) {
                     e.printStackTrace();
                 }
             }
-            return new TableResultResponse<>(pageInfo.getTotal(), result);
+
         }
 
-        return new TableResultResponse<>(0, new ArrayList<>());
+        jObjResult.put("status", 200);
+        jObjResult.put("rows", result);
+        jObjResult.put("total", pageInfo.getTotal());
+        jObjResult.put("allTotal", allTotal);
+        return jObjResult;
     }
 
     /**
