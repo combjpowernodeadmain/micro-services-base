@@ -654,8 +654,29 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                     }
                     // 是否超时
                     obj.put("isOvertime", isOvertime);
+                    obj.put("crtTime", caseRegistration.getCrtTime());
                     result.add(obj);
                 }
+
+                // 对结果集按创建时间顺序进行排序
+                result.sort(new Comparator<JSONObject>() {
+
+                    @Override
+                    public int compare(JSONObject o1, JSONObject o2) {
+                        if (BeanUtil.isNotEmpty(o1.getDate("crtTime"))
+                            && BeanUtil.isNotEmpty(o2.getDate("crtTime"))) {
+                            if (o1.getDate("crtTime").before(o2.getDate("crtTime"))) {
+                                return 1;
+                            }else if(o1.getDate("crtTime").after(o2.getDate("crtTime"))){
+                                return -1;
+                            }else{
+                                return 0;
+                            }
+                        }
+                        return 0;
+                    }
+                });
+
                 return new TableResultResponse<>(tableResult.getData().getTotal(), result);
             } else {
                 // 无待办任务
