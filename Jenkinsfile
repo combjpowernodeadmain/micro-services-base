@@ -40,7 +40,7 @@ pipeline {
             steps {
                 sshPublisher(publishers: [
                     sshPublisherDesc(
-                        configName: 'XinqiaoIntranetServer', 
+                        configName: 'XiashuIntranetServer', 
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
@@ -70,7 +70,7 @@ pipeline {
                 sshPublisher(publishers: [
 
                     sshPublisherDesc(
-                        configName: 'XinqiaoIntranetServer', 
+                        configName: 'XiashuIntranetServer', 
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
@@ -91,7 +91,7 @@ pipeline {
                         verbose: false
                     ),
                     sshPublisherDesc(
-                        configName: 'XinqiaoIntranetServer', 
+                        configName: 'XiashuIntranetServer', 
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
@@ -112,7 +112,7 @@ pipeline {
                         verbose: false
                     ),
                     sshPublisherDesc(
-                        configName: 'XinqiaoIntranetServer', 
+                        configName: 'XiashuIntranetServer', 
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
@@ -133,11 +133,32 @@ pipeline {
                         verbose: false
                     ),
                     sshPublisherDesc(
-                        configName: 'XinqiaoIntranetServer', 
+                        configName: 'XiashuIntranetServer', 
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
                                 execCommand: 'mv /data/scp/6_cgp/scp-cgp.jar /data/scp/6_cgp/scp-cgp.${BUILD_ID}.jar', 
+                                execTimeout: 120000, 
+                                flatten: false, 
+                                makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: '', 
+                                sourceFiles: ''
+                            )
+                        ], 
+                        usePromotionTimestamp: false, 
+                        useWorkspaceInPromotion: false, 
+                        verbose: false
+                    ),
+                    sshPublisherDesc(
+                        configName: 'XiashuIntranetServer', 
+                        transfers: [
+                            sshTransfer(
+                                excludes: '', 
+                                execCommand: 'mv /data/scp/7_tool/scp-tool.jar /data/scp/7_tool/scp-tool.${BUILD_ID}.jar', 
                                 execTimeout: 120000, 
                                 flatten: false, 
                                 makeEmptyDirs: false, 
@@ -162,7 +183,7 @@ pipeline {
                 sh 'echo Deploy to Xiashu'
                 sshPublisher(publishers: [
                     sshPublisherDesc(
-                        configName: 'XinqiaoIntranetServer', 
+                        configName: 'XiashuIntranetServer', 
                         transfers: [
                              
                             sshTransfer(excludes: '', 
@@ -211,6 +232,17 @@ pipeline {
                                 remoteDirectorySDF: false, 
                                 removePrefix: 'scp-modules/scp-cgp/target/', 
                                 sourceFiles: 'scp-modules/scp-cgp/target/scp-cgp.jar'
+                            ), 
+                            sshTransfer(excludes: '', 
+                                execCommand: '', 
+                                execTimeout: 120000, 
+                                flatten: false, makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '7_tool', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: 'scp-modules/scp-tool/target/', 
+                                sourceFiles: 'scp-modules/scp-tool/target/scp-tool.jar'
                             )
                         ], 
                         usePromotionTimestamp: false, 
@@ -227,7 +259,7 @@ pipeline {
             steps {
                 sshPublisher(publishers: [
                     sshPublisherDesc(
-                        configName: 'XinqiaoIntranetServer', 
+                        configName: 'XiashuIntranetServer', 
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
