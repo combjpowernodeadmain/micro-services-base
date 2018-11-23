@@ -32,7 +32,6 @@ import com.github.pagehelper.PageHelper;
 
 import tk.mybatis.mapper.entity.Example;
 
-import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -518,5 +517,16 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
 
         Set<String> deptIdSet=new HashSet<>(Arrays.asList(deptIds.split(",")));
         return this.mapper.selectUserListByDepts(deptIdSet);
+    }
+
+    /**
+     * 获取非删除的所有用户总数
+     * @return
+     */
+    public int getAllCount(){
+        Example example = new Example(User.class);
+        Example.Criteria citeria = example.createCriteria();
+        citeria.andEqualTo("isDeleted", BooleanUtil.BOOLEAN_FALSE);
+        return this.mapper.selectCountByExample(example);
     }
 }
