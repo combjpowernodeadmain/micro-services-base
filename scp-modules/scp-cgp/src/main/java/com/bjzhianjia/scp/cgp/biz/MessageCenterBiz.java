@@ -1,19 +1,27 @@
 package com.bjzhianjia.scp.cgp.biz;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.bjzhianjia.scp.cgp.entity.AreaGridMember;
+import com.bjzhianjia.scp.security.wf.base.exception.BizException;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
 import com.bjzhianjia.scp.cgp.entity.MessageCenter;
+import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.mapper.CaseInfoMapper;
 import com.bjzhianjia.scp.cgp.mapper.CaseRegistrationMapper;
 import com.bjzhianjia.scp.cgp.mapper.MessageCenterMapper;
@@ -54,6 +62,11 @@ public class MessageCenterBiz extends BusinessBiz<MessageCenterMapper, MessageCe
     @Autowired
     private PropertiesProxy propertiesProxy;
 
+    @Autowired
+    private AdminFeign adminFeign;
+
+    @Autowired
+    private AreaGridMemberBiz areaGridMemberBiz;
     /**
      * 消息中心
      * 
@@ -283,30 +296,49 @@ public class MessageCenterBiz extends BusinessBiz<MessageCenterMapper, MessageCe
      * 
      * @return
      */
-    public TableResultResponse<JSONObject> getUnReadList(int page, int limit) {
+    public JSONObject getUnReadList(MessageCenter messageCenter,int page, int limit) {
+        JSONObject jObjResult=new JSONObject();
+
         Example example = new Example(MessageCenter.class);
         Criteria criteria = example.createCriteria();
         criteria.andEqualTo("isDeleted", "0");
         criteria.andEqualTo("isRead", "0");
+        //消息提醒经个人为查询依据
+        criteria.andEqualTo("crtUserId", BaseContextHandler.getUserID());
+        if(StringUtils.isNotBlank(messageCenter.getMsgSourceType())){
+            criteria.andIn("msgSourceType",
+                Arrays.asList(messageCenter.getMsgSourceType().split(",")));
+        }
 
         example.setOrderByClause("task_time asc");
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<MessageCenter> messageCenterList = this.selectByExample(example);
+        
+        // 查询与我相关的消息的总条数
+        example.clear();
+        example.createCriteria().andEqualTo("isDeleted", "0").andEqualTo("isRead", "0")
+            .andEqualTo("crtUserId", BaseContextHandler.getUserID());
+        int allTotal = this.selectCountByExample(example);
+
         List<JSONObject> result = new ArrayList<>();
         if (BeanUtil.isNotEmpty(messageCenterList)) {
-            for (MessageCenter messageCenter : messageCenterList) {
+            for (MessageCenter messageCenterTmp : messageCenterList) {
                 try {
                     JSONObject swapProperties =
-                        propertiesProxy.swapProperties(messageCenter, "id", "msgName", "msgDesc", "taskTime");
+                        propertiesProxy.swapProperties(messageCenterTmp, "id", "msgName", "msgDesc", "taskTime","msgSourceId","msgSourceType");
                     result.add(swapProperties);
                 } catch (Throwable e) {
                     e.printStackTrace();
                 }
             }
-            return new TableResultResponse<>(pageInfo.getTotal(), result);
+
         }
 
-        return new TableResultResponse<>(0, new ArrayList<>());
+        jObjResult.put("status", 200);
+        jObjResult.put("rows", result);
+        jObjResult.put("total", pageInfo.getTotal());
+        jObjResult.put("allTotal", allTotal);
+        return jObjResult;
     }
 
     /**
@@ -326,5 +358,167 @@ public class MessageCenterBiz extends BusinessBiz<MessageCenterMapper, MessageCe
         restResult.setStatus(200);
         restResult.setMessage("成功");
         return restResult;
+    }
+
+    /**
+     * 按受理人或候选组添加消息通知
+     * @param procBizData
+     */
+    public void addMsgCenterRecord(Map<String, Object> procBizData) {
+        JSONObject procTaskBeanJObj = (JSONObject) procBizData.get("procTaskBean");
+        JSONArray wfNextTasksBeanJArray = (JSONArray) procBizData.get("wfNextTasksBean");
+
+        Set<String> nextAssignList = new HashSet<>();
+        Set<String> nextCandidateGroupsList = new HashSet<>();
+        Set<String> nextDeptIdList = new HashSet<>();
+        Set<String> nextGridIdList = new HashSet<>();
+
+        // 流程签收人或是候选组
+        if (BeanUtil.isNotEmpty(wfNextTasksBeanJArray)) {
+            for (int i = 0; i < wfNextTasksBeanJArray.size(); i++) {
+                JSONObject procTaskBeanInArray = wfNextTasksBeanJArray.getJSONObject(i);
+
+                if (StringUtils.isNotBlank(procTaskBeanInArray.getString("procTaskAssignee"))) {
+                    nextAssignList.add(procTaskBeanInArray.getString("procTaskAssignee"));
+                    continue;
+                }
+
+                if (StringUtils.isNotBlank(procTaskBeanInArray.getString("procDepartId"))
+                        && !"0".equals(procTaskBeanInArray.getString("procDeptpermission"))) {
+                    nextDeptIdList.add(procTaskBeanInArray.getString("procDepartId"));
+                    continue;
+                }
+                if (StringUtils.isNotBlank(procTaskBeanInArray.getString("procSelfdata1"))
+                        && !"0".equals(procTaskBeanInArray.getString("procSelfpermission1"))) {
+                    nextGridIdList.add(procTaskBeanInArray.getString("procSelfdata1"));
+                    continue;
+                }
+                if (StringUtils.isNotBlank(procTaskBeanInArray.getString("procTaskGroup"))) {
+                    nextCandidateGroupsList.add(procTaskBeanInArray.getString("procTaskGroup"));
+                }
+            }
+        }
+
+        String procBizId = procTaskBeanJObj.getString("procBizid");
+        String procKey = procTaskBeanJObj.getString("procKey");
+
+        List<MessageCenter> listToInsert = new ArrayList<>();
+
+        // 查询业务
+        MessageCenter fakeMessageCenter = new MessageCenter();
+        switch (procKey) {
+            case "comprehensiveManage":
+                // 事件流
+                CaseInfo caseInfo = caseInfoMapper.selectByPrimaryKey(Integer.valueOf(procBizId));
+                fakeMessageCenter.setMsgSourceId(String.valueOf(caseInfo.getId()));
+                fakeMessageCenter.setMsgSourceType("case_info_00");
+                fakeMessageCenter.setMsgName(caseInfo.getCaseTitle());
+                fakeMessageCenter.setMsgDesc(caseInfo.getCaseDesc());
+                fakeMessageCenter.setTaskTime(caseInfo.getOccurTime());
+                break;
+            case "LawEnforcementProcess":
+                // 案件流
+                CaseRegistration caseRegistration =
+                        caseRegistrationMapper.selectByPrimaryKey(procBizId);
+                fakeMessageCenter.setMsgSourceId(String.valueOf(caseRegistration.getId()));
+                fakeMessageCenter.setMsgSourceType("case_registration_00");
+                fakeMessageCenter.setMsgName(caseRegistration.getCaseName());
+                fakeMessageCenter.setMsgDesc("");
+                fakeMessageCenter.setTaskTime(caseRegistration.getCaseTime());
+                break;
+        }
+
+        fakeMessageCenter.setIsRead("0");
+        fakeMessageCenter.setIsDeleted("0");
+        fakeMessageCenter.setCrtTime(new Date());
+        fakeMessageCenter.setTenantId(BaseContextHandler.getTenantID());
+
+        // 按受理人生成消息对象
+        if (BeanUtil.isNotEmpty(nextAssignList)) {
+            for (String nextAssign : nextAssignList) {
+                MessageCenter messageCenter =
+                        BeanUtil.copyBean_New(fakeMessageCenter, new MessageCenter());
+                messageCenter.setCrtUserId(nextAssign);
+                listToInsert.add(messageCenter);
+            }
+        }
+
+        // 按候选组生成消息对象
+        List<JSONObject> userJObjList = null;
+        if (BeanUtil.isNotEmpty(nextCandidateGroupsList)) {
+            userJObjList = adminFeign.selectLeaderOrMemberByGroup(String.join(",", nextCandidateGroupsList));
+        }
+        if (BeanUtil.isNotEmpty(userJObjList)) {
+            List<String> userIds = userJObjList.stream().map(o -> o.getString("userId")).collect(Collectors.toList());
+            for (String userId : userIds) {
+                MessageCenter messageCenter =
+                        BeanUtil.copyBean_New(fakeMessageCenter, new MessageCenter());
+                messageCenter.setCrtUserId(userId);
+                listToInsert.add(messageCenter);
+            }
+        }
+
+        // 按部门生成消息对象
+        List<JSONObject> usersByDeptIds = null;
+        if (BeanUtil.isNotEmpty(nextDeptIdList)) {
+            usersByDeptIds = adminFeign.getUsersByDeptIds(String.join(",", nextDeptIdList));
+            if (BeanUtil.isNotEmpty(usersByDeptIds)) {
+                List<String> userIds = usersByDeptIds.stream().map(o -> o.getString("userId")).distinct().collect(Collectors.toList());
+
+                for (String userId : userIds) {
+                    MessageCenter messageCenter =
+                            BeanUtil.copyBean_New(fakeMessageCenter, new MessageCenter());
+                    messageCenter.setCrtUserId(userId);
+                    listToInsert.add(messageCenter);
+                }
+            }
+        }
+
+        // 按网格生成消息对象
+        if(BeanUtil.isNotEmpty(nextGridIdList)){
+            List<AreaGridMember> byGridIds = areaGridMemberBiz.getByGridIds(nextGridIdList);
+            if(BeanUtil.isNotEmpty(byGridIds)){
+                List<String> memberCollect = byGridIds.stream().map(o -> o.getGridMember()).distinct().collect(Collectors.toList());
+                for(String member:memberCollect){
+                    MessageCenter messageCenter =
+                            BeanUtil.copyBean_New(fakeMessageCenter, new MessageCenter());
+                    messageCenter.setCrtUserId(member);
+                    listToInsert.add(messageCenter);
+                }
+            }
+        }
+
+        // 添加消息记录
+        if (BeanUtil.isNotEmpty(listToInsert)) {
+            this.mapper.addMessageCenterList(listToInsert);
+        }
+    }
+
+    /**
+     * 当执行的任务进行状态改变时，调用该方法插入新状态的消息记录<br/>
+     * 如:某一事件进行了催办，该方法会在原事件的基础上，添加一条催办记录
+     * @param messageCenterToInsertTemplate
+     */
+    public void addMsgCenterRecord(MessageCenter messageCenterToInsertTemplate, JSONObject sourceJObj){
+        if (StringUtils.isBlank(messageCenterToInsertTemplate.getMsgSourceId())
+            || StringUtils.isBlank(messageCenterToInsertTemplate.getMsgSourceType())) {
+            throw new BizException("请指定待更新消息来源");
+        }
+
+        Example example = new Example(MessageCenter.class);
+        example.createCriteria().andEqualTo("isDeleted", "0")
+            .andEqualTo("msgSourceType", sourceJObj.getString("msgSourceType"))
+            .andEqualTo("msgSourceId", messageCenterToInsertTemplate.getMsgSourceId());
+
+        List<MessageCenter> messageCentersInDB = this.selectByExample(example);
+        if(BeanUtil.isNotEmpty(messageCentersInDB)){
+            for(MessageCenter tmp:messageCentersInDB){
+                tmp.setMsgSourceType(messageCenterToInsertTemplate.getMsgSourceType());
+                tmp.setIsRead("0");
+                tmp.setCrtTime(new Date());
+            }
+        }
+
+        this.mapper.addMessageCenterList(messageCentersInDB);
     }
 }

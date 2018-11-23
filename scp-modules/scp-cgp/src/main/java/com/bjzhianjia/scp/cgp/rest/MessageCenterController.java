@@ -40,10 +40,14 @@ public class MessageCenterController extends BaseController<MessageCenterBiz, Me
 
     @GetMapping("/list")
     @ApiOperation("获取未读消息")
-    public TableResultResponse<JSONObject> getUnReadList(
+    public JSONObject getUnReadList(
         @RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
-        @RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page) {
-        return this.baseBiz.getUnReadList(page, limit);
+        @RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
+        @RequestParam(value="msgSourceType",defaultValue = "") @ApiParam(value="消息来源类型") String msgSourceType
+    ) {
+        MessageCenter messageCenter=new MessageCenter();
+        messageCenter.setMsgSourceType(msgSourceType);
+        return this.baseBiz.getUnReadList(messageCenter,page, limit);
     }
 
     @PutMapping("/read/{ids}")

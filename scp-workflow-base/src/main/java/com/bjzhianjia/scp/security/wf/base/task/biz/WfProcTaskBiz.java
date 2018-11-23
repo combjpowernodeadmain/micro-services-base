@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSONArray;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.ActivitiObjectNotFoundException;
 import org.activiti.engine.HistoryService;
@@ -761,6 +762,8 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 				// 对业务数据设置流程是否结束标识
 				procTaskData.setProcEnded(DictKeyConst.YESORNO_NO);
 			}
+			
+            _extraVarIntoBizData(bizData, wfProcTaskBean, wfNextTasksBean);
 
 			// 对业务数据设置下级审批任务列表
 			procTaskData.setProcNextTasks(nextTasks);
@@ -1985,6 +1988,9 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			}
 
 			try {
+				// 向bizData中添加额外的参数
+			    _extraVarIntoBizData(bizData, procTask, wfNextTasksBean);
+
 				// 对业务数据设置下级审批任务列表
 				procTaskData.setProcNextTasks(nextTasks);
 				// 在流程任务审批后，调用任务审批完成后的任务回调函数
@@ -2766,6 +2772,8 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 					nextTasks.add(temp.getProcCtaskcode());
 				}
 			}
+
+			_extraVarIntoBizData(bizData, procTask, wfNextTasksBean);
 
 			// 对业务数据设置流程是否结束标识
 			procTaskData.setProcEnded(DictKeyConst.YESORNO_NO);
@@ -3806,4 +3814,33 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			this.procNextTasks = procNextTasks;
 		}
 	}
+
+	/**
+	 * 向bizData中添加额外的参数
+	 * @param bizData
+	 * @param procTaskBean
+	 * @param wfNextTasksBean
+	 */
+    private void _extraVarIntoBizData(WfProcBizDataBean bizData, WfProcTaskBean procTaskBean,
+        List<WfProcTaskBean> wfNextTasksBean) {
+        // 流程签收人或是候选组
+        List<String> nextAssignList = new ArrayList<>();
+        List<String> nextCandidateGroupsList = new ArrayList<>();
+        for (WfProcTaskBean wfProcTaskBean : wfNextTasksBean) {
+            if (StringUtils.isNotBlank(wfProcTaskBean.getProcTaskAssignee())) {
+                nextAssignList.add(wfProcTaskBean.getProcTaskAssignee());
+            }
+            if (StringUtils.isNotBlank(wfProcTaskBean.getProcTaskGroup())) {
+                nextCandidateGroupsList.add(wfProcTaskBean.getProcTaskGroup());
+            }
+            if (StringUtils.isNotBlank(wfProcTaskBean.getProcDepartId())
+                && !"0".equals(wfProcTaskBean.getProcDeptpermission())) {
+
+            }
+        }
+
+        bizData.put("procTaskBean", JSONObject.parseObject(JSONObject.toJSONString(procTaskBean)));
+        bizData.put("wfNextTasksBean",
+            JSONArray.parseArray(JSONArray.toJSONString(wfNextTasksBean)));
+    }
 }

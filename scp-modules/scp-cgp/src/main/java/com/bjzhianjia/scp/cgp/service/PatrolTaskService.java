@@ -260,8 +260,10 @@ public class PatrolTaskService {
 		//添加巡查事件发生时间
         caseInfo
             .setOccurTime(patrolTask.getCrtTime() == null ? new Date() : patrolTask.getCrtTime());
+        //将巡查的级别作为事件级别
+        caseInfo.setCaseLevel(patrolTask.getPatrolLevel());
 
-		if(Constances.PartolTaskStatus.ROOT_BIZ_PARTOLTASKT_FINISH.equals(patrolTask)){
+		if(Constances.PartolTaskStatus.ROOT_BIZ_PARTOLTASKT_FINISH.equals(patrolTask.getStatus())){
 			//巡查上报为【直接处理】
             caseInfo.setIsFinished(CaseInfo.FINISHED_STATE_FINISH);
 		}

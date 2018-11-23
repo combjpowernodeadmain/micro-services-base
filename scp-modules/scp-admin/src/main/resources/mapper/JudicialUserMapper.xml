@@ -103,7 +103,7 @@
         bu.tenant_id
         FROM
         base_user bu
-        INNER JOIN base_group_member bgm ON bgm.user_id = bu.id
+        LEFT JOIN base_group_member bgm ON bgm.user_id = bu.id
         AND bgm.group_id != #{groupId}
         LEFT JOIN base_depart bd ON bu.depart_id = bd.id
         LEFT JOIN base_areainfo ba1 ON bu.attr3=ba1.id

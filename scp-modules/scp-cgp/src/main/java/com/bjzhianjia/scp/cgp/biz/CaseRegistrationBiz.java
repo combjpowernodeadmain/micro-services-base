@@ -46,11 +46,11 @@ import com.bjzhianjia.scp.security.wf.base.utils.StringUtil;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -77,6 +77,7 @@ import java.util.stream.Collectors;
  * @version 2018-08-26 20:07:08
  */
 @Service
+@Slf4j
 public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, CaseRegistration> {
 
     @Autowired
@@ -161,6 +162,13 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
         // 添加立案单
         CaseRegistration caseRegistration = JSON.parseObject(caseRegJObj.toJSONString(), CaseRegistration.class);
+        // 案件定位
+        JSONObject mapInfo = caseRegJObj.getJSONObject("mapInfo");
+        if(BeanUtil.isNotEmpty(mapInfo)){
+            caseRegistration.setCaseLatitude(mapInfo.getString("lat"));
+            caseRegistration.setCaseOngitude(mapInfo.getString("lng"));
+        }
+
         // 生成caseRegistration主键
         String caseId = UUIDUtils.generateUuid();
         caseRegistration.setId(caseId);
@@ -556,6 +564,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         }
         queryCaseRegistration.setIsSupervise(queryData.getString("isSupervise"));
         queryCaseRegistration.setIsUrge(queryData.getString("isUrge"));
+        queryCaseRegistration.setCaseName(queryData.getString("caseName"));
 
         // 工作流查询条件
         JSONObject bizData = objs.getJSONObject("bizData");
@@ -645,8 +654,29 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                     }
                     // 是否超时
                     obj.put("isOvertime", isOvertime);
+                    obj.put("crtTime", caseRegistration.getCrtTime());
                     result.add(obj);
                 }
+
+                // 对结果集按创建时间顺序进行排序
+                result.sort(new Comparator<JSONObject>() {
+
+                    @Override
+                    public int compare(JSONObject o1, JSONObject o2) {
+                        if (BeanUtil.isNotEmpty(o1.getDate("crtTime"))
+                            && BeanUtil.isNotEmpty(o2.getDate("crtTime"))) {
+                            if (o1.getDate("crtTime").before(o2.getDate("crtTime"))) {
+                                return 1;
+                            }else if(o1.getDate("crtTime").after(o2.getDate("crtTime"))){
+                                return -1;
+                            }else{
+                                return 0;
+                            }
+                        }
+                        return 0;
+                    }
+                });
+
                 return new TableResultResponse<>(tableResult.getData().getTotal(), result);
             } else {
                 // 无待办任务
@@ -1345,7 +1375,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         /*
          * ========进行查询操作============开始=============
          */
-        // 转化按风格范围查询的条件
+        // 转化按网格范围查询的条件
         if (StringUtils.isNotBlank(caseRegistrationJObj.getString("gridIds"))) {
             StringBuffer buffer = new StringBuffer();
             buffer.append("'").append(caseRegistrationJObj.getString("gridIds").replaceAll(",", "','")).append("'");
@@ -1357,16 +1387,25 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         // 收集执法中队，用于动态生成SQL
         JSONArray enforcersGroup = adminFeign.getEnforcersGroup();
 
-        Map<String, String> dept_ID_NAME_Map = new HashMap<>();
+        /*
+         * 用于进行查询的部门ID，该数据来自两个地方
+         * 1 admin服务里设定的中队ID集合 2 已经在案件表里添加了的部门ID(可能是多部门联查情况)
+         * <foreach collection="deptParam" item="item"  separator=",">
+		 *	MAX( CASE deptId WHEN #{item.deptId} THEN COUNT ELSE 0 END ) #{item.deptId}
+		 * </foreach>
+         */
+        Set<String> deptIdForQuery=new HashSet<>();
         List<Map<String, String>> deptParam = new ArrayList<>();// 添补动态SQL的参数
+
+        Map<String, String> dept_ID_NAME_Map = new HashMap<>();
         Set<String> neatDeptIdSet = new HashSet<>();// 干净的执法人员部门ID
-        List<String> deptIdList = new ArrayList<>();// 用于数据整合时判断结果集里的某一条key是否为部门ID
+        //List<String> deptIdList = new ArrayList<>();// 用于数据整合时判断结果集里的某一条key是否为部门ID
         for (int i = 0; i < enforcersGroup.size(); i++) {
             JSONObject enforcersJObj = enforcersGroup.getJSONObject(i);
             dept_ID_NAME_Map.put(enforcersJObj.getString("id"), enforcersJObj.getString("name"));
 
-            deptIdList.add(enforcersJObj.getString("id"));
-            
+            deptIdForQuery.add(enforcersJObj.getString("id"));
+
             neatDeptIdSet.add(enforcersJObj.getString("id"));
         }
 
@@ -1375,11 +1414,17 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         if (BeanUtil.isNotEmpty(deptIdListInDB)) {
             for (String deptIdTim : deptIdListInDB) {
                 if(StringUtils.isNotBlank(deptIdTim)){
-                    Map<String, String> deptParamTmp = new HashMap<>();
-                    deptParamTmp.put("deptId", deptIdTim);
-                    deptParam.add(deptParamTmp);
+                    // 从案件表里查询到的部门ID，有可能是NULL。如果是NULL不需要添加到deptIdForQuery
+                    deptIdForQuery.add(deptIdTim);
                 }
             }
+        }
+
+        // 在deptIdForQuery里已经收集在来自admin部门表及案件表里有关的部门ID
+        for (String deptIdTmp : deptIdForQuery) {
+            Map<String, String> deptIdMap = new HashMap<>();
+            deptIdMap.put("deptId", deptIdTmp);
+            deptParam.add(deptIdMap);
         }
 
         /*
@@ -1393,6 +1438,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         JSONArray byDept =
             this.mapper.getStatisByDept(caseRegistration, startTime, endTime, caseRegistrationJObj.getString("gridIds"),
                 deptParam);
+        log.debug("按中队进行案件统计，查询结果为：" + byDept.toJSONString());
         
         if (BeanUtil.isNotEmpty(byDept)) {
             for (int i = 0; i < byDept.size(); i++) {
@@ -1408,8 +1454,6 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                                         + statusJObj.getInteger(statusJObjKey));// 不干净的部门ID对应的案件数量，如注释中的dept1,dept3
                             }
                         }
-                        //合并完之后，将不干净的部门ID对应的key-value移除
-//                        statusJObj.remove(statusJObjKey);
                     }
                 }
             }
@@ -1680,6 +1724,16 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 result.put("transferDeptName", dept.getString("name"));
             }
         }
+
+        // 添加案件定位信息
+        JSONObject mapInfo = null;
+        if (!(caseRegistration.getCaseOngitude() == null
+            || caseRegistration.getCaseLatitude() == null)) {
+            mapInfo=new JSONObject();
+            mapInfo.put("lng", caseRegistration.getCaseOngitude());
+            mapInfo.put("lat", caseRegistration.getCaseLatitude());
+        }
+        result.put("mapInfo", mapInfo == null ? null : mapInfo.toJSONString());
     }
     
     /**

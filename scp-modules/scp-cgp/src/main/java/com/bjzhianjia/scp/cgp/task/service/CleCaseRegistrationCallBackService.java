@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.CaseRegistrationBiz;
 import com.bjzhianjia.scp.cgp.biz.LawTaskBiz;
+import com.bjzhianjia.scp.cgp.biz.MessageCenterBiz;
 import com.bjzhianjia.scp.cgp.biz.WritsInstancesBiz;
 import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
 import com.bjzhianjia.scp.cgp.entity.LawTask;
@@ -33,6 +34,9 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
     
     @Autowired
     private LawTaskBiz lawTaskBiz;
+
+    @Autowired
+    private MessageCenterBiz messageCenterBiz;
     
     @Override
     public void before(String dealType, Map<String, Object> procBizData) throws BizException {
@@ -159,6 +163,21 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
     }
 
     @Override
-    public void after(String dealType, Map<String, Object> procBizData) throws BizException {}
+    public void after(String dealType, Map<String, Object> procBizData) throws BizException {
+        // 添加消息通知
+        addMsgCenter(dealType, procBizData);
+    }
 
+    private void addMsgCenter(String dealType,Map<String, Object> procBizData){
+        if(PROC_END.equals(dealType)||"termination".equals(dealType)){
+            //如果流程结束，则不进行添加消息通知
+            return;
+        }
+        try {
+            messageCenterBiz.addMsgCenterRecord(procBizData);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.debug("添加消息通知失败，数组结构为："+procBizData);
+        }
+    }
 }

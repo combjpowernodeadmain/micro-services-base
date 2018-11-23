@@ -257,6 +257,7 @@ public class WritsInstancesController extends BaseController<WritsInstancesBiz, 
     @ApiOperation("生成文书实例，并返回文书实例对应的word文档")
     public ResponseEntity<?> getTrueWritsInstancesTemporary(
         @RequestBody JSONObject writsInstanceJObj, HttpServletResponse response) {
+        log.debug("生成临时文书,参数结构为：" + writsInstanceJObj);
 
         // 生成文书实例
         ObjectRestResponse<String> _fileNameRest =
