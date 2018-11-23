@@ -3,11 +3,13 @@ package com.bjzhianjia.scp.security.dict.rest;
 
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.bjzhianjia.scp.security.common.util.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,11 +42,11 @@ import tk.mybatis.mapper.entity.Example.Criteria;
 @CheckUserToken
 @Api(tags = "字典值服务", description = "字典值服务")
 public class DictValueController extends BaseController<DictValueBiz, DictValue, String> {
-	
+
 	@Autowired
 	private DictValueBiz dictValueBiz;
-	
-	
+
+
 	@IgnoreClientToken
 	@IgnoreUserToken
 	@RequestMapping(value = "/type/{code}", method = RequestMethod.GET)
@@ -104,7 +106,7 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 	/**
 	 * 按ID查询特定的字典记录<br/>
 	 * 返回Map集合，集合key为字典记录ID，集合value为字典记录转换后的JSON字符串
-	 * 
+	 *
 	 * @author 尚
 	 * @param id
 	 * @return
@@ -115,7 +117,7 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 	public Map<String, String> getDictIdById(@PathVariable("id") String id) {
 		return this.baseBiz.getDictValues(id);
 	}
-	
+
 	 /**
      * 按code查询字典值
      * @author 尚
@@ -139,7 +141,7 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 	@IgnoreClientToken
 	@IgnoreUserToken
 	@RequestMapping(value = "/feign/code/{code}", method = RequestMethod.GET)
-	public Map<String, String> getByCode(@PathVariable("code") String code) {
+	public LinkedHashMap<String, String> getByCode(@PathVariable("code") String code) {
 		Example example = new Example(DictValue.class);
 		Criteria criteria = example.createCriteria();
         criteria.andLike("code", code + "%");
@@ -148,8 +150,12 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 		example.setOrderByClause("order_num");
 
 		List<DictValue> dictValues = this.baseBiz.selectByExample(example);
-		Map<String, String> result = dictValues.stream()
-				.collect(Collectors.toMap(DictValue::getCode, DictValue::getLabelDefault));
+		LinkedHashMap<String, String> result = new LinkedHashMap<>();
+		if(BeanUtils.isNotEmpty(dictValues)){
+			for(DictValue dictValue  : dictValues){
+				result.put(dictValue.getCode(),dictValue.getLabelDefault());
+			}
+		}
 		return result;
 	}
 	
