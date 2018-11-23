@@ -288,4 +288,13 @@ public class UserController extends BaseController<UserBiz, User, String> {
 	public List<JSONObject> getUsersByDeptIds(@RequestParam("deptIds") String deptIds){
 		return baseBiz.getUsersByDeptIds(deptIds);
 	}
+	@IgnoreUserToken
+	@GetMapping("/count")
+	@ApiOperation("获取非删除的所有用户总数")
+	public ObjectRestResponse<Integer> getAllCount(){
+		ObjectRestResponse<Integer> result = new ObjectRestResponse();
+		result.setData(baseBiz.getAllCount());
+		return result;
+	}
+
 }
