@@ -1197,11 +1197,15 @@ public class CaseInfoService {
         baseInfoJObj.put("caseTitle", caseInfo.getCaseTitle());
         baseInfoJObj.put("caseLevel", caseInfo.getCaseLevel());
         baseInfoJObj.put("id", caseInfo.getId());
-        if (caseInfo.getCaseLevel() != null) {
-            if (manyDictValuesMap != null && !manyDictValuesMap.isEmpty()) {
+        String sourceTypeName = "";
+        if (manyDictValuesMap != null && !manyDictValuesMap.isEmpty()) {
+            if (caseInfo.getCaseLevel() != null) {
                 baseInfoJObj.put("caseLevelName", manyDictValuesMap.get(caseInfo.getCaseLevel()));
             }
+            sourceTypeName = manyDictValuesMap.get(caseInfo.getSourceType());
         }
+        //来源类型名称
+        baseInfoJObj.put("sourceTypeName", sourceTypeName);
         baseInfoJObj.put("caseDesc", caseInfo.getCaseDesc());
 
         /*
