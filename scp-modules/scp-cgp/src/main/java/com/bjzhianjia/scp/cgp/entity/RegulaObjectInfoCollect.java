@@ -52,17 +52,17 @@ public class RegulaObjectInfoCollect implements Serializable {
     @Column(name = "info_approve_status")
     private String infoApproveStatus;
 	
-	    //信息提交者与审批者共同的组(一个人可能属于多个组)
-    @Column(name = "info_group")
-    private String infoGroup;
+	    //信息提交者姓名
+    @Column(name = "info_committer_name")
+    private String infoCommitterName;
 	
 	    //用于标记当前是处理审批状态还是提交状态(0:提交|1:审批)
-    @Column(name = "current_node")
-    private String currentNode;
+    @Column(name = "info_approver_name")
+    private String infoApproverName;
 	
 	    //节点状态(0:待处理|1:已处理|)
-    @Column(name = "node_status")
-    private String nodeStatus;
+    @Column(name = "info_commit_type")
+	private String infoCommitType;
 	
 	    //是否结束(0:未结束|1:已结束)
     @Column(name = "is_finished")
@@ -178,42 +178,6 @@ public class RegulaObjectInfoCollect implements Serializable {
 		return infoApproveStatus;
 	}
 	/**
-	 * 设置：信息提交者与审批者共同的组(一个人可能属于多个组)
-	 */
-	public void setInfoGroup(String infoGroup) {
-		this.infoGroup = infoGroup;
-	}
-	/**
-	 * 获取：信息提交者与审批者共同的组(一个人可能属于多个组)
-	 */
-	public String getInfoGroup() {
-		return infoGroup;
-	}
-	/**
-	 * 设置：用于标记当前是处理审批状态还是提交状态(0:提交|1:审批)
-	 */
-	public void setCurrentNode(String currentNode) {
-		this.currentNode = currentNode;
-	}
-	/**
-	 * 获取：用于标记当前是处理审批状态还是提交状态(0:提交|1:审批)
-	 */
-	public String getCurrentNode() {
-		return currentNode;
-	}
-	/**
-	 * 设置：节点状态(0:待处理|1:已处理|)
-	 */
-	public void setNodeStatus(String nodeStatus) {
-		this.nodeStatus = nodeStatus;
-	}
-	/**
-	 * 获取：节点状态(0:待处理|1:已处理|)
-	 */
-	public String getNodeStatus() {
-		return nodeStatus;
-	}
-	/**
 	 * 设置：是否结束(0:未结束|1:已结束)
 	 */
 	public void setIsFinished(String isFinished) {
@@ -224,5 +188,47 @@ public class RegulaObjectInfoCollect implements Serializable {
 	 */
 	public String getIsFinished() {
 		return isFinished;
+	}
+
+	/**
+	 * 获取：提交人姓名
+	 */
+	public String getInfoCommitterName() {
+		return infoCommitterName;
+	}
+
+	/**
+	 * 设置：提交人姓名
+	 */
+	public void setInfoCommitterName(String infoCommitterName) {
+		this.infoCommitterName = infoCommitterName;
+	}
+
+	/**
+	 * 获取：审批人姓名
+	 */
+	public String getInfoApproverName() {
+		return infoApproverName;
+	}
+
+	/**
+	 * 设置：审批人姓名
+	 */
+	public void setInfoApproverName(String infoApproverName) {
+		this.infoApproverName = infoApproverName;
+	}
+
+	/**
+	 * 获取：新增或变更
+	 */
+	public String getInfoCommitType() {
+		return infoCommitType;
+	}
+
+	/**
+	 * 设置：新增或变更
+	 */
+	public void setInfoCommitType(String infoCommitType) {
+		this.infoCommitType = infoCommitType;
 	}
 }

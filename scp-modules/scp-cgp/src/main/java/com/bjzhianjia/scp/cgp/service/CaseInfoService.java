@@ -714,7 +714,14 @@ public class CaseInfoService {
         resultJObjct.put("zhaiyao", String.join("-", zhaiyaoList));
         // 上报人
         JSONArray userDetailJArray = adminFeign.getUserDetail(String.join(",", reportPersonId));
-        JSONObject userMap = userDetailJArray.getJSONObject(0);
+
+        JSONObject userMap = null;
+        if (BeanUtil.isNotEmpty(userDetailJArray)) {
+            userMap = userDetailJArray.getJSONObject(0);
+        } else {
+            userMap = new JSONObject();
+        }
+
         resultJObjct.put("crtUserTel",
             userMap.getString("mobilePhone") == null ? "" : userMap.getString("mobilePhone"));
         resultJObjct.put("groupName",
@@ -1172,7 +1179,14 @@ public class CaseInfoService {
         }
 
         // 将多次向adminFeign的请求集中到这里进行查询，在经之上的代码即对需要进行查询 ID的收集
-        Map<String, String> manyUsersMap = adminFeign.getUser(String.join(",", adminIdList));
+        JSONArray manyUsersJArray = adminFeign.getUserDetail(String.join(",", adminIdList));
+        Map<String, JSONObject> manyUsersMap=new HashMap<>();
+        if(BeanUtil.isNotEmpty(manyUsersJArray)){
+            for(int i=0;i<manyUsersJArray.size();i++){
+                JSONObject manyUsersJObj = manyUsersJArray.getJSONObject(i);
+                manyUsersMap.put(manyUsersJObj.getString("userId"), manyUsersJObj);
+            }
+        }
 
         /*
          * =================查询基础信息===========开始==========
@@ -1330,8 +1344,8 @@ public class CaseInfoService {
         if (caseInfo.getCheckPerson() != null) {
             checkJObj.put("checkPerson", caseInfo.getCheckPerson());
             if (manyUsersMap != null && !manyUsersMap.isEmpty()) {
-                JSONObject checkPersonJObj = JSONObject.parseObject(manyUsersMap.get(caseInfo.getCheckPerson()));
-                checkJObj.put("checkPersonName", checkPersonJObj.getString("name"));
+                JSONObject checkPersonJObj = manyUsersMap.get(caseInfo.getCheckPerson());
+                checkJObj.put("checkPersonName", checkPersonJObj.getString("userName"));
                 checkJObj.put("checkPersonTel", checkPersonJObj.getString("mobilePhone"));
             }
         }
@@ -1390,10 +1404,9 @@ public class CaseInfoService {
                          * wfProcTaskHistoryBean.getProcTaskAssignee())为空
                          * 需要进行非空判断
                          */
-                        JSONObject jObjTmp =
-                            JSONObject.parseObject(manyUsersMap.get(wfProcTaskHistoryBean.getProcTaskAssignee()));
+                        JSONObject jObjTmp =manyUsersMap.get(wfProcTaskHistoryBean.getProcTaskAssignee());
                         if(BeanUtil.isNotEmpty(jObjTmp)){
-                            commanderApproveJObj.put("procTaskCommitterName", jObjTmp.getString("name"));
+                            commanderApproveJObj.put("procTaskCommitterName", jObjTmp.getString("userName"));
                             commanderApproveJObj.put("commanderTel", jObjTmp.getString("mobilePhone"));// 审批人联系方法
                             //流程审批时间
                             commanderApproveJObj.put("procTaskEndtime", wfProcTaskHistoryBean.getProcTaskEndtime());// 审批时间
@@ -1468,9 +1481,8 @@ public class CaseInfoService {
             if (manyUsersMap != null && !manyUsersMap.isEmpty()) {
                 finishCheckJObj.put("finishCheckPerson", caseInfo.getFinishCheckPerson());
 
-                JSONObject finishCheckPersonJObj =
-                    JSONObject.parseObject(manyUsersMap.get(caseInfo.getFinishCheckPerson()));
-                finishCheckJObj.put("finishCheckPersonName", finishCheckPersonJObj.getString("name"));
+                JSONObject finishCheckPersonJObj =manyUsersMap.get(caseInfo.getFinishCheckPerson());
+                finishCheckJObj.put("finishCheckPersonName", finishCheckPersonJObj.getString("userName"));
                 finishCheckJObj.put("finishCheckPersonTel", finishCheckPersonJObj.getString("mobilePhone"));
             }
         }
@@ -1485,12 +1497,10 @@ public class CaseInfoService {
         finishJObj.put("finishDesc", caseInfo.getFinishDesc());
         finishJObj.put("finishTime", caseInfo.getFinishTime());
         if (StringUtils.isNotBlank(caseInfo.getFinishPerson())) {
-            // Map<String, String> finishPersonMap =
-            // adminFeign.getUser(caseInfo.getFinishPerson());//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>查询了admin》》》》》》》》》》》》》》》》》》》》》》》》》
             if (manyUsersMap != null && !manyUsersMap.isEmpty()) {
                 finishJObj.put("finishPerson", caseInfo.getFinishPerson());
 
-                JSONObject finishPersonJObj = JSONObject.parseObject(manyUsersMap.get(caseInfo.getFinishPerson()));
+                JSONObject finishPersonJObj = manyUsersMap.get(caseInfo.getFinishPerson());
                 finishJObj.put("finishPersonName", finishPersonJObj.getString("name"));
                 finishJObj.put("finishPersonTel", finishPersonJObj.getString("mobilePhone"));
             }

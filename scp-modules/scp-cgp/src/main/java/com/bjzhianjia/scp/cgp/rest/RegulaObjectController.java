@@ -24,6 +24,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -262,5 +263,30 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
 
         TableResultResponse<RegulaObjectVo> tableResult = regulaObjectService.allPotition(regulaObject);
         return tableResult;
+    }
+
+
+    @PostMapping(value = "/info/collect")
+    @ApiOperation("新增单个对象")
+    public ObjectRestResponse<JSONObject> regulaObjectInfoCollect(@RequestBody @Validated JSONObject vo,
+                                              BindingResult bindingResult) {
+
+        ObjectRestResponse<JSONObject> restResult = new ObjectRestResponse<>();
+
+        if (bindingResult.hasErrors()) {
+            restResult.setStatus(400);
+            restResult.setMessage(bindingResult.getAllErrors().get(0).getDefaultMessage());
+            return restResult;
+        }
+        Result<Void> result = regulaObjectService.regulaObjectInfoCollect(vo);
+        if (!result.getIsSuccess()) {
+            restResult.setStatus(400);
+            restResult.setMessage(result.getMessage());
+            return restResult;
+        }
+
+        restResult.setStatus(200);
+        restResult.setMessage("监管对象信息提交成功");
+        return restResult;
     }
 }

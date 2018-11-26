@@ -21,8 +21,9 @@
     </resultMap>
 
     <select id="list" resultType="com.alibaba.fastjson.JSONObject">
-        select roic.`info_committer` infoCommitter,roic.`info_commit_time` infoCommitTime,roic.`info_approve_status` infoApproveStatus,
-        ro.`obj_name` objName,
+        select roic.`id` infoCollectId,roic.`info_committer` infoCommitter,roic.`info_commit_time` infoCommitTime,roic.`info_approve_status` infoApproveStatus,
+        roic.`info_approve_opinion` infoApproveOpinion,
+        ro.`obj_name` objName,ro.`obj_code` objCode,ro.`id` objId,
         rot.`object_type_name` objectTypeName
         from regula_object_info_collect roic
         left join regula_object ro on ro.`id`=roic.`obj_id`
@@ -37,11 +38,18 @@
             <if test="queryJObj.infoCommitterTime != null and queryJObj.infoCommitterTime != ''">
                 and roic.`info_commit_time`>=#{queryJObj.infoCommitterTime}
             </if>
-            <if test="queryJObj.infoApproveStatus != null and queryJObj.infoApproveStatus != ''">
-                and roic.`info_approve_status`=#{queryJObj.infoApproveStatus}
+            <if test="queryJObj.infoApproveStatusSet != null and queryJObj.infoApproveStatusSet.size()>0">
+                and roic.`info_approve_status` in (
+                    <foreach collection="queryJObj.infoApproveStatusSet" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                )
             </if>
             <if test="queryJObj.infoCommitter != null and queryJObj.infoCommitter != ''">
-                and roic.`info_committer` like "%"#{queryJObj.infoCommitter}"%"
+                and roic.`info_committer` = #{queryJObj.infoCommitter}
+            </if>
+            <if test="queryJObj.objId != null and queryJObj.objId != ''">
+                and roic.`obj_id` = #{queryJObj.objId}
             </if>
         </where>
     </select>

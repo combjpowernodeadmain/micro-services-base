@@ -95,6 +95,7 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
         Example.Criteria criteria = example.createCriteria();
 
         criteria.andEqualTo("isDeleted", "0");
+        criteria.andEqualTo("isDisabled", "0");
 
         // 是否输入了按监管对象名称查询
         if (StringUtils.isNotBlank(regulaObject.getObjName())) {
@@ -507,5 +508,37 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
         }
         List<Map<String, Object>> result = this.mapper.selectByTypeAndName(objType, objName);
         return BeanUtil.isEmpty(result) ? new ArrayList<>() : result;
+    }
+
+    /**
+     * 不分页按条件查询
+     * @param regulaObject
+     * @return
+     */
+    public List<RegulaObject> getListWithoutPage(RegulaObject regulaObject) {
+        Example example =
+            new Example(RegulaObject.class).selectProperties("id", "objName", "objType", "gatherer",
+                "gatherTime");
+        Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isDeleted", "0");
+
+        if (StringUtils.isNotBlank(regulaObject.getIsDisabled())) {
+            criteria.andEqualTo("isDisabled", regulaObject.getIsDisabled());
+        }
+        if (StringUtils.isNotBlank(regulaObject.getObjName())) {
+            criteria.andLike("objName", "%" + regulaObject.getObjName() + "%");
+        }
+        if (BeanUtil.isNotEmpty(regulaObject.getObjType())) {
+            criteria.andEqualTo("objType", regulaObject.getObjType());
+        }
+
+        example.setOrderByClause("id desc");
+        List<RegulaObject> regulaObjects = this.selectByExample(example);
+
+        if(BeanUtil.isEmpty(regulaObjects)){
+            return new ArrayList<>();
+        }
+
+        return regulaObjects;
     }
 }
