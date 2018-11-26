@@ -183,6 +183,8 @@ public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
         //1 执法分队 0非执法分队
         String isEnforcersGroup = "1";
         criteria.andEqualTo("attr1", isEnforcersGroup);
+        //执法中队默认通过创建时间降序
+        example.setOrderByClause(" crt_time asc");
         return this.mapper.selectByExample(example);
     }
 
