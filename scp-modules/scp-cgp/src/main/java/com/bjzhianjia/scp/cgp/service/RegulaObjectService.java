@@ -547,9 +547,10 @@ public class RegulaObjectService {
 
         // 所属网格
         Integer griId = regulaObject.getGriId();
-        AreaGrid gridInDB = new AreaGrid();
-        if (griId != null) {
-            gridInDB = areaGridBiz.selectById(griId);
+        AreaGrid gridInDB = areaGridBiz.selectById(griId);
+        //防止程序null指针异常
+        if (gridInDB == null) {
+            gridInDB = new AreaGrid();
         }
 
         // 业务条线
