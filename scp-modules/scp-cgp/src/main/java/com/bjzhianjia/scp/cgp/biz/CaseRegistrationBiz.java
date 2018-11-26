@@ -64,6 +64,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1330,7 +1331,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
         JSONObject obj = null;
         // 返回集初始化
-        Map<String, JSONObject> temp = new HashMap<>();
+        Map<String, JSONObject> temp = new LinkedHashMap<>();
         Set<String> setKey = bizType.keySet();
         for (String key : setKey) {
             obj = new JSONObject();
@@ -1397,7 +1398,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         Set<String> deptIdForQuery=new HashSet<>();
         List<Map<String, String>> deptParam = new ArrayList<>();// 添补动态SQL的参数
 
-        Map<String, String> dept_ID_NAME_Map = new HashMap<>();
+        Map<String, String> dept_ID_NAME_Map = new LinkedHashMap<>();
         Set<String> neatDeptIdSet = new HashSet<>();// 干净的执法人员部门ID
         //List<String> deptIdList = new ArrayList<>();// 用于数据整合时判断结果集里的某一条key是否为部门ID
         for (int i = 0; i < enforcersGroup.size(); i++) {
