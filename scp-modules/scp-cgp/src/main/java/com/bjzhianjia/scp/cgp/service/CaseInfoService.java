@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.AreaGridBiz;
+import com.bjzhianjia.scp.cgp.biz.AreaGridMemberBiz;
 import com.bjzhianjia.scp.cgp.biz.CaseInfoBiz;
 import com.bjzhianjia.scp.cgp.biz.CommandCenterHotlineBiz;
 import com.bjzhianjia.scp.cgp.biz.ConcernedCompanyBiz;
@@ -17,6 +18,7 @@ import com.bjzhianjia.scp.cgp.biz.PatrolTaskBiz;
 import com.bjzhianjia.scp.cgp.biz.PublicOpinionBiz;
 import com.bjzhianjia.scp.cgp.biz.RegulaObjectBiz;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
+import com.bjzhianjia.scp.cgp.entity.AreaGridMember;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.CommandCenterHotline;
 import com.bjzhianjia.scp.cgp.entity.ConcernedCompany;
@@ -64,6 +66,7 @@ import tk.mybatis.mapper.entity.Example.Criteria;
 import javax.transaction.Transactional;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -156,6 +159,9 @@ public class CaseInfoService {
 
     @Autowired
     private CaseInfoMapper caseInfoMapper;
+
+    @Autowired
+    private AreaGridMemberBiz areaGridMemberBiz;
     /**
      * 更新单个对象
      * 
@@ -783,6 +789,31 @@ public class CaseInfoService {
                 result.setMessage("该部门尚无权限处理该事件，请更换部门。");
                 result.setIsSuccess(false);
                 return result;
+            }
+        }
+
+        // 判断流向是否走向立案核查及待结案核查
+        String isCheckAreaGridAuth = environment.getProperty("isCheckAreaGridAuth");
+        List<String> isCheckAreaGridAuthList = Arrays.asList(isCheckAreaGridAuth.split(","));
+        if(isCheckAreaGridAuthList.contains(flowDirection)){
+            // 表明需要进行网格员认证
+            String gridId = caseInfoJObj.getString("grid");
+
+            if(StringUtils.isEmpty(gridId)){
+                throw new BizException("请指定网格");
+            }
+
+            List<AreaGridMember> areaGridMemberList =
+                areaGridMemberBiz.getByGridIds(new HashSet<>(Arrays.asList(gridId.split(","))));
+            if (BeanUtil.isNotEmpty(areaGridMemberList)) {
+                // 如果有网格员配置，则进行下一步验证
+                if (areaGridMemberList.size() == 1
+                    && areaGridMemberList.get(0).getGridMember() == null) {
+                    // 与指定网格对应的只有一条网格员记录，并且gridMember字段为null
+                    throw new BizException("该网格下未配备网格员");
+                }
+            } else {
+                throw new BizException("该网格下未配备网格员");
             }
         }
 
