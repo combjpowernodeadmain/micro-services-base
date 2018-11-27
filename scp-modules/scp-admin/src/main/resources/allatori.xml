@@ -21,12 +21,10 @@
         <class template="class  com.bjzhianjia.scp.*.feign.*"/>
         <class template="class  com.bjzhianjia.scp.*.mapper.*"/>
         <class template="class  com.bjzhianjia.scp.*.constant.*"/>
-		<class template="class  com.bjzhianjia.scp.*.biz.*"/>
         <class template="class  com.bjzhianjia.scp.security.admin.AdminBootstrap"/>
 		<class template="class  com.bjzhianjia.scp.security.admin.rpc.service.*"/>
-		<class template="class  com.bjzhianjia.scp.security.admin.rest.GroupController"/>
-		<class template="class  com.bjzhianjia.scp.security.admin.rest.ElementController"/>
-		<class template="class  com.bjzhianjia.scp.security.admin.rest.DepartController"/>
+		<!-- 排除springboot 依赖文件 -->
+		<class template ="class  org.springframework.boot.*"/>
     </ignore-classes>
 	<!-- 广泛流混淆 最大级别混淆，混淆核心业务-->
 	<property name="extensive-flow-obfuscation" value="maximum" apply2class="class com.bjzhianjia.scp.*.service.*"/>

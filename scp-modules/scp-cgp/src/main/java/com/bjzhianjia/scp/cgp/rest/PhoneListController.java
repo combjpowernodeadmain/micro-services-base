@@ -63,7 +63,7 @@ public class PhoneListController {
     }
 
     /**
-     * 获取通讯录用户列表
+     * 通讯录用户详情
      *
      * @param userId 用户id
      * @return
