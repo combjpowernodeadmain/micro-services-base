@@ -829,11 +829,11 @@ public class RegulaObjectService {
         regulaObject.setIsDisabled("1");// 刚提交信息，监管对象状态为【禁用】
 
         EnterpriseInfo enterpriseInfo = infoCollectJObj.toJavaObject(EnterpriseInfo.class);// 企业信息数据
-        enterpriseInfo.setAddress(regulaObject != null ? regulaObject.getObjAddress() : "");// 企业信息地址即为监管对象地址
+        enterpriseInfo.setAddress(regulaObject.getObjAddress());// 企业信息地址即为监管对象地址
 
         // mapinfo {"lng":"xxx","lat":"xxx"}
         JSONObject mapinfo = infoCollectJObj.getJSONObject("mapInfo");
-        if (mapinfo != null && regulaObject != null) {
+        if (mapinfo != null) {
             regulaObject.setLatitude(mapinfo.getFloat("lat"));
             regulaObject.setLongitude(mapinfo.getFloat("lng"));
         }
@@ -845,10 +845,13 @@ public class RegulaObjectService {
             result = this.updateRegulaObject(regulaObject, enterpriseInfo);
 
             // 如果本次请求对应一次更新操作，在插入一条新记录后，将上一条记录的审批状态改为【退回已处理】
-            RegulaObjectInfoCollect infoCollectToUpdate = new RegulaObjectInfoCollect();
-            infoCollectToUpdate.setId(infoCollectJObj.getInteger("infoCollectId"));
-            infoCollectToUpdate.setInfoApproveStatus(environment.getProperty("regulaObjectInfoCollectBackDone"));
-            regulaObjectInfoCollectBiz.updateSelectiveById(infoCollectToUpdate);
+            if(BeanUtil.isNotEmpty(infoCollectJObj.getInteger("infoCollectId"))){
+                // 如果有infoCollectId说明提交人在处理一起【退回】的操作
+                RegulaObjectInfoCollect infoCollectToUpdate = new RegulaObjectInfoCollect();
+                infoCollectToUpdate.setId(infoCollectJObj.getInteger("infoCollectId"));
+                infoCollectToUpdate.setInfoApproveStatus(environment.getProperty("regulaObjectInfoCollectBackDone"));
+                regulaObjectInfoCollectBiz.updateSelectiveById(infoCollectToUpdate);
+            }
         } else {
             regulaObject.setGatherer(BaseContextHandler.getUserID());
             regulaObject.setGatherTime(new Date());
@@ -863,6 +866,7 @@ public class RegulaObjectService {
         // 添加监管对象信息采集过程记录表里的信息
         RegulaObjectInfoCollect infoCollect = new RegulaObjectInfoCollect();
         infoCollect.setObjId(regulaObject.getId());
+        infoCollect.setInfoCommitType(infoCollectJObj.getString("infoCommitType"));
         infoCollect.setInfoCommitter(BaseContextHandler.getUserID());
         infoCollect.setInfoCommitterName(BaseContextHandler.getUsername());
         infoCollect.setInfoCommitTime(new Date());
