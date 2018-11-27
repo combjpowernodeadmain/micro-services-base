@@ -1150,6 +1150,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
             result = JSONObject.parseObject(JSONObject.toJSONString(caseRegistration));
             if (result != null) {
+
+                Map<String, String> dictMap = dictFeign.getByCode(caseRegistration.getCaseSourceType());
+                //案件来源名称
+                String caseSourceTypeName = dictMap.get(caseRegistration.getCaseSourceType());
+                result.put("caseSourceTypeName",caseSourceTypeName != null ? caseSourceTypeName : "");
+
                 getOneQueryAssist(caseRegistration, result);
 
                 // 查询流程历史记录
