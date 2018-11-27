@@ -19,8 +19,9 @@
         <class template="class  com.bjzhianjia.scp.*.feign.*"/>
         <class template="class  com.bjzhianjia.scp.security.gate.utils.DBLog"/>
         <class template="class  com.bjzhianjia.scp.security.gate.GateBootstrap"/>
-        <class template ="class com.bjzhianjia.scp.security.gate.filter.*"/>
-         <class template ="class com.bjzhianjia.scp.security.gate.route.*"/>
+        <class template ="class com.bjzhianjia.scp.security.gate.route.*"/>
+		<!-- 排除springboot 依赖文件 -->
+		<class template ="class  org.springframework.boot.*"/>
     </ignore-classes>
 	<!-- TODO 过滤器优化混淆-->
 	<!-- 随机命名混淆字符-->
