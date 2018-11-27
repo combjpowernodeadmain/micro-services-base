@@ -19,11 +19,14 @@ import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.task.entity.WfProcTaskHistoryBean;
 import com.bjzhianjia.scp.security.wf.base.task.service.impl.WfProcTaskServiceImpl;
 import com.github.pagehelper.PageInfo;
+import org.springframework.transaction.annotation.Transactional;
+
 
 /**
  * @author 尚
  */
 @Service
+@Transactional
 public class CaseRegistrationService {
 
     @Autowired

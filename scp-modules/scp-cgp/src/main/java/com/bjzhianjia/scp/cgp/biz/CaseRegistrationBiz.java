@@ -79,6 +79,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
+@Transactional
 public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, CaseRegistration> {
 
     @Autowired

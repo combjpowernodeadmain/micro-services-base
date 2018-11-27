@@ -15,6 +15,7 @@ import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
+import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 /**
@@ -25,6 +26,7 @@ import tk.mybatis.mapper.entity.Example;
  * @version 2018-08-26 09:02:28
  */
 @Service
+@Transactional
 public class UrgeRecordBiz extends BusinessBiz<UrgeRecordMapper, UrgeRecord> {
 
     @Autowired

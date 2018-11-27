@@ -59,11 +59,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
 
-import javax.transaction.Transactional;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,6 +83,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
+@Transactional
 public class CaseInfoService {
 
     @Autowired
