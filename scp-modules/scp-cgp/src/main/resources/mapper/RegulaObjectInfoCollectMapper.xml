@@ -51,6 +51,13 @@
             <if test="queryJObj.objId != null and queryJObj.objId != ''">
                 and roic.`obj_id` = #{queryJObj.objId}
             </if>
+            <!-- 按提交人及审批人姓名模糊查询 -->
+            <if test="queryJObj.infoCommitterName != null and queryJObj.infoCommitterName != ''">
+                and roic.info_committer_name like "%"#{queryJObj.infoCommitterName}"%"
+            </if>
+            <if test="queryJObj.infoApproverName != null and queryJObj.infoApproverName != ''">
+                and roic.`info_approver_name` like "%"#{queryJObj.infoApproverName}"%"
+            </if>
         </where>
     </select>
 </mapper>

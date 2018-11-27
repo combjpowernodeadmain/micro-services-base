@@ -199,7 +199,15 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
     public PageInfo<WfProcBackBean> getAllTasks(JSONObject objs) throws WorkflowException {
     	WfProcAuthDataBean authData = parseAuthData(objs);
     	WfProcBizDataBean bizData = parseBizData(objs);
-    	wfProcUserAuthBiz.userAuthenticate(authData, false, false, true);
+
+    	/*
+    	 * 判断是否进行权限验证
+    	 * 默认进行权限验证，即isAuth参数为NULL时也会进行if判断体内进行执行
+    	 */
+        if (objs.getJSONObject("authData").getBoolean("isAuth") == null
+            || objs.getJSONObject("authData").getBoolean("isAuth")) {
+            wfProcUserAuthBiz.userAuthenticate(authData, false, false, true);
+        }
     	JSONObject queryObj = parseQueryData(authData, bizData);
 
     	parseAndUpdateDate(queryObj, "procCreateTimeStart", DateUtil.DATECONVERTYPE_DATESTART);
@@ -210,7 +218,7 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
         List<WfProcBackBean> list = wfMonitorBiz.getAllTasks(queryObj);
         return new PageInfo<WfProcBackBean>(list);
     }
-    
+
     /**
      * 流程监控查询
      * @param objs

@@ -417,7 +417,16 @@ public class WfProcTaskServiceImpl implements IWfProcTaskService {
 		try {
 			WfProcessDataBean procData = parseProcessData(objs);
 			WfProcAuthDataBean authData = parseAuthData(objs);
-			wfProcUserAuthBiz.userAuthenticate(authData, false, false);
+
+            /*
+             * 判断是否进行权限验证
+             * 默认进行权限验证，即isAuth参数为NULL时也会进行if判断体内进行执行
+             */
+            if (objs.getJSONObject("authData").getBoolean("isAuth") == null
+                    || objs.getJSONObject("authData").getBoolean("isAuth")) {
+                wfProcUserAuthBiz.userAuthenticate(authData, false, false);
+            }
+
 
 			return new PageInfo<WfProcTaskHistoryBean>(
 					wfProcTaskBiz.getProcApprovedHistory(procData, authData));

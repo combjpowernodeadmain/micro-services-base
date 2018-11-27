@@ -1144,7 +1144,18 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     public JSONObject getInfoById(JSONObject objs) {
         JSONObject result = null;
         JSONObject queryData = objs.getJSONObject("queryData");
-        CaseRegistration caseRegistration = this.selectById(queryData.get("caseRegistrationId"));
+        JSONObject bizData = objs.getJSONObject("bizData");
+
+        String caseRegistrationId = queryData.getString("caseRegistrationId");
+        if(BeanUtil.isEmpty(caseRegistrationId)){
+            /*
+             * 在工作流请求参数结构中，对于业务ID应通过bizData中的procBizId参数传参
+             * 介于之前有通过queryData中的caseRegistrationId传参的情况，对此，保留之前的请求方式
+             * 如果在queryData中的caseRegistrationId参数为空，则获取bizData中的procBizId参数
+             */
+            caseRegistrationId=bizData.getString("procBizId");
+        }
+        CaseRegistration caseRegistration = this.selectById(caseRegistrationId);
 
         if (caseRegistration != null) {
 

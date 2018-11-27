@@ -2,6 +2,7 @@ package com.bjzhianjia.scp.cgp.rest;
 
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -31,12 +32,17 @@ public class RegulaObjectInfoCollectController extends BaseController<RegulaObje
 
     /**
      * 查询信息采集列表
+     * @param page
+     * @param limit
      * @param regulaObjectName
+     * @param objId
      * @param regulaObjectType
      * @param infoCommitterTime
      * @param infoApproveStatus
      * @param infoCommitType
      * @param infoCommitter
+     * @param infoCommitterName
+     * @param infoApproverName
      * @return
      */
     @GetMapping("/list")
@@ -45,12 +51,14 @@ public class RegulaObjectInfoCollectController extends BaseController<RegulaObje
         @RequestParam(value = "page", defaultValue = "1") @ApiParam(value="当前页") Integer page,
         @RequestParam(value = "limit", defaultValue = "10") @ApiParam(value="页容量") Integer limit,
         @RequestParam(value = "regulaObjectName", defaultValue = "") @ApiParam(value="监管对象名称") String regulaObjectName,
-        @RequestParam(value = "objId", defaultValue = "") @ApiParam(value="办理人") String objId,
+        @RequestParam(value = "objId", defaultValue = "") @ApiParam(value="监管对象ID") String objId,
         @RequestParam(value = "regulaObjectType", required = false) @ApiParam(value="监管对象类型") Integer regulaObjectType,
         @RequestParam(value = "infoCommitterTime", defaultValue = "") @ApiParam(value="开始日期(yyyy-MM-dd)") String infoCommitterTime,
         @RequestParam(value = "infoApproveStatus", defaultValue = "") @ApiParam(value="审核状态") String infoApproveStatus,
         @RequestParam(value = "infoCommitType", defaultValue = "") @ApiParam(value="监管对象状态：0-新增|1-更改") String infoCommitType,
-        @RequestParam(value = "infoCommitter", defaultValue = "") @ApiParam(value="办理人") String infoCommitter
+        @RequestParam(value = "infoCommitter", defaultValue = "") @ApiParam(value="办理人") String infoCommitter,
+        @RequestParam(value = "infoCommitterName", defaultValue = "") @ApiParam(value="办理人姓名") String infoCommitterName,
+        @RequestParam(value = "infoApproverName", defaultValue = "") @ApiParam(value="审批人姓名") String infoApproverName
         ) {
 
         JSONObject queryJObj = new JSONObject();
@@ -63,10 +71,12 @@ public class RegulaObjectInfoCollectController extends BaseController<RegulaObje
          * 对于每一监管对象信息审批记录来说，上面三种状态互斥且唯一
          */
         queryJObj.put("infoApproveStatusSet",
-            infoApproveStatus == null ? new HashSet<String>()
-                : new HashSet<String>(Arrays.asList(infoApproveStatus.split(","))));
+                StringUtils.isBlank(infoApproveStatus) ? new HashSet<String>()
+                : new HashSet<>(Arrays.asList(infoApproveStatus.split(","))));
         queryJObj.put("infoCommitType", infoCommitType);
         queryJObj.put("infoCommitter", infoCommitter);
+        queryJObj.put("infoCommitterName", infoCommitterName);
+        queryJObj.put("infoApproverName", infoApproverName);
 
         return this.baseBiz.getList(queryJObj,page,limit);
     }
