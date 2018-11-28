@@ -815,6 +815,11 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
                 writsInstances.getRefYear() == null ? "" : writsInstances.getRefYear());
             map.put("refNo", writsInstances.getRefNo() == null ? "" : writsInstances.getRefNo());
 
+            /*
+             * 获取模板中的占位符，如果map中还未包含某占位符，则将其添加到map中
+             */
+            DocUtil.getSpecialcharacters(writsTemplate.getDocUrl(), map);
+
             writsPath =
                     DocUtil.getDestUrlAfterReplaceWord(writsTemplate.getDocUrl(),
                             destFileNameBuffer.toString(), propertiesConfig.getDestFilePath(), map);

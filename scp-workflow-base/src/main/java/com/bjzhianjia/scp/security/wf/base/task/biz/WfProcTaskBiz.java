@@ -3824,23 +3824,12 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
     private void _extraVarIntoBizData(WfProcBizDataBean bizData, WfProcTaskBean procTaskBean,
         List<WfProcTaskBean> wfNextTasksBean) {
         // 流程签收人或是候选组
-        List<String> nextAssignList = new ArrayList<>();
-        List<String> nextCandidateGroupsList = new ArrayList<>();
-        for (WfProcTaskBean wfProcTaskBean : wfNextTasksBean) {
-            if (StringUtils.isNotBlank(wfProcTaskBean.getProcTaskAssignee())) {
-                nextAssignList.add(wfProcTaskBean.getProcTaskAssignee());
-            }
-            if (StringUtils.isNotBlank(wfProcTaskBean.getProcTaskGroup())) {
-                nextCandidateGroupsList.add(wfProcTaskBean.getProcTaskGroup());
-            }
-            if (StringUtils.isNotBlank(wfProcTaskBean.getProcDepartId())
-                && !"0".equals(wfProcTaskBean.getProcDeptpermission())) {
-
-            }
-        }
-
-        bizData.put("procTaskBean", JSONObject.parseObject(JSONObject.toJSONString(procTaskBean)));
-        bizData.put("wfNextTasksBean",
-            JSONArray.parseArray(JSONArray.toJSONString(wfNextTasksBean)));
-    }
+		try {
+			bizData.put("procTaskBean", JSONObject.parseObject(JSONObject.toJSONString(procTaskBean)));
+			bizData.put("wfNextTasksBean",
+				JSONArray.parseArray(JSONArray.toJSONString(wfNextTasksBean)));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

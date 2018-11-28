@@ -487,4 +487,20 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
     public List<JSONObject> getGridZFPQ(){
         return this.baseBiz.getGridZFPQ();
     }
+    
+    @GetMapping("/heatMap")
+    @ApiOperation("事件热力学统计")
+    public TableResultResponse<JSONObject> caseHeatMap(
+        @RequestParam(value = "caseLevel", defaultValue = "") String caseLevel,
+        @RequestParam(value = "sourceType", defaultValue = "") String sourcetype,
+        @RequestParam(value = "grid", required = false) Integer grid,
+        @RequestParam(value = "startDate", defaultValue = "") String startDate,
+        @RequestParam(value = "endDate", defaultValue = "") String endDate) {
+        CaseInfo caseInfo = new CaseInfo();
+        caseInfo.setCaseLevel(caseLevel);
+        caseInfo.setSourceType(sourcetype);
+        caseInfo.setGrid(grid);
+
+        return this.baseBiz.heatMap(caseInfo, startDate, endDate);
+    }
 }

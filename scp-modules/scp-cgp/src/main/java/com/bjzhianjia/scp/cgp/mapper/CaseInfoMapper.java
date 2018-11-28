@@ -111,4 +111,12 @@ public interface CaseInfoMapper extends CommonMapper<CaseInfo> {
      * @return
      */
     List<JSONObject> getGridZFPQ(@Param("isFinish")String isFinish);
+
+    /**
+     * 事件势力学图
+     * @param caseInfo
+     * @return
+     */
+    List<JSONObject> heatMap(@Param("caseInfo") CaseInfo caseInfo, @Param("startDate") String startDate,
+        @Param("endDate") String endDate);
 }
