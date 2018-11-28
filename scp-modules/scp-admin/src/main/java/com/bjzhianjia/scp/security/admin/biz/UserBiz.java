@@ -231,9 +231,8 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
                 example.or(criteria);
             }
         }
-        //更新，创建时间降序
-        example.setOrderByClause(" upd_time desc");
-        example.setOrderByClause(" crt_time desc");
+        //创建和更新时间降序
+        example.setOrderByClause(" crt_time desc , upd_time desc");
     }
 
     public List<String> getUserDataDepartIds(String userId) {

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bjzhianjia.scp.cgp.mapper.RegulaObjectInfoCollectMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.bjzhianjia.scp.cgp.entity.RegulaObjectInfoCollect" id="regulaObjectInfoCollectMap">
+        <result property="id" column="id"/>
+        <result property="objId" column="obj_id"/>
+        <result property="infoCommitter" column="info_committer"/>
+        <result property="infoCommitTime" column="info_commit_time"/>
+        <result property="commitMsg" column="commit_msg"/>
+        <result property="infoApprover" column="info_approver"/>
+        <result property="infoApproveTime" column="info_approve_time"/>
+        <result property="infoApproveOpinion" column="info_approve_opinion"/>
+        <result property="infoApproveStatus" column="info_approve_status"/>
+        <result property="infoGroup" column="info_group"/>
+        <result property="currentNode" column="current_node"/>
+        <result property="nodeStatus" column="node_status"/>
+        <result property="isFinished" column="is_finished"/>
+    </resultMap>
+
+    <select id="list" resultType="com.alibaba.fastjson.JSONObject">
+        select roic.`id` infoCollectId,roic.`info_committer` infoCommitter,roic.`info_commit_time` infoCommitTime,roic.`info_approve_status` infoApproveStatus,
+        roic.`info_approve_opinion` infoApproveOpinion,
+        ro.`obj_name` objName,ro.`obj_code` objCode,ro.`id` objId,
+        rot.`object_type_name` objectTypeName
+        from regula_object_info_collect roic
+        left join regula_object ro on ro.`id`=roic.`obj_id`
+        left join regula_object_type rot on rot.`id`=ro.`obj_type`
+        <where>
+            <if test="queryJObj.regulaObjectName != null and queryJObj.regulaObjectName != ''">
+                and ro.obj_name like "%"#{queryJObj.regulaObjectName}"%"
+            </if>
+            <if test="queryJObj.regulaObjectType != null">
+                and rot.`id`=#{queryJObj.regulaObjectType}
+            </if>
+            <if test="queryJObj.infoCommitterTime != null and queryJObj.infoCommitterTime != ''">
+                and roic.`info_commit_time`>=#{queryJObj.infoCommitterTime}
+            </if>
+            <if test="queryJObj.infoApproveStatusSet != null and queryJObj.infoApproveStatusSet.size()>0">
+                and roic.`info_approve_status` in (
+                    <foreach collection="queryJObj.infoApproveStatusSet" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                )
+            </if>
+            <if test="queryJObj.infoCommitter != null and queryJObj.infoCommitter != ''">
+                and roic.`info_committer` = #{queryJObj.infoCommitter}
+            </if>
+            <if test="queryJObj.objId != null and queryJObj.objId != ''">
+                and roic.`obj_id` = #{queryJObj.objId}
+            </if>
+            <!-- 按提交人及审批人姓名模糊查询 -->
+            <if test="queryJObj.infoCommitterName != null and queryJObj.infoCommitterName != ''">
+                and roic.info_committer_name like "%"#{queryJObj.infoCommitterName}"%"
+            </if>
+            <if test="queryJObj.infoApproverName != null and queryJObj.infoApproverName != ''">
+                and roic.`info_approver_name` like "%"#{queryJObj.infoApproverName}"%"
+            </if>
+        </where>
+    </select>
+</mapper>

@@ -24,10 +24,8 @@
 		<class template ="class  com.bjzhianjia.scp.cgp.constances.*"/>
 		<class template ="class  com.bjzhianjia.scp.cgp.exception.*"/>
 		<class template ="class  com.bjzhianjia.scp.cgp.CgpBootstrap"/>
-		<class template ="class  com.bjzhianjia.scp.cgp.biz.*"/>
-		<class template ="class  com.bjzhianjia.scp.cgp.service.EventTypeService"/>
-		<class template ="class  com.bjzhianjia.scp.cgp.rest.AnnouncementInfoController"/>
-
+		<!-- 排除springboot 依赖文件 -->
+		<class template ="class  org.springframework.boot.*"/>
     </ignore-classes>
 	<!-- 随机命名混淆字符-->
 	<property name="random-seed" value="cshxzf jrncbd hh"/>

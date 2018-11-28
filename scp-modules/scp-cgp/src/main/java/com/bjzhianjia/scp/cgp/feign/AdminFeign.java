@@ -109,4 +109,29 @@ public interface AdminFeign {
 	@GetMapping("/user/list/byDeptIds")
 	@ApiOperation("按部门ID集合查询用户")
 	public List<JSONObject> getUsersByDeptIds(@RequestParam("deptIds") String deptIds);
+
+	/**
+	 * 获取用户详情，包括部门及岗位
+	 * @param userIds 用户Ids
+	 * @return
+	 */
+	@RequestMapping(value="/external/user/info",method=RequestMethod.GET)
+	JSONArray getInfoByUserIds(@RequestParam("userIds") String userIds);
+
+	/**
+	 * 批量获取人员信息
+	 * @param userIds 用户Ids
+	 * @return
+	 */
+	@RequestMapping(value = "/external/userIds", method = RequestMethod.GET)
+	Map<String, String> getUsersByUserIds(@RequestParam("userIds") String userIds);
+
+	/**
+	 * 通过部门ids获取部门信息
+	 *
+	 * @param deptIds 部门ids
+	 * @return
+	 */
+	@RequestMapping(value = "/external/deptIds", method = RequestMethod.GET)
+	Map<String, String> getDepartByDeptIds(@RequestParam("deptIds") String deptIds);
 }

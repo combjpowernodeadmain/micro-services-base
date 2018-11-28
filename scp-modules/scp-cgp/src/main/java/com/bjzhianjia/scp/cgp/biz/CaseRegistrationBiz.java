@@ -64,6 +64,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -78,6 +79,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
+@Transactional
 public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, CaseRegistration> {
 
     @Autowired
@@ -1143,12 +1145,32 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     public JSONObject getInfoById(JSONObject objs) {
         JSONObject result = null;
         JSONObject queryData = objs.getJSONObject("queryData");
-        CaseRegistration caseRegistration = this.selectById(queryData.get("caseRegistrationId"));
+        JSONObject bizData = objs.getJSONObject("bizData");
+
+        String caseRegistrationId = queryData.getString("caseRegistrationId");
+        if(BeanUtil.isEmpty(caseRegistrationId)){
+            /*
+             * 在工作流请求参数结构中，对于业务ID应通过bizData中的procBizId参数传参
+             * 介于之前有通过queryData中的caseRegistrationId传参的情况，对此，保留之前的请求方式
+             * 如果在queryData中的caseRegistrationId参数为空，则获取bizData中的procBizId参数
+             */
+            caseRegistrationId=bizData.getString("procBizId");
+        }
+        CaseRegistration caseRegistration = this.selectById(caseRegistrationId);
 
         if (caseRegistration != null) {
 
             result = JSONObject.parseObject(JSONObject.toJSONString(caseRegistration));
             if (result != null) {
+                //案件来源名称
+                String caseSourceTypeName = "";
+                if(StringUtils.isNotBlank(caseRegistration.getCaseSourceType())){
+                    Map<String, String> dictMap = dictFeign.getByCode(caseRegistration.getCaseSourceType());
+                    caseSourceTypeName = dictMap.get(caseRegistration.getCaseSourceType());
+                    caseSourceTypeName = caseSourceTypeName != null ? caseSourceTypeName : "";
+                }
+                result.put("caseSourceTypeName",caseSourceTypeName);
+
                 getOneQueryAssist(caseRegistration, result);
 
                 // 查询流程历史记录
@@ -1330,7 +1352,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
         JSONObject obj = null;
         // 返回集初始化
-        Map<String, JSONObject> temp = new HashMap<>();
+        Map<String, JSONObject> temp = new LinkedHashMap<>();
         Set<String> setKey = bizType.keySet();
         for (String key : setKey) {
             obj = new JSONObject();
@@ -1397,7 +1419,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         Set<String> deptIdForQuery=new HashSet<>();
         List<Map<String, String>> deptParam = new ArrayList<>();// 添补动态SQL的参数
 
-        Map<String, String> dept_ID_NAME_Map = new HashMap<>();
+        Map<String, String> dept_ID_NAME_Map = new LinkedHashMap<>();
         Set<String> neatDeptIdSet = new HashSet<>();// 干净的执法人员部门ID
         //List<String> deptIdList = new ArrayList<>();// 用于数据整合时判断结果集里的某一条key是否为部门ID
         for (int i = 0; i < enforcersGroup.size(); i++) {

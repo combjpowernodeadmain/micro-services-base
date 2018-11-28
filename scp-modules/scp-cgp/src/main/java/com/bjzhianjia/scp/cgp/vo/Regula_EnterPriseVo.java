@@ -11,12 +11,9 @@ public class Regula_EnterPriseVo implements Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = 5656912162147079843L;
-	//监管对象ID
-	private Integer regulaObjectId;
 	private String objCode;
     private String objName;
     private String objType;
-    private Integer objId;//要删除
     private String objAddress;
     private String linkman;
     private String linkmanPhone;
@@ -38,7 +35,7 @@ public class Regula_EnterPriseVo implements Serializable{
     
     //企业信息ID
     private Integer enterpriseId;
-    private Integer regulaObjId;//要删除
+    private Integer regulaObjId;
     private String tradeRegistCode;
     private String typeCode;
     private String creditCode;
@@ -72,12 +69,6 @@ public class Regula_EnterPriseVo implements Serializable{
     private String leadPhone;
     private String address;
     
-	public Integer getRegulaObjectId() {
-		return regulaObjectId;
-	}
-	public void setRegulaObjectId(Integer regulaObjectId) {
-		this.regulaObjectId = regulaObjectId;
-	}
 	public Integer getEnterpriseId() {
 		return enterpriseId;
 	}
@@ -101,12 +92,6 @@ public class Regula_EnterPriseVo implements Serializable{
 	}
 	public void setObjType(String objType) {
 		this.objType = objType;
-	}
-	public Integer getObjId() {
-		return objId;
-	}
-	public void setObjId(Integer objId) {
-		this.objId = objId;
 	}
 	public String getObjAddress() {
 		return objAddress;

@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.cgp.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -9,9 +10,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import com.github.pagehelper.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.geo.Circle;
 import org.springframework.data.geo.Distance;
@@ -23,6 +24,8 @@ import org.springframework.data.redis.connection.RedisGeoCommands.GeoLocation;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -32,6 +35,7 @@ import com.bjzhianjia.scp.cgp.biz.EnterpriseInfoBiz;
 import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
 import com.bjzhianjia.scp.cgp.biz.RegTypeRelationBiz;
 import com.bjzhianjia.scp.cgp.biz.RegulaObjectBiz;
+import com.bjzhianjia.scp.cgp.biz.RegulaObjectInfoCollectBiz;
 import com.bjzhianjia.scp.cgp.biz.RegulaObjectTypeBiz;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.Constances;
@@ -40,6 +44,7 @@ import com.bjzhianjia.scp.cgp.entity.EventType;
 import com.bjzhianjia.scp.cgp.entity.PatrolTask;
 import com.bjzhianjia.scp.cgp.entity.RegTypeRelation;
 import com.bjzhianjia.scp.cgp.entity.RegulaObject;
+import com.bjzhianjia.scp.cgp.entity.RegulaObjectInfoCollect;
 import com.bjzhianjia.scp.cgp.entity.RegulaObjectType;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
@@ -48,7 +53,9 @@ import com.bjzhianjia.scp.cgp.mapper.PatrolTaskMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.vo.RegulaObjectVo;
 import com.bjzhianjia.scp.cgp.vo.Regula_EnterPriseVo;
+import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.github.pagehelper.PageHelper;
 
 import lombok.extern.log4j.Log4j;
 import tk.mybatis.mapper.entity.Example;
@@ -103,6 +110,12 @@ public class RegulaObjectService {
     @Autowired
     private PatrolTaskMapper patrolTaskMapper;
 
+    @Autowired
+    private RegulaObjectInfoCollectBiz regulaObjectInfoCollectBiz;
+
+    @Autowired
+    private Environment environment;
+
     /**
      * 添加监管对象-经营单位
      * 
@@ -112,17 +125,6 @@ public class RegulaObjectService {
      * @return
      */
     public Result<Void> createRegulaObject(RegulaObject regulaObject, EnterpriseInfo enterpriseInfo) {
-        // RegulaObject theMaxRegulaObject = regulaObjectBiz.getTheMaxOne();
-
-        // int maxRegulaObjectId = -1;
-        // if (theMaxRegulaObject == null) {
-        // maxRegulaObjectId = 1;
-        // } else {
-        // maxRegulaObjectId = theMaxRegulaObject.getId() + 1;
-        // }
-        // regulaObject.setId(maxRegulaObjectId);// 指定监管对象记录ID
-        // enterpriseInfo.setRegulaObjId(maxRegulaObjectId);// 指定企业信息的外键
-
         Result<Void> result = new Result<>();
 
         result = check(regulaObject, enterpriseInfo, false);
@@ -256,17 +258,31 @@ public class RegulaObjectService {
                             return result;
                         }
                     }
-
-                    // if (rows.size() > 0) {
-                    // result.setMessage("所填监管对象编码已存在");
-                    // return result;
-                    // }
                 }
 
             }
         }
 
-        // 验证当前监管对象名称的唯一性
+        /*
+         * 新需求要求：
+         * 在修改操作中，对于监管对象信息的监管对象类型，监管对象名称及社会信用代码三个字段信息不可再次进行更改，
+         * 三者改其一该监管对象就不是原来的监管对象了
+         * 对这三者的验证规则进行修改
+         */
+        RegulaObject regulaObjectInDB = this.regulaObjectBiz.selectById(regulaObject.getId());
+        EnterpriseInfo enterpriseInfoInDB = this.enterpriseInfoBiz.selectById(enterpriseInfo.getId());
+        // 将‘监管对象类型，监管对象名称及社会信用代码’与数据库中的信息进行对比，验证是否发生变化
+        if(isUpdate){
+            boolean noUnique =
+                    !regulaObjectInDB.getObjType().equals(regulaObject.getObjType())
+                            || !regulaObject.getObjName().equals(regulaObjectInDB.getObjName())
+                            || !enterpriseInfo.getCreditCode().equals(enterpriseInfoInDB.getCreditCode());
+            if(noUnique){
+                result.setMessage("监管对象类别、名称及社会信息代码不可修改");
+                return result;
+            }
+        }
+
         String objName = regulaObject.getObjName();
         if (StringUtils.isNotBlank(objName)) {
             Map<String, Object> params = new HashMap<>();
@@ -531,9 +547,10 @@ public class RegulaObjectService {
 
         // 所属网格
         Integer griId = regulaObject.getGriId();
-        AreaGrid gridInDB = new AreaGrid();
-        if (griId != null) {
-            gridInDB = areaGridBiz.selectById(griId);
+        AreaGrid gridInDB = areaGridBiz.selectById(griId);
+        //防止程序null指针异常
+        if (gridInDB == null) {
+            gridInDB = new AreaGrid();
         }
 
         // 业务条线
@@ -784,5 +801,79 @@ public class RegulaObjectService {
         }
 
         return new TableResultResponse<>(voList.size(), voList);
+    }
+
+    /**
+     * 信息采集请求处理
+     * @param vo
+     * @return
+     */
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public Result<Void> regulaObjectInfoCollect(JSONObject infoCollectJObj) {
+        Result<Void> result = new Result<>();
+        if (BeanUtil.isEmpty(infoCollectJObj)) {
+            result.setIsSuccess(false);
+            result.setMessage("请输入监管对象采集信息");
+            return result;
+        }
+
+        /*
+         * 该方法处理监管对象信息采集者提交的信息
+         * 请求数据分两种可能：
+         * 1 该采集信息为第一次提交，在传入的请求数据内不包含监管对象ID，此时对应一次添加操作
+         * 2 该采集信息已经存在或是处理审批退回的操作，则此时该监管对象在数据库中已有记录，对应一次更新操作
+         * 3 无论对应第一步操作或是对应第二步操作，都需要在监管对象信息采集过程记录表的添加一条记录
+         * 4 在监管对象信息采集过程记录表中添加数据时，审批状态字段(infoApproveStatus)为待审批
+         * 5 如果本次请求对应一次更新操作，请将在插入一条新记录后，将上一条记录的审批状态改为退回已处理
+         */
+        RegulaObject regulaObject = infoCollectJObj.toJavaObject(RegulaObject.class);// 监管对象数据
+        regulaObject.setIsDisabled("1");// 刚提交信息，监管对象状态为【禁用】
+
+        EnterpriseInfo enterpriseInfo = infoCollectJObj.toJavaObject(EnterpriseInfo.class);// 企业信息数据
+        enterpriseInfo.setAddress(regulaObject.getObjAddress());// 企业信息地址即为监管对象地址
+
+        // mapinfo {"lng":"xxx","lat":"xxx"}
+        JSONObject mapinfo = infoCollectJObj.getJSONObject("mapInfo");
+        if (mapinfo != null) {
+            regulaObject.setLatitude(mapinfo.getFloat("lat"));
+            regulaObject.setLongitude(mapinfo.getFloat("lng"));
+        }
+
+        // 判断记录是否已经存在
+        if (infoCollectJObj.getInteger("objId") != null) {
+            // 对象存在过
+            regulaObject.setId(infoCollectJObj.getInteger("objId"));
+            result = this.updateRegulaObject(regulaObject, enterpriseInfo);
+
+            // 如果本次请求对应一次更新操作，在插入一条新记录后，将上一条记录的审批状态改为【退回已处理】
+            if(BeanUtil.isNotEmpty(infoCollectJObj.getInteger("infoCollectId"))){
+                // 如果有infoCollectId说明提交人在处理一起【退回】的操作
+                RegulaObjectInfoCollect infoCollectToUpdate = new RegulaObjectInfoCollect();
+                infoCollectToUpdate.setId(infoCollectJObj.getInteger("infoCollectId"));
+                infoCollectToUpdate.setInfoApproveStatus(environment.getProperty("regulaObjectInfoCollectBackDone"));
+                regulaObjectInfoCollectBiz.updateSelectiveById(infoCollectToUpdate);
+            }
+        } else {
+            regulaObject.setGatherer(BaseContextHandler.getUserID());
+            regulaObject.setGatherTime(new Date());
+            result = this.createRegulaObject(regulaObject, enterpriseInfo);
+        }
+
+        if (!result.getIsSuccess()) {
+            // 操作已出现异常，不再向后进行
+            return result;
+        }
+
+        // 添加监管对象信息采集过程记录表里的信息
+        RegulaObjectInfoCollect infoCollect = new RegulaObjectInfoCollect();
+        infoCollect.setObjId(regulaObject.getId());
+        infoCollect.setInfoCommitType(infoCollectJObj.getString("infoCommitType"));
+        infoCollect.setInfoCommitter(BaseContextHandler.getUserID());
+        infoCollect.setInfoCommitterName(BaseContextHandler.getUsername());
+        infoCollect.setInfoCommitTime(new Date());
+        infoCollect.setInfoApproveStatus(environment.getProperty("regulaObjectInfoCollectToApprove"));
+        regulaObjectInfoCollectBiz.insertSelective(infoCollect);
+
+        return result;
     }
 }
