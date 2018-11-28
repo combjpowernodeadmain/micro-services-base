@@ -303,7 +303,7 @@ public class MessageCenterBiz extends BusinessBiz<MessageCenterMapper, MessageCe
         Criteria criteria = example.createCriteria();
         criteria.andEqualTo("isDeleted", "0");
         criteria.andEqualTo("isRead", "0");
-        //消息提醒经个人为查询依据
+        //消息提醒以个人为查询依据
         criteria.andEqualTo("crtUserId", BaseContextHandler.getUserID());
         if(StringUtils.isNotBlank(messageCenter.getMsgSourceType())){
             criteria.andIn("msgSourceType",
@@ -326,6 +326,8 @@ public class MessageCenterBiz extends BusinessBiz<MessageCenterMapper, MessageCe
                 try {
                     JSONObject swapProperties =
                         propertiesProxy.swapProperties(messageCenterTmp, "id", "msgName", "msgDesc", "taskTime","msgSourceId","msgSourceType");
+                    // 当前人查到的消息记录肯定为本人的，所以整合姓名时，可从BaseContextHandler中获取
+                    swapProperties.put("executor", BaseContextHandler.getUsername());
                     result.add(swapProperties);
                 } catch (Throwable e) {
                     e.printStackTrace();

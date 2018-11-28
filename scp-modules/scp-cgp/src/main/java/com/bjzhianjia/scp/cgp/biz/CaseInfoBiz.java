@@ -22,6 +22,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -761,5 +762,22 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         }
 
         return resultJObjList;
+    }
+
+    /**
+     * 事件势力学统计
+     * @param caseInfo
+     */
+    public TableResultResponse<JSONObject> heatMap(CaseInfo caseInfo,String startDate,String endDate) {
+        DateTime dateTime = new DateTime(DateUtil.dateFromStrToDate(endDate, "yyyy-MM").getTime());
+        DateTime dateTime1 = dateTime.plusMonths(1);
+        endDate =
+                DateUtil.dateFromDateToStr(new Date(dateTime1.plusMonths(1).getMillis()), "yyyy-MM");
+
+        List<JSONObject> rows = this.mapper.heatMap(caseInfo, startDate,endDate);
+        if(BeanUtil.isNotEmpty(rows)){
+            return new TableResultResponse<>(0, rows);
+        }
+        return new TableResultResponse<>(0, new ArrayList<>());
     }
 }

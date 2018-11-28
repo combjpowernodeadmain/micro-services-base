@@ -446,4 +446,11 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         }
         return result;
     }
+
+    @GetMapping("/heatMap")
+    @ApiOperation("案件热力学统计")
+    public TableResultResponse<JSONObject> heatMap(@RequestParam(value = "startDate") String startDate,
+        @RequestParam(value = "endDate") String endDate) {
+        return this.baseBiz.heatMap(startDate, endDate);
+    }
 }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.ibatis.annotations.Param;
 
 import com.alibaba.fastjson.JSONArray;
@@ -123,4 +124,12 @@ public interface CaseRegistrationMapper extends CommonMapper<CaseRegistration> {
      * @return
      */
     Map<String,Object> selectBaseInfoById(@Param("caseId") String caseId);
+
+    /**
+     * 案件热力学统计
+     * @param cyear
+     * @param cmonth
+     * @return
+     */
+    List<JSONObject> heatMap(@Param("startDate") String startDate, @Param("endDate") String endDate);
 }

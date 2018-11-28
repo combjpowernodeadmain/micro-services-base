@@ -417,4 +417,126 @@ public class DocUtil {
         // 关闭连接
         connection.disconnect();
     }
+
+
+    /**
+     * 获取文件destFileName中的占位符，并将其装入map中
+     * 占位符格式如${*}
+     * 
+     * @param srcFullPath
+     * @param destFileName
+     * @param map
+     * @throws Exception
+     */
+    public static void getSpecialcharacters(String srcFullPath, Map<String, String> map)
+        throws Exception {
+        String[] sp = srcFullPath.split("\\.");
+
+        if (sp.length > 0) {
+            /** 比较文件扩展名 **/
+            if (sp[sp.length - 1].equalsIgnoreCase("docx")) {
+                XWPFDocument document = null;
+                try {
+                    document = new XWPFDocument(POIXMLDocument.openPackage(srcFullPath));
+
+                    // 获取特殊字符列表
+                    Iterator<XWPFParagraph> itPara = document.getParagraphsIterator();
+                    while (itPara.hasNext()) {
+                        XWPFParagraph paragraph = itPara.next();
+                        getSpecialCharacterFromParagraph(map, paragraph);
+                    }
+
+                    Iterator<XWPFTable> itTable = document.getTablesIterator();
+                    while (itTable.hasNext()) {
+                        XWPFTable table = itTable.next();
+                        int rcount = table.getNumberOfRows();
+                        for (int i = 0; i < rcount; i++) {
+                            XWPFTableRow row = table.getRow(i);
+                            List<XWPFTableCell> cells = row.getTableCells();
+                            for (XWPFTableCell cell : cells) {
+                                List<XWPFParagraph> paragraphs = cell.getParagraphs();
+                                for (XWPFParagraph paragraph : paragraphs) {
+                                    getSpecialCharacterFromParagraph(map, paragraph);
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    throw e;
+                } finally {
+                    if (document != null) {
+                        try {
+                            document.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            } else if (sp[sp.length - 1].equalsIgnoreCase("doc")) {
+                /** doc只能生成doc，如果生成docx会出错 **/
+                HWPFDocument document = null;
+                FileInputStream in = null;
+                try {
+                    in = new FileInputStream(new File(srcFullPath));
+                    document = new HWPFDocument(in);
+                    Range range = document.getRange();
+                    for (Map.Entry<String, String> entry : map.entrySet()) {
+                        /*
+                         * By尚
+                         * 修改：2018-09-25
+                         */
+                        String reg = "${" + entry.getKey() + "}";
+                        range.replaceText(reg, String.valueOf(entry.getValue()));
+                    }
+                    FileOutputStream outStream = null;
+                    outStream = new FileOutputStream(srcFullPath);
+                    document.write(outStream);
+                    outStream.close();
+
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        if (document != null) {
+                            document.close();
+                        }
+                        if (in != null) {
+                            in.close();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else {
+            }
+        } else {
+        }
+    }
+
+    private static void getSpecialCharacterFromParagraph(Map<String, String> map,
+        XWPFParagraph paragraph) {
+        String paragraphString = paragraph.getText();
+        CharSequence charSequence = paragraphString.subSequence(0, paragraphString.length());
+
+        String replaceRegx = "\\$\\{[a-zA-Z_0-9]{1,}}";// 匹配${任意数量字母或数字或下划线}格式的字符串
+        Pattern pattern = Pattern.compile(replaceRegx);
+        Matcher matcher = pattern.matcher(charSequence);
+
+        int startPosition = 0;
+        while (matcher.find(startPosition)) {
+            // ${*},将占位符中间的有用字符串截取出来
+            String specialCharKey =
+                matcher.group().substring(matcher.group().indexOf("{") + 1,
+                    matcher.group().length() - 1);
+
+            if (!map.keySet().contains(specialCharKey)) {
+                // 如果map集中还未包含该特殊字符
+                map.put(specialCharKey, "");
+                log.debug("字段"+specialCharKey+"被添加进map集");
+            }
+            startPosition = matcher.end();
+        }
+    }
 }

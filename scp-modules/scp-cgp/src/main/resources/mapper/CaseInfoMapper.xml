@@ -370,4 +370,27 @@ SELECT
 		)countResult
 		GROUP BY zfqp,zfqpName,zfqpLevel
 	</select>
+
+	<select id="heatMap" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT cyear,cmonth,mapInfoCount,mapInfo FROM (
+            SELECT YEAR(ci.occur_time) cyear,MONTH(ci.`occur_time`) cmonth,COUNT(ci.map_info) mapInfoCount,ci.map_info mapInfo
+            FROM case_info ci
+            WHERE ci.`map_info`IS NOT NULL AND ci.`map_info`!=''
+            AND ci.occur_time IS NOT NULL AND ci.occur_time != ''
+            <if test="caseInfo.caseLevel != null and caseInfo.caseLevel != ''">
+                AND ci.case_level=#{caseInfo.caseLevel}
+            </if>
+            <if test="caseInfo.sourceType != null and caseInfo.sourceType != ''">
+                AND ci.source_type=#{caseInfo.sourceType}
+            </if>
+            <if test="caseInfo.grid!=null">
+                AND ci.grid=45
+            </if>
+            <if test="startDate !=null and startDate != '' and endDate != null and endDate != ''">
+                AND ci.`occur_time` &gt;= #{startDate}
+                AND ci.`occur_time` &lt;= #{endDate}
+            </if>
+            GROUP BY ci.map_info,cyear,cmonth
+        ) resultTmp
+	</select>
 </mapper>

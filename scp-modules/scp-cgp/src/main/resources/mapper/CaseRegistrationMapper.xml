@@ -375,4 +375,15 @@
 			ccr.is_deleted = 0
 		AND ccr.id = #{caseId}
 	</select>
+
+	<!-- 案件热力学统计 -->
+	<select id="heatMap" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT cyear,cmonth,mapInfoCount,caseOngitude,caseLatitude FROM (
+			SELECT YEAR(ci.case_time) cyear,MONTH(ci.`case_time`) cmonth,COUNT(ci.case_ongitude) mapInfoCount,ci.case_ongitude caseOngitude,ci.case_latitude caseLatitude
+			FROM cle_case_registration ci
+			WHERE ci.`case_ongitude` IS NOT NULL AND ci.`case_latitude` IS NOT NULL
+			AND ci.`case_time` &gt;= #{startDate} AND ci.`case_time` &lt;= #{endDate}
+			GROUP BY ci.case_ongitude,cyear,cmonth,ci.case_latitude
+			) resultTmp
+	</select>
 </mapper>

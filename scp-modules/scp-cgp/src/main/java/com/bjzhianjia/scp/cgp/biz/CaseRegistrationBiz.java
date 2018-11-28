@@ -2103,4 +2103,32 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             this.addAttachments(jobjs, jobjs.getString("procBizId"));
         }
     }
+
+    /**
+     * 案件热力图分析
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    public TableResultResponse<JSONObject> heatMap(String startDate, String endDate) {
+        DateTime dateTime = new DateTime(DateUtil.dateFromStrToDate(endDate, "yyyy-MM").getTime());
+        DateTime dateTime1 = dateTime.plusMonths(1);
+        endDate =
+            DateUtil.dateFromDateToStr(new Date(dateTime1.plusMonths(1).getMillis()), "yyyy-MM");
+
+        List<JSONObject> rows=this.mapper.heatMap(startDate,endDate);
+        if(BeanUtil.isNotEmpty(rows)){
+            JSONObject mapInfoJObj=new JSONObject();
+            for(JSONObject jobTmp:rows){
+                //"mapInfo": "{\"lng\":120.514687,\"lat\":31.818712}"
+                mapInfoJObj.put("lng", jobTmp.get("caseOngitude"));
+                mapInfoJObj.put("lat", jobTmp.get("caseLatitude"));
+                jobTmp.put("mapInfo", mapInfoJObj.toJSONString());
+                mapInfoJObj.remove("caseOngitude");
+                mapInfoJObj.remove("caseLatitude");
+            }
+            return new TableResultResponse<>(0, rows);
+        }
+        return new TableResultResponse<>(0, new ArrayList<>());
+    }
 }
