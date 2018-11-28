@@ -5,6 +5,7 @@ import org.joda.time.DateTime;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -115,5 +116,35 @@ public class DateUtil {
 	public static Date theDayOfPlus(Date sourceDate,int days){
 		DateTime dateTime = new DateTime(sourceDate.getTime());
 		return new Date(dateTime.plusDays(days).getMillis());
+	}
+
+	/**
+	 * 给指定日期添加指定的分钟数
+	 * @param date 日期
+	 * @param minute 需要添加的分钟数
+	 * @return
+	 */
+	public static Date addMinute(Date date, int minute){
+		Calendar time = Calendar.getInstance();
+		time.setTime(date);
+		time.add(Calendar.MINUTE, minute);
+		return time.getTime();
+	}
+
+	/**
+	 * 将时间戳转化为Date类型，默认格式为"yyyyy-MM-dd HH:mm:ss""
+	 * @param time
+	 * @return
+	 */
+	public static Date dateFromLongToDate(long time) {
+		SimpleDateFormat format=new SimpleDateFormat(CommonConstances.DATE_FORMAT_FULL);
+		Date date =null;
+		try {
+			String dateStr = format.format(time);
+			date = format.parse(dateStr);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return date;
 	}
 }

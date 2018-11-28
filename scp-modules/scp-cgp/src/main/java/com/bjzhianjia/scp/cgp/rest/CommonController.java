@@ -3,12 +3,14 @@ package com.bjzhianjia.scp.cgp.rest;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import com.bjzhianjia.scp.cgp.biz.CaseRegistrationBiz;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.service.CaseInfoService;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
+import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreUserToken;
 
@@ -110,7 +112,7 @@ public class CommonController {
         Result<Void> voidResult = _checkAuth(objs);
 
         if(!voidResult.getIsSuccess()){
-            tableresult.setMessage("无效认证");
+            tableresult.setMessage(voidResult.getMessage());
             tableresult.setStatus(401);
             return tableresult;
         }
@@ -120,7 +122,7 @@ public class CommonController {
     }
 
     @PostMapping("/webDefault/caseInfo/userTaskDetail")
-    @ApiOperation("事件综合查询")
+    @ApiOperation("事件详情")
     @IgnoreClientToken
     @IgnoreUserToken
     public ObjectRestResponse<JSONObject> userCaseInfoTaskDetail(@RequestBody JSONObject objs, HttpServletRequest request){
@@ -128,7 +130,7 @@ public class CommonController {
 
         Result<Void> voidResult = _checkAuth(objs);
         if(!voidResult.getIsSuccess()){
-            objectResult.setMessage("无效认证");
+            objectResult.setMessage(voidResult.getMessage());
             objectResult.setStatus(401);
             return objectResult;
         }
@@ -147,7 +149,7 @@ public class CommonController {
         Result<Void> voidResult = _checkAuth(objs);
 
         if(!voidResult.getIsSuccess()){
-            tableresult.setMessage("无效认证");
+            tableresult.setMessage(voidResult.getMessage());
             tableresult.setStatus(401);
             return tableresult;
         }
@@ -157,7 +159,7 @@ public class CommonController {
     }
 
     @PostMapping("/webDefault/caseRegistration/userTaskDetail")
-    @ApiOperation("事件综合查询")
+    @ApiOperation("案件详情接口")
     @IgnoreClientToken
     @IgnoreUserToken
     public ObjectRestResponse<JSONObject> getUserCaseRegistrationToDoTask(@RequestBody JSONObject objs, HttpServletRequest request){
@@ -165,7 +167,7 @@ public class CommonController {
 
         Result<Void> voidResult = _checkAuth(objs);
         if(!voidResult.getIsSuccess()){
-            objectResult.setMessage("无效认证");
+            objectResult.setMessage(voidResult.getMessage());
             objectResult.setStatus(401);
             return objectResult;
         }
@@ -182,6 +184,7 @@ public class CommonController {
 
     private Result<Void> _checkAuth(JSONObject objs) {
         Result<Void> result = new Result<>();
+        String msg = "Authentication failed. Please Get the correct key.";
         try {
             String sign = objs.getString("sign");
             objs.remove("sign");
@@ -198,7 +201,8 @@ public class CommonController {
             objs02.put("procData", String.join("", procData2));
             objs02.put("queryData", String.join("", queryData2));
             objs02.put("variableData", String.join("", variableData2));
-            objs02.put("secret", "it is a secret");
+            String secret = environment.getProperty("common.external.secret","");
+            objs02.put("secret", secret);
 
             List<String> sortObjsList = _getJObjSortStrings(objs02);
 
@@ -206,17 +210,39 @@ public class CommonController {
                 DigestUtils.md5DigestAsHex(String.join("", sortObjsList).getBytes());
             signOfServer = signOfServer.toUpperCase();
 
+            //验证签名是否正确
             if (!sign.equals(signOfServer)) {
-                result.setMessage("无效认证");
+                result.setMessage(msg);
                 result.setIsSuccess(false);
                 return result;
+            }
+
+            //验证时间的有效性
+            JSONObject authData = objs.getJSONObject("authData");
+            if(authData != null ) {
+                Long timestamp = authData.getLong("timestamp");
+                //不存在时间戳，则认证失败
+                if(timestamp == null || timestamp == 0){
+                    result.setMessage(msg);
+                    result.setIsSuccess(false);
+                    return result;
+                }
+                //判断当前请求的时间戳是否超过1分钟，超时则失效
+                Date timestampDate = DateUtil.dateFromLongToDate(timestamp);
+                long endTime = DateUtil.addMinute(timestampDate,1).getTime();
+                long nowTime = new Date().getTime();
+                if(endTime < nowTime ){
+                    result.setMessage(msg);
+                    result.setIsSuccess(false);
+                    return result;
+                }
             }
 
             result.setIsSuccess(true);
             return result;
         } catch (Exception e) {
             e.printStackTrace();
-            result.setMessage("无效认证");
+            result.setMessage(msg);
             result.setIsSuccess(false);
             return result;
         }

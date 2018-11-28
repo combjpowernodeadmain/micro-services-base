@@ -59,11 +59,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
 
-import javax.transaction.Transactional;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,6 +83,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
+@Transactional
 public class CaseInfoService {
 
     @Autowired
@@ -713,7 +714,7 @@ public class CaseInfoService {
         }
         resultJObjct.put("zhaiyao", String.join("-", zhaiyaoList));
         // 上报人
-        JSONArray userDetailJArray = adminFeign.getUserDetail(String.join(",", reportPersonId));
+        JSONArray userDetailJArray = adminFeign.getInfoByUserIds(String.join(",", reportPersonId));
 
         JSONObject userMap = null;
         if (BeanUtil.isNotEmpty(userDetailJArray)) {
@@ -1090,7 +1091,7 @@ public class CaseInfoService {
         List<String> procTaskAssigneeIdList =
             procHistoryList.stream().map(o -> o.getProcTaskAssignee()).distinct().collect(Collectors.toList());
         if (procTaskAssigneeIdList != null && !procTaskAssigneeIdList.isEmpty()) {
-            JSONArray userDetailJArray = adminFeign.getUserDetail(String.join(",", procTaskAssigneeIdList));
+            JSONArray userDetailJArray = adminFeign.getInfoByUserIds(String.join(",", procTaskAssigneeIdList));
             Map<String, JSONObject> assignMap = new HashMap<>();
 //            Map<String, String> assignMap = adminFeign.getUser(String.join(",", procTaskAssigneeIdList));
             if(BeanUtil.isNotEmpty(userDetailJArray)) {
@@ -1179,7 +1180,7 @@ public class CaseInfoService {
         }
 
         // 将多次向adminFeign的请求集中到这里进行查询，在经之上的代码即对需要进行查询 ID的收集
-        JSONArray manyUsersJArray = adminFeign.getUserDetail(String.join(",", adminIdList));
+        JSONArray manyUsersJArray = adminFeign.getInfoByUserIds(String.join(",", adminIdList));
         Map<String, JSONObject> manyUsersMap=new HashMap<>();
         if(BeanUtil.isNotEmpty(manyUsersJArray)){
             for(int i=0;i<manyUsersJArray.size();i++){
@@ -1369,7 +1370,7 @@ public class CaseInfoService {
         String executedDeptName = "";
         requiredJObj.put("executedDept", caseInfo.getExecuteDept());
         if (caseInfo.getExecuteDept() != null) {
-            Map<String, String> executeDeptMap = adminFeign.getDepart(caseInfo.getExecuteDept());// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>查询了admin》》》》》》》》》》》》》》》》》》》》》》》》》
+            Map<String, String> executeDeptMap = adminFeign.getDepartByDeptIds(caseInfo.getExecuteDept());
             if (executeDeptMap != null && !executeDeptMap.isEmpty()) {
                 executedDeptName =
                     CommonUtil.getValueFromJObjStr(executeDeptMap.get(caseInfo.getExecuteDept()), "name");
@@ -1452,7 +1453,7 @@ public class CaseInfoService {
                     // 登记人电话
                     String recordPersonTel = "";
                     if (StringUtils.isNotBlank(sourceType.getString("crtUserId"))) {
-                        Map<String, String> recordUser = adminFeign.getUser(sourceType.getString("crtUserId"));// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>查询了admin》》》》》》》》》》》》》》》》》》》》》》》》》
+                        Map<String, String> recordUser = adminFeign.getUsersByUserIds(sourceType.getString("crtUserId"));
                         recordPersonTel =
                             CommonUtil.getValueFromJObjStr(recordUser.get(sourceType.getString("crtUserId")),
                                 "mobilePhone");

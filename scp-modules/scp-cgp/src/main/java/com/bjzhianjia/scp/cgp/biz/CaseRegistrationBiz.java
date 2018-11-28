@@ -79,6 +79,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
+@Transactional
 public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, CaseRegistration> {
 
     @Autowired
@@ -1161,11 +1162,14 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
             result = JSONObject.parseObject(JSONObject.toJSONString(caseRegistration));
             if (result != null) {
-
-                Map<String, String> dictMap = dictFeign.getByCode(caseRegistration.getCaseSourceType());
                 //案件来源名称
-                String caseSourceTypeName = dictMap.get(caseRegistration.getCaseSourceType());
-                result.put("caseSourceTypeName",caseSourceTypeName != null ? caseSourceTypeName : "");
+                String caseSourceTypeName = "";
+                if(StringUtils.isNotBlank(caseRegistration.getCaseSourceType())){
+                    Map<String, String> dictMap = dictFeign.getByCode(caseRegistration.getCaseSourceType());
+                    caseSourceTypeName = dictMap.get(caseRegistration.getCaseSourceType());
+                    caseSourceTypeName = caseSourceTypeName != null ? caseSourceTypeName : "";
+                }
+                result.put("caseSourceTypeName",caseSourceTypeName);
 
                 getOneQueryAssist(caseRegistration, result);
 
