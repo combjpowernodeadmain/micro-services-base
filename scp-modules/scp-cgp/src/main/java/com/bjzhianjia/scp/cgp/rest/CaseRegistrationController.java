@@ -453,4 +453,16 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         @RequestParam(value = "endDate") String endDate) {
         return this.baseBiz.heatMap(startDate, endDate);
     }
+
+    @GetMapping("/list/home/statistics")
+    @ApiOperation("指挥中心首页监管对象发生的案件量")
+    public TableResultResponse<JSONObject> regObjCount(
+            @RequestParam(value="caseSourceType",defaultValue = "") @ApiParam("案件来源") String caseSourceType,
+            @RequestParam(value="lawTaskIds",defaultValue = "") @ApiParam("执法任务ID,多个ID之间用逗号隔开") String lawTaskIds
+    ){
+        JSONObject queryJObj=new JSONObject();
+        queryJObj.put("caseSourceType", caseSourceType);
+        queryJObj.put("lawTaskIds", lawTaskIds);
+        return this.baseBiz.regObjCount(queryJObj);
+    }
 }

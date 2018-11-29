@@ -85,15 +85,24 @@
 	
 	<!-- 获取regulaObjIdList集合中所包含的监管对象被巡查的次数 -->
 	<select id="regulaObjCount" resultType="com.alibaba.fastjson.JSONObject">
-		SELECT patrol_task.`regula_object_id`, COUNT(*) rcount FROM patrol_task
+		<!-- 在返回的结果集中添加有问题的巡查量 -->
+		SELECT pt01.`regula_object_id`, COUNT(*) rcount,
+		IF(pCountWithProblem IS NOT NULL,pCountWithProblem,'0') pCountWithProblem
+		FROM patrol_task pt01
+		LEFT JOIN (
+			<!-- 有问题巡查量 -->
+			SELECT pt02.`regula_object_id` regulaObjectId, COUNT(*) pCountWithProblem FROM patrol_task pt02
+			WHERE pt02.is_problem='1'
+			GROUP BY pt02.`regula_object_id`
+		) tablePt02 ON tablePt02.regulaObjectId=pt01.`regula_object_id`
 		<where>
 			<if test="regulaObjIdList != null and regulaObjIdList.size() > 0">
-				patrol_task.`regula_object_id` IN
+				pt01.`regula_object_id` IN
 				<foreach collection="regulaObjIdList" index="index" item="regulaObjId" open="(" separator="," close=")">
 					#{regulaObjId}
 				</foreach>
 			</if>
 		</where>
-		GROUP BY patrol_task.`regula_object_id`
+		GROUP BY pt01.`regula_object_id`,pCountWithProblem
 	</select>
 </mapper>

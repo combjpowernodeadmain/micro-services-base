@@ -818,10 +818,14 @@ public class CaseInfoService {
                 if (areaGridMemberList.size() == 1
                     && areaGridMemberList.get(0).getGridMember() == null) {
                     // 与指定网格对应的只有一条网格员记录，并且gridMember字段为null
-                    throw new BizException("该网格下未配备网格员");
+                    result.setMessage("该网格下未配备网格员");
+                    result.setIsSuccess(false);
+                    return result;
                 }
             } else {
-                throw new BizException("该网格下未配备网格员");
+                result.setMessage("该网格下未配备网格员");
+                result.setIsSuccess(false);
+                return result;
             }
         }
 

@@ -11,6 +11,7 @@ import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.EventType;
+import com.bjzhianjia.scp.cgp.entity.LawPatrolObject;
 import com.bjzhianjia.scp.cgp.entity.LawTask;
 import com.bjzhianjia.scp.cgp.entity.Point;
 import com.bjzhianjia.scp.cgp.entity.Result;
@@ -107,15 +108,6 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     private EventTypeMapper eventTypeMapper;
 
     @Autowired
-    private LawTaskBiz lawTaskBiz;
-
-    @Autowired
-    private CaseInfoBiz caseInfoBiz;
-
-    @Autowired
-    private InspectItemsBiz inspectItemsBiz;
-
-    @Autowired
     private EventTypeBiz eventTypeBiz;
 
     @Autowired
@@ -131,9 +123,6 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     private CaseAttachmentsBiz caseAttachmentsBiz;
 
     @Autowired
-    private EnforceCertificateBiz enforceCertificateBiz;
-    
-    @Autowired
     private Environment environment;
     
     @Autowired
@@ -147,6 +136,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     
     @Autowired
     private CaseInfoMapper caseInfoMapper;
+
+    @Autowired
+    private LawPatrolObjectBiz lawPatrolObjectBiz;
 
     /**
      * 添加立案记录<br/>
@@ -2132,6 +2124,63 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 mapInfoJObj.remove("caseLatitude");
             }
             return new TableResultResponse<>(0, rows);
+        }
+        return new TableResultResponse<>(0, new ArrayList<>());
+    }
+
+    /**
+     * 指挥中心首页监管对象发生的案件量
+     * @param queryJObj
+     * @return
+     */
+    public TableResultResponse<JSONObject> regObjCount(JSONObject queryJObj) {
+        String lawTaskIds = queryJObj.getString("lawTaskIds");
+        if(StringUtils.isNotBlank(lawTaskIds)){
+            queryJObj.put("lawTaskIds", Arrays.asList(lawTaskIds.split(",")));
+        }
+        List<JSONObject> rows= this.mapper.regObjCount(queryJObj);
+
+        //  regulaObjectId
+        if(BeanUtil.isNotEmpty(rows)){
+            List<String> objNameInRows = rows.stream().map(o -> o.getString("objName")).distinct().collect(Collectors.toList());
+
+            List<LawPatrolObject> lawPatrolObjectList =
+                lawPatrolObjectBiz
+                    .getByLawTaskIds(new HashSet<>(Arrays.asList(lawTaskIds.split(","))));
+
+            Map<String, LawPatrolObject> lawPatrolObjectNameIdMap = new HashMap<>();
+            for (LawPatrolObject tmp : lawPatrolObjectList) {
+                lawPatrolObjectNameIdMap.put(tmp.getRegulaObjectName(), tmp);
+            }
+
+            // 整合尚未检查的监管对象,在lawPatrolObjectNameIdMap里保存的是全部监管对象信息
+            for (Map.Entry<String, LawPatrolObject> e : lawPatrolObjectNameIdMap.entrySet()) {
+                if (!objNameInRows.contains(e.getKey())) {
+                    // 说明在结果集中尚未包含该监管对象
+                    JSONObject tmpJObj = new JSONObject();
+                    tmpJObj.put("mapInfo", null);
+                    tmpJObj.put("objName", e.getValue().getRegulaObjectName());
+                    tmpJObj.put("patrolCount", 0);
+                    tmpJObj.put("pCountWithProblem", 0);
+                    rows.add(tmpJObj);
+                }
+            }
+
+            for (JSONObject tmp : rows) {
+                // 整合mapInfo
+                JSONObject mapInfoJObj = null;
+                if (tmp.get("lng") != null && tmp.get("lat") != null) {
+                    mapInfoJObj = new JSONObject();
+                    mapInfoJObj.put("lng", tmp.getString("lng"));
+                    mapInfoJObj.put("lat", tmp.getString("lat"));
+                }
+                tmp.remove("lng");
+                tmp.remove("lat");
+                tmp.put("mapInfo", mapInfoJObj == null ? null : mapInfoJObj.toJSONString());
+                tmp.put("regulaObjectId",
+                    lawPatrolObjectNameIdMap.get(tmp.getString("objName")).getRegulaObjectId());
+            }
+            return new TableResultResponse<>(rows.size(), rows);
         }
         return new TableResultResponse<>(0, new ArrayList<>());
     }

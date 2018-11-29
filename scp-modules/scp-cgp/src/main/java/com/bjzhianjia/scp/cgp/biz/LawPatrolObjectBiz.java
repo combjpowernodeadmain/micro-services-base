@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.biz;
 
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +10,10 @@ import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * 
@@ -38,5 +43,21 @@ public class LawPatrolObjectBiz extends BusinessBiz<LawPatrolObjectMapper,LawPat
 		}
 		return 0;
 	}
-	
+
+    /**
+     * 按执法任务ID集合查询记录
+     * @param lawTaskIds
+     * @return
+     */
+	public List<LawPatrolObject> getByLawTaskIds(Set<String> lawTaskIds){
+	    Example example=new Example(LawPatrolObject.class);
+	    example.createCriteria().andIn("lawTaskId", lawTaskIds);
+
+        List<LawPatrolObject> lawPatrolObjects = this.selectByExample(example);
+        if(BeanUtil.isEmpty(lawPatrolObjects)){
+            return new ArrayList<>();
+        }
+
+        return lawPatrolObjects;
+    }
 }

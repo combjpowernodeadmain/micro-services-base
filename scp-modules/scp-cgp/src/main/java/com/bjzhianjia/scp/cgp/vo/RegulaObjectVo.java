@@ -18,6 +18,7 @@ public class RegulaObjectVo extends RegulaObject {
     private String objTypeName;
 
     private Integer patrolCount;// 该监管对象被巡查的次数
+    private Integer pCountWithProblem;// 该监管对象被巡查出现问题的次数
 
     private EnterpriseInfo enterpriseInfo;
 
@@ -45,4 +46,11 @@ public class RegulaObjectVo extends RegulaObject {
         this.patrolCount = patrolCount;
     }
 
+    public Integer getpCountWithProblem() {
+        return pCountWithProblem;
+    }
+
+    public void setpCountWithProblem(Integer pCountWithProblem) {
+        this.pCountWithProblem = pCountWithProblem;
+    }
 }
