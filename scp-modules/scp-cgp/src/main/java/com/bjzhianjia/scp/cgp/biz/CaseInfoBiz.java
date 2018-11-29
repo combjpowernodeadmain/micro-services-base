@@ -1,34 +1,5 @@
 package com.bjzhianjia.scp.cgp.biz;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.bjzhianjia.scp.cgp.entity.AreaGrid;
-import com.bjzhianjia.scp.cgp.entity.CaseInfo;
-import com.bjzhianjia.scp.cgp.entity.Constances;
-import com.bjzhianjia.scp.cgp.feign.DictFeign;
-import com.bjzhianjia.scp.cgp.mapper.CaseInfoMapper;
-import com.bjzhianjia.scp.cgp.util.BeanUtil;
-import com.bjzhianjia.scp.cgp.util.DateUtil;
-import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
-import com.bjzhianjia.scp.core.context.*;
-import com.bjzhianjia.scp.merge.core.MergeCore;
-import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
-import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
-import com.bjzhianjia.scp.security.common.util.BeanUtils;
-import com.bjzhianjia.scp.security.wf.base.constant.Constants;
-import com.bjzhianjia.scp.security.wf.base.exception.BizException;
-import com.bjzhianjia.scp.security.wf.base.monitor.service.impl.WfMonitorServiceImpl;
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
-import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Service;
-import tk.mybatis.mapper.entity.Example;
-import tk.mybatis.mapper.entity.Example.Criteria;
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,6 +11,42 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
+import com.bjzhianjia.scp.cgp.entity.RegulaObject;
+import com.bjzhianjia.scp.cgp.entity.SpecialEvent;
+import com.bjzhianjia.scp.cgp.mapper.RegulaObjectMapper;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
+import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Service;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.bjzhianjia.scp.cgp.entity.AreaGrid;
+import com.bjzhianjia.scp.cgp.entity.CaseInfo;
+import com.bjzhianjia.scp.cgp.entity.Constances;
+import com.bjzhianjia.scp.cgp.entity.PatrolTask;
+import com.bjzhianjia.scp.cgp.feign.DictFeign;
+import com.bjzhianjia.scp.cgp.mapper.CaseInfoMapper;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
+import com.bjzhianjia.scp.cgp.util.DateUtil;
+import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
+import com.bjzhianjia.scp.core.context.BaseContextHandler;
+import com.bjzhianjia.scp.merge.core.MergeCore;
+import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
+import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.common.util.BeanUtils;
+import com.bjzhianjia.scp.security.wf.base.constant.Constants;
+import com.bjzhianjia.scp.security.wf.base.exception.BizException;
+import com.bjzhianjia.scp.security.wf.base.monitor.service.impl.WfMonitorServiceImpl;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+
+import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.entity.Example.Criteria;
 
 /**
  * CaseInfoBiz 预立案信息.
@@ -77,6 +84,15 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
 
     @Autowired
     private WfMonitorServiceImpl wfMonitorService;
+
+    @Autowired
+    private PatrolTaskBiz patrolTaskBiz;
+
+    @Autowired
+    private SpecialEventBiz specialEventBiz;
+    
+    @Autowired
+    private RegulaObjectMapper regulaObjectMapper;
 
     /**
      * 查询未删除的总数
@@ -779,5 +795,108 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             return new TableResultResponse<>(0, rows);
         }
         return new TableResultResponse<>(0, new ArrayList<>());
+    }
+
+    /**
+     * 按条件查询事件列表，查询结果不进行分页
+     * @param queryCaseInfo
+     * @param specialEventId
+     */
+    public List<CaseInfo> getList(CaseInfo queryCaseInfo, Integer specialEventId) {
+        // 查询与专项管理记录对应的巡查事项
+        Map<String,Object> conditionMap=new HashMap<>();
+        conditionMap.put("sourceType", environment.getProperty("patrolType.special"));
+        conditionMap.put("sourceTaskId", specialEventId);
+        List<PatrolTask> patrolTaskList = patrolTaskBiz.getByMap(conditionMap);
+        List<Integer> patrolTaskIdList;
+        if(BeanUtil.isNotEmpty(patrolTaskList)){
+            patrolTaskIdList = patrolTaskList.stream().map(o -> o.getId()).distinct().collect(Collectors.toList());
+        }else{
+            // 如果没有查到对应的专项管理记录，则不会有专项巡查及专项巡查对应的事件存在
+            return new ArrayList<>();
+        }
+
+        Example example=new Example(CaseInfo.class).selectProperties("id","mapInfo","caseTitle");
+        Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isDeleted", "0");
+
+        if(StringUtils.isNotBlank(queryCaseInfo.getSourceType())){
+            criteria.andEqualTo("sourceType", queryCaseInfo.getSourceType());
+        }
+        if(StringUtils.isNotBlank(queryCaseInfo.getIsFinished())){
+            criteria.andEqualTo("isFinished", queryCaseInfo.getIsFinished());
+        }
+        if(BeanUtil.isNotEmpty(patrolTaskIdList)){
+            criteria.andIn("sourceCode", patrolTaskIdList);
+        }
+
+        List<CaseInfo> caseInfoList = this.selectByExample(example);
+        if(BeanUtil.isNotEmpty(caseInfoList)){
+            return caseInfoList;
+        }
+
+        return new ArrayList<>();
+    }
+
+    /**
+     * 为指挥中心首页查询列表
+     * 
+     * @param queryData
+     * @return
+     */
+    public TableResultResponse<JSONObject> getListForHome(JSONObject queryData) {
+        TableResultResponse<JSONObject> tableResult = new TableResultResponse<>();
+
+        // 查询专项管理
+        SpecialEvent specialEvent =
+            specialEventBiz.selectById(Integer.valueOf(queryData.getString("sourceTaskId")));
+        List<String> objIdList;
+        if (BeanUtil.isNotEmpty(specialEvent)
+            && StringUtils.isNotBlank(specialEvent.getRegObjList())) {
+            objIdList = Arrays.asList(specialEvent.getRegObjList().split(","));
+        } else {
+            tableResult.setMessage("未找到相关监管对象");
+            tableResult.setStatus(400);
+            return tableResult;
+        }
+
+        queryData.put("regulaObjectId", objIdList);
+
+        List<JSONObject> listForHome = this.mapper.getListForHome(queryData);
+        if (BeanUtil.isNotEmpty(listForHome)) {
+            List<Integer> regulaObjectIds =
+                listForHome.stream().map(o -> o.getInteger("regulaObjectId")).distinct()
+                    .collect(Collectors.toList());
+
+            // 查询专项下的监管对象
+            List<RegulaObject> regulaObjects =
+                regulaObjectMapper.selectByIds(specialEvent.getRegObjList());
+            // 将还没有巡查到的监管对象进行整合
+            if (BeanUtil.isNotEmpty(regulaObjects)) {
+                Map<Integer, RegulaObject> collectMap = new HashMap<>();
+                for (RegulaObject tmpReg : regulaObjects) {
+                    if ("0".equals(tmpReg.getIsDeleted())) {
+                        collectMap.put(tmpReg.getId(), tmpReg);
+                    }
+                }
+                for (Map.Entry<Integer, RegulaObject> e : collectMap.entrySet()) {
+                    if (!regulaObjectIds.contains(e.getKey())) {
+                        // 说明查到的结果集里不包含该监管对象，需要补充到结果集里
+                        JSONObject tmpJobj = new JSONObject();
+                        tmpJobj.put("patrolCount", 0);
+                        tmpJobj.put("objName", e.getValue().getObjName());
+                        tmpJobj.put("mapInfo", e.getValue().getMapInfo());
+                        tmpJobj.put("regulaObjectId", e.getKey());
+                        tmpJobj.put("pCountWithProblem", 0);
+                        listForHome.add(tmpJobj);
+                    }
+                }
+            }
+
+            tableResult.getData().setRows(listForHome);
+            tableResult.getData().setTotal(listForHome.size());
+            return tableResult;
+        }
+        return tableResult;
     }
 }

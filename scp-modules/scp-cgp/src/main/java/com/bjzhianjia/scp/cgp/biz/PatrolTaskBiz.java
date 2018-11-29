@@ -18,6 +18,8 @@ import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
+import tk.mybatis.mapper.entity.Example;
+
 
 /**
  * 巡查任务记录表
@@ -93,4 +95,16 @@ public class PatrolTaskBiz extends BusinessBiz<PatrolTaskMapper, PatrolTask> {
         }
     }
 
+    public List<PatrolTask> getByMap(Map<String,Object> conditions){
+        Example example = new Example(PatrolTask.class);
+        Example.Criteria criteria = example.createCriteria();
+
+        Set<String> keySet = conditions.keySet();
+        for (String string : keySet) {
+            criteria.andEqualTo(string, conditions.get(string));
+        }
+
+        List<PatrolTask> result = this.mapper.selectByExample(example);
+        return result;
+    }
 }
