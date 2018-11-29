@@ -474,14 +474,19 @@ public class RegulaObjectService {
             List<JSONObject> regulaObjCount = patrolTaskMapper.regulaObjCount(regObjIdList);
             // 将regulaObjCount转化为key-value形式
             Map<Integer, Integer> regObj_ID_COUNT_Map = new HashMap<>();
+            Map<Integer,Integer> regObjIdProblemCountMap=new HashMap<>();//巡查出问题的次数Map
             if (BeanUtil.isNotEmpty(regulaObjCount)) {
                 for (JSONObject jsonObject : regulaObjCount) {
                     regObj_ID_COUNT_Map.put(jsonObject.getInteger("regula_object_id"), jsonObject.getInteger("rcount"));
+                    regObjIdProblemCountMap.put(jsonObject.getInteger("regula_object_id"),
+                        jsonObject.getInteger("pCountWithProblem"));
                 }
             }
             for (RegulaObjectVo tmp : voList) {
                 tmp.setPatrolCount(
                     BeanUtil.isEmpty(regObj_ID_COUNT_Map.get(tmp.getId())) ? 0 : regObj_ID_COUNT_Map.get(tmp.getId()));
+                tmp.setpCountWithProblem(BeanUtil.isEmpty(regObjIdProblemCountMap.get(tmp.getId())) ? 0
+                    : regObjIdProblemCountMap.get(tmp.getId()));
             }
         }
         return voList;

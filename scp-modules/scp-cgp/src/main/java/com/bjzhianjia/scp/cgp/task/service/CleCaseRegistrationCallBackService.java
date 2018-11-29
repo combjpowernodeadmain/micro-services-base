@@ -92,8 +92,8 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
         caseRegistration.setExeStatus(CaseRegistration.EXESTATUS_STATE_FINISH);
         caseRegistrationBiz.updateSelectiveById(caseRegistration);
 
-        // 对于结案及中止的案件-->更新来源状态
-        updateCaseSource(caseId,PROC_END);
+        // 当案件结束时，并不影响到执法任务的状态
+        // updateCaseSource(caseId,PROC_END);
     }
 
     /**
@@ -158,8 +158,8 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
         caseRegistration.setExeStatus(CaseRegistration.EXESTATUS_STATE_STOP);
         caseRegistrationBiz.updateSelectiveById(caseRegistration);
 
-        // 对于结案及中止的案件-->更新来源状态
-        updateCaseSource(caseId,"termination");
+        // 当案件中止时，并不影响到执法任务的状态
+        // updateCaseSource(caseId,"termination");
     }
 
     @Override

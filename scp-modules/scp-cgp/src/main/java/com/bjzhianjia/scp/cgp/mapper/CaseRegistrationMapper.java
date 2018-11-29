@@ -132,4 +132,11 @@ public interface CaseRegistrationMapper extends CommonMapper<CaseRegistration> {
      * @return
      */
     List<JSONObject> heatMap(@Param("startDate") String startDate, @Param("endDate") String endDate);
+
+    /**
+     * 指挥中心首页监管对象发生的案件量
+     * @param queryJObj
+     * @return
+     */
+    List<JSONObject> regObjCount(@Param("queryJObj") JSONObject queryJObj);
 }

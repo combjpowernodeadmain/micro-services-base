@@ -401,6 +401,11 @@ public class MessageCenterBiz extends BusinessBiz<MessageCenterMapper, MessageCe
             }
         }
 
+        /*
+         * 在工作流系统中，com.bjzhianjia.scp.security.wf.base.task.entity.WfProcTaskBean中业务ID叫procBizid
+         * com.bjzhianjia.scp.security.wf.base.vo.WfProcBizDataBean中业务ID叫procBizId
+         * 注意ID在小写
+         */
         String procBizId = procTaskBeanJObj.getString("procBizid");
         String procKey = procTaskBeanJObj.getString("procKey");
 
