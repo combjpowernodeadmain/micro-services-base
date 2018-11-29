@@ -147,4 +147,41 @@ public class DateUtil {
 		}
 		return date;
 	}
+	/**
+	 * 获取当年开始日期
+	 * @return
+	 */
+	public static Date getYearStart(){
+		Calendar calendar =  Calendar.getInstance();
+		//月份
+		calendar.set(Calendar.MONTH,0);
+		//天
+		calendar.set(Calendar.DAY_OF_MONTH,0);
+		//时
+		calendar.set(Calendar.HOUR_OF_DAY,0);
+		//分
+		calendar.set(Calendar.MINUTE,0);
+		//秒
+		calendar.set(Calendar.SECOND,0);
+		return calendar.getTime();
+	}
+
+	/**
+	 * 获取当年结束日期
+	 * @return
+	 */
+	public static Date getYearEnd(){
+		Calendar calendar =  Calendar.getInstance();
+		//月份
+		calendar.set(Calendar.MONTH,12);
+		//天
+		calendar.set(Calendar.DAY_OF_MONTH,0);
+		//时
+		calendar.set(Calendar.HOUR_OF_DAY,0);
+		//分
+		calendar.set(Calendar.MINUTE,0);
+		//秒
+		calendar.set(Calendar.SECOND,0);
+		return calendar.getTime();
+	}
 }
