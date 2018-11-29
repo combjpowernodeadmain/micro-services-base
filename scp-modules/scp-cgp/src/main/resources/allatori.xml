@@ -1,7 +1,7 @@
 <config>
     <!-- scp-xxx-compile 原始jar文件，scp-xxx 混淆后的输出的jar文件 -->
 	<input>
-        <jar in="../../../target/scp-gate-compile.jar" out="../../../target/scp-gate.jar"/>
+        <jar in="../../../target/scp-cgp-compile.jar" out="../../../target/scp-cgp.jar"/>
     </input>
 	<!-- 不替换类名、方法名、属性名 -->
 	<keep-names>
@@ -15,15 +15,18 @@
 	<!-- 排除-->
 	<ignore-classes>
         <!-- 排除指定路径 -->
-		<class template="class  com.bjzhianjia.scp.*.config.*"/>
-        <class template="class  com.bjzhianjia.scp.*.feign.*"/>
-        <class template="class  com.bjzhianjia.scp.security.gate.utils.DBLog"/>
-        <class template="class  com.bjzhianjia.scp.security.gate.GateBootstrap"/>
-        <class template ="class com.bjzhianjia.scp.security.gate.route.*"/>
+		<class template ="class  com.bjzhianjia.scp.cgp.config.*"/>
+		<class template ="class  com.bjzhianjia.scp.cgp.mapper.*"/>
+        <class template ="class  com.bjzhianjia.scp.cgp.feign.*"/>
+		<class template ="class  com.bjzhianjia.scp.cgp.entity.*"/>
+		<class template ="class  com.bjzhianjia.scp.cgp.util.*"/>
+		<class template ="class  com.bjzhianjia.scp.cgp.vo.*"/>
+		<class template ="class  com.bjzhianjia.scp.cgp.constances.*"/>
+		<class template ="class  com.bjzhianjia.scp.cgp.exception.*"/>
+		<class template ="class  com.bjzhianjia.scp.cgp.CgpBootstrap"/>
 		<!-- 排除springboot 依赖文件 -->
 		<class template ="class  org.springframework.boot.*"/>
     </ignore-classes>
-	<!-- TODO 过滤器优化混淆-->
 	<!-- 随机命名混淆字符-->
 	<property name="random-seed" value="cshxzf jrncbd hh"/>
 </config>

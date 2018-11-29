@@ -25,6 +25,8 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 @Tenant()
 public interface UserMapper extends CommonMapper<User> {
     public List<User> selectMemberByGroupId(@Param("groupId") String groupId);
@@ -80,4 +82,18 @@ public interface UserMapper extends CommonMapper<User> {
      */
     List<Map<String,Object>> selectPhoneList(@Param("userName") String userName ,
                                              @Param("deptIds") List<String> deptIds);
+
+    /**
+     * 按组ID集合查询用户
+     * @param groupIdSet
+     * @return
+     */
+    List<JSONObject> selectLeaderOrMemberByGroupId(@Param("groupIdSet") Set<String> groupIdSet);
+
+    /**
+     * 按部门ID集合查询用户信息
+     * @param deptSet
+     * @return
+     */
+    List<JSONObject> selectUserListByDepts(@Param("deptSet") Set<String> deptSet);
 }

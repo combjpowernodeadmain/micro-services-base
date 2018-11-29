@@ -96,7 +96,12 @@ public class UserController extends BaseController<UserBiz, User, String> {
 	@RequestMapping(value = "/info", method = RequestMethod.POST)
 	public ObjectRestResponse<AuthUser> validate(String username) {
 		AuthUser user = new AuthUser();
-		BeanUtils.copyProperties(baseBiz.getUserByUsername(username), user);
+		User oldUser = baseBiz.getUserByUsername(username);
+		//没有查询到数据，则返回对象
+		if(oldUser == null){
+			return new ObjectRestResponse<AuthUser>().data(user);
+		}
+		BeanUtils.copyProperties(oldUser, user);
 		return new ObjectRestResponse<AuthUser>().data(user);
 	}
 	
@@ -270,4 +275,26 @@ public class UserController extends BaseController<UserBiz, User, String> {
 		}
 		return this.baseBiz.getPhoneList(userName,ids,page,limit);
 	}
+
+	@ApiOperation("按组ID集合获取用户")
+	@RequestMapping(value = "/list/groupIds", method = RequestMethod.GET)
+	@ResponseBody
+	public List<JSONObject> getUsersForReturnJObj(@RequestParam("groupIds") String groupIds) {
+		return baseBiz.selectLeaderOrMemberByGroupId(groupIds);
+	}
+
+	@GetMapping("/list/byDeptIds")
+	@ApiOperation("按部门ID集合查询用户")
+	public List<JSONObject> getUsersByDeptIds(@RequestParam("deptIds") String deptIds){
+		return baseBiz.getUsersByDeptIds(deptIds);
+	}
+	@IgnoreUserToken
+	@GetMapping("/count")
+	@ApiOperation("获取非删除的所有用户总数")
+	public ObjectRestResponse<Integer> getAllCount(){
+		ObjectRestResponse<Integer> result = new ObjectRestResponse();
+		result.setData(baseBiz.getAllCount());
+		return result;
+	}
+
 }

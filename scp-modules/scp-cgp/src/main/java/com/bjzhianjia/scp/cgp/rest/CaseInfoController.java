@@ -487,4 +487,62 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
     public List<JSONObject> getGridZFPQ(){
         return this.baseBiz.getGridZFPQ();
     }
+    
+    @GetMapping("/heatMap")
+    @ApiOperation("事件热力学统计")
+    public TableResultResponse<JSONObject> caseHeatMap(
+        @RequestParam(value = "caseLevel", defaultValue = "") String caseLevel,
+        @RequestParam(value = "sourceType", defaultValue = "") String sourcetype,
+        @RequestParam(value = "grid", required = false) Integer grid,
+        @RequestParam(value = "startDate", defaultValue = "") String startDate,
+        @RequestParam(value = "endDate", defaultValue = "") String endDate) {
+        CaseInfo caseInfo = new CaseInfo();
+        caseInfo.setCaseLevel(caseLevel);
+        caseInfo.setSourceType(sourcetype);
+        caseInfo.setGrid(grid);
+
+        return this.baseBiz.heatMap(caseInfo, startDate, endDate);
+    }
+
+    /**
+     * 不分页查询事件列表
+     * 
+     * @param sourceType
+     * @param isFinished
+     * @return
+     */
+    @GetMapping("/list/unpage")
+    @ApiOperation("不分页查询事件列表")
+    public List<CaseInfo> getList(
+        @RequestParam(value = "sourceType", defaultValue = "") @ApiParam(value = "事件来源类型") String sourceType,
+        @RequestParam(value = "specialEventId") @ApiParam(value = "事件来源类型") Integer specialEventId,
+        @RequestParam(value = "isFinished", defaultValue = "") @ApiParam(value = "事件完成状态") String isFinished) {
+        CaseInfo queryCaseInfo = new CaseInfo();
+        queryCaseInfo.setSourceType(sourceType);
+        queryCaseInfo.setIsFinished(isFinished);
+        return this.baseBiz.getList(queryCaseInfo, specialEventId);
+    }
+
+    @GetMapping("/list/home/statistics")
+    @ApiOperation("首页--查询某监管对象上发生的事件(专项)")
+    public TableResultResponse<JSONObject> getList(
+        @RequestParam(value = "caseSourceType") @ApiParam(value = "事件来源类型") String caseSourceType,
+        @RequestParam(value = "patrolTaskSourceType") @ApiParam(value = "巡查事项来源类型") String patrolTaskSourceType,
+        @RequestParam(value = "sourceTaskId") @ApiParam(value = "巡查事项来源ID") String sourceTaskId,
+        @RequestParam(value = "startTime", defaultValue = "") @ApiParam(value = "查询开始时间") String startTime,
+        @RequestParam(value = "endTime", defaultValue = "") @ApiParam(value = "查询结束时间") String endTime,
+        @RequestParam(value = "regulaObjectId", defaultValue = "") @ApiParam(value = "监管对象ID") String regulaObjectId,
+        @RequestParam(value = "regulaObjectTypeId", defaultValue = "") @ApiParam(value = "监管对象类型ID") String regulaObjectTypeId) {
+
+        JSONObject queryData = new JSONObject();
+        queryData.put("caseSourceType", caseSourceType);
+        queryData.put("patrolTaskSourceType", patrolTaskSourceType);
+        queryData.put("sourceTaskId", sourceTaskId);
+        queryData.put("startTime", startTime);
+        queryData.put("endTime", endTime);
+        queryData.put("regulaObjectId", regulaObjectId);
+        queryData.put("regulaObjectTypeId", regulaObjectTypeId);
+
+        return this.baseBiz.getListForHome(queryData);
+    }
 }

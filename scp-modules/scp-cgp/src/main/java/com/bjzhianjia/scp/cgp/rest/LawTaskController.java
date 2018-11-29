@@ -259,9 +259,15 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
             _endTimeTmp = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
             _endTimeTmp = DateUtils.addDays(_endTimeTmp, 1);
         }
-        
+
+        JSONObject queryJObj=new JSONObject();
+        queryJObj.put("userName", userName);
+        queryJObj.put("startTime", _startTime);
+        queryJObj.put("endTime", _endTimeTmp);
+        queryJObj.put("state", state);
+        queryJObj.put("regulaObjectName", regulaObjectName);
         result =
-            lawTaskBiz.listSimple(userName, regulaObjectName, _startTime, _endTimeTmp, page, limit);
+            lawTaskBiz.listSimple(queryJObj, page, limit);
         return result;
     }
 

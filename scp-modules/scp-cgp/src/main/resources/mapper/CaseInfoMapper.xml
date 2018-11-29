@@ -370,4 +370,85 @@ SELECT
 		)countResult
 		GROUP BY zfqp,zfqpName,zfqpLevel
 	</select>
+
+	<select id="heatMap" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT cyear,cmonth,mapInfoCount,mapInfo FROM (
+            SELECT YEAR(ci.occur_time) cyear,MONTH(ci.`occur_time`) cmonth,COUNT(ci.map_info) mapInfoCount,ci.map_info mapInfo
+            FROM case_info ci
+            WHERE ci.`map_info`IS NOT NULL AND ci.`map_info`!=''
+            AND ci.occur_time IS NOT NULL AND ci.occur_time != ''
+            <if test="caseInfo.caseLevel != null and caseInfo.caseLevel != ''">
+                AND ci.case_level=#{caseInfo.caseLevel}
+            </if>
+            <if test="caseInfo.sourceType != null and caseInfo.sourceType != ''">
+                AND ci.source_type=#{caseInfo.sourceType}
+            </if>
+            <if test="caseInfo.grid!=null">
+                AND ci.grid=45
+            </if>
+            <if test="startDate !=null and startDate != '' and endDate != null and endDate != ''">
+                AND ci.`occur_time` &gt;= #{startDate}
+                AND ci.`occur_time` &lt;= #{endDate}
+            </if>
+            GROUP BY ci.map_info,cyear,cmonth
+        ) resultTmp
+	</select>
+
+	<!-- 为指挥中心首页查询列表 -->
+	<select id="getListForHome" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT robj.`id` regulaObjectId,
+		ptTmp1.pTotal patrolCount,
+		IF(pCountWithProblem IS NOT NULL,pCountWithProblem,'0') pCountWithProblem,
+		robj.`obj_name` objName,robj.map_info mapInfo
+		FROM
+		(
+            <!-- 基本数据，主要用于查询条件的筛选，关键字段为pt3.`regula_object_id` regulaObjectId -->
+            SELECT pt3.`regula_object_id` regulaObjectId,pt3.`id` patrolTaskId,pt3.`source_task_id`,
+            spee.`spe_name`,
+            ci.`case_title`,ci.`id`
+            FROM special_event spee
+            LEFT JOIN patrol_task pt3 ON spee.id=pt3.`source_task_id`
+            LEFT JOIN case_info ci ON (ci.`source_code`=pt3.`id` AND ci.`source_type`=#{queryData.caseSourceType})<!-- 事件来源类别 -->
+            <where>
+                <if test="queryData.patrolTaskSourceType != null and queryData.patrolTaskSourceType != ''">
+                    and pt3.`source_type`=#{queryData.patrolTaskSourceType}<!-- 巡查上报类型：日常巡查或专项巡查 -->
+                </if>
+                <if test="queryData.sourceTaskId != null and queryData.sourceTaskId != ''">
+					<!-- 巡查上报来源ID，该参数通常与patrolTaskSourceType一起使用，如
+					   patrolTaskSourceType='root_biz_patrolType_special',sourceTaskId='10'表示
+					   查询来源专项管理里的ID为10的那条记录 -->
+                    AND pt3.`source_task_id` = #{queryData.sourceTaskId}
+                </if>
+                <if test="queryData.startTime != null and queryData.startTIme != '' and queryData.endTime != null and queryData.endTime != ''">
+                    AND pt3.`crt_time` &gt;=#{queryData.startTime} AND pt3.`crt_time` &lt;=#{queryData.endTime}
+                </if>
+                <if test="queryData.regulaObjectTypeId != null and queryData.regulaObjectTypeId != ''">
+                    AND pt3.`regula_object_type_id`=#{queryData.regulaObjectTypeId}
+                </if>
+                <if test="queryData.regulaObjectId != null and queryData.regulaObjectId.size()>0">
+                    AND pt3.`regula_object_id` in (
+                        <foreach collection="queryData.regulaObjectId" item="item" separator=",">
+                            #{item}
+                        </foreach>
+                    )
+                </if>
+            </where>
+		) spept
+		LEFT JOIN (
+            <!-- 查询监管对象被询查的总数 -->
+            SELECT COUNT(pt.`regula_object_id`) pTotal,pt.`regula_object_id` regulaObjectId
+            FROM patrol_task pt
+            GROUP BY pt.`regula_object_id`
+		) ptTmp1 ON ptTmp1.regulaObjectId=spept.regulaObjectId
+		LEFT JOIN (
+            <!-- 查询有问题的监管对象数量 -->
+            SELECT COUNT(pt2.regula_object_id) pCountWithProblem,pt2.regula_object_id regulaObjectId
+            FROM patrol_task pt2
+            WHERE pt2.is_problem='1'
+            GROUP BY pt2.regula_object_id
+		) ptTmp2 ON spept.regulaObjectId=ptTmp2.regulaObjectId
+		LEFT JOIN regula_object robj ON robj.`id`=ptTmp1.regulaObjectId
+		GROUP BY spept.regulaObjectId,ptTmp1.pTotal,pCountWithProblem
+
+	</select>
 </mapper>

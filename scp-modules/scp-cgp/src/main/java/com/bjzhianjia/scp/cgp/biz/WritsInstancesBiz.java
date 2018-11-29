@@ -810,8 +810,15 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             @SuppressWarnings({ "unchecked", "rawtypes" })
             Map<String, String> map = (Map) fillJObj;
             // 文书模板“执法任务”“中队信息”去除，不再使用fillContext字段中的“zHiHao”作案件文号
-            map.put("refYear", writsInstances.getRefYear());
-            map.put("refNo", writsInstances.getRefNo());
+            // 如果文书内容中refYear与refNo为null，请置为空，避免前端因没传该参数造成文书模板填充错误
+            map.put("refYear",
+                writsInstances.getRefYear() == null ? "" : writsInstances.getRefYear());
+            map.put("refNo", writsInstances.getRefNo() == null ? "" : writsInstances.getRefNo());
+
+            /*
+             * 获取模板中的占位符，如果map中还未包含某占位符，则将其添加到map中
+             */
+            DocUtil.getSpecialcharacters(writsTemplate.getDocUrl(), map);
 
             writsPath =
                     DocUtil.getDestUrlAfterReplaceWord(writsTemplate.getDocUrl(),

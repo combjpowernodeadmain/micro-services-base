@@ -140,4 +140,34 @@
 			bu.crt_time DESC,
 			bu.upd_time DESC
 	</select>
+
+    <!-- 按组ID集合获取用户 -->
+    <select id="selectLeaderOrMemberByGroupId" resultType="com.alibaba.fastjson.JSONObject">
+        select bu.id userId,bu.name userName
+        from base_user bu
+        left join `base_group_leader` bgl on bgl.user_id=bu.id
+        left join `base_group_member` bgm on bgm.user_id=bu.id
+        where bgl.group_id in (
+        <foreach collection="groupIdSet" item="item" separator=",">
+            #{item}
+        </foreach>
+        )
+        or bgm.group_id in (
+        <foreach collection="groupIdSet" item="item" separator=",">
+            #{item}
+        </foreach>
+        )
+    </select>
+
+    <!-- 按部门ID集合查询用户信息 -->
+    <select id="selectUserListByDepts" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT bu.id userId,bu.name userName
+        FROM base_user bu
+        LEFT JOIN base_depart_user bdu ON bdu.`user_id`=bu.`id`
+        WHERE bdu.`depart_id` IN (
+        <foreach collection="deptSet" item="item" separator=",">
+            #{item}
+        </foreach>
+        )
+    </select>
 </mapper>

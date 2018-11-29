@@ -171,7 +171,8 @@ public class GroupController extends BaseController<GroupBiz, Group,String> {
     @ApiOperation("获取角色树")
     @RequestMapping(value = "/tree", method = RequestMethod.GET)
     @ResponseBody
-    public List<GroupTree> tree(String name, String groupType) {
+    public List<GroupTree> tree(@RequestParam(value = "name",defaultValue = "") String name,
+                                @RequestParam(value = "groupType",defaultValue = "")String groupType) {
         Example example = new Example(Group.class);
         if (StringUtils.isNotBlank(name)) {
             example.createCriteria().andLike("name", "%" + name + "%");
@@ -215,5 +216,5 @@ public class GroupController extends BaseController<GroupBiz, Group,String> {
         }
         return TreeUtil.bulid(trees, root, null);
     }
-    
+
 }

@@ -375,4 +375,47 @@
 			ccr.is_deleted = 0
 		AND ccr.id = #{caseId}
 	</select>
+
+	<!-- 案件热力学统计 -->
+	<select id="heatMap" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT cyear,cmonth,mapInfoCount,caseOngitude,caseLatitude FROM (
+			SELECT YEAR(ci.case_time) cyear,MONTH(ci.`case_time`) cmonth,COUNT(ci.case_ongitude) mapInfoCount,ci.case_ongitude caseOngitude,ci.case_latitude caseLatitude
+			FROM cle_case_registration ci
+			WHERE ci.`case_ongitude` IS NOT NULL AND ci.`case_latitude` IS NOT NULL
+			AND ci.`case_time` &gt;= #{startDate} AND ci.`case_time` &lt;= #{endDate}
+			GROUP BY ci.case_ongitude,cyear,cmonth,ci.case_latitude
+			) resultTmp
+	</select>
+
+	<select id="regObjCount" resultType="com.alibaba.fastjson.JSONObject">
+		select comp.name objName,count(comp.name) patrolCount,
+		if(caseRegisCountWithPbm is not null,caseRegisCountWithPbm,'0') pCountWithProblem,
+        ccreg.case_ongitude lng,ccreg.case_latitude lat
+		from cle_concerned_company comp
+		left join cle_case_registration ccreg on ccreg.concerned_id=comp.id and ccreg.concerned_type='root_biz_concernedT_org'
+		left join (
+			SELECT comp.name compName,COUNT(comp.name) caseRegisCountWithPbm
+			FROM cle_concerned_company comp
+			LEFT JOIN cle_case_registration ccreg ON ccreg.concerned_id=comp.id AND ccreg.concerned_type='root_biz_concernedT_org'
+			WHERE ccreg.deal_type !='root_biz_caseDealType_wfxwt'
+			GROUP BY comp.name
+		) compWithPbm on compWithPbm.compName=comp.name
+		<where>
+			<if test="queryJObj.caseSourceType != null and queryJObj.caseSourceType != ''">
+				and ccreg.case_source_type=#{queryJObj.caseSourceType}
+			</if>
+			<if test="queryJObj.lawTaskIds != null and queryJObj.lawTaskIds.size() > 0">
+				and comp.name in (
+				select law_patrol_object.`regula_object_name`
+				from `law_patrol_object`
+                    where law_patrol_object.`law_task_id` in (
+                    <foreach collection="queryJObj.lawTaskIds" item="item" separator=",">
+                        #{item}
+                    </foreach>
+                    )<!-- 执行任务ID -->
+				)
+			</if>
+		</where>
+		group by comp.name,caseRegisCountWithPbm,lng,lat
+	</select>
 </mapper>

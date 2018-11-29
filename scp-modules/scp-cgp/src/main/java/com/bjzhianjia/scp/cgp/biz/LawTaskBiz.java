@@ -615,19 +615,27 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
      *            页容量
      * @return
      */
-    public TableResultResponse<Map<String, Object>> listSimple(String userName, String regulaObjectName,
-        Date startTime, Date endTime, int page, int limit) {
+    public TableResultResponse<Map<String, Object>> listSimple(JSONObject queryJObj, int page, int limit) {
+        /*
+         * 添加按状态查询记录
+         * 将请求参数使用JSONObject封装
+         */
+        String userName = queryJObj.getString("userName");
+        String regulaObjectName = queryJObj.getString("regulaObjectName");
+        Date startTime = queryJObj.getDate("startTime");
+        Date endTime = queryJObj.getDate("endTime");
+        String state = queryJObj.getString("state");
 
         Page<Object> result = PageHelper.startPage(page, limit);
         List<Map<String, Object>> list =
-            lawTaskMapper.selectLawTaskList(userName, regulaObjectName, null, startTime,
+            lawTaskMapper.selectLawTaskList(userName, regulaObjectName, state, startTime,
                 endTime);
         if (list == null) {
             return new TableResultResponse<Map<String, Object>>(0, null);
         }
 
         List<String> statusCodeList =
-            list.stream().map(o -> String.valueOf(o.get("status"))).distinct().collect(Collectors.toList());
+            list.stream().map(o -> String.valueOf(o.get("state"))).distinct().collect(Collectors.toList());
         Map<String, String> byCodeIn = new HashMap<>();
         if (BeanUtil.isNotEmpty(statusCodeList)) {
             byCodeIn = dictFeign.getByCodeIn(String.join(",", statusCodeList));
@@ -639,7 +647,7 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
             resultMap.put("id", map.get("lawTaskId"));
             resultMap.put("patrolObject", map.get("patrolObject"));
             resultMap.put("lawTitle", map.get("lawTitle"));
-            resultMap.put("statusName", byCodeIn.get(map.get("status")));
+            resultMap.put("statusName", byCodeIn.get(map.get("state")));
             resultMap.put("lawTaskCode", map.get("lawTaskCode"));
             resultMapList.add(resultMap);
         }

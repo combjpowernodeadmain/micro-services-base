@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.AreaGridBiz;
+import com.bjzhianjia.scp.cgp.biz.AreaGridMemberBiz;
 import com.bjzhianjia.scp.cgp.biz.CaseInfoBiz;
 import com.bjzhianjia.scp.cgp.biz.CommandCenterHotlineBiz;
 import com.bjzhianjia.scp.cgp.biz.ConcernedCompanyBiz;
@@ -17,6 +18,7 @@ import com.bjzhianjia.scp.cgp.biz.PatrolTaskBiz;
 import com.bjzhianjia.scp.cgp.biz.PublicOpinionBiz;
 import com.bjzhianjia.scp.cgp.biz.RegulaObjectBiz;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
+import com.bjzhianjia.scp.cgp.entity.AreaGridMember;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.CommandCenterHotline;
 import com.bjzhianjia.scp.cgp.entity.ConcernedCompany;
@@ -57,13 +59,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
 
-import javax.transaction.Transactional;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -80,6 +83,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Slf4j
+@Transactional
 public class CaseInfoService {
 
     @Autowired
@@ -156,6 +160,9 @@ public class CaseInfoService {
 
     @Autowired
     private CaseInfoMapper caseInfoMapper;
+
+    @Autowired
+    private AreaGridMemberBiz areaGridMemberBiz;
     /**
      * 更新单个对象
      * 
@@ -707,8 +714,15 @@ public class CaseInfoService {
         }
         resultJObjct.put("zhaiyao", String.join("-", zhaiyaoList));
         // 上报人
-        JSONArray userDetailJArray = adminFeign.getUserDetail(String.join(",", reportPersonId));
-        JSONObject userMap = userDetailJArray.getJSONObject(0);
+        JSONArray userDetailJArray = adminFeign.getInfoByUserIds(String.join(",", reportPersonId));
+
+        JSONObject userMap = null;
+        if (BeanUtil.isNotEmpty(userDetailJArray)) {
+            userMap = userDetailJArray.getJSONObject(0);
+        } else {
+            userMap = new JSONObject();
+        }
+
         resultJObjct.put("crtUserTel",
             userMap.getString("mobilePhone") == null ? "" : userMap.getString("mobilePhone"));
         resultJObjct.put("groupName",
@@ -781,6 +795,35 @@ public class CaseInfoService {
             } else {
                 // 如果authoritiesByDept为空，也认为是无处理权限
                 result.setMessage("该部门尚无权限处理该事件，请更换部门。");
+                result.setIsSuccess(false);
+                return result;
+            }
+        }
+
+        // 判断流向是否走向立案核查及待结案核查
+        String isCheckAreaGridAuth = environment.getProperty("isCheckAreaGridAuth");
+        List<String> isCheckAreaGridAuthList = Arrays.asList(isCheckAreaGridAuth.split(","));
+        if(isCheckAreaGridAuthList.contains(flowDirection)){
+            // 表明需要进行网格员认证
+            String gridId = caseInfoJObj.getString("grid");
+
+            if(StringUtils.isEmpty(gridId)){
+                throw new BizException("请指定网格");
+            }
+
+            List<AreaGridMember> areaGridMemberList =
+                areaGridMemberBiz.getByGridIds(new HashSet<>(Arrays.asList(gridId.split(","))));
+            if (BeanUtil.isNotEmpty(areaGridMemberList)) {
+                // 如果有网格员配置，则进行下一步验证
+                if (areaGridMemberList.size() == 1
+                    && areaGridMemberList.get(0).getGridMember() == null) {
+                    // 与指定网格对应的只有一条网格员记录，并且gridMember字段为null
+                    result.setMessage("该网格下未配备网格员");
+                    result.setIsSuccess(false);
+                    return result;
+                }
+            } else {
+                result.setMessage("该网格下未配备网格员");
                 result.setIsSuccess(false);
                 return result;
             }
@@ -1052,7 +1095,7 @@ public class CaseInfoService {
         List<String> procTaskAssigneeIdList =
             procHistoryList.stream().map(o -> o.getProcTaskAssignee()).distinct().collect(Collectors.toList());
         if (procTaskAssigneeIdList != null && !procTaskAssigneeIdList.isEmpty()) {
-            JSONArray userDetailJArray = adminFeign.getUserDetail(String.join(",", procTaskAssigneeIdList));
+            JSONArray userDetailJArray = adminFeign.getInfoByUserIds(String.join(",", procTaskAssigneeIdList));
             Map<String, JSONObject> assignMap = new HashMap<>();
 //            Map<String, String> assignMap = adminFeign.getUser(String.join(",", procTaskAssigneeIdList));
             if(BeanUtil.isNotEmpty(userDetailJArray)) {
@@ -1141,7 +1184,14 @@ public class CaseInfoService {
         }
 
         // 将多次向adminFeign的请求集中到这里进行查询，在经之上的代码即对需要进行查询 ID的收集
-        Map<String, String> manyUsersMap = adminFeign.getUser(String.join(",", adminIdList));
+        JSONArray manyUsersJArray = adminFeign.getInfoByUserIds(String.join(",", adminIdList));
+        Map<String, JSONObject> manyUsersMap=new HashMap<>();
+        if(BeanUtil.isNotEmpty(manyUsersJArray)){
+            for(int i=0;i<manyUsersJArray.size();i++){
+                JSONObject manyUsersJObj = manyUsersJArray.getJSONObject(i);
+                manyUsersMap.put(manyUsersJObj.getString("userId"), manyUsersJObj);
+            }
+        }
 
         /*
          * =================查询基础信息===========开始==========
@@ -1152,11 +1202,15 @@ public class CaseInfoService {
         baseInfoJObj.put("caseTitle", caseInfo.getCaseTitle());
         baseInfoJObj.put("caseLevel", caseInfo.getCaseLevel());
         baseInfoJObj.put("id", caseInfo.getId());
-        if (caseInfo.getCaseLevel() != null) {
-            if (manyDictValuesMap != null && !manyDictValuesMap.isEmpty()) {
+        String sourceTypeName = "";
+        if (manyDictValuesMap != null && !manyDictValuesMap.isEmpty()) {
+            if (caseInfo.getCaseLevel() != null) {
                 baseInfoJObj.put("caseLevelName", manyDictValuesMap.get(caseInfo.getCaseLevel()));
             }
+            sourceTypeName = manyDictValuesMap.get(caseInfo.getSourceType());
         }
+        //来源类型名称
+        baseInfoJObj.put("sourceTypeName", sourceTypeName);
         baseInfoJObj.put("caseDesc", caseInfo.getCaseDesc());
 
         /*
@@ -1247,14 +1301,19 @@ public class CaseInfoService {
         }
         // 监管对象,为多选
         List<String> regulaObjectNameList = new ArrayList<>();
+        List<String> regulaObjectAddrList=new ArrayList<>();
         if (StringUtils.isNotBlank(caseInfo.getRegulaObjList())) {
             List<RegulaObject> regulaObjList = regulaObjectMapper.selectByIds(caseInfo.getRegulaObjList());
             for (RegulaObject regulaObject : regulaObjList) {
                 regulaObjectNameList.add(regulaObject.getObjName());
+                //在返回集中新加监管对象地址信息，用于自动填充
+                regulaObjectAddrList.add(regulaObject.getObjAddress());
             }
         }
         eventTypeJObj.put("regulaObjList", caseInfo.getRegulaObjList());
         eventTypeJObj.put("regulaObjListName", String.join(",", regulaObjectNameList));
+        //在返回集中新加监管对象地址信息，用于自动填充
+        eventTypeJObj.put("regulaObjListAddr", String.join(",", regulaObjectAddrList));
         /*
          * =================事件分类===========结束==========
          */
@@ -1294,8 +1353,8 @@ public class CaseInfoService {
         if (caseInfo.getCheckPerson() != null) {
             checkJObj.put("checkPerson", caseInfo.getCheckPerson());
             if (manyUsersMap != null && !manyUsersMap.isEmpty()) {
-                JSONObject checkPersonJObj = JSONObject.parseObject(manyUsersMap.get(caseInfo.getCheckPerson()));
-                checkJObj.put("checkPersonName", checkPersonJObj.getString("name"));
+                JSONObject checkPersonJObj = manyUsersMap.get(caseInfo.getCheckPerson());
+                checkJObj.put("checkPersonName", checkPersonJObj.getString("userName"));
                 checkJObj.put("checkPersonTel", checkPersonJObj.getString("mobilePhone"));
             }
         }
@@ -1315,7 +1374,7 @@ public class CaseInfoService {
         String executedDeptName = "";
         requiredJObj.put("executedDept", caseInfo.getExecuteDept());
         if (caseInfo.getExecuteDept() != null) {
-            Map<String, String> executeDeptMap = adminFeign.getDepart(caseInfo.getExecuteDept());// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>查询了admin》》》》》》》》》》》》》》》》》》》》》》》》》
+            Map<String, String> executeDeptMap = adminFeign.getDepartByDeptIds(caseInfo.getExecuteDept());
             if (executeDeptMap != null && !executeDeptMap.isEmpty()) {
                 executedDeptName =
                     CommonUtil.getValueFromJObjStr(executeDeptMap.get(caseInfo.getExecuteDept()), "name");
@@ -1354,10 +1413,9 @@ public class CaseInfoService {
                          * wfProcTaskHistoryBean.getProcTaskAssignee())为空
                          * 需要进行非空判断
                          */
-                        JSONObject jObjTmp =
-                            JSONObject.parseObject(manyUsersMap.get(wfProcTaskHistoryBean.getProcTaskAssignee()));
+                        JSONObject jObjTmp =manyUsersMap.get(wfProcTaskHistoryBean.getProcTaskAssignee());
                         if(BeanUtil.isNotEmpty(jObjTmp)){
-                            commanderApproveJObj.put("procTaskCommitterName", jObjTmp.getString("name"));
+                            commanderApproveJObj.put("procTaskCommitterName", jObjTmp.getString("userName"));
                             commanderApproveJObj.put("commanderTel", jObjTmp.getString("mobilePhone"));// 审批人联系方法
                             //流程审批时间
                             commanderApproveJObj.put("procTaskEndtime", wfProcTaskHistoryBean.getProcTaskEndtime());// 审批时间
@@ -1399,7 +1457,7 @@ public class CaseInfoService {
                     // 登记人电话
                     String recordPersonTel = "";
                     if (StringUtils.isNotBlank(sourceType.getString("crtUserId"))) {
-                        Map<String, String> recordUser = adminFeign.getUser(sourceType.getString("crtUserId"));// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>查询了admin》》》》》》》》》》》》》》》》》》》》》》》》》
+                        Map<String, String> recordUser = adminFeign.getUsersByUserIds(sourceType.getString("crtUserId"));
                         recordPersonTel =
                             CommonUtil.getValueFromJObjStr(recordUser.get(sourceType.getString("crtUserId")),
                                 "mobilePhone");
@@ -1432,9 +1490,8 @@ public class CaseInfoService {
             if (manyUsersMap != null && !manyUsersMap.isEmpty()) {
                 finishCheckJObj.put("finishCheckPerson", caseInfo.getFinishCheckPerson());
 
-                JSONObject finishCheckPersonJObj =
-                    JSONObject.parseObject(manyUsersMap.get(caseInfo.getFinishCheckPerson()));
-                finishCheckJObj.put("finishCheckPersonName", finishCheckPersonJObj.getString("name"));
+                JSONObject finishCheckPersonJObj =manyUsersMap.get(caseInfo.getFinishCheckPerson());
+                finishCheckJObj.put("finishCheckPersonName", finishCheckPersonJObj.getString("userName"));
                 finishCheckJObj.put("finishCheckPersonTel", finishCheckPersonJObj.getString("mobilePhone"));
             }
         }
@@ -1449,12 +1506,10 @@ public class CaseInfoService {
         finishJObj.put("finishDesc", caseInfo.getFinishDesc());
         finishJObj.put("finishTime", caseInfo.getFinishTime());
         if (StringUtils.isNotBlank(caseInfo.getFinishPerson())) {
-            // Map<String, String> finishPersonMap =
-            // adminFeign.getUser(caseInfo.getFinishPerson());//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>查询了admin》》》》》》》》》》》》》》》》》》》》》》》》》
             if (manyUsersMap != null && !manyUsersMap.isEmpty()) {
                 finishJObj.put("finishPerson", caseInfo.getFinishPerson());
 
-                JSONObject finishPersonJObj = JSONObject.parseObject(manyUsersMap.get(caseInfo.getFinishPerson()));
+                JSONObject finishPersonJObj = manyUsersMap.get(caseInfo.getFinishPerson());
                 finishJObj.put("finishPersonName", finishPersonJObj.getString("name"));
                 finishJObj.put("finishPersonTel", finishPersonJObj.getString("mobilePhone"));
             }

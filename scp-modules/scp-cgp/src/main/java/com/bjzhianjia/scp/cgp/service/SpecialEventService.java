@@ -210,7 +210,7 @@ public class SpecialEventService {
 
 		if(BeanUtil.isEmpty(rows)){
 			TableResultResponse<SpecialEventVo> voTableResultResponse=new TableResultResponse<>();
-			voTableResultResponse.setStatus(400);
+			voTableResultResponse.setStatus(200);
 			voTableResultResponse.setMessage("没有相关数据");
 			return voTableResultResponse;
 		}

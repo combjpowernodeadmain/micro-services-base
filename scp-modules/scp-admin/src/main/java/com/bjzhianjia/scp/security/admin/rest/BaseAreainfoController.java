@@ -44,7 +44,7 @@ public class BaseAreainfoController {
     /**
      * 通过区域id和等级获取子区域列表
      *
-     * @param level 区域等级
+     * @param level 区域等级（1省级|2市|3区/县）
      * @param id    区域id
      * @return
      */

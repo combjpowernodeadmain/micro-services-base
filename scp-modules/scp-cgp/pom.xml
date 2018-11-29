@@ -177,7 +177,6 @@
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>
 			<version>3.17</version>
-			<scope></scope>
 		</dependency>
 
 		<dependency>
@@ -191,11 +190,17 @@
 			<version>1.1</version>
 		</dependency>
 		<!-- ========================poi======================= -->
-
+		<!-- word转pdf插件  -->
 		<dependency>
 			<groupId>com.artofsolving</groupId>
 			<artifactId>jodconverter</artifactId>
-			<version>2.2.1</version>
+			<version>2.2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.bjzhianjia.allatori</groupId>
+			<artifactId>allatori</artifactId>
+			<version>1.0</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 	<!--依赖管理，用于管理spring-cloud的依赖，其中Camden.SR3是版本号 -->
@@ -218,10 +223,15 @@
 				<artifactId>druid</artifactId>
 				<version>1.0.11</version>
 			</dependency>
+			<dependency>
+	            <groupId>org.apache.httpcomponents</groupId>
+	            <artifactId>httpclient</artifactId>
+	            <version>4.5.5</version>
+	        </dependency>
 		</dependencies>
 	</dependencyManagement>
-	<build>
-		<finalName>scp-cgp</finalName>
+    <build>
+		<finalName>scp-cgp-compile</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
@@ -281,6 +291,32 @@
 			<!-- </resources> -->
 			<!-- </configuration> -->
 			<!-- </plugin> -->
+			<!-- Allatori 代码混淆 -->
+			<plugin>
+			    <groupId>org.codehaus.mojo</groupId>
+			    <artifactId>exec-maven-plugin</artifactId>
+			    <version>1.2.1</version>
+			    <executions>
+			        <execution>
+			            <id>run-allatori</id>
+			            <phase>package</phase>
+			            <goals>
+			                <goal>exec</goal>
+			            </goals>
+			        </execution>
+			    </executions>
+			    <configuration>
+			        <executable>java</executable>
+			        <arguments>
+			            <argument>-Xms128m</argument>
+			            <argument>-Xmx512m</argument>
+			            <argument>-jar</argument>
+			            <argument>${settings.localRepository}/com/bjzhianjia/allatori/allatori/1.0/allatori-1.0.jar
+			            </argument>
+			            <argument>${basedir}/src/main/resources/allatori.xml</argument>
+			        </arguments>
+			    </configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>

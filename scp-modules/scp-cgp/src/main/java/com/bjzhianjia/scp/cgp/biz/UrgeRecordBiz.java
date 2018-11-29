@@ -2,6 +2,8 @@ package com.bjzhianjia.scp.cgp.biz;
 
 import java.util.List;
 
+import com.alibaba.fastjson.JSONObject;
+import com.bjzhianjia.scp.cgp.entity.MessageCenter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,7 @@ import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
+import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 /**
@@ -23,6 +26,7 @@ import tk.mybatis.mapper.entity.Example;
  * @version 2018-08-26 09:02:28
  */
 @Service
+@Transactional
 public class UrgeRecordBiz extends BusinessBiz<UrgeRecordMapper, UrgeRecord> {
 
     @Autowired
@@ -30,6 +34,9 @@ public class UrgeRecordBiz extends BusinessBiz<UrgeRecordMapper, UrgeRecord> {
 
     @Autowired
     private CaseInfoBiz caseInfoBiz;
+
+    @Autowired
+    private MessageCenterBiz messageCenterBiz;
 
     /**
      * 通过立案单id，翻页查询
@@ -73,6 +80,18 @@ public class UrgeRecordBiz extends BusinessBiz<UrgeRecordMapper, UrgeRecord> {
                 caseInfoBiz.updateSelectiveById(caseInfo);
             }
             super.insertSelective(urgeRecord);
+
+            /*
+             * 添加催办消息
+             */
+            MessageCenter messageCenter=new MessageCenter();
+            messageCenter.setMsgSourceType("case_info_01");
+            messageCenter.setMsgSourceId(String.valueOf(caseInfo.getId()));
+            // 指明按哪个类型进行查询正常的消息记录
+            JSONObject sourceJObj=new JSONObject();
+            sourceJObj.put("msgSourceType", "case_info_00");
+
+            messageCenterBiz.addMsgCenterRecord(messageCenter,sourceJObj);
         }
 
     }
