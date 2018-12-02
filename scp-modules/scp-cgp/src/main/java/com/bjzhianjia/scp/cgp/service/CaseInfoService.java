@@ -940,6 +940,14 @@ public class CaseInfoService {
             }
 
         }
+
+        /*
+         * 判断是否有立案核查及待结案核查审批内容
+         * 立案核查审批内容与待结案核查审批内容在业务表与工作流表都有，且内容一致
+         */
+        _checkProcApproOpinion(objs, caseInfo);
+
+
         // 更新业务数据(caseInfo)
         caseInfoBiz.updateSelectiveById(caseInfo);
 
@@ -948,6 +956,35 @@ public class CaseInfoService {
 
         result.setIsSuccess(true);
         return result;
+    }
+
+    /**
+     * 检查是否有审批意见
+     * @param objs
+     * @param caseInfo
+     */
+    private void _checkProcApproOpinion(JSONObject objs, CaseInfo caseInfo) {
+        // 立案核查
+        JSONObject variableDataJObj = objs.getJSONObject("variableData");
+
+        if (StringUtils.isNotBlank(caseInfo.getCheckOpinion())) {
+            // 说明有立案核查信息
+            if (StringUtils.isBlank(variableDataJObj.getString("procApprOpinion"))) {
+                // 业务中有立案核查信息，但工作流请求参数中无立案核查信息
+                variableDataJObj.put("procApprOpinion", caseInfo.getCheckOpinion());
+            }
+        }
+        // 待结案核查
+        if (StringUtils.isNotBlank(caseInfo.getFinishCheckOpinion())) {
+            // 说明有立案核查信息
+            if (StringUtils.isBlank(variableDataJObj.getString("procApprOpinion"))) {
+                // 业务中有立案核查信息，但工作流请求参数中无立案核查信息
+                variableDataJObj.put("procApprOpinion", caseInfo.getFinishCheckOpinion());
+            }
+        }
+
+        // 将添加审批意见的variableData重新放回objs
+        objs.put("variableData", variableDataJObj);
     }
 
     /**
@@ -967,12 +1004,13 @@ public class CaseInfoService {
         switch (key) {
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345:
                 // 市长热线
-                log.info("更新市长热线事件为【已处理】");
                 if (isTermination) {
                     // 事件终止操作
+                    log.info("更新市长热线事件为【已中止】");
                     assist =
                         assist(caseInfo.getSourceCode(), Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_STOP);
                 } else {
+                    log.info("更新市长热线事件为【已处理】");
                     assist =
                         assist(caseInfo.getSourceCode(), Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_DONE);
                 }
@@ -981,11 +1019,12 @@ public class CaseInfoService {
                 break;
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CONSENSUS:
                 // 舆情
-                log.info("更新舆情事件为【已完成】");
                 if (isTermination) {
                     // 事件终止操作
                     assist = assist(caseInfo.getSourceCode(), Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_STOP);
+                    log.info("更新舆情事件为【已中止】");
                 } else {
+                    log.info("更新舆情事件为【已完成】");
                     assist =
                         assist(caseInfo.getSourceCode(), Constances.PublicOpinionExeStatus.ROOT_BIZ_CONSTATE_FINISH);
                 }
@@ -994,11 +1033,12 @@ public class CaseInfoService {
                 break;
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_LEADER:
                 // 领导交办
-                log.info("更新领导交办事件为【已完成】");
                 if (isTermination) {
                     // 事件终止操作
+                    log.info("更新领导交办事件为【已中止】");
                     assist = assist(caseInfo.getSourceCode(), Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_STOP);
                 } else {
+                    log.info("更新领导交办事件为【已完成】");
                     assist = assist(caseInfo.getSourceCode(), Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_FINISH);
                 }
                 LeadershipAssign leadershipAssign = JSON.parseObject(assist.toJSONString(), LeadershipAssign.class);
@@ -1006,24 +1046,27 @@ public class CaseInfoService {
                 break;
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CHECK:
                 // 巡查上报
-                log.info("更新巡查上报事件为【已完成】");
+                PatrolTask patrolTask = new PatrolTask();
+                patrolTask.setId(Integer.valueOf(caseInfo.getSourceCode()));
                 if (isTermination) {
+                    log.info("更新巡查上报事件为【已中止】");
                     // 事件终止操作
-                    assist = assist(caseInfo.getSourceCode(), Constances.PartolTaskStatus.ROOT_BIZ_PARTOLTASKT_STOP);
+                    patrolTask.setStatus(Constances.PartolTaskStatus.ROOT_BIZ_PARTOLTASKT_STOP);
                 } else {
-                    assist = assist(caseInfo.getSourceCode(), Constances.PartolTaskStatus.ROOT_BIZ_PARTOLTASKT_FINISH);
+                    log.info("更新巡查上报事件为【已完成】");
+                    patrolTask.setStatus(Constances.PartolTaskStatus.ROOT_BIZ_PARTOLTASKT_FINISH);
                 }
-                PatrolTask patrolTask = JSON.parseObject(assist.toJSONString(), PatrolTask.class);
                 patrolTaskBiz.updateSelectiveById(patrolTask);
                 break;
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_COMMAND_LINE:
                 // 指挥中心热线
-                log.info("指挥中心热线事件【已完成】");
                 if (isTermination) {
                     // 事件终止操作
+                    log.info("指挥中心热线事件【已中止】");
                     assist =
                         assist(caseInfo.getSourceCode(), Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_STOP);
                 } else {
+                    log.info("指挥中心热线事件【已完成】");
                     assist =
                         assist(caseInfo.getSourceCode(), Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_DONE);
                 }
@@ -1354,8 +1397,11 @@ public class CaseInfoService {
             checkJObj.put("checkPerson", caseInfo.getCheckPerson());
             if (manyUsersMap != null && !manyUsersMap.isEmpty()) {
                 JSONObject checkPersonJObj = manyUsersMap.get(caseInfo.getCheckPerson());
-                checkJObj.put("checkPersonName", checkPersonJObj.getString("userName"));
-                checkJObj.put("checkPersonTel", checkPersonJObj.getString("mobilePhone"));
+                // 有可能caseInfo.getCheckPerson()所对应的人在base_user表中被删除，这样会导致checkPersonJObj=NULL
+                if(BeanUtil.isNotEmpty(checkPersonJObj)){
+                    checkJObj.put("checkPersonName", checkPersonJObj.getString("userName"));
+                    checkJObj.put("checkPersonTel", checkPersonJObj.getString("mobilePhone"));
+                }
             }
         }
         if (caseInfo.getCheckTime() != null) {
@@ -1397,13 +1443,9 @@ public class CaseInfoService {
             if (Constances.ProcCTaskCode.COMMANDERAPPROVE.equals(wfProcTaskHistoryBean.getProcCtaskcode())) {
                 JSONObject commanderApproveJObj = JSONObject.parseObject(JSON.toJSONString(wfProcTaskHistoryBean));
                 // 查询指挥长
-                if (StringUtils.isNotBlank(wfProcTaskHistoryBean.getProcTaskCommitter())) {
-                    // Map<String, String> commanderApproveMap =
-                    // adminFeign.getUser(wfProcTaskHistoryBean.getProcTaskCommitter());//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>查询了admin》》》》》》》》》》》》》》》》》》》》》》》》》
+                if (StringUtils.isNotBlank(wfProcTaskHistoryBean.getProcTaskAssignee())) {
                     if (manyUsersMap != null && !manyUsersMap.isEmpty()) {
                         // 流程的审批人应为procTaskAssignee
-
-
                         /*
                          * IF ( task.PROC_TASK_STATUS = '1',
                          * task.PROC_TASK_GROUP,
@@ -1417,12 +1459,12 @@ public class CaseInfoService {
                         if(BeanUtil.isNotEmpty(jObjTmp)){
                             commanderApproveJObj.put("procTaskCommitterName", jObjTmp.getString("userName"));
                             commanderApproveJObj.put("commanderTel", jObjTmp.getString("mobilePhone"));// 审批人联系方法
-                            //流程审批时间
-                            commanderApproveJObj.put("procTaskEndtime", wfProcTaskHistoryBean.getProcTaskEndtime());// 审批时间
-                            commanderApproveJObj.put("procTaskApprOpinion", wfProcTaskHistoryBean.getProcTaskApprOpinion());// 审批意见
-                            commanderApproveJArray.add(commanderApproveJObj);
                         }
                     }
+                    //流程审批时间
+                    commanderApproveJObj.put("procTaskEndtime", wfProcTaskHistoryBean.getProcTaskEndtime());// 审批时间
+                    commanderApproveJObj.put("procTaskApprOpinion", wfProcTaskHistoryBean.getProcTaskApprOpinion());// 审批意见
+                    commanderApproveJArray.add(commanderApproveJObj);
                 }
             }
         }
@@ -1491,8 +1533,11 @@ public class CaseInfoService {
                 finishCheckJObj.put("finishCheckPerson", caseInfo.getFinishCheckPerson());
 
                 JSONObject finishCheckPersonJObj =manyUsersMap.get(caseInfo.getFinishCheckPerson());
-                finishCheckJObj.put("finishCheckPersonName", finishCheckPersonJObj.getString("userName"));
-                finishCheckJObj.put("finishCheckPersonTel", finishCheckPersonJObj.getString("mobilePhone"));
+                // 有可能caseInfo.getFinishCheckPerson()所对应的人在base_user表中被删除，finishCheckPersonJObj=NULL
+                if(BeanUtil.isNotEmpty(finishCheckPersonJObj)){
+                    finishCheckJObj.put("finishCheckPersonName", finishCheckPersonJObj.getString("userName"));
+                    finishCheckJObj.put("finishCheckPersonTel", finishCheckPersonJObj.getString("mobilePhone"));
+                }
             }
         }
         /*
@@ -1510,8 +1555,11 @@ public class CaseInfoService {
                 finishJObj.put("finishPerson", caseInfo.getFinishPerson());
 
                 JSONObject finishPersonJObj = manyUsersMap.get(caseInfo.getFinishPerson());
-                finishJObj.put("finishPersonName", finishPersonJObj.getString("name"));
-                finishJObj.put("finishPersonTel", finishPersonJObj.getString("mobilePhone"));
+                // 有可能caseInfo.getFinishPerson()所对应的人在base_user表中被删除，getFinishPerson=NULL
+                if(BeanUtil.isNotEmpty(finishPersonJObj)){
+                    finishJObj.put("finishPersonName", finishPersonJObj.getString("name"));
+                    finishJObj.put("finishPersonTel", finishPersonJObj.getString("mobilePhone"));
+                }
             }
         }
 

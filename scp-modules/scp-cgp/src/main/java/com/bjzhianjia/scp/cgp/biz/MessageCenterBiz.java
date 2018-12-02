@@ -526,6 +526,9 @@ public class MessageCenterBiz extends BusinessBiz<MessageCenterMapper, MessageCe
             }
         }
 
-        this.mapper.addMessageCenterList(messageCentersInDB);
+        // 当待添加对象不为空时，才执行添加操作
+        if(BeanUtil.isNotEmpty(messageCentersInDB)){
+            this.mapper.addMessageCenterList(messageCentersInDB);
+        }
     }
 }
