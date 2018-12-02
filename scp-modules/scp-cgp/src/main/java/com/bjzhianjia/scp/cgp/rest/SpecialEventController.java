@@ -1,8 +1,11 @@
 package com.bjzhianjia.scp.cgp.rest;
 
+import com.alibaba.fastjson.JSONArray;
+import com.bjzhianjia.scp.cgp.entity.EventType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -148,4 +151,28 @@ public class SpecialEventController extends BaseController<SpecialEventBiz, Spec
 		result.setMessage("成功");
 		return result;
 	}
+
+    /**
+     * 查询专项id下的业务条线
+     * 
+     * @param id
+     * @return
+     */
+    @GetMapping("/bizType")
+    @ApiOperation("查询专项id下的业务条线")
+    public JSONArray bizTypeInSpeEvent(@RequestParam(value = "id") Integer id) {
+        return this.specialEventService.bizTypeInSpeEvent(id);
+    }
+
+    /**
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/eventType")
+    @ApiOperation("查询专项id下，与bizList对应的事件类别")
+    public TableResultResponse<EventType> eventTypeInSpeEvent(
+        @RequestParam(value = "id") Integer id, @RequestParam(value = "bizList") String bizList) {
+        return this.baseBiz.eventTypeInSApeEvent(id, bizList);
+    }
 }
