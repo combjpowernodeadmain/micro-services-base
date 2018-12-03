@@ -151,6 +151,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     public Result<Void> addCase(JSONObject caseRegJObj) {
         Result<Void> result = new Result<>();
 
+        // 检查是否需要自动生成案件名称
+        checkCaseRegistrationName(caseRegJObj);
+
         // 添加当事人
         int concernedId = addConcerned(caseRegJObj);
 
@@ -915,8 +918,15 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             wfProcBackBean = wfProcBackBean_ID_Entity_Map.get(objResult.get("id"));
 
             // 定位坐标
-            objResult.put("mapInfo", "{\"lng\":\"" + caseRegistration.getCaseOngitude() + "\",\"lat\":\""
-                    + caseRegistration.getCaseLatitude() + "\"}");
+            JSONObject mapInfoJobj = null;
+            if (StringUtils.isBlank(caseRegistration.getCaseOngitude())
+                && StringUtils.isNotBlank(caseRegistration.getCaseLatitude())) {
+                // 经度与纬度同时不为空时才生成地理信息
+                mapInfoJobj = new JSONObject();
+                mapInfoJobj.put("lng", caseRegistration.getCaseOngitude());
+                mapInfoJobj.put("lat", caseRegistration.getCaseLatitude());
+            }
+            objResult.put("mapInfo", mapInfoJobj == null ? null : mapInfoJobj.toJSONString());
 
             // 处理状态
             String procCtaskname = "";
@@ -1360,11 +1370,14 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             for (Map<String, Object> bizLineMap : bizLineList) {
                 obj = new JSONObject();
                 String bitType = String.valueOf(bizLineMap.get("bizType"));
-                // 业务条线
-                obj.put("bizType", bitType);
-                obj.put("count", bizLineMap.get("count"));
-                obj.put("bitTypeName", bizType.get(bitType));
-                temp.put(bitType, obj);
+                // 避免因数据库中空字符串对结果造成影响，对其进行去除
+                if(StringUtils.isNotBlank(StringUtils.trim(bitType))){
+                    // 业务条线
+                    obj.put("bizType", bitType);
+                    obj.put("count", bizLineMap.get("count"));
+                    obj.put("bitTypeName", bizType.get(bitType));
+                    temp.put(bitType, obj);
+                }
             }
         }
         // 封装返回集数据
@@ -1839,6 +1852,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     @Transactional(rollbackFor = Exception.class,propagation = Propagation.REQUIRED)
     public Result<Void> addCaseClient(JSONObject caseRegJObj) {
         Result<Void> result = new Result<>();
+        // 检查是否需要自动生成案件名称
+        checkCaseRegistrationName(caseRegJObj);
 
         CaseRegistration caseRegistration =
             JSON.parseObject(caseRegJObj.toJSONString(), CaseRegistration.class);
@@ -2183,5 +2198,91 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             return new TableResultResponse<>(rows.size(), rows);
         }
         return new TableResultResponse<>(0, new ArrayList<>());
+    }
+
+    /**
+     * 检查是否需要自动生成案件名称
+     * 如果没有案件名称，则自动生成
+     * @param caseRegJObj
+     * @return
+     */
+    private void checkCaseRegistrationName(JSONObject caseRegJObj) {
+        /*
+         * 如果案件名称为空，需要根据当事人类型自动生成相应的案件名称
+         * 案件名称=【当事人姓名或单位名称】+【违法行为】
+         */
+        boolean isCaseNameBlank = StringUtils.isBlank(caseRegJObj.getString("caseName"));
+        
+        // 判断是否传入当事人信息
+        JSONObject concernedJObj = caseRegJObj.getJSONObject("concerned");
+        if (concernedJObj != null) {
+            // 有当事人信息
+            String concernedType = caseRegJObj.getString("concernedType");
+            switch (concernedType) {
+                case Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG:
+                    if (isCaseNameBlank) {
+                        // 当事人以单位形式存在
+                        CLEConcernedCompany concernedCompany =
+                            JSON.parseObject(concernedJObj.toJSONString(),
+                                CLEConcernedCompany.class);
+
+                        // 查询权力事项
+                        Integer rightsIssuesId = caseRegJObj.getInteger("rightId");
+                        RightsIssues rightsIssues = null;
+                        if (BeanUtil.isNotEmpty(rightsIssuesId)) {
+                            rightsIssues = rightsIssuesBiz.selectById(rightsIssuesId);
+                        }
+
+                        List<String> caseNameList = new ArrayList<>();
+                        String caseName = "";
+                        if (BeanUtil.isNotEmpty(concernedCompany)
+                            && StringUtils.isNotBlank(concernedCompany.getName())) {
+                            caseNameList.add(concernedCompany.getName());
+                        }
+                        if (BeanUtil.isNotEmpty(rightsIssues)
+                            && StringUtils.isNotBlank(rightsIssues.getUnlawfulAct())) {
+                            caseNameList.add(rightsIssues.getUnlawfulAct());
+                        }
+                        if (BeanUtil.isNotEmpty(caseNameList)) {
+                            caseName = String.join("_", caseNameList);
+                        }
+
+                        caseRegJObj.put("caseName", caseName);
+                    }
+                    break;
+                case Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON:
+                    // 当事人以人个形式存在
+
+                    if (isCaseNameBlank) {
+                        CLEConcernedPerson concernedPerson =
+                            JSON.parseObject(concernedJObj.toJSONString(),
+                                CLEConcernedPerson.class);
+
+                        // 查询权力事项
+                        Integer rightsIssuesId = caseRegJObj.getInteger("rightId");
+                        RightsIssues rightsIssues = null;
+                        if (BeanUtil.isNotEmpty(rightsIssuesId)) {
+                            rightsIssues = rightsIssuesBiz.selectById(rightsIssuesId);
+                        }
+
+                        List<String> caseNameList = new ArrayList<>();
+                        String caseName = "";
+                        if (BeanUtil.isNotEmpty(concernedPerson)
+                            && StringUtils.isNotBlank(concernedPerson.getName())) {
+                            caseNameList.add(concernedPerson.getName());
+                        }
+                        if (BeanUtil.isNotEmpty(rightsIssues)
+                            && StringUtils.isNotBlank(rightsIssues.getUnlawfulAct())) {
+                            caseNameList.add(rightsIssues.getUnlawfulAct());
+                        }
+                        if (BeanUtil.isNotEmpty(caseNameList)) {
+                            caseName = String.join("_", caseNameList);
+                        }
+
+                        caseRegJObj.put("caseName", caseName);
+                    }
+                    break;
+            }
+        }
     }
 }

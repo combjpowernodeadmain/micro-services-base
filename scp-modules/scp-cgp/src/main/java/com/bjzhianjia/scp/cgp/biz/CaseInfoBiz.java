@@ -92,7 +92,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
     private SpecialEventBiz specialEventBiz;
     
     @Autowired
-    private RegulaObjectMapper regulaObjectMapper;
+    private RegulaObjectBiz regulaObjectBiz;
 
     /**
      * 查询未删除的总数
@@ -850,53 +850,65 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         // 查询专项管理
         SpecialEvent specialEvent =
             specialEventBiz.selectById(Integer.valueOf(queryData.getString("sourceTaskId")));
-        List<String> objIdList;
+
+        List<RegulaObject> regulaObjectList;
         if (BeanUtil.isNotEmpty(specialEvent)
             && StringUtils.isNotBlank(specialEvent.getRegObjList())) {
-            objIdList = Arrays.asList(specialEvent.getRegObjList().split(","));
+            Set<String> objTypeIdS=new HashSet<>();
+            objTypeIdS.addAll(Arrays.asList(specialEvent.getRegObjList().split(",")));
+            /*
+             * 查询专项任务里监管对象类型下的监管对象
+             * 专项任务里记录的是监管对象类型，需要使用监管对象类型查询出监管对象
+             */
+            regulaObjectList = regulaObjectBiz.getListByObjTypeIds(objTypeIdS);
+
+            if(BeanUtil.isEmpty(regulaObjectList)){
+                // 如果没有找到监管对象，则提示错误
+                tableResult.setMessage("未找到相关监管对象");
+                tableResult.setStatus(400);
+                return tableResult;
+            }
         } else {
+            // 如果专项下没有记录监管对象类型，则提示错误
             tableResult.setMessage("未找到相关监管对象");
             tableResult.setStatus(400);
             return tableResult;
         }
 
-        queryData.put("regulaObjectId", objIdList);
+        queryData.put("regulaObjectId", null);
 
         List<JSONObject> listForHome = this.mapper.getListForHome(queryData);
+        List<Integer> regulaObjectIds=new ArrayList<>();
         if (BeanUtil.isNotEmpty(listForHome)) {
-            List<Integer> regulaObjectIds =
+            regulaObjectIds =
                 listForHome.stream().map(o -> o.getInteger("regulaObjectId")).distinct()
                     .collect(Collectors.toList());
+        }
 
-            // 查询专项下的监管对象
-            List<RegulaObject> regulaObjects =
-                regulaObjectMapper.selectByIds(specialEvent.getRegObjList());
-            // 将还没有巡查到的监管对象进行整合
-            if (BeanUtil.isNotEmpty(regulaObjects)) {
-                Map<Integer, RegulaObject> collectMap = new HashMap<>();
-                for (RegulaObject tmpReg : regulaObjects) {
-                    if ("0".equals(tmpReg.getIsDeleted())) {
-                        collectMap.put(tmpReg.getId(), tmpReg);
-                    }
-                }
-                for (Map.Entry<Integer, RegulaObject> e : collectMap.entrySet()) {
-                    if (!regulaObjectIds.contains(e.getKey())) {
-                        // 说明查到的结果集里不包含该监管对象，需要补充到结果集里
-                        JSONObject tmpJobj = new JSONObject();
-                        tmpJobj.put("patrolCount", 0);
-                        tmpJobj.put("objName", e.getValue().getObjName());
-                        tmpJobj.put("mapInfo", e.getValue().getMapInfo());
-                        tmpJobj.put("regulaObjectId", e.getKey());
-                        tmpJobj.put("pCountWithProblem", 0);
-                        listForHome.add(tmpJobj);
-                    }
+        // 将还没有巡查到的监管对象进行整合
+        if (BeanUtil.isNotEmpty(regulaObjectList)) {
+            Map<Integer, RegulaObject> collectMap = new HashMap<>();
+            for (RegulaObject tmpReg : regulaObjectList) {
+                if ("0".equals(tmpReg.getIsDeleted())) {
+                    collectMap.put(tmpReg.getId(), tmpReg);
                 }
             }
-
-            tableResult.getData().setRows(listForHome);
-            tableResult.getData().setTotal(listForHome.size());
-            return tableResult;
+            for (Map.Entry<Integer, RegulaObject> e : collectMap.entrySet()) {
+                if (!regulaObjectIds.contains(e.getKey())) {
+                    // 说明查到的结果集里不包含该监管对象，需要补充到结果集里
+                    JSONObject tmpJobj = new JSONObject();
+                    tmpJobj.put("patrolCount", 0);
+                    tmpJobj.put("objName", e.getValue().getObjName());
+                    tmpJobj.put("mapInfo", e.getValue().getMapInfo());
+                    tmpJobj.put("regulaObjectId", e.getKey());
+                    tmpJobj.put("pCountWithProblem", 0);
+                    listForHome.add(tmpJobj);
+                }
+            }
         }
+
+        tableResult.getData().setRows(listForHome);
+        tableResult.getData().setTotal(listForHome.size());
         return tableResult;
     }
 }

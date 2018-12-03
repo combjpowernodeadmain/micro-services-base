@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -224,5 +226,11 @@ public class RegulaObjectTypeController
     @ApiOperation("/获取监管对象类型名称列表")
     public List<RegulaObjectType> getNames(){
         return this.baseBiz.getNames();
+    }
+
+    @GetMapping("/list/bindChileren")
+    public Set<RegulaObjectType> listBindChileren(@RequestParam(value = "ids") String ids){
+        Set<RegulaObjectType> regulaObjectTypes = this.baseBiz.listBindChileren(ids);
+        return regulaObjectTypes;
     }
 }

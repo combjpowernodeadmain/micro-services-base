@@ -212,7 +212,7 @@ public class EnforceCertificateBiz extends BusinessBiz<EnforceCertificateMapper,
             JSONObject usrIdJObjOut = new JSONObject();
             JSONObject usrIdJObjIn = new JSONObject();
             usrIdJObjIn.put("id", usrId);
-            usrIdJObjOut.put("usrId", usrIdJObjIn);
+            usrIdJObjOut.put("usrId", usrIdJObjIn.toJSONString());
             resultJArray.add(usrIdJObjOut);
         }
 

@@ -398,6 +398,9 @@
 			FROM cle_concerned_company comp
 			LEFT JOIN cle_case_registration ccreg ON ccreg.concerned_id=comp.id AND ccreg.concerned_type='root_biz_concernedT_org'
 			WHERE ccreg.deal_type !='root_biz_caseDealType_wfxwt'
+            <if test="queryJObj.caseSourceType != null and queryJObj.caseSourceType != ''">
+                and ccreg.case_source_type=#{queryJObj.caseSourceType}
+            </if>
 			GROUP BY comp.name
 		) compWithPbm on compWithPbm.compName=comp.name
 		<where>

@@ -310,7 +310,7 @@ public class MessageCenterBiz extends BusinessBiz<MessageCenterMapper, MessageCe
                 Arrays.asList(messageCenter.getMsgSourceType().split(",")));
         }
 
-        example.setOrderByClause("task_time asc");
+        example.setOrderByClause("crt_time desc");
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<MessageCenter> messageCenterList = this.selectByExample(example);
         
@@ -526,6 +526,9 @@ public class MessageCenterBiz extends BusinessBiz<MessageCenterMapper, MessageCe
             }
         }
 
-        this.mapper.addMessageCenterList(messageCentersInDB);
+        // 当待添加对象不为空时，才执行添加操作
+        if(BeanUtil.isNotEmpty(messageCentersInDB)){
+            this.mapper.addMessageCenterList(messageCentersInDB);
+        }
     }
 }
