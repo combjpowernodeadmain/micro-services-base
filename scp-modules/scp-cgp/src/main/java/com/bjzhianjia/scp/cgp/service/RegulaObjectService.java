@@ -886,4 +886,65 @@ public class RegulaObjectService {
 
         return result;
     }
+
+    /**
+     * 查询某距离范围内，并在某监管对象类型下的监管对象
+     * @param longitude
+     * @param latitude
+     * @param objTypes
+     * @param size
+     * @param limit
+     * @param page
+     * @return
+     */
+    public TableResultResponse<JSONObject> getByDistanceAndObjType(Double longitude,
+        Double latitude, String objTypes, Double size) {
+        List<JSONObject> result = new ArrayList<>();
+
+        /*
+         * 获取监管对象类型下的监管对象
+         */
+        List<RegulaObject> listByObjTypeIds = new ArrayList<>();
+        // 获取所有监管对象类型，包括子类型
+        Set<RegulaObjectType> regulaObjectTypes = regulaObjectTypeBiz.listBindChileren(objTypes);
+        if (BeanUtil.isNotEmpty(regulaObjectTypes)) {
+            // 收集监管对象类型
+            List<String> regObjTypeIds =
+                regulaObjectTypes.stream().map(o -> String.valueOf(o.getId())).distinct()
+                    .collect(Collectors.toList());
+            if (BeanUtil.isNotEmpty(regObjTypeIds)) {
+                listByObjTypeIds =
+                    this.regulaObjectBiz.getListByObjTypeIds(new HashSet<>(regObjTypeIds));
+            }
+        }
+
+        // 获取指定范围的所有监管对象
+        Circle within =
+            new Circle(new Point(longitude, latitude), new Distance(size, DistanceUnit.METERS));
+        GeoResults<GeoLocation<Object>> geoResults =
+            redisTemplate.opsForGeo().geoRadius(PatrolTask.REGULA_OBJECT_LOCATION, within);
+        // 指定范围内的ids
+        Map<Integer, String> temp = new HashMap<>();
+        geoResults.forEach(geoLocation -> {
+            temp.put((Integer) geoLocation.getContent().getName(), "");
+        });
+
+        // 筛选指定监控类型和指定范围内的数据
+        JSONObject resultMap = null;
+        if (BeanUtil.isNotEmpty(listByObjTypeIds)) {
+            for (RegulaObject obj : listByObjTypeIds) {
+                String objId = String.valueOf(obj.getId());
+                // 当前id和缓存中的id匹配，成功则表示在指定范围内
+                if (temp.get(Integer.valueOf(objId)) != null) {
+                    resultMap = new JSONObject();
+                    resultMap.put("id", obj.getId());
+                    resultMap.put("objName", obj.getObjName());
+                    resultMap.put("objCode", obj.getObjCode());
+                    result.add(resultMap);
+                }
+            }
+        }
+
+        return new TableResultResponse<>(result.size(), result);
+    }
 }

@@ -310,7 +310,7 @@ public class MessageCenterBiz extends BusinessBiz<MessageCenterMapper, MessageCe
                 Arrays.asList(messageCenter.getMsgSourceType().split(",")));
         }
 
-        example.setOrderByClause("task_time asc");
+        example.setOrderByClause("crt_time desc");
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<MessageCenter> messageCenterList = this.selectByExample(example);
         
