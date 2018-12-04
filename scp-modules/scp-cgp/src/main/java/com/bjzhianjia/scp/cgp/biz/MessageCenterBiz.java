@@ -325,7 +325,7 @@ public class MessageCenterBiz extends BusinessBiz<MessageCenterMapper, MessageCe
             for (MessageCenter messageCenterTmp : messageCenterList) {
                 try {
                     JSONObject swapProperties =
-                        propertiesProxy.swapProperties(messageCenterTmp, "id", "msgName", "msgDesc", "taskTime","msgSourceId","msgSourceType");
+                        propertiesProxy.swapProperties(messageCenterTmp, "id", "msgName", "msgDesc", "taskTime","msgSourceId","msgSourceType","crtTime");
                     // 当前人查到的消息记录肯定为本人的，所以整合姓名时，可从BaseContextHandler中获取
                     swapProperties.put("executor", BaseContextHandler.getUsername());
                     result.add(swapProperties);
