@@ -61,7 +61,6 @@ public class ClePreCaseCallBackServiceImpl implements IWfProcTaskCallBackService
                 // 执法任务
                 // 处理执法任务业务逻辑
                 updateTask(bizData);
-                checkCaseRegistration(bizData,CaseRegistration.CASE_SOURCE_TYPE_TASK);
                 break;
             case CaseRegistration.CASE_SOURCE_TYPE_CENTER:
                 // 中心交办

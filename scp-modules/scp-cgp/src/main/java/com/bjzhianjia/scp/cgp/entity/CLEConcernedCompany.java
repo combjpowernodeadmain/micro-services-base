@@ -72,6 +72,10 @@ public class CLEConcernedCompany implements Serializable {
 	    //更新人姓名
     @Column(name = "upd_user_name")
     private String updUserName;
+
+	// 监管对象类型ID
+	@Column(name="regula_object_id")
+	private Integer regulaObjectId;
 	
 
 	/**
@@ -241,5 +245,21 @@ public class CLEConcernedCompany implements Serializable {
 	 */
 	public String getUpdUserName() {
 		return updUserName;
+	}
+
+	/**
+	 * 获取：监管对象ID
+	 * @return
+	 */
+	public Integer getRegulaObjectId() {
+		return regulaObjectId;
+	}
+
+	/**
+	 * 设置：监管对象ID
+	 * @param regulaObjectId
+	 */
+	public void setRegulaObjectId(Integer regulaObjectId) {
+		this.regulaObjectId = regulaObjectId;
 	}
 }

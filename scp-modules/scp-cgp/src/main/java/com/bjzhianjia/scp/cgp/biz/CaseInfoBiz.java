@@ -514,7 +514,6 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             temp.put(key, obj);
         }
         // 封装数据库中的数据
-        System.out.println(gridIds.toString());
         List<Map<String, Object>> bizLineList =
             this.mapper.selectBizLine(caseInfo, gridIds, startTime, endTime);
         if (BeanUtil.isNotEmpty(bizLineList)) {

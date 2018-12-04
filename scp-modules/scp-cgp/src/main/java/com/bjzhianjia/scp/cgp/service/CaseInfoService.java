@@ -473,9 +473,8 @@ public class CaseInfoService {
 
         // 查询事件类别
         Map<String, String> eventType_ID_NAME_Map = new HashMap<>();
-        // String eventTypeName = "";
         if (eventTypeIdStrSet != null && !eventTypeIdStrSet.isEmpty()) {
-            List<EventType> eventTypeList = new ArrayList<>();
+            List<EventType> eventTypeList;
             eventTypeList = eventTypeMapper.selectByIds(String.join(",", eventTypeIdStrSet));
             List<String> eventTypeNameList = new ArrayList<>();
             for (EventType eventType : eventTypeList) {
@@ -484,7 +483,6 @@ public class CaseInfoService {
                 }
                 eventType_ID_NAME_Map.put(String.valueOf(eventType.getId()), eventType.getTypeName());
             }
-            // eventTypeName = String.join(",", eventTypeNameList);
         }
         
         for (CaseInfo caseInfo : caseInfoList) {
@@ -668,6 +666,17 @@ public class CaseInfoService {
                 resultJObjct.put("sourceCode", patrolTask.getPatrolCode());
                 //添加主办人姓名
                 resultJObjct.put("crtUserName", patrolTask.getCrtUserName());
+
+                // 查询现场检查图片
+                List<PatrolRes> patrolResList = patrolResBiz.getByPatrolTaskId(patrolTask.getId());
+                if (BeanUtil.isNotEmpty(patrolResList)) {
+                    List<String> urls =
+                        patrolResList.stream().map(o -> o.getUrl()).distinct()
+                            .collect(Collectors.toList());
+                    resultJObjct.put("url", String.join(",", urls));
+                } else {
+                    resultJObjct.put("url", null);
+                }
 
                 reportPersonId = patrolTask.getCrtUserId();
                 break;
@@ -930,12 +939,16 @@ public class CaseInfoService {
                     JSON.parseObject(executeInfoJObj.toJSONString(), ExecuteInfo.class);
                 executeInfoForUpdate.setId(executeInfosInDB.get(0).getId());
                 executeInfoForUpdate.setDepartment(BaseContextHandler.getDepartID());
+                // 对请求参数中的图片做处理，图片地址可能前后可能会带有空格
+                _checkPictureInCaseInfo(null, executeInfoForUpdate);
                 executeInfoBiz.updateSelectiveById(executeInfoForUpdate);
             } else {
                 ExecuteInfo executeInfoForInsert =
                     JSON.parseObject(executeInfoJObj.toJSONString(), ExecuteInfo.class);
                 executeInfoForInsert.setCaseId(caseInfo.getId());
                 executeInfoForInsert.setDepartment(BaseContextHandler.getDepartID());
+                // 对请求参数中的图片做处理，图片地址可能前后可能会带有空格
+                _checkPictureInCaseInfo(null, executeInfoForInsert);
                 executeInfoBiz.insertSelective(executeInfoForInsert);
             }
 
@@ -947,6 +960,8 @@ public class CaseInfoService {
          */
         _checkProcApproOpinion(objs, caseInfo);
 
+        // 对请求参数中的图片做处理，图片地址可能前后可能会带有空格
+        _checkPictureInCaseInfo(caseInfo,null);
 
         // 更新业务数据(caseInfo)
         caseInfoBiz.updateSelectiveById(caseInfo);
@@ -956,6 +971,47 @@ public class CaseInfoService {
 
         result.setIsSuccess(true);
         return result;
+    }
+
+    private void _checkPictureInCaseInfo(CaseInfo caseInfo,ExecuteInfo executeInfo) {
+        /*
+         * 1 检查图片checkPic
+         * 2 结案核查图片finish_check_pic
+         * 3 办理图片
+         */
+        try {
+            if (BeanUtil.isNotEmpty(caseInfo)) {
+                if (StringUtils.isNotBlank(caseInfo.getCheckPic())) {
+                    String[] splits = caseInfo.getCheckPic().split(",");
+                    List<String> checkPicList = new ArrayList<>();
+                    for (String split : splits) {
+                        checkPicList.add(StringUtils.trim(split));
+                    }
+                    caseInfo.setCheckPic(String.join(",", checkPicList));
+                }
+                if (StringUtils.isNotBlank(caseInfo.getFinishCheckPic())) {
+                    String[] splits = caseInfo.getFinishCheckPic().split(",");
+                    List<String> checkPicList = new ArrayList<>();
+                    for (String split : splits) {
+                        checkPicList.add(StringUtils.trim(split));
+                    }
+                    caseInfo.setFinishCheckPic(String.join(",", checkPicList));
+                }
+            }
+
+            if (BeanUtil.isNotEmpty(executeInfo)) {
+                if (StringUtils.isNotBlank(executeInfo.getPicture())) {
+                    String[] splits = executeInfo.getPicture().split(",");
+                    List<String> pictures = new ArrayList<>();
+                    for (String split : splits) {
+                        pictures.add(StringUtils.trim(split));
+                    }
+                    executeInfo.setPicture(String.join(",", pictures));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -1194,6 +1250,22 @@ public class CaseInfoService {
         }
 
         CaseInfo caseInfo = caseInfoBiz.selectById(bizId);
+
+        // 验证事件是否结束
+        if (CaseInfo.FINISHED_STATE_FINISH.equals(caseInfo.getIsFinished())
+            || CaseInfo.FINISHED_STATE_STOP.equals(caseInfo.getIsFinished())) {
+            // 已完成或已中止
+            JSONObject procHistory = procHistoryJArray.getJSONObject(procHistoryJArray.size() - 1);
+            String procCtrasknameSuffix = "";
+            if (CaseInfo.FINISHED_STATE_FINISH.equals(caseInfo.getIsFinished())) {
+                procCtrasknameSuffix = "(已结案)";
+            } else if (CaseInfo.FINISHED_STATE_STOP.equals(caseInfo.getIsFinished())) {
+                procCtrasknameSuffix = "(已终止)";
+            }
+            procHistory.put("procCtaskname",
+                procHistory.getString("procCtaskname") + procCtrasknameSuffix);
+        }
+
         queryAssist(resultJObj, procHistoryList, caseInfo);
 
         return new ObjectRestResponse<JSONObject>().data(resultJObj);
@@ -1277,6 +1349,14 @@ public class CaseInfoService {
                         if (StringUtils.isNotBlank(concernedPerson.getCredType())) {
                             concernedPersonJObj.put("credTypeName",
                                 manyDictValuesMap.get(concernedPerson.getCredType()));
+
+                            // 查询性别字典,manyDictValuesMap没有性别信息
+                            Map<String, String> comm_sex = dictFeign.getByCode("comm_sex");
+                            if(BeanUtil.isNotEmpty(comm_sex)&&StringUtils.isNotBlank(concernedPerson.getSex())){
+                                concernedPersonJObj.put("sexName", comm_sex.get(concernedPerson.getSex()));
+                            }else{
+                                concernedPersonJObj.put("sexName", "");
+                            }
                         }
                     }
                 }
@@ -1416,7 +1496,9 @@ public class CaseInfoService {
          * =================事项要求===========开始=========
          */
         JSONObject requiredJObj = new JSONObject();
-        requiredJObj.put("deadLine", caseInfo.getDeadLine());
+        // 办理期限日期格式精确到“日”
+        requiredJObj.put("deadLine", BeanUtil.isEmpty(caseInfo.getDeadLine()) ? null
+            : DateUtil.dateFromDateToStr(caseInfo.getDeadLine(), DateUtil.DATE_FORMAT_DF));
         String executedDeptName = "";
         requiredJObj.put("executedDept", caseInfo.getExecuteDept());
         if (caseInfo.getExecuteDept() != null) {
@@ -1483,7 +1565,7 @@ public class CaseInfoService {
         if (executeInfoList != null && !executeInfoList.isEmpty()) {
 
             for (ExecuteInfo executeInfo : executeInfoList) {
-                JSONObject executeInfoJObj = new JSONObject();
+                JSONObject executeInfoJObj;
                 executeInfoJObj = JSONObject.parseObject(JSON.toJSONString(executeInfo));
                 if (executeInfo != null) {
                     executeInfoJObj.put("exePersonName", executeInfo.getExePerson());// 办理人
