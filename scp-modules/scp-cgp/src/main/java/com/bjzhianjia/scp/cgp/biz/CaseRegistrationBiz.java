@@ -14,6 +14,7 @@ import com.bjzhianjia.scp.cgp.entity.EventType;
 import com.bjzhianjia.scp.cgp.entity.LawPatrolObject;
 import com.bjzhianjia.scp.cgp.entity.LawTask;
 import com.bjzhianjia.scp.cgp.entity.Point;
+import com.bjzhianjia.scp.cgp.entity.RegulaObject;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.RightsIssues;
 import com.bjzhianjia.scp.cgp.entity.WritsInstances;
@@ -59,6 +60,7 @@ import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -139,6 +141,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
     @Autowired
     private LawPatrolObjectBiz lawPatrolObjectBiz;
+
+    @Autowired
+    private RegulaObjectBiz regulaObjectBiz;
 
     /**
      * 添加立案记录<br/>
@@ -919,7 +924,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
             // 定位坐标
             JSONObject mapInfoJobj = null;
-            if (StringUtils.isBlank(caseRegistration.getCaseOngitude())
+            if (StringUtils.isNotBlank(caseRegistration.getCaseOngitude())
                 && StringUtils.isNotBlank(caseRegistration.getCaseLatitude())) {
                 // 经度与纬度同时不为空时才生成地理信息
                 mapInfoJobj = new JSONObject();
@@ -1184,7 +1189,6 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 if (procTaskAssigneeIdList != null && !procTaskAssigneeIdList.isEmpty()) {
                     JSONArray userDetailJArray = adminFeign.getUserDetail(String.join(",", procTaskAssigneeIdList));
                     Map<String, JSONObject> assignMap = new HashMap<>();
-//                    Map<String, String> assignMap = adminFeign.getUser(String.join(",", procTaskAssigneeIdList));
                     if(BeanUtil.isNotEmpty(userDetailJArray)) {
                         for(int i=0;i<userDetailJArray.size();i++) {
                             JSONObject userDetailJObj = userDetailJArray.getJSONObject(i);
@@ -1221,8 +1225,36 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                     }
                 }
                 result.put("procHistory", procHistoryJArray);
+
+                /*
+                 * 验证案件是否结束
+                 * 当工作流在某个节点结束的时候，流程将一直停留在当前节点，在流程历史中无法判断流程是刚好走到该节点还是在该结点已经结束
+                 * 如果在某节点流程结束，则在节点名称后加“已结束”或“已终止”标记
+                 */
+                if (CaseRegistration.EXESTATUS_STATE_STOP.equals(caseRegistration.getExeStatus())
+                    || CaseRegistration.EXESTATUS_STATE_FINISH
+                        .equals(caseRegistration.getExeStatus())) {
+                    // 已完成或已中止
+                    JSONObject lastHistory =
+                        procHistoryJArray.getJSONObject(procHistoryJArray.size() - 1);
+                    String procCtrasknameSuffix = "";
+                    if (CaseRegistration.EXESTATUS_STATE_STOP
+                        .equals(caseRegistration.getExeStatus())) {
+                        procCtrasknameSuffix =
+                            new String(environment.getProperty("caseRegistration.exeStatus.two")
+                                .getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+                    } else if (CaseRegistration.EXESTATUS_STATE_FINISH
+                        .equals(caseRegistration.getExeStatus())) {
+                        procCtrasknameSuffix =
+                                new String(environment.getProperty("caseRegistration.exeStatus.one")
+                                        .getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+                    }
+
+                    lastHistory.put("procCtaskname",
+                        lastHistory.getString("procCtaskname") + procCtrasknameSuffix);
+                }
             }
-            
+
             // 向前端返回流程实例相关的流程参数
             List<WfProcPropsBean> wfProcPropsList = wfProcTaskService.getWfProcPropsList(objs);
             Map<String, String> procpropsMap = new HashMap<>();
@@ -1397,7 +1429,6 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         caseRegistration.setCaseSourceType(caseRegistrationJObj.getString("caseSourceType"));
 
         ObjectRestResponse<JSONObject> restResponse = new ObjectRestResponse<>();
-//        JSONObject resultJobj = new JSONObject();
 
         /*
          * ========进行查询操作============开始=============
@@ -1701,10 +1732,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         // 违法行为
         if (BeanUtil.isNotEmpty(caseRegistration.getInspectItem())) {
             RightsIssues rightsIssues = rightsIssuesBiz.selectById(caseRegistration.getInspectItem());
-//            InspectItems inspectItems =
-//                inspectItemsBiz.selectById(Integer.valueOf(caseRegistration.getInspectItem()));
             if (rightsIssues != null) {
-//                result.put("inspectName", inspectItems.getName());
                 result.put("inspectName", rightsIssues.getUnlawfulAct());
             }
         }
@@ -1740,8 +1768,15 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
         // 网格名称
         AreaGrid areaGrid = areaGridBiz.selectById(caseRegistration.getGirdId());
+        AreaGrid parentAreaGrid = areaGridBiz.getParentAreaGrid(areaGrid);
         if (areaGrid != null) {
-            result.put("gridName", areaGrid.getGridName());
+            String gridName = "";
+            if (BeanUtil.isNotEmpty(parentAreaGrid)) {
+                gridName = areaGrid.getGridName() + "(" + parentAreaGrid.getGridName() + ")";
+            } else {
+                gridName = areaGrid.getGridName();
+            }
+            result.put("gridName", gridName);
         }
         // 移送部门
         String transferDepart = caseRegistration.getTransferDepart();
@@ -2149,6 +2184,11 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      * @return
      */
     public TableResultResponse<JSONObject> regObjCount(JSONObject queryJObj) {
+        /*
+         * 在案件当事人表添加监管对象ID字段后，对该方法进行重构
+         * 之前使用监管对象名称作关联
+         */
+
         String lawTaskIds = queryJObj.getString("lawTaskIds");
         if(StringUtils.isNotBlank(lawTaskIds)){
             queryJObj.put("lawTaskIds", Arrays.asList(lawTaskIds.split(",")));
@@ -2157,44 +2197,39 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
         //  regulaObjectId
         if(BeanUtil.isNotEmpty(rows)){
-            List<String> objNameInRows = rows.stream().map(o -> o.getString("objName")).distinct().collect(Collectors.toList());
+            List<Integer> objIdInRows = rows.stream().map(o -> o.getInteger("regulaObjectId")).distinct().collect(Collectors.toList());
 
             List<LawPatrolObject> lawPatrolObjectList =
                 lawPatrolObjectBiz
                     .getByLawTaskIds(new HashSet<>(Arrays.asList(lawTaskIds.split(","))));
-
-            Map<String, LawPatrolObject> lawPatrolObjectNameIdMap = new HashMap<>();
-            for (LawPatrolObject tmp : lawPatrolObjectList) {
-                lawPatrolObjectNameIdMap.put(tmp.getRegulaObjectName(), tmp);
+            // 按LawPatrolObject查询监管对象
+            Map<Integer, RegulaObject> lawPatrolObjectNameIdMap = new HashMap<>();
+            if (BeanUtil.isNotEmpty(lawPatrolObjectList)) {
+                List<String> objIdList =
+                    lawPatrolObjectList.stream().map(o -> String.valueOf(o.getRegulaObjectId()))
+                        .distinct().collect(Collectors.toList());
+                List<RegulaObject> regulaObjects =
+                    regulaObjectBiz.selectByIds(String.join(",", objIdList));
+                if (BeanUtil.isNotEmpty(regulaObjects)) {
+                    for (RegulaObject regTmp : regulaObjects) {
+                        lawPatrolObjectNameIdMap.put(regTmp.getId(), regTmp);
+                    }
+                }
             }
 
             // 整合尚未检查的监管对象,在lawPatrolObjectNameIdMap里保存的是全部监管对象信息
-            for (Map.Entry<String, LawPatrolObject> e : lawPatrolObjectNameIdMap.entrySet()) {
-                if (!objNameInRows.contains(e.getKey())) {
+            for (Map.Entry<Integer, RegulaObject> e : lawPatrolObjectNameIdMap.entrySet()) {
+                if (!objIdInRows.contains(e.getKey())) {
                     // 说明在结果集中尚未包含该监管对象
                     JSONObject tmpJObj = new JSONObject();
-                    tmpJObj.put("mapInfo", null);
-                    tmpJObj.put("objName", e.getValue().getRegulaObjectName());
+                    tmpJObj.put("mapInfo", e.getValue().getMapInfo());
+                    tmpJObj.put("objName", e.getValue().getObjName());
                     tmpJObj.put("patrolCount", 0);
                     tmpJObj.put("pCountWithProblem", 0);
                     rows.add(tmpJObj);
                 }
             }
 
-            for (JSONObject tmp : rows) {
-                // 整合mapInfo
-                JSONObject mapInfoJObj = null;
-                if (tmp.get("lng") != null && tmp.get("lat") != null) {
-                    mapInfoJObj = new JSONObject();
-                    mapInfoJObj.put("lng", tmp.getString("lng"));
-                    mapInfoJObj.put("lat", tmp.getString("lat"));
-                }
-                tmp.remove("lng");
-                tmp.remove("lat");
-                tmp.put("mapInfo", mapInfoJObj == null ? null : mapInfoJObj.toJSONString());
-                tmp.put("regulaObjectId",
-                    lawPatrolObjectNameIdMap.get(tmp.getString("objName")).getRegulaObjectId());
-            }
             return new TableResultResponse<>(rows.size(), rows);
         }
         return new TableResultResponse<>(0, new ArrayList<>());
