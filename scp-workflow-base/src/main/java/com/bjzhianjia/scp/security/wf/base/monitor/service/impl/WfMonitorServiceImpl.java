@@ -502,4 +502,19 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
         return wfMonitorBiz.getProcInstIdByUserId(queryObj);
     }
 
+    /**
+     * 通过业务ids查询流程实例id
+     * @param objs
+     * @return
+     */
+    public JSONObject selectProcByTaskId(JSONObject objs){
+        WfProcAuthDataBean authData = parseAuthData(objs);
+        WfProcBizDataBean bizData = parseBizData(objs);
+        if( StringUtils.isBlank(bizData.getProcBizId())){
+            return null;
+        }
+        wfProcUserAuthBiz.userAuthenticate(authData, false, false, false);
+        JSONObject queryObj = parseQueryData(authData, bizData);
+        return wfMonitorBiz.selectProcByTaskId(queryObj);
+    }
 }

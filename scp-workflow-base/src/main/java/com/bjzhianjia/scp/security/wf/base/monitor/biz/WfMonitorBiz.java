@@ -283,4 +283,18 @@ public class WfMonitorBiz extends WfBaseBiz {
         }
     }
 
+    /**
+     * 通过业务ids查询流程实例id
+     * @param objs
+     * @return
+     */
+    public JSONObject selectProcByTaskId(JSONObject objs) throws WorkflowException {
+        logger.info("流程查询--开始查询流程实例ids...");
+        try {
+            return iqbWfMyProcBeanMapper.selectProcByTaskId(objs);
+        } finally {
+            logger.info("流程查询--查询流程实例ids完成.");
+        }
+    }
+
 }
