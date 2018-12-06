@@ -273,10 +273,22 @@ public class RegulaObjectService {
         EnterpriseInfo enterpriseInfoInDB = this.enterpriseInfoBiz.selectById(enterpriseInfo.getId());
         // 将‘监管对象类型，监管对象名称及社会信用代码’与数据库中的信息进行对比，验证是否发生变化
         if(isUpdate){
-            boolean noUnique =
-                    !regulaObjectInDB.getObjType().equals(regulaObject.getObjType())
-                            || !regulaObject.getObjName().equals(regulaObjectInDB.getObjName())
-                            || !enterpriseInfo.getCreditCode().equals(enterpriseInfoInDB.getCreditCode());
+            // flagOfObjType为true说明：监管对象类型不为空，而且传入的监管对象类型与已经记录的不同，此时需要提示异常
+            boolean flagOfObjType =
+                BeanUtil.isNotEmpty(regulaObjectInDB.getObjType())
+                    && !regulaObjectInDB.getObjType().equals(regulaObject.getObjType());
+
+            // flagOfObjName为true说明：监管对象名称不为空，而且传入的监管对象名称与已经记录的不同，此时需要提示异常
+            boolean flagOfObjName =
+                BeanUtil.isNotEmpty(regulaObjectInDB.getObjName())
+                    && !regulaObjectInDB.getObjName().equals(regulaObject.getObjName());
+
+            // flagOfCreditCode为true说明：统一社会信用代码不为空，而且传入的统一社会信用代码与已经记录的不同，此时需要提示异常
+            boolean flagOfCreditCode =
+                BeanUtil.isNotEmpty(enterpriseInfoInDB.getCreditCode())
+                    && !enterpriseInfoInDB.getCreditCode().equals(enterpriseInfo.getCreditCode());
+            
+            boolean noUnique = flagOfObjType || flagOfObjName || flagOfCreditCode;
             if(noUnique){
                 result.setMessage("监管对象类别、名称及社会信息代码不可修改");
                 return result;
@@ -661,15 +673,24 @@ public class RegulaObjectService {
      * @return
      */
     @SuppressWarnings("unchecked")
-    public List<Map<String, Object>> getByDistance(double longitude, double latitude, Integer objType,
+    public List<Map<String, Object>> getByDistance(double longitude, double latitude, String objType,
                                                    String objName , Double size , Integer limit,Integer page) {
         List<Map<String, Object>> result = new ArrayList<>();
+
+        if (StringUtils.isNotBlank(objType) && BeanUtil.isNotEmpty(size)) {
+            // 即按监管对象类型查询，又按距离范围查询----------By尚----------
+            TableResultResponse<Map<String, Object>> byDistanceAndObjType =
+                getByDistanceAndObjType(longitude, latitude, objType, size);
+            return byDistanceAndObjType.getData().getRows();
+        }
 
         //如果有监管对象名称和监管对象类型，则全库查询，否则查询指定范围内的对象
         if(objType != null || StringUtils.isNotBlank(objName)) {
             PageHelper.startPage(page,limit);
             result = this.regulaObjectBiz.getObjByTypeAndName(objType,objName);
         }else{
+            size=500.0;
+
             // 监管对象列表
             List<Map<String, Object>> objNameList =
                 (List<Map<String, Object>>) redisTemplate.opsForValue().get(PatrolTask.REGULA_OBJECT_NAME);
@@ -897,15 +918,15 @@ public class RegulaObjectService {
      * @param page
      * @return
      */
-    public TableResultResponse<JSONObject> getByDistanceAndObjType(Double longitude,
+    public TableResultResponse<Map<String,Object>> getByDistanceAndObjType(Double longitude,
         Double latitude, String objTypes, Double size) {
-        List<JSONObject> result = new ArrayList<>();
+        List<Map<String,Object>> result = new ArrayList<>();
 
         /*
          * 获取监管对象类型下的监管对象
          */
-        List<RegulaObject> listByObjTypeIds = new ArrayList<>();
-        // 获取所有监管对象类型，包括子类型
+        List<Map<String, Object>> objByTypeAndName =new ArrayList<>();
+                // 获取所有监管对象类型，包括子类型
         Set<RegulaObjectType> regulaObjectTypes = regulaObjectTypeBiz.listBindChileren(objTypes);
         if (BeanUtil.isNotEmpty(regulaObjectTypes)) {
             // 收集监管对象类型
@@ -913,8 +934,7 @@ public class RegulaObjectService {
                 regulaObjectTypes.stream().map(o -> String.valueOf(o.getId())).distinct()
                     .collect(Collectors.toList());
             if (BeanUtil.isNotEmpty(regObjTypeIds)) {
-                listByObjTypeIds =
-                    this.regulaObjectBiz.getListByObjTypeIds(new HashSet<>(regObjTypeIds));
+                objByTypeAndName = this.regulaObjectBiz.getObjByTypeAndName(String.join(",", regObjTypeIds), null);
             }
         }
 
@@ -930,16 +950,17 @@ public class RegulaObjectService {
         });
 
         // 筛选指定监控类型和指定范围内的数据
-        JSONObject resultMap = null;
-        if (BeanUtil.isNotEmpty(listByObjTypeIds)) {
-            for (RegulaObject obj : listByObjTypeIds) {
-                String objId = String.valueOf(obj.getId());
-                // 当前id和缓存中的id匹配，成功则表示在指定范围内
-                if (temp.get(Integer.valueOf(objId)) != null) {
-                    resultMap = new JSONObject();
-                    resultMap.put("id", obj.getId());
-                    resultMap.put("objName", obj.getObjName());
-                    resultMap.put("objCode", obj.getObjCode());
+        Map<String,Object> resultMap = null;
+        if (BeanUtil.isNotEmpty(objByTypeAndName)) {
+            for (Map<String,Object> obj : objByTypeAndName) {
+                String objId = String.valueOf(obj.get("id"));
+                //当前id和缓存中的id匹配，成功则表示在指定范围内
+                if(temp.get(Integer.valueOf(objId)) != null){
+                    resultMap = new HashMap<>();
+                    resultMap.put("id", obj.get("id"));
+                    resultMap.put("objName", String.valueOf(obj.get("objName")));
+                    resultMap.put("objCode", String.valueOf(obj.get("objCode")));
+                    resultMap.put("objTypeName", String.valueOf(obj.get("objTypeName")));
                     result.add(resultMap);
                 }
             }

@@ -507,11 +507,15 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
      * @param objName 名称查询
      * @return
      */
-    public List<Map<String, Object>> getObjByTypeAndName(Integer objType, String objName) {
+    public List<Map<String, Object>> getObjByTypeAndName(String objType, String objName) {
         if (objType == null && StringUtils.isBlank(objName)) {
             return new ArrayList<>();
         }
-        List<Map<String, Object>> result = this.mapper.selectByTypeAndName(objType, objName);
+
+        // 监管对象类型按集合查询
+        List<Map<String, Object>> result =
+            this.mapper.selectByTypeAndName(new HashSet<>(Arrays.asList(objType.split(","))),
+                objName);
         return BeanUtil.isEmpty(result) ? new ArrayList<>() : result;
     }
 
@@ -553,7 +557,8 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
      */
     public List<RegulaObject> getListByObjTypeIds(Set<String> objTypeIds){
         Example example=new Example(RegulaObject.class);
-        example.createCriteria().andIn("objType", objTypeIds).andEqualTo("isDeleted", "0");
+        example.createCriteria().andIn("objType", objTypeIds).andEqualTo("isDeleted", "0")
+            .andEqualTo("isDisabled", "0");
         List<RegulaObject> regulaObjects = this.selectByExample(example);
         if(BeanUtil.isEmpty(regulaObjects)){
             return new ArrayList<>();
