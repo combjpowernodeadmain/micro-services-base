@@ -46,4 +46,6 @@ public interface AreaGridMemberMapper extends CommonMapper<AreaGridMember> {
     public int countOfAreaMember();
 
     List<String> distinctGridMember();
+
+    List<AreaGridMember> getListExcludeRole(AreaGridMember areaGridMember);
 }

@@ -11,6 +11,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bjzhianjia.scp.cgp.entity.AreaGridMember;
+import com.bjzhianjia.scp.cgp.entity.CLESuperviseRecord;
+import com.bjzhianjia.scp.cgp.entity.CLEUrgeRecord;
+import com.bjzhianjia.scp.cgp.entity.SuperviseRecord;
+import com.bjzhianjia.scp.cgp.entity.UrgeRecord;
+import com.bjzhianjia.scp.cgp.mapper.CLESuperviseRecordMapper;
+import com.bjzhianjia.scp.cgp.mapper.CLEUrgeRecordMapper;
+import com.bjzhianjia.scp.cgp.mapper.SuperviseRecordMapper;
+import com.bjzhianjia.scp.cgp.mapper.UrgeRecordMapper;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +38,6 @@ import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
-import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.wf.base.monitor.entity.WfProcBackBean;
 import com.bjzhianjia.scp.security.wf.base.monitor.service.impl.WfMonitorServiceImpl;
 import com.github.pagehelper.Page;
@@ -67,6 +74,19 @@ public class MessageCenterBiz extends BusinessBiz<MessageCenterMapper, MessageCe
 
     @Autowired
     private AreaGridMemberBiz areaGridMemberBiz;
+
+    @Autowired
+    private UrgeRecordMapper urgeRecordMapper;
+
+    @Autowired
+    private SuperviseRecordMapper superviseRecordMapper;
+
+    @Autowired
+    private CLEUrgeRecordMapper cLEUrgeRecordMapper;
+
+    @Autowired
+    private CLESuperviseRecordMapper cLESuperviseRecordMapper;
+
     /**
      * 消息中心
      * 
@@ -336,11 +356,108 @@ public class MessageCenterBiz extends BusinessBiz<MessageCenterMapper, MessageCe
 
         }
 
+        // 对结果集进行返回前的处理
+        mergeResult(result,messageCenter);
+
         jObjResult.put("status", 200);
         jObjResult.put("rows", result);
         jObjResult.put("total", pageInfo.getTotal());
         jObjResult.put("allTotal", allTotal);
         return jObjResult;
+    }
+
+    /**
+     * 对结果集进行返回前的处理
+     * @param result
+     * @param queryMessageCenter
+     */
+    private void mergeResult(List<JSONObject> result, MessageCenter queryMessageCenter) {
+        // 合并催办人与督办人
+        mergeUrgeAndSupervise(result,queryMessageCenter);
+    }
+
+    /**
+     * 合并催办人与督办人
+     * @param result
+     * @param queryMessageCenter
+     */
+    private void mergeUrgeAndSupervise(List<JSONObject> result, MessageCenter queryMessageCenter) {
+        if(BeanUtil.isEmpty(result)){
+            return;
+        }
+
+        List<String> msgSourceIdList =
+            result.stream().map(o -> o.getString("msgSourceId")).distinct()
+                .collect(Collectors.toList());
+
+        String msgSourceType = queryMessageCenter.getMsgSourceType();
+        if(StringUtils.isNotBlank(msgSourceType)){
+            List<String> msgSourceTypes = Arrays.asList(msgSourceType.split(","));
+            if(msgSourceTypes.contains("case_info_01")){
+                // 事件催办
+                List<UrgeRecord> urgeRecords = urgeRecordMapper.selectLastUrge(new HashSet<>(msgSourceIdList));
+                if(BeanUtil.isNotEmpty(urgeRecords)){
+                    Map<String,String> collectMap=new HashMap<>(10);
+                    for(UrgeRecord tmp:urgeRecords){
+                        collectMap.put(String.valueOf(tmp.getCaseInfoId()), tmp.getCrtUserName());
+                    }
+
+                    for(JSONObject tmp:result){
+                        if("case_info_01".equals(tmp.getString("msgSourceType"))){
+                            tmp.put("leaderPerson", collectMap.get(tmp.getString("msgSourceId")));
+                        }
+                    }
+                }
+            }
+            if(msgSourceTypes.contains("case_info_02")){
+                // 事件督办
+                List<SuperviseRecord> superviseRecords = superviseRecordMapper.selectLastSupervise(new HashSet<>(msgSourceIdList));
+                if(BeanUtil.isNotEmpty(superviseRecords)){
+                    Map<String,String> collectMap=new HashMap<>(10);
+                    for(SuperviseRecord tmp:superviseRecords){
+                        collectMap.put(String.valueOf(tmp.getCaseInfoId()), tmp.getCrtUserName());
+                    }
+
+                    for(JSONObject tmp:result){
+                        if("case_info_02".equals(tmp.getString("msgSourceType"))){
+                            tmp.put("leaderPerson", collectMap.get(tmp.getString("msgSourceId")));
+                        }
+                    }
+                }
+            }
+            if(msgSourceTypes.contains("case_registration_01")){
+                // 事件督办
+                List<CLEUrgeRecord> cleUrgeRecords = cLEUrgeRecordMapper.selectLastUrge(new HashSet<>(msgSourceIdList));
+                if(BeanUtil.isNotEmpty(cleUrgeRecords)){
+                    Map<String,String> collectMap=new HashMap<>(10);
+                    for(CLEUrgeRecord tmp:cleUrgeRecords){
+                        collectMap.put(String.valueOf(tmp.getCleCaseId()), tmp.getCrtUserName());
+                    }
+
+                    for(JSONObject tmp:result){
+                        if("case_registration_01".equals(tmp.getString("msgSourceType"))){
+                            tmp.put("leaderPerson", collectMap.get(tmp.getString("msgSourceId")));
+                        }
+                    }
+                }
+            }
+            if(msgSourceTypes.contains("case_registration_02")){
+                // 事件督办
+                List<CLESuperviseRecord> cleSuperviseRecords = cLESuperviseRecordMapper.selectLastSupervise(new HashSet<>(msgSourceIdList));
+                if(BeanUtil.isNotEmpty(cleSuperviseRecords)){
+                    Map<String,String> collectMap=new HashMap<>(10);
+                    for(CLESuperviseRecord tmp:cleSuperviseRecords){
+                        collectMap.put(String.valueOf(tmp.getCleCaseId()), tmp.getCrtUserName());
+                    }
+
+                    for(JSONObject tmp:result){
+                        if("case_registration_02".equals(tmp.getString("msgSourceType"))){
+                            tmp.put("leaderPerson", collectMap.get(tmp.getString("msgSourceId")));
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**

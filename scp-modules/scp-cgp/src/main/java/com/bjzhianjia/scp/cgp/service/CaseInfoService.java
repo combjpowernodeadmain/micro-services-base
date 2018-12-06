@@ -780,21 +780,13 @@ public class CaseInfoService {
         Result<Void> result=new Result<>();
 
         /*
-         * 该方法改用手动提交事务
+         * 该方法完成两个事件--签收与审批
          * 签收操作与审批操作是两个动作
          * 需要将任务签收后才能完成后续的审批
          */
-        DefaultTransactionDefinition def=new DefaultTransactionDefinition();
-
         // 进行签收操作
-        claimBeforeComplete(def,objs);
+        claimBeforeComplete(objs);
 
-        // 开启新事务
-        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        // 获得事务状态
-        TransactionStatus status=platformTransactionManager.getTransaction(def);
-
-        try {
             /*
              * ===============更新业务数据===================开始=============
              */
@@ -996,11 +988,6 @@ public class CaseInfoService {
             // 完成已签收的任务，将工作流向下推进
             wfProcTaskService.completeProcessInstance(objs);
 
-            platformTransactionManager.commit(status);
-        } catch (Exception e) {
-            platformTransactionManager.rollback(status);
-            e.printStackTrace();
-        }
         result.setIsSuccess(true);
         return result;
     }
@@ -1011,13 +998,7 @@ public class CaseInfoService {
      * @param def
      * @param objs
      */
-    private void claimBeforeComplete(DefaultTransactionDefinition def, JSONObject objs) {
-        // 开启新事务
-        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        // 获得事务状态
-        TransactionStatus status = platformTransactionManager.getTransaction(def);
-
-        try {
+    private void claimBeforeComplete(JSONObject objs) {
             JSONObject bizData = objs.getJSONObject("bizData");
             JSONObject procData = objs.getJSONObject("procData");
             JSONObject authData = objs.getJSONObject("authData");
@@ -1051,12 +1032,6 @@ public class CaseInfoService {
                 objsForClaim.getJSONObject("bizData").remove("procTaskId");
                 wfProcTaskService.claimProcessInstance(objsForClaim);
             }
-
-            platformTransactionManager.commit(status);
-        } catch (Exception e) {
-            platformTransactionManager.rollback(status);
-            e.printStackTrace();
-        }
     }
 
     private void _checkPictureInCaseInfo(CaseInfo caseInfo,ExecuteInfo executeInfo) {
@@ -1343,13 +1318,13 @@ public class CaseInfoService {
             JSONObject procHistory = procHistoryJArray.getJSONObject(procHistoryJArray.size() - 1);
             String procCtrasknameSuffix = "";
             if (CaseInfo.FINISHED_STATE_FINISH.equals(caseInfo.getIsFinished())) {
-                procCtrasknameSuffix =
+                procCtrasknameSuffix ="("+
                     new String(environment.getProperty("caseInfo.isFinished.one")
-                        .getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+                        .getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8)+")";
             } else if (CaseInfo.FINISHED_STATE_STOP.equals(caseInfo.getIsFinished())) {
-                procCtrasknameSuffix =
+                procCtrasknameSuffix ="("+
                         new String(environment.getProperty("caseInfo.isFinished.two")
-                                .getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+                                .getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8)+")";
             }
             procHistory.put("procCtaskname",
                 procHistory.getString("procCtaskname") + procCtrasknameSuffix);
@@ -1460,6 +1435,7 @@ public class CaseInfoService {
                         if (regulaObj != null) {
                             concernedCompanyJObj.put("objName", regulaObj.getObjName());
                             concernedCompanyJObj.put("objAddress", regulaObj.getObjAddress());
+                            concernedCompanyJObj.put("objMapInfo", regulaObj.getMapInfo());
                             concernedCompanyJObj.put("linkman", regulaObj.getLinkman());
                             concernedCompanyJObj.put("linkmanPhone", regulaObj.getLinkmanPhone());
                             concernedCompanyJObj.put("introduction", regulaObj.getIntroduction());
@@ -1514,18 +1490,21 @@ public class CaseInfoService {
         // 监管对象,为多选
         List<String> regulaObjectNameList = new ArrayList<>();
         List<String> regulaObjectAddrList=new ArrayList<>();
+        List<String> regulaObjectMapInfoList=new ArrayList<>();
         if (StringUtils.isNotBlank(caseInfo.getRegulaObjList())) {
             List<RegulaObject> regulaObjList = regulaObjectMapper.selectByIds(caseInfo.getRegulaObjList());
             for (RegulaObject regulaObject : regulaObjList) {
                 regulaObjectNameList.add(regulaObject.getObjName());
                 //在返回集中新加监管对象地址信息，用于自动填充
                 regulaObjectAddrList.add(regulaObject.getObjAddress());
+                regulaObjectMapInfoList.add(regulaObject.getMapInfo());
             }
         }
         eventTypeJObj.put("regulaObjList", caseInfo.getRegulaObjList());
         eventTypeJObj.put("regulaObjListName", String.join(",", regulaObjectNameList));
         //在返回集中新加监管对象地址信息，用于自动填充
         eventTypeJObj.put("regulaObjListAddr", String.join(",", regulaObjectAddrList));
+        eventTypeJObj.put("regulaObjectMapInfo", String.join(",", regulaObjectMapInfoList));
         /*
          * =================事件分类===========结束==========
          */

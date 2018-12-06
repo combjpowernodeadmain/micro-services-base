@@ -1240,14 +1240,14 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                     String procCtrasknameSuffix = "";
                     if (CaseRegistration.EXESTATUS_STATE_STOP
                         .equals(caseRegistration.getExeStatus())) {
-                        procCtrasknameSuffix =
+                        procCtrasknameSuffix ="("+
                             new String(environment.getProperty("caseRegistration.exeStatus.two")
-                                .getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+                                .getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8)+")";
                     } else if (CaseRegistration.EXESTATUS_STATE_FINISH
                         .equals(caseRegistration.getExeStatus())) {
-                        procCtrasknameSuffix =
+                        procCtrasknameSuffix ="("+
                                 new String(environment.getProperty("caseRegistration.exeStatus.one")
-                                        .getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+                                        .getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8)+")";
                     }
 
                     lastHistory.put("procCtaskname",
