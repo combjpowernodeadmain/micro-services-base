@@ -3,6 +3,7 @@ package com.bjzhianjia.scp.cgp.biz;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -234,5 +235,42 @@ public class RegulaObjectTypeBiz extends BusinessBiz<RegulaObjectTypeMapper, Reg
      */
     public List<Map<String,Object>> getObjTypeAndName(){
         return this.mapper.selectObjTypeAndName();
+    }
+
+    /**
+     * 按ID获取监管对象类型，并将其下的子类型一并查出
+     * @param id
+     * @return
+     */
+    public Set<RegulaObjectType> listBindChileren(String ids){
+        if(BeanUtil.isEmpty(ids)){
+            return new HashSet<>();
+        }
+
+        Set<RegulaObjectType> result=new HashSet<>();
+
+        List<RegulaObjectType> validateList = this.getValidateList();
+        List<RegulaObjectType> regulaObjectTypes = this.selectByIds(ids);
+
+        if(BeanUtil.isNotEmpty(regulaObjectTypes)){
+            for(RegulaObjectType typeTmp:regulaObjectTypes){
+                if("0".equals(typeTmp.getIsDeleted())){
+                    bindChileren(result,typeTmp,validateList);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private void bindChileren(Set<RegulaObjectType> result, RegulaObjectType typeTmp, List<RegulaObjectType> validateList) {
+        result.add(typeTmp);
+
+        for(RegulaObjectType validateTmp:validateList){
+            if(validateTmp.getParentObjectTypeId().equals(typeTmp.getId())){
+                // 说明validateTmp是typeTmp的子类型
+                bindChileren(result, validateTmp, validateList);
+            }
+        }
     }
 }

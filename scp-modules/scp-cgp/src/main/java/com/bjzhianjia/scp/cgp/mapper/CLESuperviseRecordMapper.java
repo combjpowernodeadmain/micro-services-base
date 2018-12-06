@@ -2,6 +2,10 @@ package com.bjzhianjia.scp.cgp.mapper;
 
 import com.bjzhianjia.scp.cgp.entity.CLESuperviseRecord;
 import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -21,5 +25,5 @@ import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
  *
  */
 public interface CLESuperviseRecordMapper extends CommonMapper<CLESuperviseRecord> {
-	
+    List<CLESuperviseRecord> selectLastSupervise(@Param("caseInfoIds")Set<String> caseInfoIds);
 }

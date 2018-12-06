@@ -136,7 +136,26 @@ public class PatrolTaskService {
 			result.setIsSuccess(false);
 			return result;
 		}
-		
+
+        // 自动生成巡查事件名称
+        boolean isPatrolTaskNameBlank = StringUtils.isBlank(patrolTask.getPatrolName());
+        List<String> patrolTaskNameList = new ArrayList<>();
+        if (isPatrolTaskNameBlank) {
+            // 发生地址
+            if (StringUtils.isNotBlank(patrolTask.getAddress())) {
+                patrolTaskNameList.add(patrolTask.getAddress());
+            }
+            // 事件类别
+            if (BeanUtil.isNotEmpty(patrolTask.getEventTypeId())) {
+                EventType eventType = eventTypeBiz.getById(patrolTask.getEventTypeId());
+                if (BeanUtil.isNotEmpty(eventType)) {
+                    patrolTaskNameList.add(eventType.getTypeName());
+                }
+            }
+
+            patrolTask.setPatrolName(String.join("_", patrolTaskNameList));
+        }
+
 		// 当事人（个人，单位）
 		if ("person".equals(concernedType)) {
 			ConcernedPerson concernedPerson = this.parseData(json, "concernedPerson", ConcernedPerson.class);
@@ -262,6 +281,10 @@ public class PatrolTaskService {
             .setOccurTime(patrolTask.getCrtTime() == null ? new Date() : patrolTask.getCrtTime());
         //将巡查的级别作为事件级别
         caseInfo.setCaseLevel(patrolTask.getPatrolLevel());
+
+        // 事件发生地理位置信息
+        caseInfo.setGrid(patrolTask.getAreaGridId());
+        caseInfo.setOccurAddr(patrolTask.getAddress());
 
 		if(Constances.PartolTaskStatus.ROOT_BIZ_PARTOLTASKT_FINISH.equals(patrolTask.getStatus())){
 			//巡查上报为【直接处理】
@@ -492,18 +515,6 @@ public class PatrolTaskService {
 	public Result<Void> checkPatrolTask(PatrolTask patrolTask) {
 		Result<Void> restResult = new Result<Void>();
 		restResult.setIsSuccess(true);
-	
-		if (StringUtils.isBlank(patrolTask.getPatrolName())) {
-			restResult.setIsSuccess(false);
-			restResult.setMessage("事件名称不能为空！");
-			return restResult;
-		}
-
-		if (patrolTask.getPatrolName().length() > 127) {
-			restResult.setIsSuccess(false);
-			restResult.setMessage("事件名称过长，请重新输入！");
-			return restResult;
-		}
 
 		if (StringUtils.isBlank(patrolTask.getPatrolLevel())) {
 			restResult.setIsSuccess(false);

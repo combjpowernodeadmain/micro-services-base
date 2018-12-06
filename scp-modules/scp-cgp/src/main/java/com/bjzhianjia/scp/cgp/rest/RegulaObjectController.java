@@ -289,4 +289,27 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
         restResult.setMessage("监管对象信息提交成功");
         return restResult;
     }
+
+    @RequestMapping(value = "/distance/objType", method = { RequestMethod.GET })
+    @ApiOperation("获取指定范围内,指定监管对象类型的监管对象")
+    public TableResultResponse<JSONObject> distanceAndObjType(
+        @RequestParam(value = "longitude") @ApiParam("经度") Double longitude,
+        @RequestParam(value = "latitude") @ApiParam("纬度") Double latitude,
+        @RequestParam(value = "objTypes", defaultValue = "") @ApiParam("监管对象类型id") String objTypes,
+        @RequestParam(value = "size", defaultValue = "500") @ApiParam("监管对象范围大小（单位：米）") Double size) {
+
+        TableResultResponse<JSONObject> result = new TableResultResponse<>();
+
+        if (longitude == null) {
+            result.setStatus(400);
+            result.setMessage("经度不能为空！");
+            return result;
+        }
+        if (latitude == null) {
+            result.setStatus(400);
+            result.setMessage("纬度不能为空！");
+            return result;
+        }
+        return regulaObjectService.getByDistanceAndObjType(longitude, latitude, objTypes, size);
+    }
 }

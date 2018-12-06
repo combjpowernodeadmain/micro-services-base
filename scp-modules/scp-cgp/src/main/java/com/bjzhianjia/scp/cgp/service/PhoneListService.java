@@ -12,6 +12,7 @@ import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.util.BeanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -108,7 +109,7 @@ public class PhoneListService {
                 if(BeanUtils.isEmpty(map)){
                     continue;
                 }
-                positions.append(map.get("name"));
+                positions.append(map.get("name")==null?"":map.get("name"));
                 if(i < positionList.size()-1){
                     positions.append(",");
                 }
@@ -116,28 +117,35 @@ public class PhoneListService {
             resultData.put("positions", positions.toString());
         }
 
+
+        /*
+         * 为返回数据添加是否为NULL的判断，避免在页面上出现null字样
+         */
         //基本信息
-        resultData.put("name", result.get("name"));
+        resultData.put("name", result.get("name") == null ? "" : result.get("name"));
         JSONObject deptInfo = JSONObject.parseObject(String.valueOf(result.get("departId")));
-        resultData.put("deptName", deptInfo.getString("name"));
-        resultData.put("sex", result.get("sex"));
-        //个人图片
-        resultData.put("image", result.get("attr1"));
-        resultData.put("mobilePhone", result.get("mobilePhone"));
-        resultData.put("email", result.get("email"));
-        resultData.put("birthday", result.get("birthday"));
-        resultData.put("description", result.get("description"));
+        resultData.put("deptName",
+            deptInfo.getString("name") == null ? "" : deptInfo.getString("name"));
+        resultData.put("sex", result.get("sex") == null ? "" : result.get("sex"));
+        // 个人图片
+        resultData.put("image", result.get("attr1") == null ? "" : result.get("attr1"));
+        resultData.put("mobilePhone",
+            result.get("mobilePhone") == null ? "" : result.get("mobilePhone"));
+        resultData.put("email", result.get("email") == null ? "" : result.get("email"));
+        resultData.put("birthday", result.get("birthday") == null ? "" : result.get("birthday"));
+        resultData.put("description",
+            result.get("description") == null ? "" : result.get("description"));
 
 
         List<String> userIds = new ArrayList<>();
         userIds.add(userId);
         //执法证编码
         List<EnforceCertificate> enforceList = enforceCertificateBiz.getEnforceByUserIds(userIds);
-        resultData.put("certCode", enforceList.get(0).getCertCode());
+        resultData.put("certCode", enforceList.get(0).getCertCode()==null?"":enforceList.get(0).getCertCode());
 
         //网格信息
         Map<String, String> tempAridMap = this.getAridInfo(areaGridBiz.getByUserIds(userIds));
-        resultData.put("gridName", tempAridMap.get(userId));
+        resultData.put("gridName", tempAridMap.get(userId) == null ? "" : tempAridMap.get(userId));
 
         return resultData;
     }
@@ -158,12 +166,21 @@ public class PhoneListService {
             gridInfo = tempAridMap.get(userId);
             gridName = String.valueOf(map.get("gridName"));
             gridRole = BeanUtils.isEmpty(dictMap) ? "" : dictMap.get(String.valueOf(map.get("gridRole")));
-            parentGridName = String.valueOf(map.get("parentGridName"));
+            parentGridName =
+                map.get("parentGridName") == null ? "" : String.valueOf(map.get("parentGridName"));
             //一个用户可能存在多个网格信息
             if (tempAridMap.get(userId) != null) {
-                gridInfo += ";" + gridName + "（"+ parentGridName+"）" + gridRole;
+                if(StringUtils.isEmpty(parentGridName)){
+                    gridInfo += ";" + gridName + "_" + gridRole;
+                }else{
+                    gridInfo += ";" + gridName + "（"+ parentGridName+"）_" + gridRole;
+                }
             } else {
-                gridInfo = gridName + "（"+ parentGridName+"）" + gridRole;
+                if(StringUtils.isEmpty(parentGridName)){
+                    gridInfo = gridName + "_" + gridRole;
+                }else{
+                    gridInfo = gridName + "（"+ parentGridName+"）_" + gridRole;
+                }
             }
             tempAridMap.put(userId, gridInfo);
         }

@@ -3,18 +3,19 @@ package com.bjzhianjia.scp.cgp.util;
 import com.bjzhianjia.scp.cgp.constances.CommonConstances;
 import org.joda.time.DateTime;
 
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
 /**
- * 
+ *
  * @author 尚
  *
  */
 public class DateUtil {
-	
+
     /**
      * 默认时间格式
      */
@@ -22,7 +23,7 @@ public class DateUtil {
 
 
     public static final String DATE_FORMAT_DF = "yyyy-MM-dd";
-    
+
 	/**
 	 * 将字符串类型日期转化为Date类型，默认格式为"yyyy-MM-dd"
 	 * @author 尚
@@ -39,7 +40,7 @@ public class DateUtil {
 		}
 		return date;
 	}
-	
+
 	/**
 	 * 将字符串类型日期转化为Date类型，默认格式为
 	 * @author 尚
@@ -52,7 +53,7 @@ public class DateUtil {
 	    }
 	    return dateFromStrToDate(dateStr);
 	}
-	
+
 	/**
 	 * 将指定格式的字符串日期转化为Date类型
 	 * @author 尚
@@ -70,7 +71,7 @@ public class DateUtil {
 		}
 		return date;
 	}
-	
+
 	/**
 	 * 以formater为模板，将日期类型转化为字符串表示 的日期
 	 * @author 尚
@@ -82,10 +83,10 @@ public class DateUtil {
 		SimpleDateFormat format=new SimpleDateFormat(formater);
 		return format.format(date);
 	}
-	
+
 	/**
      * 获取date所在月和最后一天
-     * 
+     *
      * @param date
      * @return
      */
@@ -130,7 +131,18 @@ public class DateUtil {
 		time.add(Calendar.MINUTE, minute);
 		return time.getTime();
 	}
-
+	/**
+	 * 给指定日期添加指定的秒数
+	 * @param date 日期
+	 * @param second 需要添加的秒数
+	 * @return
+	 */
+	public static Date addSecond(Date date, int second){
+		Calendar time = Calendar.getInstance();
+		time.setTime(date);
+		time.add(Calendar.SECOND, second);
+		return time.getTime();
+	}
 	/**
 	 * 将时间戳转化为Date类型，默认格式为"yyyyy-MM-dd HH:mm:ss""
 	 * @param time
@@ -183,5 +195,93 @@ public class DateUtil {
 		//秒
 		calendar.set(Calendar.SECOND,0);
 		return calendar.getTime();
+	}
+
+	/**
+	 * java 获取获取某年某月
+	 *
+	 * @param year  年份
+	 * @param month 月份
+	 * @return
+	 */
+	public static Date getMonthFullDay(int year, int month) {
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.YEAR, year);
+		// 1月从0开始
+		cal.set(Calendar.MONTH, month - 1);
+		// 当月1号
+		cal.set(Calendar.DAY_OF_MONTH, 1);
+		//天
+		cal.set(Calendar.DAY_OF_MONTH, 0);
+		//时
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		//分
+		cal.set(Calendar.MINUTE, 0);
+		//秒
+		cal.set(Calendar.SECOND, 0);
+		return cal.getTime();
+	}
+
+	/**
+	 * 获取本周的开始时间
+	 */
+	public static Date getBeginDayOfWeek() {
+		Date date = new Date();
+		if (date == null) {
+			return null;
+		}
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		int dayofweek = cal.get(Calendar.DAY_OF_WEEK);
+		if (dayofweek == 1) {
+			dayofweek += 7;
+		}
+		cal.add(Calendar.DATE, 2 - dayofweek);
+		return getDayStartTime(cal.getTime());
+	}
+
+	/**
+	 * 获取本周的结束时间
+	 *
+	 * @return
+	 */
+	public static Date getEndDayOfWeek() {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(getBeginDayOfWeek());
+		cal.add(Calendar.DAY_OF_WEEK, 6);
+		Date weekEndSta = cal.getTime();
+		return getDayEndTime(weekEndSta);
+	}
+
+	/**
+	 * 获取某个日期的开始时间
+	 *
+	 * @param d
+	 * @return
+	 */
+	public static Timestamp getDayStartTime(Date d) {
+		Calendar calendar = Calendar.getInstance();
+		if (null != d) {
+			calendar.setTime(d);
+		}
+		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
+		return new Timestamp(calendar.getTimeInMillis());
+	}
+
+	/**
+	 * 获取某个日期的结束时间
+	 *
+	 * @param d
+	 * @return
+	 */
+	public static Timestamp getDayEndTime(Date d) {
+		Calendar calendar = Calendar.getInstance();
+		if (null != d){
+			calendar.setTime(d);
+		}
+		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 23, 59, 59);
+		calendar.set(Calendar.MILLISECOND, 999);
+		return new Timestamp(calendar.getTimeInMillis());
 	}
 }

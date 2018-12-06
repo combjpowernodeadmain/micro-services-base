@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bjzhianjia.scp.cgp.mapper.AffairCacheMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+	<resultMap type="com.bjzhianjia.scp.cgp.entity.AffairCache" id="affairCacheMap">
+        <result property="id" column="id"/>
+        <result property="affairCode" column="affair_code"/>
+        <result property="affairName" column="affair_name"/>
+        <result property="acceptTime" column="accept_time"/>
+        <result property="agentName" column="agent_name"/>
+        <result property="clerkName" column="clerk_name"/>
+        <result property="state" column="state"/>
+        <result property="crtTime" column="crt_time"/>
+    </resultMap>
+	<!-- 获取最新受理时间的一条数据 -->
+	<select id="selectNewAcceptTime" resultMap="affairCacheMap">
+        SELECT
+            *
+        FROM
+            affair_cache
+        ORDER BY
+            accept_time DESC LIMIT 1
+    </select>
+</mapper>

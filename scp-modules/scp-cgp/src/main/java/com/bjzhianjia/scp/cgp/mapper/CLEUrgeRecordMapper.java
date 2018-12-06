@@ -1,7 +1,12 @@
 package com.bjzhianjia.scp.cgp.mapper;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.bjzhianjia.scp.cgp.entity.CLEUrgeRecord;
 import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
+
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -21,5 +26,5 @@ import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
  *
  */
 public interface CLEUrgeRecordMapper extends CommonMapper<CLEUrgeRecord> {
-	
+	List<CLEUrgeRecord> selectLastUrge(@Param("caseInfoIds") Set<String> caseInfoIds);
 }

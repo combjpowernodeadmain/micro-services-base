@@ -11,6 +11,7 @@ import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.task.service.IWfProcTaskCallBackService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +39,9 @@ public class ClePreCaseCallBackServiceImpl implements IWfProcTaskCallBackService
     public void before(String dealType, Map<String, Object> procBizData) throws BizException {
         log.debug("添加案件登陆前回调方法执行，参数结构为：" + procBizData);
 
+        // 对需要进行添加的案件进行事前核查，如果核查不通过，则之后逻辑不再进行
+        preCheck(procBizData);
+
         String bizType = String.valueOf(procBizData.get(PROC_BIZTYPE));
         // 加入手机端案件登记，需要判断请求来自手机端还是WEB端
         String queryFrom = String.valueOf(procBizData.get("queryFrom"));
@@ -61,7 +65,6 @@ public class ClePreCaseCallBackServiceImpl implements IWfProcTaskCallBackService
                 // 执法任务
                 // 处理执法任务业务逻辑
                 updateTask(bizData);
-                checkCaseRegistration(bizData,CaseRegistration.CASE_SOURCE_TYPE_TASK);
                 break;
             case CaseRegistration.CASE_SOURCE_TYPE_CENTER:
                 // 中心交办
@@ -97,6 +100,19 @@ public class ClePreCaseCallBackServiceImpl implements IWfProcTaskCallBackService
         }
 
         procBizData.put("procBizId", bizData.getString("procBizId"));
+    }
+
+    /**
+     * 对请求数据进行核查，如核查不通过，将抛出异常
+     * @param procBizData
+     */
+    private void preCheck(Map<String, Object> procBizData) {
+        // 验证执法队员数据是否>=2
+        Object enforcers = procBizData.get("enforcers");
+        String enforcersStr = enforcers == null ? "" : String.valueOf(enforcers);
+        if (StringUtils.isBlank(enforcersStr) || enforcersStr.split(",").length < 2) {
+            throw new BizException("执法队员数量最少为2人");
+        }
     }
 
     /**

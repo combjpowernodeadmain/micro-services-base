@@ -58,7 +58,7 @@ public class LawEnforcePathBiz extends BusinessBiz<LawEnforcePathMapper, LawEnfo
      *         [{"mapinfo":{"lng":"xxx","lat":"xxx"}, "time":"xxx"},
      *         {"mapinfo":{"lng":"xxx","lat":"xxx"},"time":"xxx"}]
      */
-    public JSONArray getByUserIdAndDate(String userId, Date startTime, Date endTime) {
+    public JSONArray getByUserIdAndDate(String userId, String startTime, String endTime) {
         JSONArray array = new JSONArray();
         List<LawEnforcePath> list = this.getByUserId(userId, startTime, endTime);
 
@@ -85,7 +85,7 @@ public class LawEnforcePathBiz extends BusinessBiz<LawEnforcePathMapper, LawEnfo
      * @return
      *         List<LawEnforcePath>
      */
-    public List<LawEnforcePath> getByUserId(String userId, Date startTime, Date endTime) {
+    public List<LawEnforcePath> getByUserId(String userId, String startTime, String endTime) {
         List<LawEnforcePath> list = new ArrayList<>();
         Example example = new Example(LawEnforcePath.class);
         if (StringUtils.isBlank(userId)) {
@@ -97,20 +97,23 @@ public class LawEnforcePathBiz extends BusinessBiz<LawEnforcePathMapper, LawEnfo
         Criteria criteria = example.createCriteria();
         criteria.andEqualTo("crtUserId", userId);
 
-        String _startTime = DateUtil.dateFromDateToStr(startTime, "yyyy-MM-dd HH:mm:ss");
-        String _endTime = DateUtil.dateFromDateToStr(endTime, "yyyy-MM-dd HH:mm:ss");
+        // 查询的结束日期向后推一天
+        Date endTimeT =
+            DateUtil
+                .theDayOfTommorrow(DateUtil.dateFromStrToDate(endTime, DateUtil.DATE_FORMAT_DF));
 
         // 结束日期往前推4天，最大查询4天的轨迹记录
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(endTime);
+        calendar.setTime(endTimeT);
         calendar.set(Calendar.DATE, calendar.get(Calendar.DATE) - 4);
         Date maxStartTime = calendar.getTime();
         String maxEndTime = DateUtil.dateFromDateToStr(maxStartTime, "yyyy-MM-dd HH:mm:ss");
 
         StringBuilder sql = new StringBuilder();
-        sql.append("(('").append(_startTime).append("'").append("<=crt_time  and '").append(maxEndTime)
+        sql.append("(('").append(startTime).append("'").append("<=crt_time  and '").append(maxEndTime)
             .append("'<=crt_time)");
-        sql.append(" and crt_time<=").append("'").append(_endTime).append("')");
+        sql.append(" and crt_time<=").append("'")
+            .append(DateUtil.dateFromDateToStr(endTimeT, DateUtil.DATE_FORMAT_DF)).append("')");
 
         criteria.andCondition(sql.toString());
         list = lawEnforcePathMapper.selectByExample(example);

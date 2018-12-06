@@ -1,11 +1,18 @@
 package com.bjzhianjia.scp.cgp.biz;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.bjzhianjia.scp.cgp.entity.EventType;
+import com.bjzhianjia.scp.cgp.mapper.EventTypeMapper;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.bjzhianjia.scp.cgp.entity.SpecialEvent;
@@ -30,6 +37,9 @@ import tk.mybatis.mapper.entity.Example.Criteria;
  */
 @Service
 public class SpecialEventBiz extends BusinessBiz<SpecialEventMapper, SpecialEvent> {
+
+	@Autowired
+	private EventTypeMapper eventTypeMapper;
 
 	/**
 	 * 按条件查询未被删除的记录
@@ -113,5 +123,67 @@ public class SpecialEventBiz extends BusinessBiz<SpecialEventMapper, SpecialEven
 	public void remove(Integer[] ids) {
 		this.mapper.deleteByIds(ids, BaseContextHandler.getUserID(), BaseContextHandler.getName(),
 				new Date());
+	}
+
+	/**
+	 * 查询专项id下，与bizList对应的事件类别
+	 * @param id
+	 * @param bizList
+	 * @return
+	 */
+    public TableResultResponse<EventType> eventTypeInSApeEvent(Integer id, String bizList) {
+        TableResultResponse<EventType> tableresult = new TableResultResponse<>();
+
+        SpecialEvent specialEvent = this.selectById(id);
+        if (BeanUtil.isEmpty(specialEvent)) {
+            tableresult.setMessage("未找到相关专项任务");
+            tableresult.setStatus(400);
+            return tableresult;
+        }
+
+        if (StringUtils.isNotBlank(specialEvent.getBizList())
+            && StringUtils.isNotBlank(specialEvent.getEventTypeList())) {
+            String[] bizListSplits = specialEvent.getBizList().split(",");
+            String[] eventTypeSplits = specialEvent.getEventTypeList().split(";");
+
+            // 待收集事件类别ID集合
+			Set<String> eventTypeIdSet=new HashSet<>();
+
+			for (int i = 0; i < bizListSplits.length; i++) {
+				if (bizList.equals(bizListSplits[i])) {
+
+                    // 从bizListSplits中找到与传入业务条线对应的记录
+                    String eventTypeSplit = eventTypeSplits[i];
+                    if (StringUtils.isNotBlank(eventTypeSplit) && !"-".equals(eventTypeSplit)) {
+						eventTypeIdSet.addAll(Arrays.asList(eventTypeSplit.split(",")));
+                    }
+                }
+            }
+
+            // 查询事件类别
+            if (BeanUtil.isNotEmpty(eventTypeIdSet)) {
+                List<EventType> eventTypes =
+                    eventTypeMapper.selectByIds(String.join(",", eventTypeIdSet));
+                if (BeanUtil.isNotEmpty(eventTypes)) {
+                    List<EventType> forRegurnList = new ArrayList<>();
+                    for (EventType tmpEventType : eventTypes) {
+                        if ("0".equals(tmpEventType.getIsDeleted())) {
+                            // 返回特定字段
+                            EventType forReturn = new EventType();
+                            forReturn.setId(tmpEventType.getId());
+                            forReturn.setTypeName(tmpEventType.getTypeName());
+                            forRegurnList.add(forReturn);
+                        }
+                    }
+                    tableresult.getData().setTotal(forRegurnList.size());
+                    tableresult.getData().setRows(forRegurnList);
+                    return tableresult;
+                }
+            }
+        }
+
+        tableresult.setMessage("未找到相关专项任务");
+        tableresult.setStatus(400);
+        return tableresult;
 	}
 }

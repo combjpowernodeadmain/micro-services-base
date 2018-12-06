@@ -62,4 +62,14 @@
 	<select id="distinctGridMember" resultType="java.lang.String">
 		SELECT DISTINCT(area_grid_member.grid_member) FROM area_grid_member WHERE is_deleted='0'
 	</select>
+
+	<select id="getListExcludeRole" resultType="com.bjzhianjia.scp.cgp.entity.AreaGridMember">
+		select ag.id gridId,member.gridMember
+		from area_grid ag
+		inner join (
+			SELECT grid_id id,grid_member gridMember FROM area_grid_member
+			WHERE is_deleted='0'
+			GROUP BY grid_id,grid_member
+		) member on member.id=ag.id
+	</select>
 </mapper>

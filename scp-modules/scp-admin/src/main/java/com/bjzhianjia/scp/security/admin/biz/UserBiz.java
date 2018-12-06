@@ -284,6 +284,7 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
         Example example=new Example(User.class);
         Example.Criteria criteria=example.createCriteria();
         criteria.andLike("name", "%"+name+"%");
+        criteria.andEqualTo("isDeleted", BooleanUtil.BOOLEAN_FALSE);
         List<User> userList = mapper.selectByExample(example);
         if(userList == null) {
             userList = new ArrayList<>();
@@ -302,6 +303,7 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
         Example example = new Example(User.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andLike("name", "%" + name + "%");
+        criteria.andEqualTo("isDeleted", BooleanUtil.BOOLEAN_FALSE);
         Page<Object> pageList = PageHelper.startPage(page, limit);
         List<User> userList = mapper.selectByExample(example);
         if (userList == null) {

@@ -545,4 +545,15 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
 
         return this.baseBiz.getListForHome(queryData);
     }
+
+    /**
+     * 只通过业务ID查询带有工作流信息的结果
+     * @param id
+     * @return
+     */
+    @GetMapping(value = "/caseInfo/userToDoTask")
+    @ApiOperation("查询详细待办任务")
+    public ObjectRestResponse<JSONObject> getCaseInfoWithWfData(@RequestParam(value="id") Integer id) {
+        return this.caserInfoService.getCaseInfoWithWfData(id);
+    }
 }

@@ -1,5 +1,7 @@
 package com.bjzhianjia.scp.cgp.service;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.SpecialEventBiz;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.EventType;
@@ -22,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -369,5 +372,39 @@ public class SpecialEventService {
         result.setIsSuccess(true);
         result.setData(resultVo.get(0));
         return result;
+	}
+
+	/**
+	 * 查询专项id下的业务条线
+	 * @param id
+	 */
+    public JSONArray bizTypeInSpeEvent(Integer id) {
+		JSONArray result=new JSONArray();
+    	if(BeanUtil.isEmpty(id)){
+    		return result;
+		}
+    	
+		SpecialEvent specialEvent = this.specialEventBiz.selectById(id);
+        if (BeanUtil.isEmpty(specialEvent)
+            || (BeanUtil.isNotEmpty(specialEvent) && BeanUtil.isEmpty(specialEvent.getBizList()))) {
+			// 如果专项为空或专项不为空但专项里的业务条线为空，则返回空数组
+			return result;
+        }
+
+		Map<String, String> dictValues = dictFeign.getByCode(Constances.ROOT_BIZ_TYPE);
+        if(BeanUtil.isNotEmpty(dictValues)){
+			Set<String> bizListSet=new HashSet<>(Arrays.asList(specialEvent.getBizList().split(",")));
+			for(Map.Entry<String,String> e:dictValues.entrySet()){
+				if(bizListSet.contains(e.getKey())){
+					// 说明该业务条线是在专项中指定过的
+					JSONObject tmlJObj=new JSONObject();
+					tmlJObj.put("code", e.getKey());
+					tmlJObj.put("labelDefault", e.getValue());
+					result.add(tmlJObj);
+				}
+			}
+		}
+
+		return result;
 	}
 }

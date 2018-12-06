@@ -264,9 +264,12 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
         List<JSONObject> regulaObjCount = patrolTaskMapper.regulaObjCount(regObjIdList);
         // 将regulaObjCount转化为key-value形式
         Map<Integer, Integer> regObj_ID_COUNT_Map = new HashMap<>();
+        Map<Integer,Integer> regObjIdProblemCountMap=new HashMap<>();//巡查出问题的次数Map
         if (BeanUtil.isNotEmpty(regulaObjCount)) {
             for (JSONObject jsonObject : regulaObjCount) {
                 regObj_ID_COUNT_Map.put(jsonObject.getInteger("regula_object_id"), jsonObject.getInteger("rcount"));
+                regObjIdProblemCountMap.put(jsonObject.getInteger("regula_object_id"),
+                        jsonObject.getInteger("pCountWithProblem"));
             }
         }
 
@@ -276,6 +279,8 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
             resultJObj.put("objName", regObjTmp.getObjName());
             resultJObj.put("patrolCount", BeanUtil.isEmpty(regObj_ID_COUNT_Map.get(regObjTmp.getId())) ? 0
                 : regObj_ID_COUNT_Map.get(regObjTmp.getId()));
+            resultJObj.put("pCountWithProblem", BeanUtil.isEmpty(regObjIdProblemCountMap.get(regObjTmp.getId())) ? 0
+                    : regObjIdProblemCountMap.get(regObjTmp.getId()));
             result.add(resultJObj);
         }
         return result;
@@ -535,6 +540,21 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
         example.setOrderByClause("id desc");
         List<RegulaObject> regulaObjects = this.selectByExample(example);
 
+        if(BeanUtil.isEmpty(regulaObjects)){
+            return new ArrayList<>();
+        }
+        return regulaObjects;
+    }
+
+    /**
+     * 按监管对象类型ID集合查询
+     * @param objTypeIds
+     * @return
+     */
+    public List<RegulaObject> getListByObjTypeIds(Set<String> objTypeIds){
+        Example example=new Example(RegulaObject.class);
+        example.createCriteria().andIn("objType", objTypeIds).andEqualTo("isDeleted", "0");
+        List<RegulaObject> regulaObjects = this.selectByExample(example);
         if(BeanUtil.isEmpty(regulaObjects)){
             return new ArrayList<>();
         }

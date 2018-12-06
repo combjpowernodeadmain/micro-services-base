@@ -505,4 +505,24 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
 
         return new ArrayList<>();
     }
+
+    /**
+     * 查询网格员列表
+     * 忽略网格员的角色
+     * @param areaGridMember
+     * @param page
+     * @param limit
+     * @return
+     */
+    public TableResultResponse<JSONObject> getListExcludeRole(AreaGridMember areaGridMember,
+        Integer page, Integer limit) {
+        Page<Object> pageInfo = PageHelper.startPage(page, limit);
+        List<AreaGridMember> list = this.mapper.getListExcludeRole(areaGridMember);
+        if (BeanUtil.isNotEmpty(list)) {
+            List<JSONObject> jsonObjects = queryAssist(list);
+            return new TableResultResponse<>(pageInfo.getTotal(), jsonObjects);
+        }
+
+        return new TableResultResponse<>(0, new ArrayList<>());
+    }
 }
