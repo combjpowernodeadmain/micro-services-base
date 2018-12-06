@@ -129,10 +129,7 @@ public class LawEnforcePathController extends BaseController<LawEnforcePathBiz,L
             return result;
         }
 
-        Date _startTime = DateUtil.dateFromStrToDate(startTime,"yyyy-MM-dd HH:mm:ss");
-        Date _endTime = DateUtil.dateFromStrToDate(endTime,"yyyy-MM-dd HH:mm:ss");
-
-        JSONArray array = lawEnforcePathBiz.getByUserIdAndDate(userId, _startTime, _endTime);
+        JSONArray array = lawEnforcePathBiz.getByUserIdAndDate(userId, startTime, endTime);
 
         if (!array.isEmpty()) {
             result.setStatus(200);

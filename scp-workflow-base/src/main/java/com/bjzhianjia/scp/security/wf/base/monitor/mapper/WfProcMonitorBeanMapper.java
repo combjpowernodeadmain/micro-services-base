@@ -102,4 +102,11 @@ public interface WfProcMonitorBeanMapper {
      *  通过业务ids查询流程实例id
      */
     List<Map<String,Object>> selectProcInstIdByUserId(JSONObject objs);
+
+    /**
+     * 按业务ID(taskId)查询流程
+     * @param objs
+     * @return
+     */
+    JSONObject selectProcByTaskId(JSONObject objs);
 }

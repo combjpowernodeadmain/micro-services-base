@@ -14,4 +14,15 @@
         <result property="crtTime" column="crt_time"/>
     </resultMap>
 
+    <select id="selectLastSupervise" resultMap="superviseRecordMap">
+        SELECT case_info_id,crt_user_name,crt_user_id FROM supervise_record WHERE id IN (
+            SELECT MAX(id) id FROM supervise_record
+            WHERE case_info_id IN (
+            <foreach collection="caseInfoIds" item="item" separator=",">
+                #{item}
+            </foreach>
+            )
+            GROUP BY case_info_id
+        )
+    </select>
 </mapper>

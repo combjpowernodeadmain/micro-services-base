@@ -15,4 +15,15 @@
         <result property="tenantId" column="tenant_id"/>
     </resultMap>
 
+    <select id="selectLastSupervise" resultMap="cleSuperviseRecordMap">
+        SELECT cle_case_id,crt_user_name,crt_user_id FROM cle_supervise_record WHERE id IN (
+            SELECT MAX(id) id FROM cle_supervise_record
+            WHERE cle_case_id IN (
+            <foreach collection="caseInfoIds" item="item" separator=",">
+                #{item}
+            </foreach>
+            )
+            GROUP BY cle_case_id
+        )
+    </select>
 </mapper>

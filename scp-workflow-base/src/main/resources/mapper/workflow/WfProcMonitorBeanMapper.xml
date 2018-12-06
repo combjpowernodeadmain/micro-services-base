@@ -828,4 +828,21 @@
         procCtaskName,
         procTaskCommittime
 	</select>
+
+    <!-- 按业务ID(taskId)查询流程 -->
+	<select id="selectProcByTaskId" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+        PROC_INST_ID procInstId,
+        PROC_BIZID procBizId,
+        #<!-- 添加当前节点名称及任务提交时间 -->
+        PROC_CTASKNAME procCtaskName,
+        PROC_CTASKID procCtaskId,
+        PROC_TASK_STATUS procTaskStatus,
+        PROC_KEY procKey,
+        FROM_UNIXTIME(PROC_TASK_COMMITTIME, '%Y-%m-%d %H:%i:%s') procTaskCommittime
+        FROM
+        SCP_WF_PROC_TASK
+        WHERE
+        PROC_CTASKID=#{procTaskId}
+    </select>
 </mapper>

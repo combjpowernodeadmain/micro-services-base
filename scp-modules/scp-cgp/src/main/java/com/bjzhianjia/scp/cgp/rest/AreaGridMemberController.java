@@ -91,4 +91,14 @@ public class AreaGridMemberController extends BaseController<AreaGridMemberBiz, 
         TableResultResponse<JSONObject> tableResult = this.baseBiz.allPosition();
         return tableResult;
     }
+
+    @RequestMapping(value = "/list/excludeRole", method = RequestMethod.GET)
+    @ApiOperation("分页获取记录")
+    public TableResultResponse<JSONObject> getListExcludeRole(
+        @RequestParam(value = "page", defaultValue = "1") Integer page,
+        @RequestParam(value = "limit", defaultValue = "10") Integer limit) {
+
+        AreaGridMember areaGridMember = new AreaGridMember();
+        return this.baseBiz.getListExcludeRole(areaGridMember, page, limit);
+    }
 }

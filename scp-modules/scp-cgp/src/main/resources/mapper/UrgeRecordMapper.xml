@@ -14,4 +14,16 @@
         <result property="crtTime" column="crt_time"/>
     </resultMap>
 
+    <!-- 查询某事件对应的最后一条催办记录 -->
+    <select id="selectLastUrge" resultMap="urgeRecordMap">
+        SELECT case_info_id,crt_user_name,crt_user_id FROM urge_record WHERE id IN (
+            SELECT MAX(id) id FROM urge_record
+            WHERE case_info_id IN (
+            <foreach collection="caseInfoIds" item="item" separator=",">
+                #{item}
+            </foreach>
+            )
+            GROUP BY case_info_id
+        )
+    </select>
 </mapper>
