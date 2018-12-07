@@ -114,8 +114,13 @@
 		WHERE
 			ro.is_deleted = 0
 		AND ro.is_disabled = 0
-		<if test="objType !=null  and objType!='' ">
-			AND ro.obj_type = #{objType}
+		<!-- 将监管对象类型条件改为按集体查询 -->
+		<if test="objType !=null  and objType.size()>0 ">
+			AND ro.obj_type in (
+			<foreach collection="objType" item="item" separator=",">
+				#{item}
+			</foreach>
+			)
 		</if>
 		<if test="objName !=null  and objName!='' ">
 			<bind name="title" value="'%'+objName+'%'"/>
