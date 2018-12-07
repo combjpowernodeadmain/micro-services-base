@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 监管对象
@@ -56,5 +57,5 @@ public interface RegulaObjectMapper extends CommonMapper<RegulaObject> {
 	 * @param objName 名称查询
 	 * @return
 	 */
-	List<Map<String,Object>> selectByTypeAndName(@Param("objType")Integer objType,@Param("objName") String objName);
+	List<Map<String,Object>> selectByTypeAndName(@Param("objType") Set<String> objType, @Param("objName") String objName);
 }
