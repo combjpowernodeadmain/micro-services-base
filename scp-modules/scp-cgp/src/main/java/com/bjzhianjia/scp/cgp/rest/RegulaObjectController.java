@@ -186,9 +186,9 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
     public ObjectRestResponse<List<Map<String, Object>>> distance(
         @RequestParam(value = "longitude") @ApiParam("经度") Double longitude,
         @RequestParam(value = "latitude") @ApiParam("纬度") Double latitude,
-        @RequestParam(value = "objType",defaultValue = "") @ApiParam("监管对象类型id") Integer objType,
+        @RequestParam(value = "objType",defaultValue = "") @ApiParam("监管对象类型id") String objType,
         @RequestParam(value = "objName",defaultValue = "") @ApiParam("监管对象名称") String objName,
-        @RequestParam(value = "size", defaultValue = "500") @ApiParam("监管对象范围大小（单位：米）") Double size,
+        @RequestParam(value = "size", required = false) @ApiParam("监管对象范围大小（单位：米）") Double size,
         @RequestParam(value = "limit", defaultValue = "10") @ApiParam(name = "页容量") Integer limit,
         @RequestParam(value = "page", defaultValue = "1") @ApiParam(name = "当前页") Integer page) {
 
@@ -310,6 +310,6 @@ public class RegulaObjectController extends BaseController<RegulaObjectBiz, Regu
             result.setMessage("纬度不能为空！");
             return result;
         }
-        return regulaObjectService.getByDistanceAndObjType(longitude, latitude, objTypes, size);
+        return null;
     }
 }
