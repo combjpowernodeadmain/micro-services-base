@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.rest;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -555,5 +556,20 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
     @ApiOperation("查询详细待办任务")
     public ObjectRestResponse<JSONObject> getCaseInfoWithWfData(@RequestParam(value="id") Integer id) {
         return this.caserInfoService.getCaseInfoWithWfData(id);
+    }
+
+    @GetMapping("/nodeHistory")
+    @ApiOperation("查询详细待办任务")
+    public List<JSONObject> approveHistoryOfSpeNode(
+        @RequestParam(value = "procInstId") String procInstId,
+        @RequestParam(value = "procPropsKey",defaultValue = "") String procPropsKey,
+        @RequestParam(value = "procCtaskCode") String procCtaskCode) {
+
+        JSONObject queryData = new JSONObject();
+        queryData.put("procInstId", procInstId);
+        queryData.put("procPropsKey",
+            StringUtils.isEmpty(procPropsKey) ? null : Arrays.asList(procPropsKey.split(",")));
+        queryData.put("procCtaskCode", procCtaskCode);
+        return caserInfoService.approveHistoryOfSpeNode(queryData);
     }
 }

@@ -162,6 +162,12 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
 
         ObjectRestResponse<Void> result = new ObjectRestResponse<Void>();
 
+        if(StringUtils.isBlank(startTime)||StringUtils.isBlank(endTime)){
+            result.setStatus(400);
+            result.setMessage("任务开始时间或结束时间为空，请重新选择。");
+            return result;
+        }
+
         if (StringUtils.isBlank(griIds) || StringUtils.isBlank(objType)
             || StringUtils.isBlank(startTime) || StringUtils.isBlank(endTime)|| StringUtils.isBlank(info)) {
             result.setStatus(400);
