@@ -1919,12 +1919,17 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             // 前端没有传入网格数据，定位获取
             JSONObject mapInfoJObj = caseRegJObj.getJSONObject("mapInfo");
             if (BeanUtil.isEmpty(mapInfoJObj)) {
-//                throw new BizException("添加案件登记失败，未找到相应网格信息。");
-            }
-            Point point = new Point(mapInfoJObj.getDouble("lng"), mapInfoJObj.getDouble("lat"));
-            AreaGrid areaGridReturn = areaGridBiz.isPolygonContainsPoint(point);
-            if(BeanUtil.isNotEmpty(areaGridReturn)){
-                caseRegistration.setGirdId(areaGridReturn.getId());
+                // throw new BizException("添加案件登记失败，未找到相应网格信息。");
+            }else{
+                /*
+                 * 起始：如果没有地址信息，则抛出异常
+                 * 现在：将地理信息必传限制去掉，如果没有地理信息，则跳过，有则填充
+                 */
+                Point point = new Point(mapInfoJObj.getDouble("lng"), mapInfoJObj.getDouble("lat"));
+                AreaGrid areaGridReturn = areaGridBiz.isPolygonContainsPoint(point);
+                if(BeanUtil.isNotEmpty(areaGridReturn)){
+                    caseRegistration.setGirdId(areaGridReturn.getId());
+                }
             }
         }
 
