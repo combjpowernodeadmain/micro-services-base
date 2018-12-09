@@ -679,6 +679,9 @@ public class RegulaObjectService {
 
         if (StringUtils.isNotBlank(objType) && BeanUtil.isNotEmpty(size)) {
             // 即按监管对象类型查询，又按距离范围查询----------By尚----------
+            log.debug(new StringBuilder("查询监管对象信息\n").append("同时按距离及监管对象类型查询,lng:")
+                .append(longitude).append(",lat:").append(latitude).append(",距离范围为：").append(size)
+                .append("m，监管对象类型：").append(objType));
             TableResultResponse<Map<String, Object>> byDistanceAndObjType =
                 getByDistanceAndObjType(longitude, latitude, objType, size);
             return byDistanceAndObjType.getData().getRows();
@@ -686,11 +689,14 @@ public class RegulaObjectService {
 
         //如果有监管对象名称和监管对象类型，则全库查询，否则查询指定范围内的对象
         if(objType != null || StringUtils.isNotBlank(objName)) {
+            log.debug(new StringBuilder("查询监管对象信息\n").append("按监管对象类型查询,监管对象类型：").append(objType));
             PageHelper.startPage(page,limit);
             result = this.regulaObjectBiz.getObjByTypeAndName(objType,objName);
         }else{
             size=500.0;
 
+            log.debug(new StringBuilder("查询监管对象信息\n").append("按距离查询,lng：").append(longitude)
+                .append(",lat:").append(latitude).append(",距离范围为：").append(size));
             // 监管对象列表
             List<Map<String, Object>> objNameList =
                 (List<Map<String, Object>>) redisTemplate.opsForValue().get(PatrolTask.REGULA_OBJECT_NAME);

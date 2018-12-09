@@ -172,4 +172,23 @@
 	    </set>
 	    where ID = #{id,jdbcType=INTEGER}
 	  </update>
+
+	<select id="selectByInstAndTaskCode" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT swpp.PROC_ID procInstId,swpp.PROC_TASK_CODE procTaskId,swpp.PROC_PROPS_KEY procPropsKey,swpp.PROC_PROPS_VALUE procPropsValue,
+		swpt.PROC_BIZID procBizId,swpt.PROC_CTASKCODE procCtaskCode,swpt.PROC_CTASKNAME procCtaskName,swpt.PROC_TASK_ASSIGNEE procTaskAssignee,
+        swpt.PROC_TASK_COMMITTER procTaskCommitter,swpt.PROC_TASK_APPR_OPINION procTaskApprOpinion
+		FROM scp_wf_proc_props swpp
+		<!-- LEFT JOIN scp_wf_proc_task swpt ON swpt.PROC_INST_ID=swpp.PROC_ID -->
+		LEFT JOIN scp_wf_proc_task swpt ON swpt.PROC_CTASKID=swpp.PROC_TASK_CODE
+		WHERE swpp.proc_id=#{queryData.procInstId}
+		AND swpt.PROC_CTASKCODE=#{queryData.procCtaskCode}
+        <if test="queryData.procPropsKey != null and queryData.procPropsKey.size() > 0">
+            AND swpp.PROC_PROPS_KEY in (
+            <foreach collection="queryData.procPropsKey" item="item" separator=",">
+                #{item}
+            </foreach>
+            )
+        </if>
+		ORDER BY swpp.PROC_TASK_CODE
+	</select>
 </mapper>
