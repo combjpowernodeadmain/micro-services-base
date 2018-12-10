@@ -81,6 +81,8 @@
 		<if test="patrolTask.eventTypeId != null">
 			AND pk.event_type_id=#{patrolTask.eventTypeId}
 		</if>
+		ORDER BY
+		pk.crt_time DESC
 	</select>
 	
 	<!-- 获取regulaObjIdList集合中所包含的监管对象被巡查的次数 -->
