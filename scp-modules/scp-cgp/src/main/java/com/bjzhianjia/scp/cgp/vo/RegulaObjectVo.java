@@ -11,7 +11,7 @@ import com.bjzhianjia.scp.cgp.entity.RegulaObject;
 public class RegulaObjectVo extends RegulaObject {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 6624378212384321901L;
 
@@ -19,6 +19,10 @@ public class RegulaObjectVo extends RegulaObject {
 
     private Integer patrolCount;// 该监管对象被巡查的次数
     private Integer pCountWithProblem;// 该监管对象被巡查出现问题的次数
+
+    private Long caseInfoCount;// 事件量
+
+    private Long caseRegistrationCount;// 案件量
 
     private EnterpriseInfo enterpriseInfo;
 
@@ -52,5 +56,21 @@ public class RegulaObjectVo extends RegulaObject {
 
     public void setpCountWithProblem(Integer pCountWithProblem) {
         this.pCountWithProblem = pCountWithProblem;
+    }
+
+    public Long getCaseInfoCount() {
+        return caseInfoCount;
+    }
+
+    public void setCaseInfoCount(Long caseInfoCount) {
+        this.caseInfoCount = caseInfoCount;
+    }
+
+    public Long getCaseRegistrationCount() {
+        return caseRegistrationCount;
+    }
+
+    public void setCaseRegistrationCount(Long caseRegistrationCount) {
+        this.caseRegistrationCount = caseRegistrationCount;
     }
 }
