@@ -843,9 +843,9 @@ public class RegulaObjectService {
         //获取监管对象所属案件量
         List<Map<String, Long>> caseRegistrationList = caseRegistrationBiz.selectByRegulaObjectId(regulaObjIds);
         Map<String, Long> tempRegistrationMap = new HashMap<>();
-        if (BeanUtil.isNotEmpty(tempRegistrationMap)) {
+        if (BeanUtil.isNotEmpty(caseRegistrationList)) {
             for (Map<String, Long> tMap : caseRegistrationList) {
-                tempRegistrationMap.put(String.valueOf(tMap.get("regulaObjId")), tMap.get("count"));
+                tempRegistrationMap.put(String.valueOf(tMap.get("regulaObjectId")), tMap.get("count"));
             }
         }
 
@@ -853,9 +853,10 @@ public class RegulaObjectService {
         for (RegulaObjectVo tmp : voList) {
             //事件量
             Long caseInfoCount = tempCaseInfoMap.get(String.valueOf(tmp.getId()));
-            tmp.setCaseInfoCount(caseInfoCount != null ? caseInfoCount : 0);
+            tmp.setPatrolCount(caseInfoCount != null ? caseInfoCount.intValue() : 0);
+            //案件量
             Long caseRegistrationCount = tempRegistrationMap.get(String.valueOf(tmp.getId()));
-            tmp.setCaseRegistrationCount(caseRegistrationCount != null ? caseRegistrationCount : 0);
+            tmp.setpCountWithProblem(caseRegistrationCount != null ? caseRegistrationCount.intValue() : 0);
         }
         return new TableResultResponse<>(voList.size(), voList);
     }
