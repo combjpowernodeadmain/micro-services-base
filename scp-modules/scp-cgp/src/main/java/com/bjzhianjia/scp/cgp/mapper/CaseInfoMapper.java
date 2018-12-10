@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * CaseInfoMapper 预立案信息.
@@ -126,4 +127,11 @@ public interface CaseInfoMapper extends CommonMapper<CaseInfo> {
      * @return
      */
     List<JSONObject> getListForHome(@Param(value = "queryData")JSONObject queryData);
+
+    /**
+     * 通过监管对象ids，获取监管对象所属事件量
+     * @param regulaObjIds 监管对象ids
+     * @return
+     */
+    List<Map<String,Long>> selectByRegulaIds(@Param("regulaObjIds") Set<String> regulaObjIds);
 }
