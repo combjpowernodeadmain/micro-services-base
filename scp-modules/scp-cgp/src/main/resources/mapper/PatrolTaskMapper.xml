@@ -105,4 +105,27 @@
 		</where>
 		GROUP BY pt01.`regula_object_id`,pCountWithProblem
 	</select>
+
+	<!-- 查询某监管对象巡查列表 -->
+	<select id="listOfRegObj" resultType="com.alibaba.fastjson.JSONObject">
+		select pt.id patrolTaskId,pt.crt_user_id crtUserId,pt.crt_time crtTime,pt.status,pt.biz_type_id bizTypeId,
+        pt.crt_user_name crtUserName,pt.`is_problem` isProblem,
+		ro.id regObjId,ro.obj_name objName,
+		ei.id enterpriseId,ei.credit_code creditCode
+		from patrol_task pt
+		left join regula_object ro on ro.id=pt.regula_object_id
+		left join enterprise_info ei on ei.regula_obj_id=ro.id
+		<where>
+			<if test="queryData.objName != null and queryData.objName != ''">
+				and ro.obj_name like "%"#{queryData.objName}"%"
+			</if>
+			<if test="queryData.creditCode != null and queryData.creditCode != ''">
+				and ei.credit_code= #{queryData.creditCode}
+			</if>
+            <if test="queryData.startTime != null and queryData.startTime !=''
+                       and queryData.endTime != null and queryData.endTime != ''">
+                and pt.crt_time &gt;=#{queryData.startTime} and pt.crt_time &lt;= #{queryData.endTime}
+            </if>
+		</where>
+	</select>
 </mapper>

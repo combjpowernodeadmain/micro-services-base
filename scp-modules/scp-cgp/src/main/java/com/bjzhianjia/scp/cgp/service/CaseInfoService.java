@@ -3,6 +3,7 @@ package com.bjzhianjia.scp.cgp.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.bjzhianjia.scp.cgp.biz.AreaGridBiz;
 import com.bjzhianjia.scp.cgp.biz.AreaGridMemberBiz;
 import com.bjzhianjia.scp.cgp.biz.CaseInfoBiz;
@@ -1992,5 +1993,175 @@ public class CaseInfoService {
         }
 
         return procDataHistorys;
+    }
+
+    /**
+     * 双向推送业务处理
+     * @param objs
+     * @return
+     */
+    public TableResultResponse<JSONObject> pushOfTwoWays(JSONObject objs) {
+        JSONObject queryData = objs.getJSONObject("queryData");
+
+        Integer page =
+                BeanUtil.isEmpty(queryData.getInteger("page")) ? 1 : queryData.getInteger("page");
+        Integer limit =
+                BeanUtil.isEmpty(queryData.getInteger("limit")) ? 10 : queryData.getInteger("limit");
+
+        Page<Object> pageInfo = PageHelper.startPage(page, limit);
+        List<JSONObject> rows = patrolTaskBiz.listOfRegObj(queryData);
+        if (BeanUtil.isNotEmpty(rows)) {
+            List<String> dictIdList = new ArrayList<>();
+            List<String> bizTypeIdList =
+                rows.stream().map(o -> o.getString("bizTypeId")).distinct()
+                    .collect(Collectors.toList());
+            List<String> statusIdList =
+                rows.stream().map(o -> o.getString("status")).distinct()
+                    .collect(Collectors.toList());
+
+            dictIdList.addAll(bizTypeIdList);
+            dictIdList.addAll(statusIdList);
+            Map<String, String> dictIdValueMap = new HashMap<>();
+            if (BeanUtil.isNotEmpty(dictIdList)) {
+                dictIdValueMap = dictFeign.getByCodeIn(String.join(",", dictIdList));
+            }
+
+            for (JSONObject tmpObj : rows) {
+                tmpObj.put("bizTypeName", dictIdValueMap.get(tmpObj.getString("bizTypeId")));
+                tmpObj.remove("bizTypeId");
+                tmpObj.put("status", dictIdValueMap.get(tmpObj.getString("status")));
+
+                if (StringUtils.equals("1", tmpObj.getString("isProblem"))) {
+                    // 有问题
+                    tmpObj.put("isProblem", "存在问题");
+                } else if ((StringUtils.equals("0", tmpObj.getString("isProblem")))) {
+                    tmpObj.put("isProblem", "未发现问题");
+                }
+
+                tmpObj.remove("regObjId");
+                tmpObj.remove("enterpriseId");
+                tmpObj.remove("crtUserId");
+            }
+            return new TableResultResponse<>(pageInfo.getTotal(), rows);
+        }
+
+        return new TableResultResponse<>(0, new ArrayList<>());
+    }
+
+    public ObjectRestResponse<JSONObject> pushOfTwoWaysDetail(JSONObject objs) {
+        JSONObject bizData = objs.getJSONObject("bizData");
+        Integer procBizId = bizData.getInteger("procBizId");
+
+        Map<String,Object> condition=new HashMap<>();
+        condition.put("isDeleted", "0");
+        condition.put("sourceCode", procBizId);
+        condition.put("sourceType", environment.getProperty("sourceTypeKeyPatrol"));
+
+        List<CaseInfo> caseInfoList = this.caseInfoBiz.getByMap(condition);
+        CaseInfo caseInfo;
+        if(BeanUtil.isNotEmpty(caseInfoList)){
+            // 巡查上报记录与事件记录一对一，如果返回结果不为空，则长度必有1
+            caseInfo = caseInfoList.get(0);
+        }else{
+            caseInfo=new CaseInfo();
+        }
+
+        // 整理返回结果
+        List<String> dictKeys=new ArrayList<>();
+        if(StringUtils.isNotBlank(caseInfo.getCaseLevel())){
+            dictKeys.add(caseInfo.getCaseLevel());
+        }
+
+        List<String> userIdList=new ArrayList<>();
+        if(StringUtils.isNotBlank(caseInfo.getCheckPerson())){
+            userIdList.add(caseInfo.getCheckPerson());
+        }
+        if(StringUtils.isNotBlank(caseInfo.getFinishCheckPerson())){
+            userIdList.add(caseInfo.getFinishCheckPerson());
+        }
+
+        Map<String,String> userIdNameMap=new HashMap<>();
+        if(BeanUtil.isNotEmpty(userIdList)){
+            JSONArray infoByUserIds = adminFeign.getInfoByUserIds(String.join(",", userIdList));
+            if(BeanUtil.isNotEmpty(infoByUserIds)){
+                for(int i=0;i<infoByUserIds.size();i++){
+                    JSONObject jsonObject = infoByUserIds.getJSONObject(i);
+                    userIdNameMap.put(jsonObject.getString("userId"), jsonObject.getString("userName"));
+                }
+            }
+        }
+
+        Map<String, String> dictValues=new HashMap<>();
+        if(BeanUtil.isNotEmpty(dictKeys)){
+             dictFeign.getByCodeIn(String.join(",", dictKeys));
+        }
+
+        /*
+         * 当事人
+         * 网格
+         * 事件类别
+         *
+         */
+        JSONObject result=new JSONObject();
+        result=JSONObject.parseObject(JSONObject.toJSONString(caseInfo,SerializerFeature.WriteMapNullValue));
+        result.put("caseLevel", dictValues.get(caseInfo.getCaseLevel()));
+
+        result.put("checkPerson", userIdNameMap.get(caseInfo.getCheckPerson()));
+        result.put("finishCheckPerson", userIdNameMap.get(caseInfo.getFinishCheckPerson()));
+
+        String checkIsExist = caseInfo.getCheckIsExist();
+        checkIsExist=StringUtils.isBlank(checkIsExist)?"-1":checkIsExist;
+        switch (checkIsExist) {
+            case "0":
+                result.put("checkIsExist", "否");
+                break;
+            case "1":
+                result.put("checkIsExist", "是");
+                break;
+            default:
+                result.put("checkIsExist", null);
+        }
+
+        String finishCheckIsExist = caseInfo.getFinishCheckIsExist();
+        finishCheckIsExist=StringUtils.isBlank(finishCheckIsExist)?"-1":finishCheckIsExist;
+        switch (finishCheckIsExist) {
+            case "0":
+                result.put("finishCheckIsExist", "否");
+                break;
+            case "1":
+                result.put("finishCheckIsExist", "是");
+                break;
+            default:
+                result.put("finishCheckIsExist", null);
+        }
+
+        // 将结果集中不需要的数据移除,比如字典code的数据
+        result.remove("sourceType");
+        result.remove("sourceCode");
+        result.remove("regulaObjTypeId");
+        result.remove("regulaObjList");
+        result.remove("concernedPerson");
+        result.remove("concernedType");
+        result.remove("bizList");
+        result.remove("eventTypeList");
+        result.remove("grid");
+        result.remove("executeDept");
+        result.remove("crtTime");
+        result.remove("crtUserId");
+        result.remove("crtUserName");
+        result.remove("updTime");
+        result.remove("updUserId");
+        result.remove("updUserName");
+        result.remove("tenantId");
+        result.remove("deptId");
+        result.remove("isDuplicate");
+        result.remove("duplicateWith");
+        result.remove("isFinished");
+        result.remove("isSupervise");
+        result.remove("isUrge");
+        result.remove("isDeleted");
+        result.remove("executeInfo");
+
+        return new ObjectRestResponse<JSONObject>().data(result);
     }
 }
