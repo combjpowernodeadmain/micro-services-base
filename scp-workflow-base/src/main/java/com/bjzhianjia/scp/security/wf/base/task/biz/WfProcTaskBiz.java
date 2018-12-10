@@ -2010,7 +2010,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 				insertWfProcessTasks(wfNextTasksBean);
 				
 				// 写入流程参数数据
-				insertWfProcProps(wfNextTasksBean, procVarData);
+				insertWfProcProps(wfProcTaskList, procVarData);
 
 				// 发送流程任务通知
 				notify(wfProcBean, wfNextTasksBean, allNotifyProcess, taskProperties);
@@ -3831,5 +3831,14 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * 根据流程实例ID或流程节点ID查询流程历史参数
+	 * @param queryData
+	 * @return
+	 */
+	public List<JSONObject> selectByInstAndTaskCode(JSONObject queryData){
+		return  wfprocpropsMapper.selectByInstAndTaskCode(queryData);
 	}
 }

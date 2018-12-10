@@ -49,6 +49,7 @@ import com.bjzhianjia.scp.security.wf.base.constant.Constants;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.monitor.entity.WfProcBackBean;
 import com.bjzhianjia.scp.security.wf.base.monitor.service.impl.WfMonitorServiceImpl;
+import com.bjzhianjia.scp.security.wf.base.task.biz.WfProcTaskBiz;
 import com.bjzhianjia.scp.security.wf.base.task.entity.WfProcTaskHistoryBean;
 import com.bjzhianjia.scp.security.wf.base.task.service.impl.WfProcTaskServiceImpl;
 import com.bjzhianjia.scp.security.wf.base.utils.StringUtil;
@@ -58,14 +59,9 @@ import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.web.bind.annotation.RequestBody;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
@@ -172,8 +168,7 @@ public class CaseInfoService {
     private AreaGridMemberBiz areaGridMemberBiz;
 
     @Autowired
-    @Qualifier("transactionManager")
-    private PlatformTransactionManager platformTransactionManager;
+    private WfProcTaskBiz wfProcTaskBiz;
 
     /**
      * 更新单个对象
@@ -809,7 +804,9 @@ public class CaseInfoService {
             if (environment.getProperty("isCheckProcessingAuth").equals(flowDirection)) {
                 String deptId = objs.getJSONObject("authData").getString("procDeptId");
                 if (StringUtils.isBlank(deptId)) {
-                    throw new BizException("请指定部门ID");
+                    result.setMessage("请指定处理部门");
+                    result.setIsSuccess(false);
+                    return result;
                 }
                 List<JSONObject> authoritiesByDept = adminFeign.getAuthoritiesByDept(deptId);
                 if (BeanUtil.isNotEmpty(authoritiesByDept)) {
@@ -837,7 +834,9 @@ public class CaseInfoService {
                 String gridId = caseInfoJObj.getString("grid");
 
                 if(StringUtils.isEmpty(gridId)){
-                    throw new BizException("请指定网格");
+                    result.setMessage("请指定网格");
+                    result.setIsSuccess(false);
+                    return result;
                 }
 
                 List<AreaGridMember> areaGridMemberList =
@@ -985,11 +984,46 @@ public class CaseInfoService {
             // 更新业务数据(caseInfo)
             caseInfoBiz.updateSelectiveById(caseInfo);
 
+            preWorkFlow(caseInfo,objs);
+
             // 完成已签收的任务，将工作流向下推进
             wfProcTaskService.completeProcessInstance(objs);
 
         result.setIsSuccess(true);
         return result;
+    }
+
+    /**
+     * 处理去工作流提交前的数据
+     * @param caseInfo
+     * @param objs
+     */
+    private void preWorkFlow(CaseInfo caseInfo, JSONObject objs) {
+        // 检查事件照片
+        handlePicInCaseInfo(caseInfo,objs);
+    }
+
+    /**
+     * 处理事件中的图片数据
+     * @param caseInfo
+     * @param objs
+     */
+    private void handlePicInCaseInfo(CaseInfo caseInfo, JSONObject objs) {
+        // 事前核查照片
+        if(StringUtils.isNotBlank(caseInfo.getCheckPic())){
+            // 如果传入了事前核查照片，则将照片存入工作流参数表里
+            JSONObject variableData = objs.getJSONObject("variableData");
+            variableData.put("picUrls", caseInfo.getCheckPic());
+            objs.put("variableData", variableData);
+        }
+
+        // 事后核查照片
+        if(StringUtils.isNotBlank(caseInfo.getFinishCheckPic())){
+            // 如果传入了事后核查照片，则将照片存入工作流参数表里
+            JSONObject variableData = objs.getJSONObject("variableData");
+            variableData.put("picUrls", caseInfo.getFinishCheckPic());
+            objs.put("variableData", variableData);
+        }
     }
 
     /**
@@ -1911,5 +1945,52 @@ public class CaseInfoService {
         objs.put(Constants.WfRequestDataTypeAttr.PROC_AUTHDATA,authData);
         objs.put(Constants.WfRequestDataTypeAttr.PROC_VARIABLEDATA,variableData);
         return objs;
+    }
+
+    /**
+     * 某询某一节点的历史
+     * @param queryDate
+     */
+    public List<JSONObject> approveHistoryOfSpeNode(JSONObject queryDate) {
+        List<JSONObject> procDataHistorys = wfProcTaskBiz.selectByInstAndTaskCode(queryDate);
+        /*
+         * 需要进行整合的信息：审批人（procTaskAssignee） 提交人（procTaskCommitter）
+         */
+        Set<String> userIdSet = new HashSet<>();
+        if (BeanUtil.isNotEmpty(procDataHistorys)) {
+            // 以resultList为基础收集收集用户ID，这样可以尽可能少的从admin服务中拉取数据
+            for (JSONObject tmp : procDataHistorys) {
+                // 收集需要进行整合的用户ID
+                userIdSet.add(tmp.getString("procTaskAssignee"));
+                userIdSet.add(tmp.getString("procTaskCommitter"));
+                // 用户名称初始化为空
+                tmp.put("procTaskAssigneeName", "");
+                tmp.put("procTaskCommitterName", "");
+            }
+
+            Map<String, String> userIdNameMap = new HashMap<>();
+            // 如果用户ID集合不为空，则进行查询admin服务
+            if (BeanUtil.isNotEmpty(userIdSet)) {
+                JSONArray userJArray = adminFeign.getInfoByUserIds(String.join(",", userIdSet));
+                if (BeanUtil.isNotEmpty(userJArray)) {
+                    for (int i = 0; i < userJArray.size(); i++) {
+                        JSONObject tmpJObj = userJArray.getJSONObject(i);
+                        userIdNameMap.put(tmpJObj.getString("userId"),
+                            tmpJObj.getString("userName"));
+                    }
+                }
+            }
+
+            if (BeanUtil.isNotEmpty(userIdNameMap)) {
+                for (JSONObject tmp : procDataHistorys) {
+                    tmp.put("procTaskAssigneeName",
+                        userIdNameMap.get(tmp.getString("procTaskAssignee")));
+                    tmp.put("procTaskCommitterName",
+                        userIdNameMap.get(tmp.getString("procTaskCommitter")));
+                }
+            }
+        }
+
+        return procDataHistorys;
     }
 }
