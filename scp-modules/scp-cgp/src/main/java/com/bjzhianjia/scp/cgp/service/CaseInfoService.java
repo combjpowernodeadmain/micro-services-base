@@ -858,7 +858,13 @@ public class CaseInfoService {
                 }
             }
 
-            if (Constances.ProcFlowWork.TOFINISHWORKFLOW.equals(flowDirection)) {
+            //  判断流向是否为从部门受理中回退到受理员受理
+            if(environment.getProperty("processingToGrimMember").equals(flowDirection)){
+                // 将前一次指定的处理部门清理掉
+                caseInfo.setExecuteDept("");
+            }
+
+           if (Constances.ProcFlowWork.TOFINISHWORKFLOW.equals(flowDirection)) {
                 /*
                  * 任务已走向结束<br/> 去执行相应业务应该完成的操作<br/> 1 立案单isFinished：1<br/> 2 来源各变化
                  */
