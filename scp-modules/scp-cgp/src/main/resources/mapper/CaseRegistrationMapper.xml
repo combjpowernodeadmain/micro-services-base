@@ -429,4 +429,22 @@
 			</if>
 		</where>
 	</select>
+	<!-- 通过接管对象ids获取案件量 -->
+	<select id="selectByRegulaObjectId" resultType="java.util.Map">
+		SELECT
+			cc.regula_object_id regulaObjectId,
+			count(ccr.id) count
+		FROM
+			cle_case_registration ccr
+		INNER JOIN cle_concerned_company cc ON cc.id = ccr.concerned_id
+		WHERE
+			ccr.is_deleted = '0'
+		AND ccr.concerned_type = 'root_biz_concernedT_org'
+		AND cc.regula_object_id IN
+		<foreach collection="regulaObjIds" item="objId" open="(" close=")" separator=",">
+			#{objId}
+		</foreach>
+		GROUP BY
+			cc.regula_object_id
+	</select>
 </mapper>

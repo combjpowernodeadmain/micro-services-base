@@ -3,6 +3,7 @@ package com.bjzhianjia.scp.cgp.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.bjzhianjia.scp.cgp.biz.AreaGridBiz;
 import com.bjzhianjia.scp.cgp.biz.AreaGridMemberBiz;
 import com.bjzhianjia.scp.cgp.biz.CaseInfoBiz;
@@ -49,6 +50,7 @@ import com.bjzhianjia.scp.security.wf.base.constant.Constants;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.monitor.entity.WfProcBackBean;
 import com.bjzhianjia.scp.security.wf.base.monitor.service.impl.WfMonitorServiceImpl;
+import com.bjzhianjia.scp.security.wf.base.task.biz.WfProcTaskBiz;
 import com.bjzhianjia.scp.security.wf.base.task.entity.WfProcTaskHistoryBean;
 import com.bjzhianjia.scp.security.wf.base.task.service.impl.WfProcTaskServiceImpl;
 import com.bjzhianjia.scp.security.wf.base.utils.StringUtil;
@@ -58,14 +60,9 @@ import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.web.bind.annotation.RequestBody;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
@@ -172,8 +169,7 @@ public class CaseInfoService {
     private AreaGridMemberBiz areaGridMemberBiz;
 
     @Autowired
-    @Qualifier("transactionManager")
-    private PlatformTransactionManager platformTransactionManager;
+    private WfProcTaskBiz wfProcTaskBiz;
 
     /**
      * 更新单个对象
@@ -809,7 +805,9 @@ public class CaseInfoService {
             if (environment.getProperty("isCheckProcessingAuth").equals(flowDirection)) {
                 String deptId = objs.getJSONObject("authData").getString("procDeptId");
                 if (StringUtils.isBlank(deptId)) {
-                    throw new BizException("请指定部门ID");
+                    result.setMessage("请指定处理部门");
+                    result.setIsSuccess(false);
+                    return result;
                 }
                 List<JSONObject> authoritiesByDept = adminFeign.getAuthoritiesByDept(deptId);
                 if (BeanUtil.isNotEmpty(authoritiesByDept)) {
@@ -837,7 +835,9 @@ public class CaseInfoService {
                 String gridId = caseInfoJObj.getString("grid");
 
                 if(StringUtils.isEmpty(gridId)){
-                    throw new BizException("请指定网格");
+                    result.setMessage("请指定网格");
+                    result.setIsSuccess(false);
+                    return result;
                 }
 
                 List<AreaGridMember> areaGridMemberList =
@@ -858,7 +858,13 @@ public class CaseInfoService {
                 }
             }
 
-            if (Constances.ProcFlowWork.TOFINISHWORKFLOW.equals(flowDirection)) {
+            //  判断流向是否为从部门受理中回退到受理员受理
+            if(environment.getProperty("processingToGrimMember").equals(flowDirection)){
+                // 将前一次指定的处理部门清理掉
+                caseInfo.setExecuteDept("");
+            }
+
+           if (Constances.ProcFlowWork.TOFINISHWORKFLOW.equals(flowDirection)) {
                 /*
                  * 任务已走向结束<br/> 去执行相应业务应该完成的操作<br/> 1 立案单isFinished：1<br/> 2 来源各变化
                  */
@@ -985,11 +991,46 @@ public class CaseInfoService {
             // 更新业务数据(caseInfo)
             caseInfoBiz.updateSelectiveById(caseInfo);
 
+            preWorkFlow(caseInfo,objs);
+
             // 完成已签收的任务，将工作流向下推进
             wfProcTaskService.completeProcessInstance(objs);
 
         result.setIsSuccess(true);
         return result;
+    }
+
+    /**
+     * 处理去工作流提交前的数据
+     * @param caseInfo
+     * @param objs
+     */
+    private void preWorkFlow(CaseInfo caseInfo, JSONObject objs) {
+        // 检查事件照片
+        handlePicInCaseInfo(caseInfo,objs);
+    }
+
+    /**
+     * 处理事件中的图片数据
+     * @param caseInfo
+     * @param objs
+     */
+    private void handlePicInCaseInfo(CaseInfo caseInfo, JSONObject objs) {
+        // 事前核查照片
+        if(StringUtils.isNotBlank(caseInfo.getCheckPic())){
+            // 如果传入了事前核查照片，则将照片存入工作流参数表里
+            JSONObject variableData = objs.getJSONObject("variableData");
+            variableData.put("picUrls", caseInfo.getCheckPic());
+            objs.put("variableData", variableData);
+        }
+
+        // 事后核查照片
+        if(StringUtils.isNotBlank(caseInfo.getFinishCheckPic())){
+            // 如果传入了事后核查照片，则将照片存入工作流参数表里
+            JSONObject variableData = objs.getJSONObject("variableData");
+            variableData.put("picUrls", caseInfo.getFinishCheckPic());
+            objs.put("variableData", variableData);
+        }
     }
 
     /**
@@ -1911,5 +1952,222 @@ public class CaseInfoService {
         objs.put(Constants.WfRequestDataTypeAttr.PROC_AUTHDATA,authData);
         objs.put(Constants.WfRequestDataTypeAttr.PROC_VARIABLEDATA,variableData);
         return objs;
+    }
+
+    /**
+     * 某询某一节点的历史
+     * @param queryDate
+     */
+    public List<JSONObject> approveHistoryOfSpeNode(JSONObject queryDate) {
+        List<JSONObject> procDataHistorys = wfProcTaskBiz.selectByInstAndTaskCode(queryDate);
+        /*
+         * 需要进行整合的信息：审批人（procTaskAssignee） 提交人（procTaskCommitter）
+         */
+        Set<String> userIdSet = new HashSet<>();
+        if (BeanUtil.isNotEmpty(procDataHistorys)) {
+            // 以resultList为基础收集收集用户ID，这样可以尽可能少的从admin服务中拉取数据
+            for (JSONObject tmp : procDataHistorys) {
+                // 收集需要进行整合的用户ID
+                userIdSet.add(tmp.getString("procTaskAssignee"));
+                userIdSet.add(tmp.getString("procTaskCommitter"));
+                // 用户名称初始化为空
+                tmp.put("procTaskAssigneeName", "");
+                tmp.put("procTaskCommitterName", "");
+            }
+
+            Map<String, String> userIdNameMap = new HashMap<>();
+            // 如果用户ID集合不为空，则进行查询admin服务
+            if (BeanUtil.isNotEmpty(userIdSet)) {
+                JSONArray userJArray = adminFeign.getInfoByUserIds(String.join(",", userIdSet));
+                if (BeanUtil.isNotEmpty(userJArray)) {
+                    for (int i = 0; i < userJArray.size(); i++) {
+                        JSONObject tmpJObj = userJArray.getJSONObject(i);
+                        userIdNameMap.put(tmpJObj.getString("userId"),
+                            tmpJObj.getString("userName"));
+                    }
+                }
+            }
+
+            if (BeanUtil.isNotEmpty(userIdNameMap)) {
+                for (JSONObject tmp : procDataHistorys) {
+                    tmp.put("procTaskAssigneeName",
+                        userIdNameMap.get(tmp.getString("procTaskAssignee")));
+                    tmp.put("procTaskCommitterName",
+                        userIdNameMap.get(tmp.getString("procTaskCommitter")));
+                }
+            }
+        }
+
+        return procDataHistorys;
+    }
+
+    /**
+     * 双向推送业务处理
+     * @param objs
+     * @return
+     */
+    public TableResultResponse<JSONObject> pushOfTwoWays(JSONObject objs) {
+        JSONObject queryData = objs.getJSONObject("queryData");
+
+        Integer page =
+                BeanUtil.isEmpty(queryData.getInteger("page")) ? 1 : queryData.getInteger("page");
+        Integer limit =
+                BeanUtil.isEmpty(queryData.getInteger("limit")) ? 10 : queryData.getInteger("limit");
+
+        Page<Object> pageInfo = PageHelper.startPage(page, limit);
+        List<JSONObject> rows = patrolTaskBiz.listOfRegObj(queryData);
+        if (BeanUtil.isNotEmpty(rows)) {
+            List<String> dictIdList = new ArrayList<>();
+            List<String> bizTypeIdList =
+                rows.stream().map(o -> o.getString("bizTypeId")).distinct()
+                    .collect(Collectors.toList());
+            List<String> statusIdList =
+                rows.stream().map(o -> o.getString("status")).distinct()
+                    .collect(Collectors.toList());
+
+            dictIdList.addAll(bizTypeIdList);
+            dictIdList.addAll(statusIdList);
+            Map<String, String> dictIdValueMap = new HashMap<>();
+            if (BeanUtil.isNotEmpty(dictIdList)) {
+                dictIdValueMap = dictFeign.getByCodeIn(String.join(",", dictIdList));
+            }
+
+            for (JSONObject tmpObj : rows) {
+                tmpObj.put("bizTypeName", dictIdValueMap.get(tmpObj.getString("bizTypeId")));
+                tmpObj.remove("bizTypeId");
+                tmpObj.put("status", dictIdValueMap.get(tmpObj.getString("status")));
+
+                if (StringUtils.equals("1", tmpObj.getString("isProblem"))) {
+                    // 有问题
+                    tmpObj.put("isProblem", "存在问题");
+                } else if ((StringUtils.equals("0", tmpObj.getString("isProblem")))) {
+                    tmpObj.put("isProblem", "未发现问题");
+                }
+
+                tmpObj.remove("regObjId");
+                tmpObj.remove("enterpriseId");
+                tmpObj.remove("crtUserId");
+            }
+            return new TableResultResponse<>(pageInfo.getTotal(), rows);
+        }
+
+        return new TableResultResponse<>(0, new ArrayList<>());
+    }
+
+    public ObjectRestResponse<JSONObject> pushOfTwoWaysDetail(JSONObject objs) {
+        JSONObject bizData = objs.getJSONObject("bizData");
+        Integer procBizId = bizData.getInteger("procBizId");
+
+        Map<String,Object> condition=new HashMap<>();
+        condition.put("isDeleted", "0");
+        condition.put("sourceCode", procBizId);
+        condition.put("sourceType", environment.getProperty("sourceTypeKeyPatrol"));
+
+        List<CaseInfo> caseInfoList = this.caseInfoBiz.getByMap(condition);
+        CaseInfo caseInfo;
+        if(BeanUtil.isNotEmpty(caseInfoList)){
+            // 巡查上报记录与事件记录一对一，如果返回结果不为空，则长度必有1
+            caseInfo = caseInfoList.get(0);
+        }else{
+            caseInfo=new CaseInfo();
+        }
+
+        // 整理返回结果
+        List<String> dictKeys=new ArrayList<>();
+        if(StringUtils.isNotBlank(caseInfo.getCaseLevel())){
+            dictKeys.add(caseInfo.getCaseLevel());
+        }
+
+        List<String> userIdList=new ArrayList<>();
+        if(StringUtils.isNotBlank(caseInfo.getCheckPerson())){
+            userIdList.add(caseInfo.getCheckPerson());
+        }
+        if(StringUtils.isNotBlank(caseInfo.getFinishCheckPerson())){
+            userIdList.add(caseInfo.getFinishCheckPerson());
+        }
+
+        Map<String,String> userIdNameMap=new HashMap<>();
+        if(BeanUtil.isNotEmpty(userIdList)){
+            JSONArray infoByUserIds = adminFeign.getInfoByUserIds(String.join(",", userIdList));
+            if(BeanUtil.isNotEmpty(infoByUserIds)){
+                for(int i=0;i<infoByUserIds.size();i++){
+                    JSONObject jsonObject = infoByUserIds.getJSONObject(i);
+                    userIdNameMap.put(jsonObject.getString("userId"), jsonObject.getString("userName"));
+                }
+            }
+        }
+
+        Map<String, String> dictValues=new HashMap<>();
+        if(BeanUtil.isNotEmpty(dictKeys)){
+             dictFeign.getByCodeIn(String.join(",", dictKeys));
+        }
+
+        /*
+         * 当事人
+         * 网格
+         * 事件类别
+         *
+         */
+        JSONObject result=new JSONObject();
+        result=JSONObject.parseObject(JSONObject.toJSONString(caseInfo,SerializerFeature.WriteMapNullValue));
+        result.put("caseLevel", dictValues.get(caseInfo.getCaseLevel()));
+
+        result.put("checkPerson", userIdNameMap.get(caseInfo.getCheckPerson()));
+        result.put("finishCheckPerson", userIdNameMap.get(caseInfo.getFinishCheckPerson()));
+
+        String checkIsExist = caseInfo.getCheckIsExist();
+        checkIsExist=StringUtils.isBlank(checkIsExist)?"-1":checkIsExist;
+        switch (checkIsExist) {
+            case "0":
+                result.put("checkIsExist", "否");
+                break;
+            case "1":
+                result.put("checkIsExist", "是");
+                break;
+            default:
+                result.put("checkIsExist", null);
+        }
+
+        String finishCheckIsExist = caseInfo.getFinishCheckIsExist();
+        finishCheckIsExist=StringUtils.isBlank(finishCheckIsExist)?"-1":finishCheckIsExist;
+        switch (finishCheckIsExist) {
+            case "0":
+                result.put("finishCheckIsExist", "否");
+                break;
+            case "1":
+                result.put("finishCheckIsExist", "是");
+                break;
+            default:
+                result.put("finishCheckIsExist", null);
+        }
+
+        // 将结果集中不需要的数据移除,比如字典code的数据
+        result.remove("sourceType");
+        result.remove("sourceCode");
+        result.remove("regulaObjTypeId");
+        result.remove("regulaObjList");
+        result.remove("concernedPerson");
+        result.remove("concernedType");
+        result.remove("bizList");
+        result.remove("eventTypeList");
+        result.remove("grid");
+        result.remove("executeDept");
+        result.remove("crtTime");
+        result.remove("crtUserId");
+        result.remove("crtUserName");
+        result.remove("updTime");
+        result.remove("updUserId");
+        result.remove("updUserName");
+        result.remove("tenantId");
+        result.remove("deptId");
+        result.remove("isDuplicate");
+        result.remove("duplicateWith");
+        result.remove("isFinished");
+        result.remove("isSupervise");
+        result.remove("isUrge");
+        result.remove("isDeleted");
+        result.remove("executeInfo");
+
+        return new ObjectRestResponse<JSONObject>().data(result);
     }
 }
