@@ -10,6 +10,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.bjzhianjia.scp.cgp.biz.CaseInfoBiz;
+import com.bjzhianjia.scp.cgp.biz.CaseRegistrationBiz;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -116,6 +118,11 @@ public class RegulaObjectService {
     @Autowired
     private Environment environment;
 
+    @Autowired
+    private CaseInfoBiz caseInfoBiz;
+
+    @Autowired
+    private CaseRegistrationBiz caseRegistrationBiz;
     /**
      * 添加监管对象-经营单位
      * 
@@ -803,34 +810,47 @@ public class RegulaObjectService {
 
     /**
      * 监管对象全部定位
+     *
      * @param regulaObject
      * @return
      */
     public TableResultResponse<RegulaObjectVo> allPotition(RegulaObject regulaObject) {
         List<RegulaObject> regulaObjectList = regulaObjectBiz.allPotition(regulaObject);
 
-        // 整合每个监管对象被巡查的次数
-        // 以regObjIdList为基础，查询巡查记录表
-        List<JSONObject> regulaObjCount = patrolTaskMapper.regulaObjCount(null);
-        // 将regulaObjCount转化为key-value形式
-        Map<Integer, Integer> regObjIdCountMap = new HashMap<>();
-        Map<Integer,Integer> regObjIdProblemCountMap=new HashMap<>();//巡查出问题的次数Map
-        if (BeanUtil.isNotEmpty(regulaObjCount)) {
-            for (JSONObject jsonObject : regulaObjCount) {
-                regObjIdCountMap.put(jsonObject.getInteger("regula_object_id"), jsonObject.getInteger("rcount"));
-                regObjIdProblemCountMap.put(jsonObject.getInteger("regula_object_id"),
-                        jsonObject.getInteger("pCountWithProblem"));
+        //缓存ids
+        Set<String> regulaObjIds = null;
+        if (BeanUtil.isNotEmpty(regulaObjectList)) {
+            regulaObjIds = new HashSet<>();
+            for (RegulaObject _regulaObject : regulaObjectList) {
+                regulaObjIds.add(String.valueOf(_regulaObject.getId()));
+            }
+        }
+        //获取监管对象所属事件量
+        List<Map<String, Long>> caseInfoList = caseInfoBiz.getByRegulaIds(regulaObjIds);
+        Map<String, Long> tempCaseInfoMap = new HashMap<>();
+        if (BeanUtil.isNotEmpty(caseInfoList)) {
+            for (Map<String, Long> tMap : caseInfoList) {
+                tempCaseInfoMap.put(String.valueOf(tMap.get("regulaObjId")), tMap.get("count"));
+            }
+        }
+
+        //获取监管对象所属案件量
+        List<Map<String, Long>> caseRegistrationList = caseRegistrationBiz.selectByRegulaObjectId(regulaObjIds);
+        Map<String, Long> tempRegistrationMap = new HashMap<>();
+        if (BeanUtil.isNotEmpty(tempRegistrationMap)) {
+            for (Map<String, Long> tMap : caseRegistrationList) {
+                tempRegistrationMap.put(String.valueOf(tMap.get("regulaObjId")), tMap.get("count"));
             }
         }
 
         List<RegulaObjectVo> voList = BeanUtil.copyBeanList_New(regulaObjectList, RegulaObjectVo.class);
         for (RegulaObjectVo tmp : voList) {
-            tmp.setPatrolCount(
-                    BeanUtil.isEmpty(regObjIdCountMap.get(tmp.getId())) ? 0 : regObjIdCountMap.get(tmp.getId()));
-            tmp.setpCountWithProblem(BeanUtil.isEmpty(regObjIdProblemCountMap.get(tmp.getId())) ? 0
-                    : regObjIdProblemCountMap.get(tmp.getId()));
+            //事件量
+            Long caseInfoCount = tempCaseInfoMap.get(String.valueOf(tmp.getId()));
+            tmp.setCaseInfoCount(caseInfoCount != null ? caseInfoCount : 0);
+            Long caseRegistrationCount = tempRegistrationMap.get(String.valueOf(tmp.getId()));
+            tmp.setCaseRegistrationCount(caseRegistrationCount != null ? caseRegistrationCount : 0);
         }
-
         return new TableResultResponse<>(voList.size(), voList);
     }
 
