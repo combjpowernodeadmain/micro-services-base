@@ -415,21 +415,21 @@ public class PatrolTaskService {
                     ? eventType.getTypeName().substring(0, eventType.getTypeName().length() - 1)
                     : eventType.getTypeName());
         }
-		
-		
 		//巡查事项清单
-		List<InspectItems> inspectItemsList =new ArrayList<>();
-		if(BeanUtil.isNotEmpty(patrolTask.getEventTypeId())) {
-		    inspectItemsList =inspectItemsBiz.getByEventType(patrolTask.getEventTypeId());
-		}
-		if(inspectItemsList!=null && inspectItemsList.size()>0) {
-			List<String> names = new ArrayList<>();
-			for(InspectItems inspectItems : inspectItemsList) {
-				names.add(inspectItems.getName());
+		List<InspectItems> inspectList = inspectItemsBiz.getByInspectIds(patrolTask.getInspectIds());
+		StringBuilder inspectItemNames = new StringBuilder();
+		InspectItems tempInspectItems = null;
+		for(int i=0; i < inspectList.size(); i++){
+			tempInspectItems = inspectList.get(i);
+			if(i == inspectList.size()-1){
+				inspectItemNames.append(tempInspectItems.getName());
+			}else{
+				inspectItemNames.append(tempInspectItems.getName()).append(";");
 			}
-			result.put("inspectItems",String.join(",", names));
 		}
-		
+		//巡查事项清单名称
+		result.put("inspectItems", inspectItemNames);
+
 		result.put("content", patrolTask.getContent());
 		result.put("address", patrolTask.getAddress());
 		result.put("mapInfo", patrolTask.getMapInfo());

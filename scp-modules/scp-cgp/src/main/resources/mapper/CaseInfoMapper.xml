@@ -451,4 +451,20 @@ SELECT
 		GROUP BY spept.regulaObjectId,ptTmp1.pTotal,pCountWithProblem
 
 	</select>
+	<!--  通过监管对象ids，获取监管对象所属事件量 -->
+	<select id="selectByRegulaIds" resultType="java.util.Map">
+		SELECT
+			regula_obj_list regulaObjId,
+			count(id) count
+		FROM
+			case_info
+		WHERE
+			is_deleted = '0'
+		AND regula_obj_list IN 
+		<foreach collection="regulaObjIds" item="objId" open="(" close=")" separator=",">
+			#{objId}
+		</foreach>
+		GROUP BY
+			regula_obj_list
+	</select>
 </mapper>

@@ -139,4 +139,13 @@ public interface CaseRegistrationMapper extends CommonMapper<CaseRegistration> {
      * @return
      */
     List<JSONObject> regObjCount(@Param("queryJObj") JSONObject queryJObj);
+
+    /**
+     *  通过监管对象ids获取案件量
+     * @param concernedType
+     * @param regulaObjIds
+     * @return
+     */
+    List<Map<String,Long>>  selectByRegulaObjectId(@Param("concernedType") String concernedType,
+                                                     @Param("regulaObjIds") Set<String> regulaObjIds);
 }

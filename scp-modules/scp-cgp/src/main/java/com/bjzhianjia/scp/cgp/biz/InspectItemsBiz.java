@@ -2,6 +2,7 @@ package com.bjzhianjia.scp.cgp.biz;
 
 import com.bjzhianjia.scp.cgp.entity.InspectItems;
 import com.bjzhianjia.scp.cgp.mapper.InspectItemsMapper;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -152,5 +154,18 @@ public class InspectItemsBiz extends BusinessBiz<InspectItemsMapper,InspectItems
 		List<InspectItems> list = inspectItemsMapper.selectByExample(example);
 		
 		return list;
+	}
+	/**
+	 * 根据编号ids获取
+	 *
+	 * @param ids 编号
+	 * @return
+	 */
+	public List<InspectItems> getByInspectIds(String ids) {
+		if (StringUtils.isBlank(ids)) {
+			return new ArrayList<>();
+		}
+		List<InspectItems> inspectItemsList = inspectItemsMapper.selectByIds(ids);
+		return BeanUtil.isEmpty(inspectItemsList) ? new ArrayList<>() : inspectItemsList;
 	}
 }

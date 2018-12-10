@@ -910,4 +910,18 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         tableResult.getData().setTotal(listForHome.size());
         return tableResult;
     }
+
+    /**
+     * 通过监管对象ids，获取监管对象所属事件量
+     *
+     * @param regulaObjIds 监管对象ids
+     * @return
+     */
+    public List<Map<String, Long>> getByRegulaIds(Set<String> regulaObjIds) {
+        if (BeanUtil.isEmpty(regulaObjIds)) {
+            return new ArrayList<>();
+        }
+        List<Map<String, Long>> result = this.mapper.selectByRegulaIds(regulaObjIds);
+        return BeanUtil.isEmpty(regulaObjIds) ? new ArrayList<>() : result;
+    }
 }
