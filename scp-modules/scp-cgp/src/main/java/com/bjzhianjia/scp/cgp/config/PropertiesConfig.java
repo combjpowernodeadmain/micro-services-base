@@ -68,10 +68,16 @@ public class PropertiesConfig {
     private String lowestGridLevel;
 
     /**
-     * 网格等级--自然网格
+     * 执法任务--未发起
      */
     @Value("${lawTasks.todo}")
     private String lawTasksToDo;
+
+    /**
+     * 执法任务--进行中
+     */
+    @Value("${lawTasks.doing}")
+    private String lawTasksDoing;
 
     /**
      * 现场检查
@@ -125,5 +131,9 @@ public class PropertiesConfig {
 
     public String getLawTasksToDo() {
         return lawTasksToDo;
+    }
+
+    public String getLawTasksDoing() {
+        return lawTasksDoing;
     }
 }

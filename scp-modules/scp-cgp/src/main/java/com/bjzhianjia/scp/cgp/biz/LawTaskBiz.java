@@ -570,8 +570,9 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
         Date startTime, Date endTime, int page, int limit) {
 
         Page<Object> result = PageHelper.startPage(page, limit);
+        // 可发起案件的执法任务状态为进行中的执法任务
         List<Map<String, Object>> list =
-            lawTaskMapper.selectLawTaskList(userName, regulaObjectName, propertiesConfig.getLawTasksToDo(), startTime,
+            lawTaskMapper.selectLawTaskList(userName, regulaObjectName, propertiesConfig.getLawTasksDoing(), startTime,
                 endTime);
         if (list == null) {
             return new TableResultResponse<Map<String, Object>>(0, null);
