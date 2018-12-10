@@ -811,22 +811,17 @@
 	</select>
 	<!-- 通过业务ids查询流程实例id -->
 	<select id="selectProcInstIdByUserId" resultType="java.util.Map" parameterType="java.util.Map">
-	SELECT
-		PROC_INST_ID procInstId,
-		PROC_BIZID procBizId,
-		<!-- 添加当前节点名称及任务提交时间 -->
-		PROC_CTASKNAME procCtaskName,
-		FROM_UNIXTIME(PROC_TASK_COMMITTIME, '%Y-%m-%d %H:%i:%s') procTaskCommittime
-	FROM
-		SCP_WF_PROC_TASK
-	WHERE
-		PROC_KEY = #{procKey}
-	AND PROC_BIZID IN (${procBizId})
-	GROUP BY
-		PROC_INST_ID,
-		PROC_BIZID,
-        procCtaskName,
-        procTaskCommittime
+        SELECT
+            PROC_INST_ID procInstId,
+            PROC_BIZID procBizId
+        FROM
+            SCP_WF_PROC_TASK
+        WHERE
+            PROC_KEY = #{procKey}
+        AND PROC_BIZID IN (${procBizId})
+        GROUP BY
+            PROC_INST_ID,
+            PROC_BIZID
 	</select>
 
     <!-- 按业务ID(taskId)查询流程 -->
