@@ -2320,4 +2320,19 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             }
         }
     }
+
+    /**
+     * 通过监管对象ids获取案件量
+     *
+     * @param regulaObjIds
+     * @return
+     */
+    public List<Map<String, Long>> selectByRegulaObjectId(Set<String> regulaObjIds) {
+        if (BeanUtil.isEmpty(regulaObjIds)) {
+            return new ArrayList<>();
+        }
+        List<Map<String, Long>> result =
+                this.mapper.selectByRegulaObjectId(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG, regulaObjIds);
+        return BeanUtil.isEmpty(regulaObjIds) ? new ArrayList<>() : result;
+    }
 }
