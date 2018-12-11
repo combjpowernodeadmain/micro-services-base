@@ -1876,28 +1876,51 @@ public class CaseInfoService {
      * @param limit
      * @return
      */
-    public TableResultResponse<Map<String, Object>> getCaseInfoByDeptId(JSONObject objs,String caseLevel,
+    public TableResultResponse<Map<String, Object>> getCaseInfoByDeptId(String caseLevel,
                                                                         String deptId,int page,int limit) {
-        Page<Object> pageHelper = PageHelper.startPage(page, limit);
+        List<Map<String,Object>> result=new ArrayList<>();
 
-        // 查询待办工作流任务
-        PageInfo<WfProcBackBean> pageInfo = wfMonitorService.getAllTasks(objs);
-        List<WfProcBackBean> list = pageInfo.getList();
-
-
-        List<Map<String, Object>> result = caseInfoMapper.selectCaseInfoByDeptId(deptId, caseLevel);
-        if (BeanUtil.isEmpty(result)) {
-            return new TableResultResponse<>(0, new ArrayList<>());
+        JSONObject bizData=new JSONObject();
+        JSONObject queryData=new JSONObject();
+        if(StringUtils.isNotBlank(caseLevel)){
+            queryData.put("caseLevel", caseLevel);
+            queryData.put("isQuery", "true");
         }
-        Map<String,String>  dictTemp = dictFeign.getByCode(Constances.ROOT_BIZ_EVENTLEVEL);
 
-        for(Map<String,Object> map : result){
-            String caseLevelName = dictTemp.get(map.get("caseLevel"));
-            map.put("caseLevelName",caseLevelName);
-            map.put("isSupervise","0".equals(map.get("isSupervise"))?false:true);
-            map.put("isUrge","0".equals(map.get("isUrge"))?false:true);
+        bizData.put("prockey", "comprehensiveManage");
+        JSONObject objs = this.initWorkflowQuery(bizData);
+        objs.put("queryData", queryData);
+        objs.getJSONObject("variableData").put("caseLevel", caseLevel);
+        objs.getJSONObject("variableData").put("page", page);
+        objs.getJSONObject("variableData").put("limit", limit);
+
+        TableResultResponse<JSONObject> userToDoTasks = this.getUserToDoTasks(objs);
+        if(BeanUtil.isNotEmpty(userToDoTasks)){
+            List<JSONObject> rows = userToDoTasks.getData().getRows();
+            if(null==rows){
+                rows=new ArrayList<>();
+            }
+
+            for(JSONObject tmp:rows){
+                Map<String,Object> resultMap=new HashMap<>();
+                resultMap.put("procCtaskCode", tmp.getString("procCtaskcode"));
+                resultMap.put("isSupervise", tmp.getString("isSupervise"));
+                resultMap.put("caseLevelName", tmp.getString("caseLevelName"));
+                resultMap.put("caseTitle", tmp.getString("caseTitle"));
+                resultMap.put("crtTime", tmp.getString("crtTime"));
+                resultMap.put("caseLevel", tmp.getString("caseLevel"));
+                resultMap.put("id", tmp.getString("id"));
+                resultMap.put("procInstId", tmp.getString("procInstId"));
+                resultMap.put("isUrge", tmp.getString("isUrge"));
+                resultMap.put("procTaskCommittime", tmp.getString("procTaskCommittime"));
+                resultMap.put("procCtaskName", tmp.getString("procCtaskName"));
+
+                result.add(resultMap);
+            }
+
+            return new TableResultResponse<>(userToDoTasks.getData().getTotal(), result);
         }
-        return new TableResultResponse<>(pageHelper.getTotal(), result);
+        return new TableResultResponse<>(0, result);
     }
 
     /**

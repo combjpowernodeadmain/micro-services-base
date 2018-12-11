@@ -474,7 +474,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
             @RequestParam(value = "limit", defaultValue = "10") @ApiParam(name = "页容量") Integer limit,
             @RequestParam(value = "caseLevel", defaultValue = "") @ApiParam(name = "案件等级") String caseLevel){
         //TODO 多个部门
-        return caseInfoBiz.getCaseInfoByDeptId(caseLevel, BaseContextHandler.getDepartID(),page,limit);
+        return caserInfoService.getCaseInfoByDeptId(caseLevel, BaseContextHandler.getDepartID(),page,limit);
     }
 
     /**
