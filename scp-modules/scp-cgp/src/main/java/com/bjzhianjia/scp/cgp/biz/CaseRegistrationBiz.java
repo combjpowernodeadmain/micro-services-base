@@ -10,6 +10,7 @@ import com.bjzhianjia.scp.cgp.entity.CaseAttachments;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
 import com.bjzhianjia.scp.cgp.entity.Constances;
+import com.bjzhianjia.scp.cgp.entity.EnterpriseInfo;
 import com.bjzhianjia.scp.cgp.entity.EventType;
 import com.bjzhianjia.scp.cgp.entity.LawPatrolObject;
 import com.bjzhianjia.scp.cgp.entity.LawTask;
@@ -144,6 +145,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
     @Autowired
     private RegulaObjectBiz regulaObjectBiz;
+
+    @Autowired
+    private EnterpriseInfoBiz enterpriseInfoBiz;
 
     /**
      * 添加立案记录<br/>
@@ -538,6 +542,14 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         // 添加按案件状态查询的逻辑
         if (StringUtils.isNotBlank(caseRegistration.getExeStatus())) {
             criteria.andEqualTo("exeStatus", caseRegistration.getExeStatus());
+        }
+        // 案件编号
+        if(StringUtils.isNotBlank(caseRegistration.getCaseCode())){
+            criteria.andLike("caseCode", "%"+caseRegistration.getCaseCode()+"%");
+        }
+        // 案件名称
+        if(StringUtils.isNotBlank(caseRegistration.getCaseName())){
+            criteria.andLike("caseName", caseRegistration.getCaseName());
         }
 
         example.setOrderByClause("crt_time desc");
@@ -1919,12 +1931,17 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             // 前端没有传入网格数据，定位获取
             JSONObject mapInfoJObj = caseRegJObj.getJSONObject("mapInfo");
             if (BeanUtil.isEmpty(mapInfoJObj)) {
-//                throw new BizException("添加案件登记失败，未找到相应网格信息。");
-            }
-            Point point = new Point(mapInfoJObj.getDouble("lng"), mapInfoJObj.getDouble("lat"));
-            AreaGrid areaGridReturn = areaGridBiz.isPolygonContainsPoint(point);
-            if(BeanUtil.isNotEmpty(areaGridReturn)){
-                caseRegistration.setGirdId(areaGridReturn.getId());
+                // throw new BizException("添加案件登记失败，未找到相应网格信息。");
+            }else{
+                /*
+                 * 起始：如果没有地址信息，则抛出异常
+                 * 现在：将地理信息必传限制去掉，如果没有地理信息，则跳过，有则填充
+                 */
+                Point point = new Point(mapInfoJObj.getDouble("lng"), mapInfoJObj.getDouble("lat"));
+                AreaGrid areaGridReturn = areaGridBiz.isPolygonContainsPoint(point);
+                if(BeanUtil.isNotEmpty(areaGridReturn)){
+                    caseRegistration.setGirdId(areaGridReturn.getId());
+                }
             }
         }
 
@@ -2319,5 +2336,196 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                     break;
             }
         }
+    }
+
+    /**
+     * 双向推送业务处理
+     * @param objs
+     * @return
+     */
+    public TableResultResponse<JSONObject> pushOfTwoWays(JSONObject objs) {
+        JSONObject queryData = objs.getJSONObject("queryData");
+        // 将请求数据转化到对象中
+        CaseRegistration queryCaseRegistration = queryData.toJavaObject(CaseRegistration.class);
+
+        // 默认分页为第1页，每页10条数据
+        Integer page =
+            BeanUtil.isEmpty(queryData.getInteger("page")) ? 1 : queryData.getInteger("page");
+        Integer limit =
+            BeanUtil.isEmpty(queryData.getInteger("limit")) ? 10 : queryData.getInteger("limit");
+
+        TableResultResponse<CaseRegistration> list = this.getList(queryCaseRegistration, page, limit);
+
+        List<JSONObject> result=new ArrayList<>();
+        long total =0L;
+
+        if(BeanUtil.isNotEmpty(list)){
+            total=list.getData().getTotal();
+            List<CaseRegistration> rows = list.getData().getRows();
+            if(BeanUtil.isNotEmpty(rows)){
+
+                // 整合业务条线
+                List<String> dictKeys=new ArrayList<>();
+                List<String> dealTypeKey =
+                    rows.stream().map(o -> o.getDealType()).distinct().collect(Collectors.toList());// 处理类型
+                List<String> bizTypeKey =
+                    rows.stream().map(o -> o.getBizType()).distinct().collect(Collectors.toList());// 业务条线
+
+                dictKeys.addAll(dealTypeKey);
+                dictKeys.addAll(bizTypeKey);
+
+                Map<String, String> dictValues=new HashMap<>();
+                if(BeanUtil.isNotEmpty(dictKeys)){
+                    dictValues = dictFeign.getByCodeIn(String.join(",", dictKeys));
+                }
+
+                // 转化查询结束，向前端传送部分字段
+                for(CaseRegistration tmp:rows){
+                    JSONObject tmpJObj=new JSONObject();
+                    tmpJObj.put("id", tmp.getId());
+                    tmpJObj.put("caseName", tmp.getCaseName());
+                    tmpJObj.put("caseContent", tmp.getCaseContent());
+                    tmpJObj.put("dealType", dictValues.get(tmp.getDealType()));
+                    tmpJObj.put("bizType", dictValues.get(tmp.getBizType()));
+                    tmpJObj.put("caseCode", tmp.getCaseCode());
+                    result.add(tmpJObj);
+                }
+            }
+        }
+
+        return new TableResultResponse<>(total, result);
+    }
+
+    /**
+     * 双向推送案件详情
+     * @param objs
+     * @return
+     */
+    public JSONObject pushOfTwoWaysDetail(JSONObject objs) {
+        JSONObject bizData = objs.getJSONObject("bizData");
+
+        CaseRegistration caseRegistration = this.selectById(bizData.getString("procBizId"));
+        JSONObject result = new JSONObject();
+        if (StringUtils.equals("1", caseRegistration.getIsDeleted())) {
+            // 如果案件被删除，则直接返回
+            return result;
+        }
+
+        // 案件名称
+        result.put("caseName", caseRegistration.getCaseName());
+
+        // org:单位，person:个人
+        // 当事人：单位
+        if (Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG
+            .equals(caseRegistration.getConcernedType())) {
+            CLEConcernedCompany concernedCompany =
+                cLEConcernedCompanyBiz
+                    .selectById(Integer.valueOf(caseRegistration.getConcernedId()));
+            if (concernedCompany != null) {
+                Map<String, Object> conditions = new HashMap<>();
+                conditions.put("regulaObjId", concernedCompany.getName());
+                List<EnterpriseInfo> enterpriseInfos = enterpriseInfoBiz.getByMap(conditions);
+
+                result.put("concernedPerson", concernedCompany.getName());
+                if (BeanUtil.isNotEmpty(enterpriseInfos)) {
+                    result.put("creditCode", enterpriseInfos.get(0).getCreditCode());
+                } else {
+                    result.put("creditCode", "");
+                }
+            }
+        }
+        // 当事人：个人
+        if (Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON
+            .equals(caseRegistration.getConcernedType())) {
+            CLEConcernedPerson concernedPerson =
+                cLEConcernedPersonBiz
+                    .selectById(Integer.valueOf(caseRegistration.getConcernedId()));
+            if (concernedPerson != null) {
+                result.put("concernedPerson", concernedPerson.getName());
+                result.put("creditCode", concernedPerson.getCertCode());
+            }
+        }
+
+        List<String> dictKeyList=new ArrayList<>();
+        if (StringUtils.isNotBlank(caseRegistration.getCaseSourceType())) {
+            dictKeyList.add(caseRegistration.getCaseSourceType());
+        }
+
+        // 查询字典
+        Map<String, String> byCodeIn=new HashMap<>();
+        if (BeanUtil.isNotEmpty(dictKeyList)) {
+            byCodeIn = dictFeign.getByCodeIn(String.join(",", dictKeyList));
+        }
+
+        // 案件来源
+        if(BeanUtil.isNotEmpty(byCodeIn)){
+            result.put("caseSourceType", byCodeIn.get(caseRegistration.getCaseSourceType()));
+        }
+
+        // 来源时间
+        result.put("caseSourceTime", caseRegistration.getCaseSourceTime());
+
+
+        result.put("caseCode", caseRegistration.getCaseCode());// 案件编号
+        result.put("caseContent", caseRegistration.getCaseContent());// 案件内容
+        result.put("caseTime", caseRegistration.getCaseTime());// 案发时间
+        result.put("caseAddress", caseRegistration.getCaseAddress());// 案发地址
+
+        // 执法队员
+        List<String> userNameList = new ArrayList<>();
+        if (StringUtils.isNotBlank(caseRegistration.getEnforcers())) {
+            JSONArray infoByUserIds = adminFeign.getInfoByUserIds(caseRegistration.getEnforcers());
+            if (BeanUtil.isNotEmpty(infoByUserIds)) {
+                for (int i = 0; i < infoByUserIds.size(); i++) {
+                    JSONObject jsonObject = infoByUserIds.getJSONObject(i);
+                    userNameList.add(jsonObject.getString("userName"));
+                }
+            }
+        }
+        result.put("enforcers", String.join(",", userNameList));
+
+        // 案件状态
+        String exeStatus = caseRegistration.getExeStatus();
+        if (StringUtils.isNotBlank(exeStatus)) {
+            switch (exeStatus) {
+                case CaseRegistration.EXESTATUS_STATE_TODO:
+                    result.put("exeStatus",
+                        new String(
+                            environment.getProperty("caseRegistration.exeStatus.zero").getBytes(StandardCharsets.ISO_8859_1),
+                            StandardCharsets.UTF_8));
+                    break;
+                case CaseRegistration.EXESTATUS_STATE_FINISH:
+                    result.put("exeStatus",
+                            new String(
+                                    environment.getProperty("caseRegistration.exeStatus.one").getBytes(StandardCharsets.ISO_8859_1),
+                                    StandardCharsets.UTF_8));
+                    break;
+                case CaseRegistration.EXESTATUS_STATE_STOP:
+                    result.put("exeStatus",
+                            new String(
+                                    environment.getProperty("caseRegistration.exeStatus.two").getBytes(StandardCharsets.ISO_8859_1),
+                                    StandardCharsets.UTF_8));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 通过监管对象ids获取案件量
+     *
+     * @param regulaObjIds
+     * @return
+     */
+    public List<Map<String, Long>> selectByRegulaObjectId(Set<String> regulaObjIds) {
+        if (BeanUtil.isEmpty(regulaObjIds)) {
+            return new ArrayList<>();
+        }
+        List<Map<String, Long>> result =
+                this.mapper.selectByRegulaObjectId(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG, regulaObjIds);
+        return BeanUtil.isEmpty(regulaObjIds) ? new ArrayList<>() : result;
     }
 }

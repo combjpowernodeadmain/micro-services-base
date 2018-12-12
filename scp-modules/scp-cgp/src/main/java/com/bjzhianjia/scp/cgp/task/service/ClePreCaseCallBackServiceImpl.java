@@ -128,11 +128,14 @@ public class ClePreCaseCallBackServiceImpl implements IWfProcTaskCallBackService
             caseRegistrationToCheck.setCaseSource(bizData.getString("caseSource"));
 
             switch (caseSourceType) {
-                case CaseRegistration.CASE_SOURCE_TYPE_TASK:
-                    caseRegistrationToCheck.setCaseSourceType(CaseRegistration.CASE_SOURCE_TYPE_TASK);
-                    break;
+                // 一个执法任务可以发起多个案件，将执法任务不可发起多个案件的逻辑去掉
+                // case CaseRegistration.CASE_SOURCE_TYPE_TASK:
+                // caseRegistrationToCheck.setCaseSourceType(CaseRegistration.CASE_SOURCE_TYPE_TASK);
+                // break;
                 case CaseRegistration.CASE_SOURCE_TYPE_CENTER:
                     caseRegistrationToCheck.setCaseSourceType(CaseRegistration.CASE_SOURCE_TYPE_CENTER);
+                    break;
+                default:
                     break;
             }
 

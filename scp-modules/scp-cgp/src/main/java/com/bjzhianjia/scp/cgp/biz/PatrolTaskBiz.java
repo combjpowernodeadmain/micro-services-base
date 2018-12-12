@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -106,5 +107,14 @@ public class PatrolTaskBiz extends BusinessBiz<PatrolTaskMapper, PatrolTask> {
 
         List<PatrolTask> result = this.mapper.selectByExample(example);
         return result;
+    }
+
+    /**
+     * 按监管对象查询巡查记录
+     * @param queryData
+     * @return
+     */
+    public List<JSONObject> listOfRegObj(JSONObject queryData) {
+        return this.mapper.listOfRegObj(queryData);
     }
 }

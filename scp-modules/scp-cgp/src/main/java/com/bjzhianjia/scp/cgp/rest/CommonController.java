@@ -108,17 +108,23 @@ public class CommonController {
     @IgnoreUserToken
     public TableResultResponse<JSONObject> caseInfoAllTasks(@RequestBody JSONObject objs, HttpServletRequest request){
         TableResultResponse<JSONObject> tableresult=new TableResultResponse<>();
+        try {
 
-        Result<Void> voidResult = _checkAuth(objs);
+            Result<Void> voidResult = _checkAuth(objs);
 
-        if(!voidResult.getIsSuccess()){
-            tableresult.setMessage(voidResult.getMessage());
-            tableresult.setStatus(401);
+            if(!voidResult.getIsSuccess()){
+                tableresult.setMessage(voidResult.getMessage());
+                tableresult.setStatus(401);
+                return tableresult;
+            }
+
+            TableResultResponse<JSONObject> tasks = caserInfoService.pushOfTwoWays(objs);
+            return tasks;
+        } catch (Exception e) {
+            tableresult.setMessage("Server error!");
+            tableresult.setStatus(500);
             return tableresult;
         }
-
-        TableResultResponse<JSONObject> tasks = caserInfoService.getAllTasks(objs);
-        return tasks;
     }
 
     @PostMapping("/webDefault/caseInfo/userTaskDetail")
@@ -128,15 +134,21 @@ public class CommonController {
     public ObjectRestResponse<JSONObject> userCaseInfoTaskDetail(@RequestBody JSONObject objs, HttpServletRequest request){
         ObjectRestResponse<JSONObject> objectResult=new ObjectRestResponse<>();
 
-        Result<Void> voidResult = _checkAuth(objs);
-        if(!voidResult.getIsSuccess()){
-            objectResult.setMessage(voidResult.getMessage());
-            objectResult.setStatus(401);
+        try {
+            Result<Void> voidResult = _checkAuth(objs);
+            if(!voidResult.getIsSuccess()){
+                objectResult.setMessage(voidResult.getMessage());
+                objectResult.setStatus(401);
+                return objectResult;
+            }
+
+            ObjectRestResponse<JSONObject> userToDoTask = caserInfoService.pushOfTwoWaysDetail(objs);
+            return userToDoTask;
+        } catch (Exception e) {
+            objectResult.setMessage("Server error!");
+            objectResult.setStatus(500);
             return objectResult;
         }
-
-        ObjectRestResponse<JSONObject> userToDoTask = caserInfoService.getUserToDoTask(objs);
-        return userToDoTask;
     }
 
     @PostMapping("/webDefault/caseRegistration/allTasks")
@@ -146,16 +158,23 @@ public class CommonController {
     public TableResultResponse<JSONObject> caseRegistrationAllTasks(@RequestBody JSONObject objs, HttpServletRequest request){
         TableResultResponse<JSONObject> tableresult=new TableResultResponse<>();
 
-        Result<Void> voidResult = _checkAuth(objs);
+        try {
+            Result<Void> voidResult = _checkAuth(objs);
 
-        if(!voidResult.getIsSuccess()){
-            tableresult.setMessage(voidResult.getMessage());
-            tableresult.setStatus(401);
+            if(!voidResult.getIsSuccess()){
+                tableresult.setMessage(voidResult.getMessage());
+                tableresult.setStatus(401);
+                return tableresult;
+            }
+
+            TableResultResponse<JSONObject> userToDoTasks = caseRegistrationBiz.getAllTasks(objs);
+            TableResultResponse<JSONObject> jsonObjectTableResultResponse = caseRegistrationBiz.pushOfTwoWays(objs);
+            return jsonObjectTableResultResponse;
+        } catch (Exception e) {
+            tableresult.setMessage("Server error!");
+            tableresult.setStatus(500);
             return tableresult;
         }
-
-        TableResultResponse<JSONObject> userToDoTasks = caseRegistrationBiz.getAllTasks(objs);
-        return userToDoTasks;
     }
 
     @PostMapping("/webDefault/caseRegistration/userTaskDetail")
@@ -165,21 +184,27 @@ public class CommonController {
     public ObjectRestResponse<JSONObject> getUserCaseRegistrationToDoTask(@RequestBody JSONObject objs, HttpServletRequest request){
         ObjectRestResponse<JSONObject> objectResult=new ObjectRestResponse<>();
 
-        Result<Void> voidResult = _checkAuth(objs);
-        if(!voidResult.getIsSuccess()){
-            objectResult.setMessage(voidResult.getMessage());
-            objectResult.setStatus(401);
+        try {
+            Result<Void> voidResult = _checkAuth(objs);
+            if(!voidResult.getIsSuccess()){
+                objectResult.setMessage(voidResult.getMessage());
+                objectResult.setStatus(401);
+                return objectResult;
+            }
+
+            if (objs != null) {
+                objectResult.setData(caseRegistrationBiz.pushOfTwoWaysDetail(objs));
+            } else {
+                objectResult.setStatus(400);
+                objectResult.setMessage("非法参数");
+            }
+
+            return objectResult;
+        } catch (Exception e) {
+            objectResult.setMessage("Server error!");
+            objectResult.setStatus(500);
             return objectResult;
         }
-
-        if (objs != null) {
-            objectResult.setData(caseRegistrationBiz.getInfoById(objs));
-        } else {
-            objectResult.setStatus(400);
-            objectResult.setMessage("非法参数");
-        }
-
-        return objectResult;
     }
 
     private Result<Void> _checkAuth(JSONObject objs) {

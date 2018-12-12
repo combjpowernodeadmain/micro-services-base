@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.security.wf.base.design.mapper;
 import java.util.List;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -14,4 +15,6 @@ public interface WfProcPropsMapper {
     List<WfProcPropsBean> selectByPrimaryKey(Integer id);
     List<WfProcPropsBean> selectPropertyList(WfProcPropsBean record);
     int updateByPrimaryKeySelective(WfProcPropsBean record);
+
+    List<JSONObject> selectByInstAndTaskCode(@Param("queryData") JSONObject queryData);
 }

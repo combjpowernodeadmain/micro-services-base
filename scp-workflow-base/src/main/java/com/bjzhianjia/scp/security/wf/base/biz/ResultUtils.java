@@ -163,6 +163,7 @@ public class ResultUtils<T> {
 
 		// 如果是自定义异常
 		if(e instanceof BizException) {
+			response.setStatus(HttpStatus.BAD_REQUEST.value());
             result.put("errorType", ERROR_CODE_FOR_SYSTEM);// 发生业务异常 - 有提示信息
             result.put("errorCode", BaseEnumResults.BASE00000001.getRetCode());// 响应码
             result.put("errorMessage", e.getMessage());// 实际异常信息

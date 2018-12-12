@@ -117,6 +117,10 @@ public class PatrolTask implements Serializable {
 	@JSONField(format="yyyy-MM-dd HH:mm:ss")
 	private Date crtTime;
 
+	//巡查事项ids
+	@Column(name = "inspect_ids")
+	private String inspectIds;
+
 	/**
 	 * 设置：
 	 */
@@ -420,5 +424,18 @@ public class PatrolTask implements Serializable {
 	 */
 	public void setCrtUserId(String crtUserId) {
 		this.crtUserId = crtUserId;
+	}
+
+	/**
+	 * 获取：巡查事项ids
+	 */
+	public String getInspectIds() {
+		return inspectIds;
+	}
+	/**
+	 * 设置：巡查事项ids
+	 */
+	public void setInspectIds(String inspectIds) {
+		this.inspectIds = inspectIds;
 	}
 }

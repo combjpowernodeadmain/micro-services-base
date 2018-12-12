@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.ibatis.annotations.Param;
 
 import com.alibaba.fastjson.JSONObject;
@@ -49,4 +50,11 @@ public interface PatrolTaskMapper extends CommonMapper<PatrolTask> {
 	 */
     List<PatrolTask> allPosition(@Param("objs") JSONObject objs, @Param("page") Integer page,
         @Param("limit") Integer limit);
+
+	/**
+	 * 按监管对象查询巡查记录
+	 * @param queryData
+	 * @return
+	 */
+	List<JSONObject> listOfRegObj(@Param("queryData")JSONObject queryData);
 }
