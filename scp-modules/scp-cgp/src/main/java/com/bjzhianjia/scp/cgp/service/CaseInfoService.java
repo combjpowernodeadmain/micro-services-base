@@ -1904,14 +1904,14 @@ public class CaseInfoService {
             for(JSONObject tmp:rows){
                 Map<String,Object> resultMap=new HashMap<>();
                 resultMap.put("procCtaskCode", tmp.getString("procCtaskcode"));
-                resultMap.put("isSupervise", tmp.getString("isSupervise"));
+                resultMap.put("isSupervise", "1".equals(tmp.getString("isSupervise")));
                 resultMap.put("caseLevelName", tmp.getString("caseLevelName"));
                 resultMap.put("caseTitle", tmp.getString("caseTitle"));
                 resultMap.put("crtTime", tmp.getString("crtTime"));
                 resultMap.put("caseLevel", tmp.getString("caseLevel"));
                 resultMap.put("id", tmp.getString("id"));
                 resultMap.put("procInstId", tmp.getString("procInstId"));
-                resultMap.put("isUrge", tmp.getString("isUrge"));
+                resultMap.put("isUrge", "1".equals(tmp.getString("isUrge")));
                 resultMap.put("procTaskCommittime", tmp.getString("procTaskCommittime"));
                 resultMap.put("procCtaskName", tmp.getString("procCtaskName"));
 
