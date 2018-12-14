@@ -1882,6 +1882,8 @@ public class CaseInfoService {
 
         JSONObject bizData=new JSONObject();
         JSONObject queryData=new JSONObject();
+        queryData.put("page", page);
+        queryData.put("limit", limit);
         if(StringUtils.isNotBlank(caseLevel)){
             queryData.put("caseLevel", caseLevel);
             queryData.put("isQuery", "true");
@@ -1891,8 +1893,6 @@ public class CaseInfoService {
         JSONObject objs = this.initWorkflowQuery(bizData);
         objs.put("queryData", queryData);
         objs.getJSONObject("variableData").put("caseLevel", caseLevel);
-        objs.getJSONObject("variableData").put("page", page);
-        objs.getJSONObject("variableData").put("limit", limit);
 
         TableResultResponse<JSONObject> userToDoTasks = this.getUserToDoTasks(objs);
         if(BeanUtil.isNotEmpty(userToDoTasks)){

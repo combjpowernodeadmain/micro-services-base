@@ -144,7 +144,7 @@ public class EventTypeBiz extends BusinessBiz<EventTypeMapper, EventType> {
             criteria.andEqualTo("isCommonly", eventType.getIsCommonly());
         }
         // 按创建时间倒序
-        example.setOrderByClause("id desc");
+        example.setOrderByClause("order_no,id desc");
 
         Page<Object> result = PageHelper.startPage(page, limit);
         List<EventType> list = eventTypeMapper.selectByExample(example);
