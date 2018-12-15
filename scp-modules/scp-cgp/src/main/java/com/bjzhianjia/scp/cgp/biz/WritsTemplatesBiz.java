@@ -182,8 +182,11 @@ public class WritsTemplatesBiz extends BusinessBiz<WritsTemplatesMapper, WritsTe
 	 * @return
 	 */
 	public TableResultResponse<WritsTemplates> getList(WritsTemplates writsTemplates,int page,int limit){
-		Example example=new Example(writsTemplates.getClass());
-		Criteria criteria = example.createCriteria();
+        Example example =
+            new Example(writsTemplates.getClass()).selectProperties("id", "name", "docUrl",
+                "formCode", "typeCode", "isFilled", "templateVars", "isDeleted", "tCode",
+                "isAllowedRecord", "originDocUrl");
+        Criteria criteria = example.createCriteria();
 		criteria.andEqualTo("isDeleted", "0");
 
 		if(StringUtils.isNotBlank(writsTemplates.getName())){

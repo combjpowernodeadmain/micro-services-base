@@ -574,6 +574,11 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
 
         JSONArray writsInstancesJArray = caseRegJObj.getJSONArray("writsInstances");
 
+        if(BeanUtil.isEmpty(writsInstancesJArray)){
+            // 如果文书实例数组为空，则直接返回，不进行以后的操作
+            return;
+        }
+
         for (int i = 0; i < writsInstancesJArray.size(); i++) {
             /*
              * =文书ID用writsId作为变量名传入，以增强可读性<br/>
