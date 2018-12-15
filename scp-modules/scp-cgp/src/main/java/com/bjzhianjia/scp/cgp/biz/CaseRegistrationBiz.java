@@ -2528,4 +2528,30 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 this.mapper.selectByRegulaObjectId(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG, regulaObjIds);
         return BeanUtil.isEmpty(regulaObjIds) ? new ArrayList<>() : result;
     }
+
+    /**
+     * 案件暂存
+     * @param objs
+     * @return
+     */
+    public ObjectRestResponse<Void> updateCache(JSONObject objs) {
+        ObjectRestResponse<Void> objectResult=new ObjectRestResponse<>();
+
+        JSONObject bizData = objs.getJSONObject(Constants.WfRequestDataTypeAttr.PROC_BIZDATA);
+
+        // 去更新文书或添加附件
+        writsInstancesBiz.addWritsInstances(bizData);
+        this.addAttachments(bizData);
+
+        String caseId = bizData.getString(Constants.WfProcessBizDataAttr.PROC_BIZID);
+
+        // 更新案件自身信息
+        CaseRegistration caseRegistrationToUpdate = bizData.toJavaObject(CaseRegistration.class);
+        caseRegistrationToUpdate.setId(caseId);
+        this.updateSelectiveById(caseRegistrationToUpdate);
+
+        objectResult.setMessage("案件暂存成功");
+        objectResult.setStatus(200);
+        return objectResult;
+    }
 }
