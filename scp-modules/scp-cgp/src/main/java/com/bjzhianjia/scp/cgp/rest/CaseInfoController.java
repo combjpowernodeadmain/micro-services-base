@@ -469,7 +469,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
      */
     @GetMapping("/caseLevel")
     @ApiOperation("通过事件等级查询事件列表")
-    public TableResultResponse<Map<String,Object>> getCaseInfoByDeptId(
+    public TableResultResponse<JSONObject> getCaseInfoByDeptId(
             @RequestParam(value = "page", defaultValue = "1") @ApiParam(name = "当前页") Integer page,
             @RequestParam(value = "limit", defaultValue = "10") @ApiParam(name = "页容量") Integer limit,
             @RequestParam(value = "caseLevel", defaultValue = "") @ApiParam(name = "案件等级") String caseLevel){

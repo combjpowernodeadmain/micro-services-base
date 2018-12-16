@@ -8,6 +8,7 @@ import com.bjzhianjia.scp.cgp.biz.MessageCenterBiz;
 import com.bjzhianjia.scp.cgp.biz.WritsInstancesBiz;
 import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
 import com.bjzhianjia.scp.cgp.entity.LawTask;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.task.service.IWfProcTaskCallBackService;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +50,7 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
                 // 审批操作
                 writsInstanceBiz.addWritsInstances(JSONObject.parseObject(JSON.toJSONString(procBizData)));
                 caseRegistrationBiz.addAttachments(JSONObject.parseObject(JSON.toJSONString(procBizData)));
+                approveCase(procBizData);
                 break;
             case PROC_CLAIM:
                 // 签收操作
@@ -76,6 +78,27 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
     }
 
     /**
+     * 审批时修改案件信息
+     * @param procBizData
+     */
+    private void approveCase(Map<String, Object> procBizData) {
+        String caseId = (String) procBizData.get("procBizId");
+        if (StringUtils.isBlank(caseId)) {
+            log.info("进行案件审批操作，但并未指定案件ID");
+            throw new BizException("进行流程结束操作，但并未指定案件ID");
+        }
+
+        CaseRegistration caseRegistration =
+            JSONObject.parseObject(JSON.toJSONString(procBizData), CaseRegistration.class);
+        if(BeanUtil.isEmpty(caseRegistration)){
+            caseRegistration=new CaseRegistration();
+        }
+        caseRegistration.setId(caseId);
+
+        caseRegistrationBiz.updateSelectiveById(caseRegistration);
+    }
+
+    /**
      * 结束案件
      * @param procBizData
      */
@@ -86,8 +109,14 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
             log.info("进行流程结束操作，但并未指定案件ID");
             throw new BizException("进行流程结束操作，但并未指定案件ID");
         }
-        
-        CaseRegistration caseRegistration = new CaseRegistration();
+
+        // 当案件结束时，如果提交了案件自身信息(案件表里存储的信息)，则需要去更新案件
+        CaseRegistration caseRegistration =
+                JSONObject.parseObject(JSON.toJSONString(procBizData), CaseRegistration.class);
+        if(BeanUtil.isEmpty(caseRegistration)){
+            caseRegistration=new CaseRegistration();
+        }
+
         caseRegistration.setId(caseId);
         caseRegistration.setExeStatus(CaseRegistration.EXESTATUS_STATE_FINISH);
         caseRegistrationBiz.updateSelectiveById(caseRegistration);
@@ -152,8 +181,14 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
             log.info("进行流程中止操作，但并未指定案件ID");
             throw new BizException("进行流程中止操作，但并未指定案件ID");
         }
-        
-        CaseRegistration caseRegistration = new CaseRegistration();
+
+        // 当案件中止时，如果提交了案件自身信息(案件表里存储的信息)，则需要去更新案件
+        CaseRegistration caseRegistration =
+                JSONObject.parseObject(JSON.toJSONString(procBizData), CaseRegistration.class);
+        if(BeanUtil.isEmpty(caseRegistration)){
+            caseRegistration=new CaseRegistration();
+        }
+
         caseRegistration.setId(caseId);
         caseRegistration.setExeStatus(CaseRegistration.EXESTATUS_STATE_STOP);
         caseRegistrationBiz.updateSelectiveById(caseRegistration);
