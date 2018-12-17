@@ -757,7 +757,7 @@ public class CaseInfoService {
             String[] split = ids.split(",");
             List<String> nameList = new ArrayList<>();
             for (String string : split) {
-                nameList.add(rootBizList.get(string));
+                nameList.add(rootBizList.get(string) == null ? "" : rootBizList.get(string));
             }
 
             return String.join(",", nameList);

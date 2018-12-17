@@ -1,35 +1,15 @@
 package com.bjzhianjia.scp.cgp.biz;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-
-import com.bjzhianjia.scp.cgp.entity.RegulaObject;
-import com.bjzhianjia.scp.cgp.entity.SpecialEvent;
-import com.bjzhianjia.scp.cgp.mapper.RegulaObjectMapper;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
-import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.entity.PatrolTask;
+import com.bjzhianjia.scp.cgp.entity.RegulaObject;
+import com.bjzhianjia.scp.cgp.entity.SpecialEvent;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
+import com.bjzhianjia.scp.cgp.mapper.AreaGridMapper;
 import com.bjzhianjia.scp.cgp.mapper.CaseInfoMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
@@ -44,9 +24,27 @@ import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.monitor.service.impl.WfMonitorServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
+import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * CaseInfoBiz 预立案信息.
@@ -90,9 +88,12 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
 
     @Autowired
     private SpecialEventBiz specialEventBiz;
-    
+
     @Autowired
     private RegulaObjectBiz regulaObjectBiz;
+
+    @Autowired
+    private AreaGridMapper areaGridMapper;
 
     /**
      * 查询未删除的总数
@@ -839,7 +840,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
 
     /**
      * 为指挥中心首页查询列表
-     * 
+     *
      * @param queryData
      * @return
      */
@@ -923,5 +924,84 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         }
         List<Map<String, Long>> result = this.mapper.selectByRegulaIds(regulaObjIds);
         return BeanUtil.isEmpty(regulaObjIds) ? new ArrayList<>() : result;
+    }
+
+    /**
+     * 按网格等级统计事件量，所统计的事件量包含子网格<br/>
+     *
+     * @param gridLevel
+     * @return
+     */
+    public TableResultResponse<JSONObject> statisticsByGridLevel(String gridLevel){
+        // 查询与gridLevel对应的网格ID,返回结果如：(Map){"2","2,3,4,5"},{"10","12,13,14,15"}
+        Map<Integer, Set<String>> gridIdBindChildrenMap = areaGridBiz.getByLevelBindChildren(gridLevel);
+        /*
+         * 处理查询的网格数据，整理后格式如：(List)
+         * [
+         *      {"parentId":"2","gridChildrenSet":"'2','3','4','5'"},
+         *      {"parentId":"10","gridChildrenSet":"'10','13','14','15'"}
+         * ]
+         */
+        List<JSONObject> queryData=new ArrayList<>();
+        if(BeanUtil.isNotEmpty(gridIdBindChildrenMap)){
+            for(Map.Entry<Integer,Set<String>> e:gridIdBindChildrenMap.entrySet()){
+                JSONObject gridIdSetBindChildrenJObj=new JSONObject();
+                gridIdSetBindChildrenJObj.put("parentId", e.getKey());
+                String join = String.join(",", e.getValue());
+                String gridChildrenSet = "'" + StringUtils.replace(join, ",", "','") + "'";
+                gridIdSetBindChildrenJObj.put("gridChildrenSet", gridChildrenSet);
+                queryData.add(gridIdSetBindChildrenJObj);
+            }
+        }
+
+        List<JSONObject> result = this.mapper.statisticsByGridLevel(queryData);
+        if(BeanUtil.isNotEmpty(result)){
+            Set<Integer> gridIdInResult=new HashSet<>();
+
+            List<String> gridLevelDictKey = result.stream().map(o -> o.getString("gridLevel")).distinct().collect(Collectors.toList());
+
+            // 查询网格等级
+            Map<String, String> gridLevelDictValueMap=new HashMap<>();;
+            if(BeanUtil.isNotEmpty(gridLevelDictKey)){
+                gridLevelDictValueMap = dictFeign.getByCodeIn(String.join(",", gridLevelDictKey));
+                if(BeanUtil.isEmpty(gridLevelDictValueMap)){
+                    gridLevelDictValueMap=new HashMap<>();
+                }
+            }
+
+            for(JSONObject tmp:result){
+                int total=tmp.getIntValue("stateTodo")+tmp.getIntValue("stateStop")+tmp.getIntValue("stateFinish");
+                // 计算事件量总数
+                tmp.put("total", total);
+                // 整合网格等级名称
+                tmp.put("gridLevelName", gridLevelDictValueMap.get(tmp.getString("gridLevel")));
+                // 收集已经查询到的网格
+                gridIdInResult.add(tmp.getInteger("grid"));
+            }
+
+            // 把没涉及到的网格填充到结果集内
+            Set<String> gridIdToFilling=new HashSet<>();
+            for(Integer gridId:gridIdBindChildrenMap.keySet()){
+                if(!gridIdInResult.contains(gridId)){
+                    gridIdToFilling.add(String.valueOf(gridId));
+                }
+            }
+            if(BeanUtil.isNotEmpty(gridIdToFilling)){
+                List<AreaGrid> areaGrids = areaGridMapper.selectByIds(String.join(",", gridIdToFilling));
+                if(BeanUtil.isNotEmpty(areaGrids)){
+                    for(AreaGrid tmp:areaGrids){
+                        JSONObject jsonTmp=new JSONObject();
+                        jsonTmp.put("grid", tmp.getId());
+                        jsonTmp.put("gridName", tmp.getGridName());
+                        jsonTmp.put("stateFinish", 0);
+                        jsonTmp.put("stateTodo", 0);
+                        jsonTmp.put("stateStop", 0);
+                        jsonTmp.put("total", 0);
+                        result.add(jsonTmp);
+                    }
+                }
+            }
+        }
+        return new TableResultResponse<>(result.size(), result);
     }
 }

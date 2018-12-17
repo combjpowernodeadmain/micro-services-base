@@ -416,8 +416,10 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
             _end = DateUtils.addDays(_end, 1);
             endTime = DateUtil.dateFromDateToStr(_end, "yyyy-MM-dd HH:mm:ss");
         }
-        TableResultResponse<JSONObject> result  = caseInfoBiz.getGrid(caseInfo, gridLevel, startTime, endTime, page, limit);
-        return result;
+        // TableResultResponse<JSONObject> result =
+        // caseInfoBiz.getGrid(caseInfo, gridLevel, startTime, endTime, page,
+        // limit);
+        return caseInfoBiz.statisticsByGridLevel(gridLevel);
     }
     
     @RequestMapping(value = "/list/sourceType", method = RequestMethod.GET)

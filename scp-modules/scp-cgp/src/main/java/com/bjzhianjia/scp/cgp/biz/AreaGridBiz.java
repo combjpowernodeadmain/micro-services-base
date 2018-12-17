@@ -26,6 +26,7 @@ import tk.mybatis.mapper.entity.Example.Criteria;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -445,5 +446,47 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         }
         List<Map<String, Object>> result = this.mapper.selectByUserIds(userIds);
         return BeanUtils.isEmpty(result) ? new ArrayList<>() : result;
+    }
+
+    /**
+     * 按网格等级查询网格ID，如果该网格等级下含有子网格，则将其子网格ID一并收集起来<br/>
+     * 返回结果为以下形式：{"2","2,3,4,5"}<br/>
+     * "2"表示与gridLevel等级对应的某网格，"2,3,4,5"为包含该网格下子网格后的ID集合
+     * @param gridLevel
+     * @return
+     */
+    public Map<Integer, Set<String>> getByLevelBindChildren(String gridLevel) {
+        if (StringUtils.isBlank(gridLevel)) {
+            return new HashMap<>();
+        }
+
+        Example example =
+            new Example(AreaGrid.class).selectProperties("id", "gridName", "gridLevel",
+                "gridParent");
+        example.createCriteria().andEqualTo("isDeleted", "0");
+        List<AreaGrid> areaGrids = this.selectByExample(example);
+
+        Map<Integer, Set<String>> gridIdBindChildrenMap = new HashMap<>();
+        if (BeanUtil.isNotEmpty(areaGrids)) {
+            for (AreaGrid areaGridTmp : areaGrids) {
+                if (gridLevel.equals(areaGridTmp.getGridLevel())) {
+                    Set<String> gridIdSetBindChildrenInMap = new HashSet<>();
+                    _bindChildren(areaGrids, areaGridTmp, gridIdSetBindChildrenInMap);
+                    gridIdBindChildrenMap.put(areaGridTmp.getId(), gridIdSetBindChildrenInMap);
+                }
+            }
+        }
+
+        return gridIdBindChildrenMap;
+    }
+
+    private void _bindChildren(List<AreaGrid> areaGrids, AreaGrid areaGrid,Set<String> gridIdSetBindChildrenInMap) {
+        gridIdSetBindChildrenInMap.add(String.valueOf(areaGrid.getId()));// 先把自己放到结果集内
+        for (AreaGrid areaGridTmp : areaGrids) {
+            if (areaGrid.getId().equals(areaGridTmp.getGridParent())) {
+                // 说明该网格是传入网格id的子网格
+                _bindChildren(areaGrids, areaGridTmp,gridIdSetBindChildrenInMap);
+            }
+        }
     }
 }
