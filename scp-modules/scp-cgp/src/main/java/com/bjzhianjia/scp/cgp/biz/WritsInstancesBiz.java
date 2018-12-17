@@ -1,22 +1,5 @@
 package com.bjzhianjia.scp.cgp.biz;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.transaction.Transactional;
-
-import org.apache.commons.lang3.StringUtils;
-import org.joda.time.LocalDate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -39,9 +22,23 @@ import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.LocalDate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
+
+import javax.transaction.Transactional;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * WritsInstancesBiz 类描述.文书模板实例
@@ -266,6 +263,15 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         return restResult;
     }
 
+    /**
+     * 该方法用户查询某一节点下可录入的文书实例<br/>
+     * 如果templateCodes为空，则代表需要案件caseId下所以已案件的文书实例<br/>
+     * 如果templateCodes不为空，则代表查询案件caseId下与templateCodes对应的文书实例
+     * @param templateCodes
+     * @param procTaskId
+     * @param caseId
+     * @return
+     */
     public TableResultResponse<JSONObject> getWithWritsInstance(String templateCodes, String procTaskId,
         String caseId) {
         TableResultResponse<JSONObject> restResult = new TableResultResponse<>();
@@ -279,16 +285,21 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
             restResult.setMessage("请指定任务ID");
             return restResult;
         }
+
+        /*
+         * 之前如果没有传入文书模板templateCodes，则提示错误信息
+         * 现在逻辑当没有传入文书模板templateCodes时，默认查询某案件下所有已添加的文书实例
+         */
+        List<WritsTemplates> temTemplatesList;
         if (StringUtils.isBlank(templateCodes)) {
-            restResult.setStatus(400);
-            restResult.setMessage("请指定模板tcode");
-            return restResult;
+            temTemplatesList = writsTemplatesBiz.getAllowedRecordList();
+        } else {
+            temTemplatesList = writsTemplatesBiz.getByTcodes(templateCodes);
         }
 
         criteria.andEqualTo("caseId", caseId);
         // criteria.andEqualTo("procTaskId", procTaskId);
         // 按code相出相应的模板ID集合
-        List<WritsTemplates> temTemplatesList = writsTemplatesBiz.getByTcodes(templateCodes);
         List<Integer> templateIdList =
             temTemplatesList.stream().map(o -> o.getId()).distinct().collect(Collectors.toList());
         if (BeanUtil.isNotEmpty(templateIdList)) {
@@ -296,6 +307,16 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         }
 
         List<WritsInstances> writsInstancesLis = this.selectByExample(example);
+        // 收集已经有文书实例的文书模板集合
+        List<Integer> templateIdInWrits;
+        if (BeanUtil.isNotEmpty(writsInstancesLis)) {
+            templateIdInWrits =
+                writsInstancesLis.stream().map(o -> o.getTemplateId()).distinct()
+                    .collect(Collectors.toList());
+        } else {
+            writsInstancesLis = new ArrayList<>();
+            templateIdInWrits = new ArrayList<>();
+        }
 
         Map<Integer, String> templateIdNameMap = temTemplatesList.stream().collect(Collectors.toMap(WritsTemplates::getId, WritsTemplates::getName));
 
@@ -303,30 +324,33 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         List<JSONObject> templateJObjList = new ArrayList<>();
         int count = 1;
         for (WritsTemplates tmpT : temTemplatesList) {
-            JSONObject templateJObj = new JSONObject();
-            templateJObj.put("writsTemplatesId", tmpT.getId());
-            templateJObj.put("writsTemplates", tmpT.getName());
-            List<JSONObject> innerWritsInstancesList = new ArrayList<>();// 用于封装回传前端的文书信息集合
-            for (WritsInstances tmpW : writsInstancesLis) {
-                // 搜索与temT对应的文书
-                if (tmpT.getId().equals(tmpW.getTemplateId())) {
-                    JSONObject writsInstancesJObj = new JSONObject();// 用于封装回传前端的文书信息，减少回传数据量
-                    writsInstancesJObj.put("writsInstancesId", tmpW.getId());
+            if(templateIdInWrits.contains(tmpT.getId())){
+                // 如果templateIdInWrits中包含tmpT.getId(),表示该文书模板已有对应文书实例
+                JSONObject templateJObj = new JSONObject();
+                templateJObj.put("writsTemplatesId", tmpT.getId());
+                templateJObj.put("writsTemplates", tmpT.getName());
+                templateJObj.put("tcode", tmpT.getTcode());
+                List<JSONObject> innerWritsInstancesList = new ArrayList<>();// 用于封装回传前端的文书信息集合
+                for (WritsInstances tmpW : writsInstancesLis) {
+                    // 搜索与temT对应的文书
+                    if(StringUtils.equals(String.valueOf(tmpT.getId()), String.valueOf(tmpW.getTemplateId()))){
+                        JSONObject writsInstancesJObj = new JSONObject();// 用于封装回传前端的文书信息，减少回传数据量
+                        writsInstancesJObj.put("writsInstancesId", tmpW.getId());
 
-                    if (StringUtils.isBlank(tmpW.getRefAbbrev())) {
-                        writsInstancesJObj.put("writsInstancesName",
-                            templateIdNameMap.get(tmpW.getTemplateId()) == null ? "实例"
-                                : templateIdNameMap.get(tmpW.getTemplateId()) + count);
-                        count++;
-                    } else {
-                        writsInstancesJObj.put("writsInstancesName", tmpW.getRefAbbrev());
+                        if (StringUtils.isBlank(tmpW.getRefAbbrev())) {
+                            writsInstancesJObj.put("writsInstancesName",
+                                    templateIdNameMap.get(tmpW.getTemplateId()) == null ? "实例"
+                                            : templateIdNameMap.get(tmpW.getTemplateId()) + count);
+                            count++;
+                        } else {
+                            writsInstancesJObj.put("writsInstancesName", tmpW.getRefAbbrev());
+                        }
+                        innerWritsInstancesList.add(writsInstancesJObj);
+                        templateJObj.put("writsInstances", innerWritsInstancesList);
                     }
-                    innerWritsInstancesList.add(writsInstancesJObj);
                 }
-                templateJObj.put("writsInstances", innerWritsInstancesList);
+                templateJObjList.add(templateJObj);
             }
-            templateJObjList.add(templateJObj);
-
         }
         return new TableResultResponse<>(0, templateJObjList);
     }
@@ -830,5 +854,30 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
                             destFileNameBuffer.toString(), propertiesConfig.getDestFilePath(), map);
         }
         return writsPath;
+    }
+
+    /**
+     * 获取文书记录
+     * @param id
+     * @return
+     */
+    public ObjectRestResponse<JSONObject> getRecord(Integer id) {
+        ObjectRestResponse<JSONObject> restResult = new ObjectRestResponse<>();
+
+        WritsInstances writsInstances = this.selectById(id);
+        if (writsInstances == null) {
+            restResult.setMessage("文书ID" + id + "下不存在文书实例");
+            restResult.setStatus(400);
+            return restResult;
+        }
+
+        JSONObject resultObj = JSONObject.parseObject(JSONObject.toJSONString(writsInstances));
+        resultObj.put("fillContext", resultObj.getJSONObject("fillContext"));
+
+        WritsTemplates writsTemplates = writsTemplatesBiz.selectById(writsInstances.getTemplateId());
+        resultObj.put("tcode", writsTemplates.getTcode());
+
+        restResult.setData(resultObj);
+        return restResult;
     }
 }

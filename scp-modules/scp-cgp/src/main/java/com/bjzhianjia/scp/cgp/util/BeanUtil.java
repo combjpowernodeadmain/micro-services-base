@@ -1,5 +1,9 @@
 package com.bjzhianjia.scp.cgp.util;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -10,16 +14,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-
 public class BeanUtil {
 
     /**
      * 如果source对象中与target对象中具有相同的属性，则将source对象的该属性值复制到target对象中<br/>
      * 对于不相同的属性则进行忽略<br/>
-     * 
+     *
      * @author By尚
      * @param source
      *            源对象
@@ -38,7 +38,7 @@ public class BeanUtil {
     /**
      * 如果source对象中与target对象中具有相同的属性，则将source对象的该属性值复制到target对象中<br/>
      * 对于不相同的属性则进行忽略<br/>
-     * 
+     *
      * @author By尚
      * @param source
      *            源对象
@@ -273,18 +273,21 @@ public class BeanUtil {
             for (Field field : declaredFields) {
                 if (fieldList.contains(field.getName())) {
                     try {
-                        if (BeanUtil.isEmpty(getMethodMap.get(field.getName()).invoke(o, null))) {
-                            resultJObj.put(field.getName(), "");
-                        } else {
-                            resultJObj.put(field.getName(),
-                                getMethodMap.get(field.getName()).invoke(o, null));
+                        if (getMethodMap.get(field.getName()) != null) {
+                            // 对于对象o中的某些属性，可能没有get方法，在此做一次判断
+                            if (BeanUtil
+                                .isEmpty(getMethodMap.get(field.getName()).invoke(o, null))) {
+                                // 如果该属性有get方法，则判断get方法对应的值是否为NULL，如果是，则将其填充为""
+                                resultJObj.put(field.getName(), "");
+                            } else {
+                                resultJObj.put(field.getName(),
+                                    getMethodMap.get(field.getName()).invoke(o, null));
+                            }
                         }
                     } catch (IllegalAccessException e) {
                         e.printStackTrace();
                     } catch (InvocationTargetException e) {
                         e.printStackTrace();
-                    } catch (NullPointerException e) {
-                        // 如果发生空指针异常，是因为方法代理时没找到导致的，使程序不中断，在此做处理
                     }
                 }
             }
@@ -334,5 +337,25 @@ public class BeanUtil {
         defaultSkipFields.add("updUserId");
         defaultSkipFields.add("updUserName");
         defaultSkipFields.add("tenantId");
+    }
+
+    /**
+     * 判断一个对象是否为NULL，如果是，则返回一个新对象
+     * @param t
+     * @param clazz
+     * @param <T>
+     * @return
+     */
+    public static <T> T checkNullObject(T t, Class<T> clazz) {
+        if (isEmpty(t)) {
+            try {
+                return clazz.newInstance();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return t;
     }
 }
