@@ -955,8 +955,8 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         }
 
         List<JSONObject> result = this.mapper.statisticsByGridLevel(queryData);
+        Set<Integer> gridIdInResult=new HashSet<>();
         if(BeanUtil.isNotEmpty(result)){
-            Set<Integer> gridIdInResult=new HashSet<>();
 
             List<String> gridLevelDictKey = result.stream().map(o -> o.getString("gridLevel")).distinct().collect(Collectors.toList());
 
@@ -979,26 +979,31 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
                 gridIdInResult.add(tmp.getInteger("grid"));
             }
 
-            // 把没涉及到的网格填充到结果集内
-            Set<String> gridIdToFilling=new HashSet<>();
-            for(Integer gridId:gridIdBindChildrenMap.keySet()){
-                if(!gridIdInResult.contains(gridId)){
-                    gridIdToFilling.add(String.valueOf(gridId));
-                }
+        }
+
+        /*
+         * "把没涉及到的网格填充到结果集内",把该逻辑放到"BeanUtil.isNotEmpty(result)"非空判断外
+         * 以保证在result为空时，也会执行"把没涉及到的网格填充到结果集内"逻辑
+         */
+        // 把没涉及到的网格填充到结果集内
+        Set<String> gridIdToFilling=new HashSet<>();
+        for(Integer gridId:gridIdBindChildrenMap.keySet()){
+            if(!gridIdInResult.contains(gridId)){
+                gridIdToFilling.add(String.valueOf(gridId));
             }
-            if(BeanUtil.isNotEmpty(gridIdToFilling)){
-                List<AreaGrid> areaGrids = areaGridMapper.selectByIds(String.join(",", gridIdToFilling));
-                if(BeanUtil.isNotEmpty(areaGrids)){
-                    for(AreaGrid tmp:areaGrids){
-                        JSONObject jsonTmp=new JSONObject();
-                        jsonTmp.put("grid", tmp.getId());
-                        jsonTmp.put("gridName", tmp.getGridName());
-                        jsonTmp.put("stateFinish", 0);
-                        jsonTmp.put("stateTodo", 0);
-                        jsonTmp.put("stateStop", 0);
-                        jsonTmp.put("total", 0);
-                        result.add(jsonTmp);
-                    }
+        }
+        if(BeanUtil.isNotEmpty(gridIdToFilling)){
+            List<AreaGrid> areaGrids = areaGridMapper.selectByIds(String.join(",", gridIdToFilling));
+            if(BeanUtil.isNotEmpty(areaGrids)){
+                for(AreaGrid tmp:areaGrids){
+                    JSONObject jsonTmp=new JSONObject();
+                    jsonTmp.put("grid", tmp.getId());
+                    jsonTmp.put("gridName", tmp.getGridName());
+                    jsonTmp.put("stateFinish", 0);
+                    jsonTmp.put("stateTodo", 0);
+                    jsonTmp.put("stateStop", 0);
+                    jsonTmp.put("total", 0);
+                    result.add(jsonTmp);
                 }
             }
         }

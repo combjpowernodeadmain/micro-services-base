@@ -123,9 +123,24 @@ public class PhoneListService {
          */
         //基本信息
         resultData.put("name", result.get("name") == null ? "" : result.get("name"));
-        JSONObject deptInfo = JSONObject.parseObject(String.valueOf(result.get("departId")));
-        resultData.put("deptName",
-            deptInfo.getString("name") == null ? "" : deptInfo.getString("name"));
+
+        //  部门名称
+        try {
+            JSONObject deptInfo = JSONObject.parseObject(String.valueOf(result.get("departId")));
+            resultData.put("deptName",
+                deptInfo.getString("name") == null ? "" : deptInfo.getString("name"));
+        } catch (Exception e) {
+            Map<String, String> depart =
+                adminFeign.getDepart(String.valueOf(result.get("departId")));
+            if (BeanUtil.isNotEmpty(depart)) {
+                List<String> departJSONStr = new ArrayList<>(depart.values());
+                resultData.put("deptName",
+                    JSONObject.parseObject(departJSONStr.get(0)).getString("name"));
+            } else {
+                resultData.put("deptName", "");
+            }
+        }
+
         resultData.put("sex", result.get("sex") == null ? "" : result.get("sex"));
         // 个人图片
         resultData.put("image", result.get("attr1") == null ? "" : result.get("attr1"));

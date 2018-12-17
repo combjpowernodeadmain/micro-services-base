@@ -97,10 +97,12 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
         result.setData(false);
 
         // 如果非超级管理员,无法重置用户的密码
-        if (BooleanUtil.BOOLEAN_FALSE.equals(mapper.selectByPrimaryKey(BaseContextHandler.getUserID()).getIsSuperAdmin())) {
-            result.setMessage("当前用户没有权限！");
-            return result;
-        }
+        // if
+        // (BooleanUtil.BOOLEAN_FALSE.equals(mapper.selectByPrimaryKey(BaseContextHandler.getUserID()).getIsSuperAdmin()))
+        // {
+        // result.setMessage("当前用户没有权限！");
+        // return result;
+        // }
 
         User user = this.getByUsername(username);
         if (user != null && StringUtils.isNotBlank(user.getPassword())) {
