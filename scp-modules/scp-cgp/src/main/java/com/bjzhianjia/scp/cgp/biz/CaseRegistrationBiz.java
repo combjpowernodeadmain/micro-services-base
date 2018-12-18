@@ -2544,13 +2544,43 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         // 去更新文书或添加附件
         writsInstancesBiz.addWritsInstances(bizData);
         this.addAttachments(bizData);
-
         String caseId = bizData.getString(Constants.WfProcessBizDataAttr.PROC_BIZID);
 
         // 更新案件自身信息
         CaseRegistration caseRegistrationToUpdate = bizData.toJavaObject(CaseRegistration.class);
         caseRegistrationToUpdate.setId(caseId);
         this.updateSelectiveById(caseRegistrationToUpdate);
+
+        // 暂存当事人
+        String concernedType = caseRegistrationToUpdate.getConcernedType();
+        switch (concernedType) {
+            case Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG:
+                // 当事人人单位
+                CLEConcernedCompany companyInDB = cLEConcernedCompanyBiz.getByCaseId(caseId);
+                CLEConcernedCompany cleConcernedCompany =
+                    bizData.toJavaObject(CLEConcernedCompany.class);
+                if (BeanUtil.isNotEmpty(companyInDB)) {
+                    cleConcernedCompany.setId(companyInDB.getId());
+                    cLEConcernedCompanyBiz.updateSelectiveById(cleConcernedCompany);
+                } else {
+                    cLEConcernedCompanyBiz.insertSelective(cleConcernedCompany);
+                }
+                break;
+
+            case Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON:
+                // 当事人为个人
+                CLEConcernedPerson personInDB = cLEConcernedPersonBiz.getByCaseId(caseId);
+                CLEConcernedPerson cleConcernedPerson =
+                    bizData.toJavaObject(CLEConcernedPerson.class);
+                if (BeanUtil.isNotEmpty(personInDB)) {
+                    cleConcernedPerson.setId(personInDB.getId());
+                    cLEConcernedPersonBiz.updateSelectiveById(cleConcernedPerson);
+                } else {
+                    cLEConcernedPersonBiz.insertSelective(cleConcernedPerson);
+                }
+                break;
+            default:
+        }
 
         objectResult.setMessage("案件暂存成功");
         objectResult.setStatus(200);
