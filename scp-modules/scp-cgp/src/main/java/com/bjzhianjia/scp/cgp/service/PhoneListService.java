@@ -156,7 +156,12 @@ public class PhoneListService {
         userIds.add(userId);
         //执法证编码
         List<EnforceCertificate> enforceList = enforceCertificateBiz.getEnforceByUserIds(userIds);
-        resultData.put("certCode", enforceList.get(0).getCertCode()==null?"":enforceList.get(0).getCertCode());
+        if(BeanUtil.isEmpty(enforceList)){
+            // 如果userIds里不包含执法人员，则enforceList有可能是空或NULL---By尚
+            resultData.put("certCode", "");
+        }else{
+            resultData.put("certCode", enforceList.get(0).getCertCode()==null?"":enforceList.get(0).getCertCode());
+        }
 
         //网格信息
         Map<String, String> tempAridMap = this.getAridInfo(areaGridBiz.getByUserIds(userIds));
