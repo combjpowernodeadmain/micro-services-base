@@ -647,8 +647,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                         isUrge = caseRegistration.getIsSupervise();
                         isSupervise = caseRegistration.getIsUrge();
                     }
-                    obj.put("isSupervise", isUrge.equals("0") ? false : true);
-                    obj.put("isUrge", isSupervise.equals("0") ? false : true);
+                    obj.put("isSupervise", "1".equals(isUrge));
+                    obj.put("isUrge", "1".equals(isSupervise));
                     // 完成期限
                     Date caseEnd = caseRegistration.getCaseEnd();
                     String exeStatus = caseRegistration.getExeStatus();
@@ -669,6 +669,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                     // 是否超时
                     obj.put("isOvertime", isOvertime);
                     obj.put("crtTime", caseRegistration.getCrtTime());
+                    // 在列表中添加当事人类型
+                    obj.put("concernedType", caseRegistration.getConcernedType());
                     result.add(obj);
                 }
 
