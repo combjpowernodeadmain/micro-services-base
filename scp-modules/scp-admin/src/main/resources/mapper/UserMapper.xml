@@ -132,7 +132,10 @@
 			bu.`name` userName,
 			bu.mobile_phone mobilePhone,
 			bd.`name` deptName,
-			bu.attr1 image
+			bu.attr1 image,
+           <!-- 防止sql验证 -->
+            bu.crt_user_id crt_user_id,
+            bu.tenant_id tenant_id
 		FROM
 			base_user bu
         LEFT JOIN base_depart_user bdu ON bdu.user_id = bu.id
@@ -151,6 +154,14 @@
 				#{id}
 			</foreach>
 		</if>
+        GROUP BY
+            bu.id,
+            bu.`name`,
+            bu.mobile_phone,
+            bd.`name`,
+            bu.attr1,
+            bu.crt_user_id,
+            bu.tenant_id
 		ORDER BY
 			bu.crt_time DESC,
 			bu.upd_time DESC
