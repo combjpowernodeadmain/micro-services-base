@@ -135,8 +135,8 @@
 			bu.attr1 image
 		FROM
 			base_user bu
-		INNER JOIN base_depart_user bdu ON bdu.user_id = bu.id
-		INNER JOIN base_depart bd ON bd.id = bdu.depart_id
+        LEFT JOIN base_depart_user bdu ON bdu.user_id = bu.id
+        LEFT JOIN base_depart bd ON bd.id = bdu.depart_id
 		WHERE
 			bu.is_deleted = '0'
 		AND bu.is_disabled = '0'
