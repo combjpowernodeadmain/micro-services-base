@@ -2546,44 +2546,72 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         this.addAttachments(bizData);
         String caseId = bizData.getString(Constants.WfProcessBizDataAttr.PROC_BIZID);
 
-        // 更新案件自身信息
         CaseRegistration caseRegistrationToUpdate = bizData.toJavaObject(CaseRegistration.class);
+
+        // 暂存当事人
+        _cacheConcerned(bizData, caseId, caseRegistrationToUpdate);
+
+        // 更新案件自身信息
         caseRegistrationToUpdate.setId(caseId);
         this.updateSelectiveById(caseRegistrationToUpdate);
 
-        // 暂存当事人
-        String concernedType = caseRegistrationToUpdate.getConcernedType();
+        objectResult.setMessage("案件暂存成功");
+        objectResult.setStatus(200);
+        return objectResult;
+    }
+
+    private void _cacheConcerned(JSONObject bizData, String caseId, CaseRegistration caseRegistrationToUpdate) {
+        String concernedType = bizData.getString("concernedType");
+        if(StringUtils.isBlank(concernedType)){
+            // 如果暂存的当事人类型不明确，直接结束方法
+            return;
+        }
+
+        CaseRegistration caseRegistrationInDB = this.selectById(caseId);
+        if(BeanUtil.isEmpty(caseRegistrationInDB)){
+            caseRegistrationInDB=new CaseRegistration();
+        }
+
+        /*
+         * 对于当事人类型
+         * 1 可能切换了当事人类型，如之前类型为单位，现在切换为了个人。如果进行了切换，则在切换后的当事人表里添加一条记录，
+         *   否则在原当事人上进行更新操作。这里认为未切换当事人前一定存在了当事人记录
+         * 2 案件在登记时并未指定当事人，此时当事人类型字段为NULL，使用!StringUtils.equals(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG,
+                        caseRegistrationInDB.getConcernedType())进行判断时，返回的为true,依然会执行插入操作
+         */
         switch (concernedType) {
             case Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG:
                 // 当事人人单位
-                CLEConcernedCompany companyInDB = cLEConcernedCompanyBiz.getByCaseId(caseId);
                 CLEConcernedCompany cleConcernedCompany =
                     bizData.toJavaObject(CLEConcernedCompany.class);
-                if (BeanUtil.isNotEmpty(companyInDB)) {
-                    cleConcernedCompany.setId(companyInDB.getId());
-                    cLEConcernedCompanyBiz.updateSelectiveById(cleConcernedCompany);
-                } else {
+
+                if (!StringUtils.equals(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG,
+                        caseRegistrationInDB.getConcernedType())) {
+                    // 说明切换了当事人类型
                     cLEConcernedCompanyBiz.insertSelective(cleConcernedCompany);
+                    caseRegistrationToUpdate.setConcernedId(cleConcernedCompany.getId());
+                } else {
+                    cleConcernedCompany.setId(caseRegistrationInDB.getConcernedId());
+                    cLEConcernedCompanyBiz.updateSelectiveById(cleConcernedCompany);
                 }
                 break;
 
             case Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON:
                 // 当事人为个人
-                CLEConcernedPerson personInDB = cLEConcernedPersonBiz.getByCaseId(caseId);
                 CLEConcernedPerson cleConcernedPerson =
                     bizData.toJavaObject(CLEConcernedPerson.class);
-                if (BeanUtil.isNotEmpty(personInDB)) {
-                    cleConcernedPerson.setId(personInDB.getId());
-                    cLEConcernedPersonBiz.updateSelectiveById(cleConcernedPerson);
-                } else {
+
+                if (!StringUtils.equals(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON,
+                        caseRegistrationInDB.getConcernedType())) {
+                    // 说明切换了当事人类型
                     cLEConcernedPersonBiz.insertSelective(cleConcernedPerson);
+                    caseRegistrationToUpdate.setConcernedId(cleConcernedPerson.getId());
+                } else {
+                    cleConcernedPerson.setId(caseRegistrationInDB.getConcernedId());
+                    cLEConcernedPersonBiz.updateSelectiveById(cleConcernedPerson);
                 }
                 break;
             default:
         }
-
-        objectResult.setMessage("案件暂存成功");
-        objectResult.setStatus(200);
-        return objectResult;
     }
 }
