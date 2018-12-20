@@ -210,6 +210,15 @@ public class CommonController {
     private Result<Void> _checkAuth(JSONObject objs) {
         Result<Void> result = new Result<>();
         String msg = "Authentication failed. Please Get the correct key.";
+
+        // 对appKey做验证
+        String appKey = objs.getString("appKey");
+        if(!StringUtils.equals(environment.getProperty("common.external.appKey"), appKey)){
+            result.setMessage(msg);
+            result.setIsSuccess(false);
+            return result;
+        }
+
         try {
             String sign = objs.getString("sign");
             objs.remove("sign");
@@ -228,6 +237,7 @@ public class CommonController {
             objs02.put("variableData", String.join("", variableData2));
             String secret = environment.getProperty("common.external.secret","");
             objs02.put("secret", secret);
+            objs02.put("appKey", appKey);
 
             List<String> sortObjsList = _getJObjSortStrings(objs02);
 
@@ -254,7 +264,8 @@ public class CommonController {
                 }
                 //判断当前请求的时间戳是否超过1分钟，超时则失效
                 Date timestampDate = DateUtil.dateFromLongToDate(timestamp);
-                long endTime = DateUtil.addMinute(timestampDate,1).getTime();
+                // 将超时时间从配置文件中读取
+                long endTime = DateUtil.addMinute(timestampDate,Integer.valueOf(environment.getProperty("common.external.expi"))).getTime();
                 long nowTime = new Date().getTime();
                 if(endTime < nowTime ){
                     result.setMessage(msg);
