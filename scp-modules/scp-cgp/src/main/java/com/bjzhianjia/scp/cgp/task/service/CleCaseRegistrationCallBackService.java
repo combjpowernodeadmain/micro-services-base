@@ -211,7 +211,6 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
         try {
             messageCenterBiz.addMsgCenterRecord(procBizData);
         } catch (Exception e) {
-            e.printStackTrace();
             log.debug("添加消息通知失败，数组结构为："+procBizData);
         }
     }

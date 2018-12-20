@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.config.PropertiesConfig;
 import com.bjzhianjia.scp.cgp.constances.WritsConstances;
 import com.bjzhianjia.scp.cgp.entity.CaseAttachments;
+import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.entity.WritsInstances;
 import com.bjzhianjia.scp.cgp.entity.WritsTemplates;
@@ -872,10 +873,15 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         }
 
         JSONObject resultObj = JSONObject.parseObject(JSONObject.toJSONString(writsInstances));
+        // 把fillContext字符串转化为JSONObject对象存入结果集
         resultObj.put("fillContext", resultObj.getJSONObject("fillContext"));
 
         WritsTemplates writsTemplates = writsTemplatesBiz.selectById(writsInstances.getTemplateId());
-        resultObj.put("tcode", writsTemplates.getTcode());
+        resultObj.put("tcode", BeanUtil.isEmpty(writsTemplates)?"":writsTemplates.getTcode());
+
+        // 当事人类型
+        CaseRegistration caseRegistration = caseRegistrationBiz.selectById(writsInstances.getCaseId());
+        resultObj.put("concernedType", BeanUtil.isEmpty(caseRegistration)?"":caseRegistration.getConcernedType());
 
         restResult.setData(resultObj);
         return restResult;

@@ -345,11 +345,22 @@ public class MayorHotlineService {
 	 * @return
 	 */
 	public ObjectRestResponse<MayorHotlineVo> getOne(Integer id) {
+		ObjectRestResponse<MayorHotlineVo> result=new ObjectRestResponse<>();
+
 		MayorHotline mayorHotline = mayorHotlineBiz.selectById(id);
+
+		if(BeanUtil.isEmpty(mayorHotline)){
+			result.setMessage("未找到相关信息");
+			result.setStatus(400);
+			return result;
+		}
+
 		List<MayorHotline> rows = new ArrayList<>();
 		rows.add(mayorHotline);
 		List<MayorHotlineVo> voList = queryAssist(rows);
-		return new ObjectRestResponse<MayorHotlineVo>().data(voList.get(0));
+
+		result.setData(voList.get(0));
+		return result;
 	}
 
 	/**
