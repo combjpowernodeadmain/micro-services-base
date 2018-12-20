@@ -7,7 +7,7 @@ import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
 import com.bjzhianjia.scp.cgp.entity.Result;
 import com.bjzhianjia.scp.cgp.service.CaseRegistrationService;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
-import com.bjzhianjia.scp.core.context.*;
+import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
@@ -18,13 +18,13 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -219,6 +219,8 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         if (data != null && data.size() > 0) {
             result.setData(data);
         } else {
+            result.setMessage("未找到相关信息");
+            result.setStatus(400);
             result.setData(new JSONArray());
         }
         return result;
@@ -256,6 +258,7 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         if (data != null && data.size() > 0) {
             result.setData(data);
         } else {
+            result.setMessage("未找到相关信息");
             result.setStatus(400);
         }
         return result;
@@ -293,6 +296,7 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         if (data != null && data.size() > 0) {
             result.setData(data);
         } else {
+            result.setMessage("未找到相关信息");
             result.setStatus(400);
         }
         return result;
@@ -464,5 +468,11 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         queryJObj.put("caseSourceType", caseSourceType);
         queryJObj.put("lawTaskIds", lawTaskIds);
         return this.baseBiz.regObjCount(queryJObj);
+    }
+
+    @PutMapping("/cache")
+    @ApiOperation("案件暂存")
+    public ObjectRestResponse<Void> updateCache(@RequestBody JSONObject objs){
+        return this.baseBiz.updateCache(objs);
     }
 }

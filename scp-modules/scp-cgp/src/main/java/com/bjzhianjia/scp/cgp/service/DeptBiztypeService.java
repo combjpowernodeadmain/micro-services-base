@@ -98,14 +98,14 @@ public class DeptBiztypeService {
 		if (byCodeIn != null && !byCodeIn.isEmpty()) {
 			for (DeptBizTypeVo tmpDeptBiztype : list) {
 				String[] split = tmpDeptBiztype.getBizType().split(",");
-
-				for (String string : split) {
-					if (StringUtils.isNotBlank(tmpDeptBiztype.getBizTypeName())) {
-						tmpDeptBiztype.setBizTypeName(tmpDeptBiztype.getBizTypeName() + "," + byCodeIn.get(string));
-					} else {
-						tmpDeptBiztype.setBizTypeName(byCodeIn.get(string));
-					}
-				}
+                List<String> bizTypeNameList=new ArrayList<>();
+                for (String string : split) {
+                    if(StringUtils.isNotBlank(byCodeIn.get(string))){
+                        // 如果某条业务条线被删除，将导致byCodeIn.get(string)不NULL，会以null字符串的形式展示在前端
+                        bizTypeNameList.add(byCodeIn.get(string));
+                    }
+                }
+                tmpDeptBiztype.setBizTypeName(String.join(",", bizTypeNameList));
 			}
 		}
 	}

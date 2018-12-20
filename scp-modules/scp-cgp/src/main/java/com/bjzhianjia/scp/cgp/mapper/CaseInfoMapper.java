@@ -134,4 +134,6 @@ public interface CaseInfoMapper extends CommonMapper<CaseInfo> {
      * @return
      */
     List<Map<String,Long>> selectByRegulaIds(@Param("regulaObjIds") Set<String> regulaObjIds);
+
+    List<JSONObject> statisticsByGridLevel(@Param("queryData")List<JSONObject> queryData);
 }

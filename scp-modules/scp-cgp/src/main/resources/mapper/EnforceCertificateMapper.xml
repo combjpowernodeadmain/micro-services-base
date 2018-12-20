@@ -37,6 +37,7 @@
     		usr_id,holder_name,depart_id  
     	FROM 
     		enforce_certificate
+        WHERE is_deleted='0'
     </select>
     
     <select id="countOfEnforce" resultType="java.lang.Integer">

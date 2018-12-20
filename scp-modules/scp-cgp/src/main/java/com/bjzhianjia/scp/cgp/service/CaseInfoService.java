@@ -757,7 +757,7 @@ public class CaseInfoService {
             String[] split = ids.split(",");
             List<String> nameList = new ArrayList<>();
             for (String string : split) {
-                nameList.add(rootBizList.get(string));
+                nameList.add(rootBizList.get(string) == null ? "" : rootBizList.get(string));
             }
 
             return String.join(",", nameList);
@@ -1876,12 +1876,14 @@ public class CaseInfoService {
      * @param limit
      * @return
      */
-    public TableResultResponse<Map<String, Object>> getCaseInfoByDeptId(String caseLevel,
+    public TableResultResponse<JSONObject> getCaseInfoByDeptId(String caseLevel,
                                                                         String deptId,int page,int limit) {
-        List<Map<String,Object>> result=new ArrayList<>();
+        List<JSONObject> result=new ArrayList<>();
 
         JSONObject bizData=new JSONObject();
         JSONObject queryData=new JSONObject();
+        queryData.put("page", page);
+        queryData.put("limit", limit);
         if(StringUtils.isNotBlank(caseLevel)){
             queryData.put("caseLevel", caseLevel);
             queryData.put("isQuery", "true");
@@ -1891,36 +1893,11 @@ public class CaseInfoService {
         JSONObject objs = this.initWorkflowQuery(bizData);
         objs.put("queryData", queryData);
         objs.getJSONObject("variableData").put("caseLevel", caseLevel);
-        objs.getJSONObject("variableData").put("page", page);
-        objs.getJSONObject("variableData").put("limit", limit);
 
         TableResultResponse<JSONObject> userToDoTasks = this.getUserToDoTasks(objs);
-        if(BeanUtil.isNotEmpty(userToDoTasks)){
-            List<JSONObject> rows = userToDoTasks.getData().getRows();
-            if(null==rows){
-                rows=new ArrayList<>();
-            }
 
-            for(JSONObject tmp:rows){
-                Map<String,Object> resultMap=new HashMap<>();
-                resultMap.put("procCtaskCode", tmp.getString("procCtaskcode"));
-                resultMap.put("isSupervise", tmp.getString("isSupervise"));
-                resultMap.put("caseLevelName", tmp.getString("caseLevelName"));
-                resultMap.put("caseTitle", tmp.getString("caseTitle"));
-                resultMap.put("crtTime", tmp.getString("crtTime"));
-                resultMap.put("caseLevel", tmp.getString("caseLevel"));
-                resultMap.put("id", tmp.getString("id"));
-                resultMap.put("procInstId", tmp.getString("procInstId"));
-                resultMap.put("isUrge", tmp.getString("isUrge"));
-                resultMap.put("procTaskCommittime", tmp.getString("procTaskCommittime"));
-                resultMap.put("procCtaskName", tmp.getString("procCtaskName"));
-
-                result.add(resultMap);
-            }
-
-            return new TableResultResponse<>(userToDoTasks.getData().getTotal(), result);
-        }
-        return new TableResultResponse<>(0, result);
+        // 执法队员APP【我的待办】返回结构与事件人员相同，不再进行数据整理，而是接返回
+        return userToDoTasks;
     }
 
     /**

@@ -1,16 +1,5 @@
 package com.bjzhianjia.scp.cgp.biz;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.bjzhianjia.scp.security.common.util.BeanUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.EnforceCertificate;
@@ -20,11 +9,20 @@ import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.common.util.BeanUtils;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 执法证管理
@@ -242,8 +240,8 @@ public class EnforceCertificateBiz extends BusinessBiz<EnforceCertificateMapper,
         Example example = new Example(EnforceCertificate.class).selectProperties("id", "usrId", "certCode");
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("isDeleted", "0");
-        criteria.andEqualTo("isDeleted", "0");
-        criteria.andNotIn("usrId", userId);
+        // criteria.andEqualTo("isDeleted", "0");
+        criteria.andIn("usrId", userId);
         List<EnforceCertificate> result = this.mapper.selectByExample(example);
         return BeanUtils.isEmpty(result) ? new ArrayList<>() : result;
     }

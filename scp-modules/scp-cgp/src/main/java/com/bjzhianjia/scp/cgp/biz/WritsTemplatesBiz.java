@@ -182,8 +182,11 @@ public class WritsTemplatesBiz extends BusinessBiz<WritsTemplatesMapper, WritsTe
 	 * @return
 	 */
 	public TableResultResponse<WritsTemplates> getList(WritsTemplates writsTemplates,int page,int limit){
-		Example example=new Example(writsTemplates.getClass());
-		Criteria criteria = example.createCriteria();
+        Example example =
+            new Example(writsTemplates.getClass()).selectProperties("id", "name", "docUrl",
+                "formCode", "typeCode", "isFilled", "templateVars", "isDeleted", "tcode",
+                "isAllowedRecord", "originDocUrl");
+        Criteria criteria = example.createCriteria();
 		criteria.andEqualTo("isDeleted", "0");
 
 		if(StringUtils.isNotBlank(writsTemplates.getName())){
@@ -246,6 +249,7 @@ public class WritsTemplatesBiz extends BusinessBiz<WritsTemplatesMapper, WritsTe
 	public Result<WritsTemplates> downLoadTemplate(WritsTemplates writsTemplates){
     	Result<WritsTemplates> result=new Result<>();
     	if(writsTemplates.getId()!=null && StringUtils.isNotBlank(writsTemplates.getTcode())){
+    		// 下载文书模板时，至少应指定文书模板的tcode或ID，当都为空时，则提示用户错误信息
     		result.setIsSuccess(false);
     		result.setMessage("请明确待下载文书模板");
     		return result;
@@ -270,4 +274,21 @@ public class WritsTemplatesBiz extends BusinessBiz<WritsTemplatesMapper, WritsTe
 		result.setIsSuccess(true);
 		return result;
 	}
+
+    /**
+     * 获取全部可录入的文书模板
+     * @return
+     */
+	public List<WritsTemplates> getAllowedRecordList(){
+	    Example example=new Example(WritsTemplates.class);
+        Criteria criteria =
+            example.createCriteria().andEqualTo("isDeleted", "0").andEqualTo("isAllowedRecord",
+                "1");
+
+        List<WritsTemplates> writsTemplates = this.selectByExample(example);
+        if(BeanUtil.isEmpty(writsTemplates)){
+            return new ArrayList<>();
+        }
+        return writsTemplates;
+    }
 }

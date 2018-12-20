@@ -170,8 +170,6 @@ public class MayorHotlineController extends BaseController<MayorHotlineBiz, Mayo
     public ObjectRestResponse<MayorHotlineVo> getOne(
         @PathVariable(value = "id") @ApiParam(name = "待查询对象ID") Integer id) {
         ObjectRestResponse<MayorHotlineVo> one = mayorHotlineService.getOne(id);
-        one.setStatus(200);
-        one.setMessage("成功");
         return one;
     }
 

@@ -460,11 +460,73 @@ SELECT
 			case_info
 		WHERE
 			is_deleted = '0'
-		AND regula_obj_list IN 
+		AND regula_obj_list IN
 		<foreach collection="regulaObjIds" item="objId" open="(" close=")" separator=",">
 			#{objId}
 		</foreach>
 		GROUP BY
 			regula_obj_list
+	</select>
+
+	<select id="statisticsByGridLevel" resultType="com.alibaba.fastjson.JSONObject">
+        select result01._grid grid,result01.stateTodo,result01.stateFinish,result01.stateStop,overtimeCount,
+        ag.`grid_name` gridName,ag.grid_level gridLevel,ag.grid_code gridCode,ag.grid_parent gridParent,
+		parentAg.grid_code gridParentCode,parentAg.grid_name gridParentName
+        from (
+		    <!-- 查询数据结果如：
+		     grid   overtimeCount   stateTodo   stateFinish stateStop
+		     2      2               6           1           0
+		     3      4               8           2           1
+		     -->
+            SELECT _grid,overtimeCount,
+            MAX(CASE is_finished WHEN '0' THEN _count ELSE 0 END ) stateTodo,
+            MAX(CASE is_finished WHEN '1' THEN _count ELSE 0 END ) stateFinish,
+            MAX(CASE is_finished WHEN '2' THEN _count ELSE 0 END ) stateStop
+            FROM (
+                SELECT is_finished,COUNT(_grid) _count,_grid FROM (
+                SELECT id,is_finished,
+                CASE
+                <foreach collection="queryData" item="item">
+                    WHEN grid IN (${item.gridChildrenSet}) THEN ${item.parentId}
+                </foreach>
+                ELSE '-1' END _grid
+                FROM case_info ci2
+                WHERE ci2.`is_deleted`='0'
+                ) tmp1
+                GROUP BY tmp1._grid,is_finished
+                ORDER BY _grid,is_finished
+            ) tmp2
+
+            <!-- 超时事件数量 -->
+            left join (
+            SELECT
+            grid,
+            COUNT(id) overtimeCount
+            FROM
+            case_info
+            WHERE
+            dead_line IS NOT NULL
+            AND (
+            (
+            is_finished = 0
+            AND NOW() > dead_line
+            )
+            OR (
+            is_finished IN (1, 2)
+            AND finish_time > dead_line
+            )
+            )
+            GROUP BY
+            grid
+            ) overtimeTmp on overtimeTmp.grid=tmp2._grid
+
+
+            WHERE _grid!='-1'
+            GROUP BY _grid,overtimeCount
+        )result01
+		<!-- 关联网格表，获取网格名称 -->
+        LEFT JOIN area_grid ag ON ag.`id`=result01._grid
+		<!-- 关联网格表，获取父级网格名称 -->
+		LEFT JOIN area_grid parentAg ON parentAg.id=ag.grid_parent
 	</select>
 </mapper>

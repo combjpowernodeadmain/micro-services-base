@@ -1,38 +1,11 @@
 package com.bjzhianjia.scp.cgp.service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import com.bjzhianjia.scp.cgp.biz.CaseInfoBiz;
-import com.bjzhianjia.scp.cgp.biz.CaseRegistrationBiz;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.dao.DataAccessException;
-import org.springframework.data.geo.Circle;
-import org.springframework.data.geo.Distance;
-import org.springframework.data.geo.GeoResults;
-import org.springframework.data.geo.Point;
-import org.springframework.data.redis.connection.RedisConnection;
-import org.springframework.data.redis.connection.RedisGeoCommands.DistanceUnit;
-import org.springframework.data.redis.connection.RedisGeoCommands.GeoLocation;
-import org.springframework.data.redis.core.RedisCallback;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.AreaGridBiz;
+import com.bjzhianjia.scp.cgp.biz.CaseInfoBiz;
+import com.bjzhianjia.scp.cgp.biz.CaseRegistrationBiz;
 import com.bjzhianjia.scp.cgp.biz.EnterpriseInfoBiz;
 import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
 import com.bjzhianjia.scp.cgp.biz.RegTypeRelationBiz;
@@ -58,9 +31,34 @@ import com.bjzhianjia.scp.cgp.vo.Regula_EnterPriseVo;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.PageHelper;
-
 import lombok.extern.log4j.Log4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.geo.Circle;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResults;
+import org.springframework.data.geo.Point;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.connection.RedisGeoCommands.DistanceUnit;
+import org.springframework.data.redis.connection.RedisGeoCommands.GeoLocation;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * RegulaObjectService 接管对象.
@@ -581,7 +579,7 @@ public class RegulaObjectService {
         List<String> bizListNameList = new ArrayList<>();
         for (String string : split) {
             if (!"-".equals(string) && StringUtils.isNotBlank(string)) {
-                bizListNameList.add(map.get(string));
+                bizListNameList.add(map.get(string) == null ? "" : map.get(string));
             }
         }
 

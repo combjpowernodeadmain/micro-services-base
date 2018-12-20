@@ -256,8 +256,12 @@ public class PatrolTaskService {
 		caseInfo.setSourceCode(String.valueOf(patrolTask.getId()));
 
 		CaseInfo maxOne = caseInfoBiz.getMaxOne();
-		
-		int nextId=maxOne==null?1:(maxOne.getId()+1);
+
+        if (BeanUtil.isEmpty(maxOne)) {
+            maxOne = new CaseInfo();
+        }
+
+        int nextId = maxOne.getId() == null ? 1 : +maxOne.getId() + 1;
 		// 立案单事件编号
 		Result<String> caseCodeResult = CommonUtil.generateCaseCode(maxOne.getCaseCode());
 		if (!caseCodeResult.getIsSuccess()) {
