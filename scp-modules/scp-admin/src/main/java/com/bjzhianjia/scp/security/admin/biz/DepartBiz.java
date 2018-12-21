@@ -299,4 +299,22 @@ public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
     	
     	return new JSONArray();
     }
+
+    /**
+     * 查询所有部门，返回List<JSONObject>对象
+     * 该方法可用于服务间调用
+     * @return
+     */
+    public List<JSONObject> listAll() {
+        Example example = new Example(Depart.class).selectProperties("id","name","parentId","code","type");
+        List<Depart> departs = this.selectByExample(example);
+
+        List<JSONObject> result;
+
+        if(departs!=null && !departs.isEmpty()){
+            return JSONArray.parseArray(JSONArray.toJSONString(departs)).toJavaList(JSONObject.class);
+        }
+
+        return new ArrayList<>();
+    }
 }

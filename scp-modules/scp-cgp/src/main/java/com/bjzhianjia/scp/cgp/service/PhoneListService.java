@@ -19,8 +19,10 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -58,6 +60,9 @@ public class PhoneListService {
 
 
     public TableResultResponse<Map<String, Object>> phoneList(String userName, String deptIds, Integer page, Integer limit) {
+        // 处理部门ID，如果deptIds中含有子部门，由进行整合
+        deptIds=bindChildrenDeptId(deptIds);
+        
         TableResultResponse<Map<String, Object>> userList = iUserFeign.phoneList(userName, deptIds, page, limit);
         List<Map<String, Object>> result = userList.getData().getRows();
         if (BeanUtil.isNotEmpty(result)) {
@@ -83,6 +88,44 @@ public class PhoneListService {
             }
         }
         return new TableResultResponse<>(userList.getData().getTotal(), result);
+    }
+
+    /**
+     * 绑定部门deptIds下的子部门
+     * @param deptIds
+     * @return
+     */
+    private String bindChildrenDeptId(String deptIds) {
+        if(StringUtils.isBlank(deptIds)){
+            return null;
+        }
+
+        Set<String> result=new HashSet<>();
+
+        // 查询所有部门记录，作为递归数据源
+        List<JSONObject> allDeptList = adminFeign.deptListAll();
+
+        String[] split = deptIds.split(",");
+        for(String deptId:split){
+            // 进行递归查询，将符合条件的部门ID放入result结果集中
+            bindChildrenDeptIdAssist(result,deptId,allDeptList);
+        }
+
+        if(BeanUtil.isNotEmpty(result)){
+            return String.join(",", result);
+        }
+        return null;
+    }
+
+    private void bindChildrenDeptIdAssist(Set<String> result, String deptId, List<JSONObject> allDeptList) {
+        // 先把当前部门加入到结果集
+        result.add(deptId);
+        for(JSONObject tmp:allDeptList){
+            if(StringUtils.equals(tmp.getString("parentId"), deptId)){
+                // 说明deptId是tmp的你部门
+                bindChildrenDeptIdAssist(result, tmp.getString("id"), allDeptList);
+            }
+        }
     }
 
     /**

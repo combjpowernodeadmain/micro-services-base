@@ -117,6 +117,10 @@
 				<!-- 修改按节点名称查找为精确查询 -->
 				and task.PROC_CTASKNAME = #{procCtaskname}
 			</if>
+			<if test="procCtaskcode != '' and procCtaskcode != null">
+				<!-- 修改按节点ID查找为精确查询 -->
+				and task.PROC_CTASKCODE in (${procCtaskcode})
+			</if>
 			<if test="procMemo != '' and procMemo != null">
 				and proc.PROC_MEMO LIKE "%"#{procMemo}"%"
 			</if>

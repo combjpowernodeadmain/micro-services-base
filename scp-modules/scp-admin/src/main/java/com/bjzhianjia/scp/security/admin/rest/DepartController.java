@@ -163,4 +163,10 @@ public class DepartController extends BaseController<DepartBiz, Depart, String> 
     public List<JSONObject> getAuthoritiesByDept(@RequestParam(value="deptId")String deptId){
         return this.menuBiz.getAuthoritiesByDept(deptId);
     }
+
+    @GetMapping("/list/all")
+    @ApiOperation("查询所有部门,该方法可用于服务间调用")
+    public List<JSONObject> listAll(){
+        return this.baseBiz.listAll();
+    }
 }
