@@ -1890,6 +1890,17 @@ public class CaseInfoService {
         }
 
         bizData.put("prockey", "comprehensiveManage");
+
+        /*
+         * 手机APP端，【我的待办】可能查询到特定节点里的数据
+         * 这些节点信息在配置文件里指定
+         */
+        String appUserTodoTasksNodes = environment.getProperty("app.userTodoTasks");
+        if(StringUtils.isNotBlank(appUserTodoTasksNodes)){
+            appUserTodoTasksNodes = "'" + StringUtils.replace(appUserTodoTasksNodes, ",", "','") + "'";
+            bizData.put("procCtaskcode", appUserTodoTasksNodes);
+        }
+
         JSONObject objs = this.initWorkflowQuery(bizData);
         objs.put("queryData", queryData);
         objs.getJSONObject("variableData").put("caseLevel", caseLevel);

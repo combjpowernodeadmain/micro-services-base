@@ -134,4 +134,8 @@ public interface AdminFeign {
 	 */
 	@RequestMapping(value = "/external/deptIds", method = RequestMethod.GET)
 	Map<String, String> getDepartByDeptIds(@RequestParam("deptIds") String deptIds);
+
+	@GetMapping("/depart/list/all")
+	@ApiOperation("查询所有部门")
+	List<JSONObject> deptListAll();
 }

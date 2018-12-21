@@ -123,10 +123,7 @@ public class CommandCenterHotlineService {
         for (CommandCenterHotline commandCenterHotline : hotLineList) {
             JSONObject jsonObject = new JSONObject();
             try {
-                jsonObject =
-                    propertiesProxy.swapProperties(commandCenterHotline, "id", "hotlnCode", "hotlnTitle", "appealType",
-                        "appealDatetime", "appealPerson", "exeStatus", "appealTel", "crtUserId", "bizType",
-                        "crtUserName","appealDesc","eventType");
+                jsonObject = JSONObject.parseObject(JSONObject.toJSONString(commandCenterHotline));
                 jsonObject.put("eventTypeName", eventType_ID_NAME_Map.get(commandCenterHotline.getEventType()));
                 jsonObject.put("bizTypeName", dictValueMap.get(commandCenterHotline.getBizType()));
                 jsonObject.put("appealTypeName", dictValueMap.get(commandCenterHotline.getAppealType()));

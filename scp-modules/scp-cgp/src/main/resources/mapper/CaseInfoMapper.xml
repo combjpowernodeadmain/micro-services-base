@@ -491,7 +491,26 @@ SELECT
                 </foreach>
                 ELSE '-1' END _grid
                 FROM case_info ci2
-                WHERE ci2.`is_deleted`='0'
+                <!-- 添加按条件查询 -->
+                <where>
+                    ci2.`is_deleted`='0'
+                    <if test="caseInfo.eventTypeList != null and caseInfo.eventTypeList != ''">
+                        and event_type_list=#{caseInfo.eventTypeList}
+                    </if>
+                    <if test="caseInfo.sourceType != null and caseInfo.sourceType != ''">
+                        and source_type=#{caseInfo.sourceType}
+                    </if>
+                    <if test="caseInfo.caseLevel != null and caseInfo.caseLevel != ''">
+                        and case_level=#{caseInfo.caseLevel}
+                    </if>
+                    <if test="startTime != null and startTime != ''
+                        and endTime != null and endTime != ''">
+                        and occur_time BETWEEN #{startTime} AND #{endTime}
+                    </if>
+                    <if test="caseInfo.bizList != null and caseInfo.bizList != ''">
+                        and biz_list=#{caseInfo.bizList}
+                    </if>
+                </where>
                 ) tmp1
                 GROUP BY tmp1._grid,is_finished
                 ORDER BY _grid,is_finished
