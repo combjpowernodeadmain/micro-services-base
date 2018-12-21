@@ -131,7 +131,8 @@
 			bu.id userId,
 			bu.`name` userName,
 			bu.mobile_phone mobilePhone,
-			bd.`name` deptName,
+			<!-- bd.`name` deptName, -->
+            bd.id deptId,
 			bu.attr1 image,
            <!-- 防止sql验证 -->
             bu.crt_user_id crt_user_id,
@@ -158,7 +159,7 @@
             bu.id,
             bu.`name`,
             bu.mobile_phone,
-            bd.`name`,
+            bd.`id`,
             bu.attr1,
             bu.crt_user_id,
             bu.tenant_id

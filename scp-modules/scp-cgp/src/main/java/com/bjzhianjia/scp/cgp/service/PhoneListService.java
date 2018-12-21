@@ -60,9 +60,21 @@ public class PhoneListService {
 
 
     public TableResultResponse<Map<String, Object>> phoneList(String userName, String deptIds, Integer page, Integer limit) {
+        // 查询所有部门记录，作为递归数据源
+        List<JSONObject> allDeptList = adminFeign.deptListAll();
+        if(allDeptList==null){
+            allDeptList=new ArrayList<>();
+        }
+
         // 处理部门ID，如果deptIds中含有子部门，由进行整合
-        deptIds=bindChildrenDeptId(deptIds);
-        
+        deptIds=bindChildrenDeptId(deptIds,allDeptList);
+
+        // 处理所有部门信息至"id":"JSON对象"形式
+        JSONObject deptIdInstanceJObj=new JSONObject();
+        for(JSONObject tmp:allDeptList){
+            deptIdInstanceJObj.put(tmp.getString("id"), tmp);
+        }
+
         TableResultResponse<Map<String, Object>> userList = iUserFeign.phoneList(userName, deptIds, page, limit);
         List<Map<String, Object>> result = userList.getData().getRows();
         if (BeanUtil.isNotEmpty(result)) {
@@ -70,6 +82,30 @@ public class PhoneListService {
             List<String> userIds = new ArrayList<>();
             for (Map<String, Object> map : result) {
                 userIds.add(String.valueOf(map.get("userId")));
+
+                // 将部门名称整合为==》"当前部门(父部门)"形式
+                if (map.get("deptId") != null) {
+                    // 说明该条记录存在部门信息,从deptIdInstanceJObj集中将该部门信息取出来
+                    JSONObject deptJObj =
+                        deptIdInstanceJObj.getJSONObject(String.valueOf(map.get("deptId")));
+                    String deptName = "";
+                    if (StringUtils.isNotBlank(deptJObj.getString("name"))) {
+                        deptName = deptJObj.getString("name");
+                    }
+                    if (!StringUtils.equals(deptJObj.getString("parentId"), "-1")
+                        && !StringUtils.equals(deptJObj.getString("parentId"), "root")) {
+                        // 说明该部门有父部门且父部门不是要节点
+                        String parentDeptName = "";
+                        // 从deptIdInstanceJObj集中将该部门父部门信息取出来
+                        JSONObject parentDept =
+                            deptIdInstanceJObj.getJSONObject(deptJObj.getString("parentId"));
+                        if (parentDept != null) {
+                            parentDeptName = "(" + parentDept.getString("name") + ")";
+                            deptName += parentDeptName;
+                        }
+                    }
+                    map.put("deptName", deptName);
+                }
             }
             //缓存网格信息
             Map<String, String> tempAridMap = this.getAridInfo(areaGridBiz.getByUserIds(userIds));
@@ -95,15 +131,12 @@ public class PhoneListService {
      * @param deptIds
      * @return
      */
-    private String bindChildrenDeptId(String deptIds) {
+    private String bindChildrenDeptId(String deptIds,List<JSONObject> allDeptList) {
         if(StringUtils.isBlank(deptIds)){
             return null;
         }
 
         Set<String> result=new HashSet<>();
-
-        // 查询所有部门记录，作为递归数据源
-        List<JSONObject> allDeptList = adminFeign.deptListAll();
 
         String[] split = deptIds.split(",");
         for(String deptId:split){
@@ -122,7 +155,7 @@ public class PhoneListService {
         result.add(deptId);
         for(JSONObject tmp:allDeptList){
             if(StringUtils.equals(tmp.getString("parentId"), deptId)){
-                // 说明deptId是tmp的你部门
+                // 说明deptId是tmp的子部门
                 bindChildrenDeptIdAssist(result, tmp.getString("id"), allDeptList);
             }
         }
