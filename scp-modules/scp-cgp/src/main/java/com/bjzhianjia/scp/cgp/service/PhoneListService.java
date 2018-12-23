@@ -201,21 +201,37 @@ public class PhoneListService {
         resultData.put("name", result.get("name") == null ? "" : result.get("name"));
 
         //  部门名称
+        String deptName="";
+        JSONObject deptInfo=new JSONObject();
+
         try {
-            JSONObject deptInfo = JSONObject.parseObject(String.valueOf(result.get("departId")));
-            resultData.put("deptName",
-                deptInfo.getString("name") == null ? "" : deptInfo.getString("name"));
+            deptInfo = JSONObject.parseObject(String.valueOf(result.get("departId")));
+            deptName=deptInfo.getString("name") == null ? "" : deptInfo.getString("name");
         } catch (Exception e) {
             Map<String, String> depart =
                 adminFeign.getDepart(String.valueOf(result.get("departId")));
             if (BeanUtil.isNotEmpty(depart)) {
                 List<String> departJSONStr = new ArrayList<>(depart.values());
-                resultData.put("deptName",
-                    JSONObject.parseObject(departJSONStr.get(0)).getString("name"));
-            } else {
-                resultData.put("deptName", "");
+                deptInfo = JSONObject.parseObject(departJSONStr.get(0));
+                deptName = deptInfo.getString("name");
             }
         }
+
+        // 查询父级部门信息
+        if (!StringUtils.equals(deptInfo.getString("parentId"),"-1")
+                && !StringUtils.equals(deptInfo.getString("parentId"), "root")) {
+            // 说明该部门有父级部门且不为根部门
+            Map<String, String> parentDeptMap =
+                    adminFeign.getDepart(deptInfo.getString("parentId"));
+            if (BeanUtil.isNotEmpty(parentDeptMap)) {
+                List<String> parentDepartJSONStr = new ArrayList<>(parentDeptMap.values());
+                JSONObject parentDeptJObj = JSONObject.parseObject(parentDepartJSONStr.get(0));
+                if (StringUtils.isNotBlank(parentDeptJObj.getString("name"))) {
+                    deptName += "(" + parentDeptJObj.getString("name") + ")";
+                }
+            }
+        }
+        resultData.put("deptName", deptName);
 
         resultData.put("sex", result.get("sex") == null ? "" : result.get("sex"));
         // 个人图片
