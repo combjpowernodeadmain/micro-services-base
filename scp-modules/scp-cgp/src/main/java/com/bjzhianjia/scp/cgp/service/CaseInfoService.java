@@ -686,6 +686,44 @@ public class CaseInfoService {
                     resultJObjct.put("url", null);
                 }
 
+                /*
+                 * ******************摘要**************************
+                 */
+                // 获取巡查类型字典值
+                String sourceType = patrolTask.getSourceType();
+                Map<String, String> sourceTypeNameMap = dictFeign.getByCode(sourceType);
+                String sourceTypeName="";
+                if(BeanUtil.isNotEmpty(sourceTypeNameMap)){
+                    sourceTypeName=sourceTypeNameMap.get(sourceType);
+                }
+                zhaiyaoList.add(sourceTypeName);
+
+                String concernedName="";
+                String concernedType = patrolTask.getConcernedType();
+                if(StringUtils.isNotBlank(concernedType)){
+                    switch (concernedType){
+                        case Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON:
+                            // 当事人为个人
+                            ConcernedPerson concernedPerson = concernedPersonBiz.selectById(patrolTask.getConcernedId());
+                            if(null != concernedPerson){
+                                concernedName=concernedPerson.getName();
+                            }
+                            break;
+                        case Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG:
+                            // 当事人为单位
+                            ConcernedCompany concernedCompany = concernedCompanyBiz.selectById(patrolTask.getConcernedId());
+                            if(null != concernedCompany){
+                                concernedName=concernedCompany.getName();
+                            }
+                            break;
+                            default:
+                    }
+                }
+                zhaiyaoList.add(concernedName);
+                /*
+                 * ******************摘要**************************
+                 */
+
                 reportPersonId = patrolTask.getCrtUserId();
                 break;
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_COMMAND_LINE:
