@@ -192,12 +192,25 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         // 确定执法人员的部门
         addEnforcerDept(caseRegistration);
 
+        // 如果案件有图片信息，将图片路径中的空格去除掉
+        _trimPicPathWhiteSpace(caseRegistration);
+
         this.insertSelective(caseRegistration);
         // 将生成的立案ID装入procBizData带回工作流，在工作流中会对procBizId属性进行是否为“-1”的判断，如果是“-1”，将用该ID替换“-1”
         caseRegJObj.put("procBizId", caseId);
 
         result.setIsSuccess(true);
         return result;
+    }
+
+    private void _trimPicPathWhiteSpace(CaseRegistration caseRegistration) {
+        if (StringUtils.isNotBlank(caseRegistration.getCaseSpotPic())) {
+            List<String> picList = new ArrayList<>();
+            for (String string : StringUtils.split(caseRegistration.getCaseSpotPic(), ",")) {
+                picList.add(StringUtils.trim(string));
+            }
+            caseRegistration.setCaseSpotPic(String.join(",", picList));
+        }
     }
 
     /**
@@ -1971,6 +1984,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
         // 确定执法人员的部门
         addEnforcerDept(caseRegistration);
+
+        // 如果案件有图片信息，将图片路径中的空格去除掉
+        _trimPicPathWhiteSpace(caseRegistration);
 
         this.insertSelective(caseRegistration);
         // 将生成的立案ID装入procBizData带回工作流，在工作流中会对procBizId属性进行是否为“-1”的判断，如果是“-1”，将用该ID替换“-1”

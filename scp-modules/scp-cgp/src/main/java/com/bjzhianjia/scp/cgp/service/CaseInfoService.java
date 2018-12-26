@@ -2181,4 +2181,46 @@ public class CaseInfoService {
 
         return new ObjectRestResponse<JSONObject>().data(result);
     }
+
+    /**
+     * 查询与某来源对应的事件详情
+     * @param sourceType
+     * @param sourceCode
+     * @return
+     */
+    public ObjectRestResponse<JSONObject> detailForSource(String sourceType, String sourceCode) {
+        /*
+         * 1 查询与id事件关联的工作流实例ID
+         * 2 生成工作流需要的请求参数结构
+         */
+        CaseInfo queryCaseInfo=new CaseInfo();
+        queryCaseInfo.setSourceType(sourceType);
+        queryCaseInfo.setSourceCode(sourceCode);
+        CaseInfo caseInfo = this.caseInfoBiz.selectOne(queryCaseInfo);
+
+        // 工作流业务
+        JSONObject bizData = new JSONObject();
+        // 事件流程编码
+        bizData.put("procKey", "comprehensiveManage");
+        // 业务ids
+        bizData.put(Constants.WfProcessBizDataAttr.PROC_BIZID, String.valueOf(caseInfo.getId()));
+        JSONObject objs = initWorkflowQuery(bizData);
+        // 查询流程实例ID
+        List<Map<String, Object>> procInstIdList = wfMonitorService.getProcInstIdByUserId(objs);
+        if (BeanUtil.isNotEmpty(procInstIdList)) {
+            if(procInstIdList.size()>1){
+                ObjectRestResponse<JSONObject> o=new ObjectRestResponse<>();
+                o.setStatus(400);
+                o.setMessage("该事件对应多个实例，请联系管理进行核查.");
+                return o;
+            }
+            // 请求中，只通过一个id进行查询，所以返回结果如果不为空，则长度一定为1
+            String procInstId = String.valueOf(procInstIdList.get(0).get("procInstId"));
+            objs.getJSONObject("procData").put("procInstId", procInstId);
+
+            return this.getUserToDoTask(objs);
+        }
+
+        return new ObjectRestResponse<>();
+    }
 }
