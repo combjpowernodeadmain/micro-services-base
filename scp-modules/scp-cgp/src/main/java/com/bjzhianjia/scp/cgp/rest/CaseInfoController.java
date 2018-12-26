@@ -571,4 +571,15 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         queryData.put("procCtaskCode", procCtaskCode);
         return caserInfoService.approveHistoryOfSpeNode(queryData);
     }
+
+
+    @RequestMapping(value = "/detailForSource", method = RequestMethod.GET)
+    @ApiOperation("查询详细待办任务")
+    public ObjectRestResponse<JSONObject> detailForSource(
+            @RequestParam(value="sourceType") @ApiParam("来源类型code")String sourceType,
+            @RequestParam(value="sourceCode") @ApiParam("来源ID") String sourceCode
+    ) {
+
+        return caserInfoService.detailForSource(sourceType,sourceCode);
+    }
 }
