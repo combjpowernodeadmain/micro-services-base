@@ -169,4 +169,10 @@ public class DepartController extends BaseController<DepartBiz, Depart, String> 
     public List<JSONObject> listAll(){
         return this.baseBiz.listAll();
     }
+
+    @GetMapping("/list/attr")
+    @ApiOperation("按部门预留属性查询记录")
+    public List<JSONObject> listByAttr(@RequestParam(value="attr") String attr,@RequestParam(value = "attrValues") String attrValues){
+        return this.baseBiz.listByAttr(attr,attrValues);
+    }
 }

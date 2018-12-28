@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.bjzhianjia.scp.security.common.util.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -316,5 +319,44 @@ public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
         }
 
         return new ArrayList<>();
+    }
+
+    /**
+     * 按部门预留属性查询记录
+     * @param attr
+     * @param attrValues
+     * @return
+     */
+    public List<JSONObject> listByAttr(String attr, String attrValues) {
+        if(StringUtils.isBlank(attr)||StringUtils.isBlank(attrValues)){
+            return new ArrayList<>();
+        }
+
+        Set<String> attrValuesSet=new HashSet<>();
+        attrValuesSet.addAll(Arrays.asList(StringUtils.split(attrValues, ",")));
+
+        Example example =new Example(Depart.class);
+        Criteria criteria = example.createCriteria();
+        criteria.andIn(attr, attrValuesSet);
+
+        List<JSONObject> result=new ArrayList<>();
+        List<Depart> departs = this.selectByExample(example);
+        if(BeanUtils.isNotEmpty(departs)){
+            for(Depart depart:departs){
+                JSONObject tmpJObj=new JSONObject();
+                tmpJObj.put("id", depart.getId());
+                tmpJObj.put("name", depart.getName());
+                tmpJObj.put("parentId", depart.getParentId());
+                tmpJObj.put("code", depart.getCode());
+                tmpJObj.put("type", depart.getType());
+                tmpJObj.put("attr1", depart.getAttr1());
+                tmpJObj.put("attr2", depart.getAttr2());
+                tmpJObj.put("attr3", depart.getAttr3());
+                tmpJObj.put("attr4", depart.getAttr4());
+                result.add(tmpJObj);
+            }
+        }
+
+        return result;
     }
 }

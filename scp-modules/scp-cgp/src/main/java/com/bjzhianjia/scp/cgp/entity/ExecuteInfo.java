@@ -43,6 +43,10 @@ public class ExecuteInfo implements Serializable {
 	    //办理案件Id
     @Column(name = "case_id")
     private Integer caseId;
+
+    // 办理前照片
+	@Column(name="pre_picture")
+    private String prePicture;
 	
 
 	/**
@@ -128,5 +132,13 @@ public class ExecuteInfo implements Serializable {
 	 */
 	public Integer getCaseId() {
 		return caseId;
+	}
+
+	public String getPrePicture() {
+		return prePicture;
+	}
+
+	public void setPrePicture(String prePicture) {
+		this.prePicture = prePicture;
 	}
 }
