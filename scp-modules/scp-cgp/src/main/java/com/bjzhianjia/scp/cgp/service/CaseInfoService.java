@@ -1725,14 +1725,16 @@ public class CaseInfoService {
 
                     Map<String, String> recordUser;
                     if(BeanUtil.isNotEmpty(queryUserId)){
-                        recordUser = adminFeign.getUsersByUserIds(StringUtils.join(queryUserId, ","));
+                        recordUser = adminFeign.getUsersByUserIds(StringUtils.join(queryUserId, ","))
+                        == null ? new HashMap<>() :
+                                adminFeign.getUsersByUserIds(StringUtils.join(queryUserId, ","));
                     }else{
                         recordUser=new HashMap<>();
                     }
 
                     // 办理人修改为保存人员ID
                     String exePersonName =
-                            CommonUtil.getValueFromJObjStr(recordUser.get(sourceType.getString("crtUserId")),
+                            CommonUtil.getValueFromJObjStr(recordUser.get(sourceType.getString("exePerson")),
                                     "name");
                     executeInfoJObj.put("exePersonName", exePersonName);// 办理人
                     // executeInfoJObj.put("exePsersonTel", executeInfo.get);//
