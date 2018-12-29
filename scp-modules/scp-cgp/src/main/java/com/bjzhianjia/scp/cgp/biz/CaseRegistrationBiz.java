@@ -1952,6 +1952,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                  * 起始：如果没有地址信息，则抛出异常
                  * 现在：将地理信息必传限制去掉，如果没有地理信息，则跳过，有则填充
                  */
+                try {
+                    caseRegistration.setCaseLatitude(mapInfoJObj.getString("lat"));
+                    caseRegistration.setCaseOngitude(mapInfoJObj.getString("lng"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 Point point = new Point(mapInfoJObj.getDouble("lng"), mapInfoJObj.getDouble("lat"));
                 AreaGrid areaGridReturn = areaGridBiz.isPolygonContainsPoint(point);
                 if(BeanUtil.isNotEmpty(areaGridReturn)){

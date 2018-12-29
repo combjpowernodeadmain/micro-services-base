@@ -839,61 +839,29 @@ public class CaseInfoService {
             // 获取流程走向，以判断流程是否结束
             String flowDirection = variableDataJObject.getString("flowDirection");
 
-            // 判断流向是否走向部门处理中
-            if (environment.getProperty("isCheckProcessingAuth").equals(flowDirection)) {
-                String deptId = objs.getJSONObject("authData").getString("procDeptId");
-                if (StringUtils.isBlank(deptId)) {
-                    result.setMessage("请指定处理部门");
-                    result.setIsSuccess(false);
-                    return result;
-                }
-                List<JSONObject> authoritiesByDept = adminFeign.getAuthoritiesByDept(deptId);
-                if (BeanUtil.isNotEmpty(authoritiesByDept)) {
-                    List<String> codeList =
-                        authoritiesByDept.stream().map(o -> o.getString("code")).distinct()
-                            .collect(Collectors.toList());
-                    if (!codeList.contains(environment.getProperty("wfTodoList"))) {
-                        result.setMessage("该部门尚无权限处理该事件，请更换部门。");
-                        result.setIsSuccess(false);
-                        return result;
-                    }
-                } else {
-                    // 如果authoritiesByDept为空，也认为是无处理权限
-                    result.setMessage("该部门尚无权限处理该事件，请更换部门。");
-                    result.setIsSuccess(false);
-                    return result;
-                }
-            }
-
-            // 判断流向是否走向立案核查及待结案核查
+            // 获取事前事后核查节点
             String isCheckAreaGridAuth = environment.getProperty("isCheckAreaGridAuth");
             List<String> isCheckAreaGridAuthList = Arrays.asList(isCheckAreaGridAuth.split(","));
-            if(isCheckAreaGridAuthList.contains(flowDirection)){
-                // 表明需要进行网格员认证
-                String gridId = caseInfoJObj.getString("grid");
 
-                if(StringUtils.isEmpty(gridId)){
-                    result.setMessage("请指定网格");
-                    result.setIsSuccess(false);
+            /*
+             * 判断流向是否走向部门处理中
+             * 当去部门办理或是事前事后核查时，都是部门策略
+             */
+            // 该值为true说明是去部门处理中或是事前事后核查
+            boolean isCheckDeptAuth = StringUtils.equals(environment.getProperty("isCheckProcessingAuth"), flowDirection) ||
+                    isCheckAreaGridAuthList.contains(flowDirection);
+            if (isCheckDeptAuth) {
+                String deptId = objs.getJSONObject("authData").getString("procDeptId");
+                /*
+                 * 验证所选部门下的人是否全部不具有【我的待办】权限
+                 * 该部门下只要有一个人具有【我的待办】权限，那么该事件就可以被办理
+                 */
+                _checkDeptAuth(result, deptId);
+                if (!result.getIsSuccess()){
+                    // 说明验证没有成功
                     return result;
                 }
-
-                List<AreaGridMember> areaGridMemberList =
-                    areaGridMemberBiz.getByGridIds(new HashSet<>(Arrays.asList(gridId.split(","))));
-                if (BeanUtil.isNotEmpty(areaGridMemberList)) {
-                    // 如果有网格员配置，则进行下一步验证
-                    if (areaGridMemberList.size() == 1
-                        && areaGridMemberList.get(0).getGridMember() == null) {
-                        // 与指定网格对应的只有一条网格员记录，并且gridMember字段为null
-                        result.setMessage("该网格下未配备网格员");
-                        result.setIsSuccess(false);
-                        return result;
-                    }
-                } else {
-                    result.setMessage("该网格下未配备网格员");
-                    result.setIsSuccess(false);
-                    return result;
-                }
+                result.setIsSuccess(false);
             }
 
             //  判断流向是否为从部门受理中回退到受理员受理
@@ -1036,6 +1004,37 @@ public class CaseInfoService {
 
         result.setIsSuccess(true);
         return result;
+    }
+
+    /**
+     * 当选择部门策略时，验证所选部门下的人是否全部不具有【我的待办】权限
+     * @param result 结果集
+     * @param deptId 待验证部门
+     */
+    private void _checkDeptAuth(Result<Void> result, String deptId) {
+        if (StringUtils.isBlank(deptId)) {
+            result.setMessage("请指定处理部门");
+            result.setIsSuccess(false);
+            return;
+        }
+        List<JSONObject> authoritiesByDept = adminFeign.getAuthoritiesByDept(deptId);
+        if (BeanUtil.isNotEmpty(authoritiesByDept)) {
+            List<String> codeList =
+                authoritiesByDept.stream().map(o -> o.getString("code")).distinct()
+                    .collect(Collectors.toList());
+            if (!codeList.contains(environment.getProperty("wfTodoList"))) {
+                result.setMessage("该部门尚无权限处理该事件，请更换部门。");
+                result.setIsSuccess(false);
+                return;
+            }
+        } else {
+            // 如果authoritiesByDept为空，也认为是无处理权限
+            result.setMessage("该部门尚无权限处理该事件，请更换部门。");
+            result.setIsSuccess(false);
+            return;
+        }
+
+        result.setIsSuccess(true);
     }
 
     /**
@@ -1647,16 +1646,20 @@ public class CaseInfoService {
         requiredJObj.put("deadLine", BeanUtil.isEmpty(caseInfo.getDeadLine()) ? null
             : DateUtil.dateFromDateToStr(caseInfo.getDeadLine(), DateUtil.DATE_FORMAT_DF));
         String executedDeptName = "";
+        String executedDeptCode = "";
         requiredJObj.put("executedDept", caseInfo.getExecuteDept());
         if (caseInfo.getExecuteDept() != null) {
             Map<String, String> executeDeptMap = adminFeign.getDepartByDeptIds(caseInfo.getExecuteDept());
             if (executeDeptMap != null && !executeDeptMap.isEmpty()) {
                 executedDeptName =
                     CommonUtil.getValueFromJObjStr(executeDeptMap.get(caseInfo.getExecuteDept()), "name");
+                executedDeptCode =
+                    CommonUtil.getValueFromJObjStr(executeDeptMap.get(caseInfo.getExecuteDept()), "code");
             }
         }
         requiredJObj.put("executedDeptName", executedDeptName);
         requiredJObj.put("requirements", caseInfo.getRequirements());
+        requiredJObj.put("executedDeptCode", executedDeptCode);
         /*
          * =================事项要求===========结束==========
          */
@@ -1715,20 +1718,37 @@ public class CaseInfoService {
                 JSONObject executeInfoJObj;
                 executeInfoJObj = JSONObject.parseObject(JSON.toJSONString(executeInfo));
                 if (executeInfo != null) {
-                    executeInfoJObj.put("exePersonName", executeInfo.getExePerson());// 办理人
+                    JSONObject sourceType = resultJObj.getJSONObject("sourceTypeHistory");
+                    Set<String> queryUserId=new HashSet<>();
+                    queryUserId.add(sourceType.getString("crtUserId"));
+                    queryUserId.add(executeInfo.getExePerson());
+
+                    Map<String, String> recordUser;
+                    if(BeanUtil.isNotEmpty(queryUserId)){
+                        recordUser = adminFeign.getUsersByUserIds(StringUtils.join(queryUserId, ","))
+                        == null ? new HashMap<>() :
+                                adminFeign.getUsersByUserIds(StringUtils.join(queryUserId, ","));
+                    }else{
+                        recordUser=new HashMap<>();
+                    }
+
+                    // 办理人修改为保存人员ID
+                    String exePersonName =
+                            CommonUtil.getValueFromJObjStr(recordUser.get(sourceType.getString("exePerson")),
+                                    "name");
+                    executeInfoJObj.put("exePersonName", exePersonName);// 办理人
                     // executeInfoJObj.put("exePsersonTel", executeInfo.get);//
                     // 办理人联系方式
                     executeInfoJObj.put("finishTime", executeInfo.getFinishTime());// 办结时间
                     executeInfoJObj.put("exeDesc", executeInfo.getExeDesc());// 情况说明
                     executeInfoJObj.put("picture", executeInfo.getPicture());
 
-                    JSONObject sourceType = resultJObj.getJSONObject("sourceTypeHistory");
                     executeInfoJObj.put("recordPserson", sourceType.getString("crtUserId"));// 登记人ID
                     executeInfoJObj.put("recordPsersonName", sourceType.getString("crtUserName"));// 登记人
                     // 登记人电话
                     String recordPersonTel = "";
                     if (StringUtils.isNotBlank(sourceType.getString("crtUserId"))) {
-                        Map<String, String> recordUser = adminFeign.getUsersByUserIds(sourceType.getString("crtUserId"));
+
                         recordPersonTel =
                             CommonUtil.getValueFromJObjStr(recordUser.get(sourceType.getString("crtUserId")),
                                 "mobilePhone");
@@ -1942,6 +1962,7 @@ public class CaseInfoService {
         JSONObject objs = this.initWorkflowQuery(bizData);
         objs.put("queryData", queryData);
         objs.getJSONObject("variableData").put("caseLevel", caseLevel);
+        objs.getJSONObject("authData").put("procDeptId", deptId);
 
         TableResultResponse<JSONObject> userToDoTasks = this.getUserToDoTasks(objs);
 
