@@ -109,4 +109,12 @@ public interface WfProcMonitorBeanMapper {
      * @return
      */
     JSONObject selectProcByTaskId(JSONObject objs);
+
+    /**
+     * 根据流程类型及业务ID查询待办任务
+     * 对于一特定的流程类型，满足一个业务ID只对应一个待办任务，或者是待签收，或者是待处理
+     * @param objs
+     * @return
+     */
+    JSONObject getUserTodoTaskBizId(JSONObject objs);
 }

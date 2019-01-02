@@ -7,6 +7,7 @@ import com.bjzhianjia.scp.cgp.biz.LawTaskBiz;
 import com.bjzhianjia.scp.cgp.biz.MessageCenterBiz;
 import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
 import com.bjzhianjia.scp.cgp.entity.LawTask;
+import com.bjzhianjia.scp.cgp.service.CaseInfoService;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.task.service.IWfProcTaskCallBackService;
@@ -34,6 +35,9 @@ public class ClePreCaseCallBackServiceImpl implements IWfProcTaskCallBackService
 
     @Autowired
     private MessageCenterBiz messageCenterBiz;
+
+    @Autowired
+    private CaseInfoService caseInfoService;
 
     @Override
     public void before(String dealType, Map<String, Object> procBizData) throws BizException {
@@ -80,9 +84,11 @@ public class ClePreCaseCallBackServiceImpl implements IWfProcTaskCallBackService
         switch (bizType) {
             case "terminate":
                 bizData.put("exeStatus", CaseRegistration.EXESTATUS_STATE_STOP);
+                terminationCase(procBizData);
                 break;
             case PROC_END:
                 bizData.put("exeStatus", CaseRegistration.EXESTATUS_STATE_FINISH);
+                endCase(procBizData);
                 break;
             default:
                 bizData.put("exeStatus", CaseRegistration.EXESTATUS_STATE_TODO);
@@ -100,6 +106,28 @@ public class ClePreCaseCallBackServiceImpl implements IWfProcTaskCallBackService
         }
 
         procBizData.put("procBizId", bizData.getString("procBizId"));
+    }
+
+    private void terminationCase(Map<String, Object> procBizData) {
+        if (StringUtils.equals(CaseRegistration.CASE_SOURCE_TYPE_CENTER,
+                String.valueOf(procBizData.get("caseSourceType")))) {
+            CaseRegistration caseRegistration =
+                    JSON.parseObject(JSON.toJSONString(procBizData), CaseRegistration.class);
+
+            // 去更新事件状态
+            caseInfoService.centerCallback(caseRegistration,"terminate");
+        }
+    }
+
+    private void endCase(Map<String, Object> procBizData) {
+        if (StringUtils.equals(CaseRegistration.CASE_SOURCE_TYPE_CENTER,
+                String.valueOf(procBizData.get("caseSourceType")))) {
+            CaseRegistration caseRegistration =
+                    JSON.parseObject(JSON.toJSONString(procBizData), CaseRegistration.class);
+
+            // 去更新事件状态
+            caseInfoService.centerCallback(caseRegistration,PROC_END);
+        }
     }
 
     /**

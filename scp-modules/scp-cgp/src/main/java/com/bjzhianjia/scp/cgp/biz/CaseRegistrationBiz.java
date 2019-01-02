@@ -2650,5 +2650,29 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 break;
             default:
         }
+
+
+    }
+
+    /**
+     * 按来源查询案件
+     * @param caseSourceType
+     * @param caseSourceSet
+     * @return
+     */
+    public List<CaseRegistration> getByCaseSource(String caseSourceType,Set<String> caseSourceSet){
+        Example example=new Example(CaseRegistration.class);
+        Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isDeleted", "0");
+        criteria.andEqualTo("caseSourceType",caseSourceType);
+        criteria.andIn("caseSource", caseSourceSet );
+
+        List<CaseRegistration> caseRegistrations = this.selectByExample(example);
+
+        if(BeanUtils.isEmpty(caseRegistrations)){
+            return new ArrayList<>();
+        }
+
+        return caseRegistrations;
     }
 }
