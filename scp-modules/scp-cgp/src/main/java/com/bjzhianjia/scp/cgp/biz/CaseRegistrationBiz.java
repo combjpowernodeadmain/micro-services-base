@@ -1651,8 +1651,23 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     public TableResultResponse<Map<String, Object>> getInspectItem(CaseRegistration caseRegistration, String startTime,
         String endTime, String gridIds, Integer page, Integer limit) {
 
+        /*
+         * 获取案件处理类型，用于动态生成SQL
+         * 避免在添加新的处理类型后，SQL语句报错或查不到结果
+         */
+        Map<String, String> dealTypeMap = dictFeign.getByCode(Constances.ROOT_BIZ_CASEDEALTYPE);
+        Set<String> dealTypes;
+        if (BeanUtil.isNotEmpty(dealTypeMap)) {
+            dealTypes = dealTypeMap.keySet();
+        } else {
+            TableResultResponse<Map<String, Object>> result = new TableResultResponse<>();
+            result.setStatus(400);
+            result.setMessage("未找到案件处理类型，请进行配置。");
+            return result;
+        }
+
         Page<Object> result = PageHelper.startPage(page, limit);
-        List<Map<String, Object>> list = this.mapper.selectInspectItem(caseRegistration, startTime, endTime, gridIds);
+        List<Map<String, Object>> list = this.mapper.selectInspectItem(caseRegistration, startTime, endTime, gridIds,dealTypes);
         if (BeanUtil.isEmpty(list)) {
             return new TableResultResponse<Map<String, Object>>(0, null);
         }
