@@ -1964,7 +1964,39 @@ public class CaseInfoService {
         objs.getJSONObject("variableData").put("caseLevel", caseLevel);
         objs.getJSONObject("authData").put("procDeptId", deptId);
 
+        List<JSONObject> rows=new ArrayList<>();
         TableResultResponse<JSONObject> userToDoTasks = this.getUserToDoTasks(objs);
+        if(BeanUtil.isNotEmpty(userToDoTasks)){
+            rows = userToDoTasks.getData().getRows();
+            if(BeanUtil.isEmpty(rows)){
+                return new TableResultResponse<>(0, new ArrayList<>());
+            }
+        }
+
+        // 获取当前登录人的部门
+        Map<String, String> depart = adminFeign.getDepart(deptId);
+        String deptCode="";
+        String operateType="";
+        if(BeanUtil.isNotEmpty(depart)){
+            JSONObject deptJObj = JSONObject.parseObject(
+                    new ArrayList<String>(depart.values()).get(0));
+            deptCode=deptJObj.getString("code");
+        }
+
+        if (Arrays.asList(StringUtils.split(environment.getProperty("zhongdui.deptcode"), ","))
+            .contains(deptCode)) {
+            // 当前人员属于中队
+            operateType = "1";
+        } else if (Arrays
+            .asList(StringUtils.split(environment.getProperty("gongyongshiyeke.deptcode"), ","))
+            .contains(deptCode)) {
+            // 当前人员属于公共事业科
+            operateType = "0";
+        }
+
+        for (JSONObject tmp : rows) {
+            tmp.put("operateType", operateType);
+        }
 
         // 执法队员APP【我的待办】返回结构与事件人员相同，不再进行数据整理，而是接返回
         return userToDoTasks;
