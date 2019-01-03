@@ -294,12 +294,15 @@
 	inspectItem,
 	code,
 	name,
-	total,
-	MAX( CASE dealType WHEN 'root_biz_caseDealType_zlgz' THEN dealTypeCount ELSE 0 END ) root_biz_caseDealType_zlgz,
-	MAX( CASE dealType WHEN 'root_biz_caseDealType_xccf' THEN dealTypeCount ELSE 0 END ) root_biz_caseDealType_xccf,
-	MAX( CASE dealType WHEN 'root_biz_caseDealType_ybcx' THEN dealTypeCount ELSE 0 END ) root_biz_caseDealType_ybcx,
-	MAX( CASE dealType WHEN 'root_biz_caseDealType_wfxwt' THEN dealTypeCount ELSE 0 END ) root_biz_caseDealType_wfxwt,
-	MAX( CASE dealType WHEN 'root_biz_caseDealType_ajys' THEN dealTypeCount ELSE 0 END ) root_biz_caseDealType_ajys
+	total
+
+        <!-- 动态生成案件处理类型的SQL -->
+    <if test="dealTypes != null and dealTypes.size() >0">
+        ,
+        <foreach collection="dealTypes" item="item" separator=",">
+            MAX( CASE dealType WHEN #{item} THEN dealTypeCount ELSE 0 END ) #{item}
+        </foreach>
+    </if>
 	FROM
 		(
 			SELECT

@@ -8,6 +8,7 @@ import com.bjzhianjia.scp.cgp.biz.MessageCenterBiz;
 import com.bjzhianjia.scp.cgp.biz.WritsInstancesBiz;
 import com.bjzhianjia.scp.cgp.entity.CaseRegistration;
 import com.bjzhianjia.scp.cgp.entity.LawTask;
+import com.bjzhianjia.scp.cgp.service.CaseInfoService;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.task.service.IWfProcTaskCallBackService;
@@ -38,6 +39,9 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
 
     @Autowired
     private MessageCenterBiz messageCenterBiz;
+
+    @Autowired
+    private CaseInfoService caseInfoService;
     
     @Override
     public void before(String dealType, Map<String, Object> procBizData) throws BizException {
@@ -121,6 +125,14 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
         caseRegistration.setExeStatus(CaseRegistration.EXESTATUS_STATE_FINISH);
         caseRegistrationBiz.updateSelectiveById(caseRegistration);
 
+        CaseRegistration caseRegistrationInDB = caseRegistrationBiz.selectById(caseId);
+        // 判断案件来源类型是否为中心交办
+        if (StringUtils.equals(CaseRegistration.CASE_SOURCE_TYPE_CENTER,
+            caseRegistrationInDB.getCaseSourceType())) {
+            // 去更新事件状态
+            caseInfoService.centerCallback(caseRegistrationInDB,PROC_END);
+        }
+
         // 当案件结束时，并不影响到执法任务的状态
         // updateCaseSource(caseId,PROC_END);
     }
@@ -192,6 +204,14 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
         caseRegistration.setId(caseId);
         caseRegistration.setExeStatus(CaseRegistration.EXESTATUS_STATE_STOP);
         caseRegistrationBiz.updateSelectiveById(caseRegistration);
+
+        CaseRegistration caseRegistrationInDB = caseRegistrationBiz.selectById(caseId);
+        // 判断案件来源类型是否为中心交办
+        if (StringUtils.equals(CaseRegistration.CASE_SOURCE_TYPE_CENTER,
+                caseRegistrationInDB.getCaseSourceType())) {
+            // 去更新事件状态
+            caseInfoService.centerCallback(caseRegistrationInDB,"termination");
+        }
 
         // 当案件中止时，并不影响到执法任务的状态
         // updateCaseSource(caseId,"termination");
