@@ -1497,6 +1497,18 @@ public class CaseInfoService {
         baseInfoJObj.put("sourceTypeName", sourceTypeName);
         baseInfoJObj.put("caseDesc", caseInfo.getCaseDesc());
 
+        Set<String> caseInfoIdSet=new HashSet<>();
+        caseInfoIdSet.add(String.valueOf(caseInfo.getId()));
+        List<CaseRegistration> caseRegList =
+                caseRegistrationBiz.getByCaseSource(CaseRegistration.CASE_SOURCE_TYPE_CENTER,
+                        caseInfoIdSet);
+
+        if(BeanUtil.isEmpty(caseRegList)){
+            baseInfoJObj.put("caseRegistrationId", "");
+        }else{
+            baseInfoJObj.put("caseRegistrationId", caseRegList.get(0).getId());
+        }
+
         /*
          * =================查询基础信息===========结束==========
          */
@@ -1761,18 +1773,19 @@ public class CaseInfoService {
 
                     // 办理人修改为保存人员ID
                     List<String> exePersonNameList=new ArrayList<>();
+                    List<String> exePersonMobileList=new ArrayList<>();
                     if(BeanUtil.isNotEmpty(executeInfo.getExePerson())){
                         for(String userId:executeInfo.getExePerson().split(",")){
                             String userName =
                                 CommonUtil.getValueFromJObjStr(recordUser.get(userId), "name");
+                            String userMobile =
+                                CommonUtil.getValueFromJObjStr(recordUser.get(userId), "mobilePhone");
                             exePersonNameList.add(userName);
+                            exePersonMobileList.add(userMobile);
                         }
                     }
-//                    String exePersonName =
-//                            CommonUtil.getValueFromJObjStr(recordUser.get(sourceType.getString("exePerson")),
-//                                    "name");
                     executeInfoJObj.put("exePersonName", String.join(",", exePersonNameList));// 办理人
-                    // executeInfoJObj.put("exePsersonTel", executeInfo.get);//
+                    executeInfoJObj.put("exePsersonTel", String.join(",", exePersonMobileList));// 办理人电话
                     // 办理人联系方式
                     executeInfoJObj.put("finishTime", executeInfo.getFinishTime());// 办结时间
                     executeInfoJObj.put("exeDesc", executeInfo.getExeDesc());// 情况说明
@@ -2417,7 +2430,9 @@ public class CaseInfoService {
                 break;
             case "termination":
                 objs.getJSONObject(Constants.WfRequestDataTypeAttr.PROC_VARIABLEDATA).put("procSpecialDesc", "");
-                caseInfoToUpdate.setIsFinished(CaseInfo.FINISHED_STATE_STOP);
+                caseInfoToUpdate.setIsFinished(CaseInfo.FINISHED_STATE_FINISH);
+                objs.getJSONObject(Constants.WfRequestDataTypeAttr.PROC_BIZDATA).put("caseInfo",
+                        JSON.toJSONString(caseInfoToUpdate));
                 this.endProcess(objs);
                 break;
             default:
@@ -2440,7 +2455,8 @@ public class CaseInfoService {
         executeInfo.setExeDesc(caseRegistrationInDB.getCaseName());
         // 事件处理前照看
         executeInfo.setPrePicture(caseRegistrationInDB.getCaseSpotPic());
-        // 事件办理后照片--案件没有记录办理后照片，该处无法转化
+        // 事件办理后照片
+//        executeInfo.setPicture(caseRegistrationInDB.getCaseEndPic());
 
         /*
          * 数据准备就绪，去进行修改或添加办理结果数据

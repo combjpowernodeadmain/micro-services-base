@@ -2675,4 +2675,42 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
         return caseRegistrations;
     }
+
+    /**
+     *
+     * @param id
+     * @return
+     */
+    public JSONObject getInfoById(String id) {
+        /*
+         * 1 查询与id关联的工作流实例ID
+         * 2 生成工作流需要的请求参数结构
+         */
+
+        // 工作流业务
+        JSONObject bizData = new JSONObject();
+        // 事件流程编码
+        bizData.put("procKey", "LawEnforcementProcess");
+        // 业务ids
+        bizData.put(Constants.WfProcessBizDataAttr.PROC_BIZID, "'"+String.valueOf(id)+"'");
+        JSONObject objs = initWorkflowQuery(bizData);
+
+        JSONObject queryData=new JSONObject();
+
+        // 查询流程实例ID
+        List<Map<String, Object>> procInstIdList = wfMonitorService.getProcInstIdByUserId(objs);
+
+        queryData.put
+                ("caseRegistrationId",id);
+        objs.put("queryData", queryData);
+        if (BeanUtil.isNotEmpty(procInstIdList)) {
+            // 请求中，只通过一个id进行查询，所以返回结果如果不为空，则长度一定为1
+            String procInstId = String.valueOf(procInstIdList.get(0).get("procInstId"));
+            objs.getJSONObject("procData").put("procInstId", procInstId);
+
+            return this.getInfoById(objs);
+        }
+
+        return new JSONObject();
+    }
 }

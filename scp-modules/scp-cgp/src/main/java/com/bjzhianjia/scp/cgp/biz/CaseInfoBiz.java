@@ -354,7 +354,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             stopCount = stopCount == null ? 0 : stopCount;
             // 已完成
             Integer finishCount = result.getInteger(stateKey[1]);
-            finishCount = finishCount == null ? 0 : stopCount;
+            finishCount = finishCount == null ? 0 : finishCount;
             // 已完成 = 已完成 + 已终止
             result.put(stateKey[1], stopCount + finishCount);
 

@@ -635,6 +635,19 @@ public class WritsInstancesBiz extends BusinessBiz<WritsInstancesMapper, WritsIn
         // 关联该文书相关的案件
         for (int i = 0; i < writsInstancesJArray.size(); i++) {
             JSONObject writsJObj = writsInstancesJArray.getJSONObject(i);
+
+            if (StringUtils.isNotBlank(writsJObj.getString("fillContext"))) {
+                JSONObject fillContextJObj = writsJObj.getJSONObject("fillContext");
+                if (StringUtils.isNotBlank(fillContextJObj.getString("bianhao"))
+                    && StringUtils.isBlank(writsJObj.getString("refNo"))) {
+                    writsJObj.put("refNo", fillContextJObj.getString("bianhao"));
+                }
+                if (StringUtils.isNotBlank(fillContextJObj.getString("year"))
+                    && StringUtils.isBlank(writsJObj.getString("refYear"))) {
+                    writsJObj.put("refYear", fillContextJObj.getString("year"));
+                }
+            }
+
             WritsInstances writsInstances = writsJObj.toJavaObject(WritsInstances.class);
             writsInstances.setCaseId(caseId);
 
