@@ -475,4 +475,22 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
     public ObjectRestResponse<Void> updateCache(@RequestBody JSONObject objs){
         return this.baseBiz.updateCache(objs);
     }
+
+    /**
+     * 案件详情页
+     * @param objs
+     * @return
+     */
+    @ApiOperation("案件详情页")
+    @RequestMapping(value = "/info/withWf/{id}", method = RequestMethod.GET)
+    public ObjectRestResponse<JSONObject> getInfoByIdWithWf(@PathVariable @ApiParam("请求案件ID") String id) {
+        ObjectRestResponse<JSONObject> result = new ObjectRestResponse<>();
+        if (id != null) {
+            result.setData(this.baseBiz.getInfoById(id));
+        } else {
+            result.setStatus(400);
+            result.setMessage("案件ID为空");
+        }
+        return result;
+    }
 }

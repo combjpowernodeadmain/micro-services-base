@@ -455,9 +455,31 @@ public class PatrolTaskService {
 			if(Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON.equals(patrolTask.getConcernedType())){
 				ConcernedPerson concernedPerson = concernedPersonService.selectById(patrolTask.getConcernedId());
 				result.put("concernedData", concernedPerson);
-				//个人性别
-				concernedPerson.setSex(CommonUtil.getByCode(dictFeign,concernedPerson.getSex()));
-				result.put("isCompany", false);
+				//个人性别+证件类型
+                Set<String> concernedDictKeySist=new HashSet<>();
+                if(StringUtils.isNotBlank(concernedPerson.getSex())){
+                    concernedDictKeySist.add(concernedPerson.getSex());
+                }
+                if(StringUtils.isNotBlank(concernedPerson.getCredType())){
+                    concernedDictKeySist.add(concernedPerson.getCredType());
+                }
+                Map<String, String> concernedPersonValues=null;
+                if(BeanUtil.isNotEmpty(concernedDictKeySist)){
+                    concernedPersonValues = dictFeign.getByCodeIn(String.join(",", concernedDictKeySist));
+                }
+                if(BeanUtil.isEmpty(concernedPersonValues)){
+                    concernedPersonValues=new HashMap<>();
+                }
+
+                concernedPerson.setSex(concernedPersonValues.get(concernedPerson.getSex()));
+
+                JSONObject resultConcernedJObj =
+                    JSONObject.parseObject(JSONObject.toJSONString(concernedPerson));
+                resultConcernedJObj.put("credTypeName",
+                    concernedPersonValues.get(concernedPerson.getCredType()));
+
+                result.put("concernedData", resultConcernedJObj);
+                result.put("isCompany", false);
 			}
 		}
 		//获取图片集

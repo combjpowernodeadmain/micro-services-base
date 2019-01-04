@@ -544,6 +544,9 @@ public class RegulaObjectService {
         // 监管对象类别放弃使用字典值，类型使用监管对象类别表，数据类型为Integer
         Integer objTypeId = regulaObject.getObjType();
         RegulaObjectType regulaObjectType = regulaObjectTypeBiz.selectById(objTypeId);
+        if(BeanUtil.isEmpty(regulaObjectType)){
+            regulaObjectType=new RegulaObjectType();
+        }
 
         /*
          * 聚和企业类型与证件类型
