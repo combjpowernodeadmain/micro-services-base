@@ -30,7 +30,7 @@
       delete from base_depart_user where depart_id = #{departId} and user_id = #{userId}
     </delete>
     <select id="selectDepartUsers" resultType="com.bjzhianjia.scp.security.admin.entity.User">
-      select u.name,u.username,u.id,u.sex,u.description,u.depart_id from base_depart d
+      select u.name,u.username,u.id,u.sex,u.description,u.depart_id,u.attr2 from base_depart d
           inner join base_depart_user bdu
         on bdu.depart_id = d.id
           inner join
