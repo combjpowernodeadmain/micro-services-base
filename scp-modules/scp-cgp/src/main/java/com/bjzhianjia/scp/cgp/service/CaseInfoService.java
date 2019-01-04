@@ -2462,7 +2462,7 @@ public class CaseInfoService {
         // 办理时间
         executeInfo.setFinishTime(new Date());
         // 办理情况
-        executeInfo.setExeDesc(caseRegistrationInDB.getCaseName());
+        executeInfo.setExeDesc(caseRegistrationInDB.getCaseContent());
         // 事件处理前照看
         executeInfo.setPrePicture(caseRegistrationInDB.getCaseSpotPic());
         // 事件办理后照片
