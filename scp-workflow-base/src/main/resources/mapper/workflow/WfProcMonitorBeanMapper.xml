@@ -877,11 +877,12 @@
 		task.PROC_TASK_COMMITTER procTaskCommitter,
 		task.PROC_APPROVEURL procApproveurl,
 		task.PROC_SELF_PROPERTIES procSelfProperties,
-		IF (
-		task.PROC_TASK_STATUS = '1',
-		task.PROC_TASK_GROUP,
-		task.PROC_TASK_ASSIGNEE
-		) procTaskAssignee,
+		task.PROC_TASK_ASSIGNEE procTaskAssignee,
+		<!--IF (-->
+		<!--task.PROC_TASK_STATUS = '1',-->
+		<!--task.PROC_TASK_GROUP,-->
+		<!--task.PROC_TASK_ASSIGNEE-->
+		<!--) procTaskAssignee,-->
 		task.PROC_LICENSOR procLicensor,
 		FROM_UNIXTIME(task.PROC_TASK_COMMITTIME, '%Y/%m/%d %H:%i:%s') procTaskCommittime,
 		FROM_UNIXTIME(task.PROC_TASK_ASSIGNTIME, '%Y/%m/%d %H:%i:%s') procTaskAssigntime,

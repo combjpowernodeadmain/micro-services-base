@@ -409,7 +409,7 @@ public class CaseInfoService {
                 
                 /*
                  * 当按状态进行查询时，待结案节点比较特殊
-                 * 1 流程走完后，状态会停留在待结案，所以无论查询待结案还是已结案，都会将该结节查出，对结果集造成混淆
+                 * 1 流程走完后，状态会停留在待结案，所以无论查询待结案还是已办结，都会将该结节查出，对结果集造成混淆
                  * 2 对查询条件进行处理，如果查询的是待结案的状态，则在与业务数据进行整合时，只整合未完成的数据，去除
                  * 已完成数据对待结案查询的干扰
                  */
@@ -563,7 +563,7 @@ public class CaseInfoService {
 
             wfJObject.put("caseInfoId", caseInfo.getId());
             if (CaseInfo.FINISHED_STATE_FINISH.equals(caseInfo.getIsFinished())) {
-                wfJObject.put("procCtaskname", "已结案");
+                wfJObject.put("procCtaskname", "已办结");
             }
 
             if (CaseInfo.FINISHED_STATE_STOP.equals(caseInfo.getIsFinished())) {
@@ -1122,6 +1122,8 @@ public class CaseInfoService {
             objsForClaimBizData.put("procOrgCode", bizData.getString("procOrgCode"));
             objsForClaimProcData.put("procTaskId", procData.getString("procTaskId"));
             objsForClaimAuthData.put("procAuthType", authData.getString("procAuthType"));
+            objsForClaimAuthData.put("procTaskUser", authData.getString("procTaskUser"));
+            objsForClaimAuthData.put("procDeptId", authData.getString("procDeptId"));
             objsForClaimVariableData.put("taskUrl", variableData.getString("taskUrl"));
             objsForClaimVariableData.put("procApprStatus",
                 variableData.getString("procApprStatus"));
@@ -2408,8 +2410,16 @@ public class CaseInfoService {
         // 3-> 填充authData
         objs.getJSONObject(Constants.WfRequestDataTypeAttr.PROC_AUTHDATA)
             .put(Constants.WfProcessAuthData.PROC_DEPATID, BaseContextHandler.getDepartID());
-        objs.getJSONObject(Constants.WfRequestDataTypeAttr.PROC_AUTHDATA)
-            .put(Constants.WfProcessAuthData.PROC_TASKUSER, procJObj.getString("procTaskAssignee"));
+        /*
+         * 如果事件还没有签收，procJObj.getString("procTaskAssignee")为NULL
+         * 取当前案件的创建人为中心交办前事件的签收人
+         * 因为该案件记录的创建者即为当时发起中心交办的人
+         */
+        String procTaskAssignee = procJObj.getString("procTaskAssignee");
+        objs.getJSONObject(Constants.WfRequestDataTypeAttr.PROC_AUTHDATA).put(
+            Constants.WfProcessAuthData.PROC_TASKUSER,
+            procJObj.getString("procTaskAssignee") == null ? caseRegistrationInDB.getCrtUserId()
+                : procJObj.getString("procTaskAssignee"));
 
         // 4-> 填充variableData
         objs.getJSONObject(Constants.WfRequestDataTypeAttr.PROC_VARIABLEDATA)
