@@ -2472,7 +2472,7 @@ public class CaseInfoService {
         // 事件处理前照看
         executeInfo.setPrePicture(caseRegistrationInDB.getCaseSpotPic());
         // 事件办理后照片
-//        executeInfo.setPicture(caseRegistrationInDB.getCaseEndPic());
+        executeInfo.setPicture(caseRegistrationInDB.getCaseEndPic());
 
         /*
          * 数据准备就绪，去进行修改或添加办理结果数据
