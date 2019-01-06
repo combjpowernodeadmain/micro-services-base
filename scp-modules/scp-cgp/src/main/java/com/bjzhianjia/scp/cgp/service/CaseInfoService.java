@@ -1862,7 +1862,7 @@ public class CaseInfoService {
                 JSONObject finishPersonJObj = manyUsersMap.get(caseInfo.getFinishPerson());
                 // 有可能caseInfo.getFinishPerson()所对应的人在base_user表中被删除，getFinishPerson=NULL
                 if(BeanUtil.isNotEmpty(finishPersonJObj)){
-                    finishJObj.put("finishPersonName", finishPersonJObj.getString("name"));
+                    finishJObj.put("finishPersonName", finishPersonJObj.getString("userName"));
                     finishJObj.put("finishPersonTel", finishPersonJObj.getString("mobilePhone"));
                 }
             }
