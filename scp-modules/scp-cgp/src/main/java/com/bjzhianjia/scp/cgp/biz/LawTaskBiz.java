@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -342,11 +343,11 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
      *            执法任务名称
      * @throws Exception
      */
-    public Result<Void> randomLawTask(String objType, String griIds, int peopleNumber, int regulaObjNumber,
+    public Result<List<JSONObject>> randomLawTask(String objType, String griIds, int peopleNumber, int regulaObjNumber,
         Date startTime, Date endTime, String info, String bizTypeCode, String eventTypeId, String lawTitle)
         throws Exception {
 
-        Result<Void> result = new Result<>();
+        Result<List<JSONObject>> result = new Result<>();
         // 执法者列表
         List<EnforceCertificate> userList = enforceCertificateBiz.getEnforceCertificateList();
 
@@ -367,6 +368,7 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 
         List<JSONObject> _regulaObjects = this.getRegulaObject(regulaObjNumber, regulaObjects);
 
+        List<JSONObject> resultForReturn=new ArrayList<>();
         if (_userList != null && _regulaObjects != null) {
             JSONArray executePerson = null;
             JSONObject patrolObject = null;
@@ -374,6 +376,24 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 
                 executePerson = _userList.get(i);
                 patrolObject = _regulaObjects.get(i);
+
+                // 将生成的执法人与监管对象组合返回到前端
+                Set<String> userNameList = new HashSet<>();
+                Set<String> patrolObjectNameList = new HashSet<>();
+                for (int m = 0; m < executePerson.size(); m++) {
+                    JSONObject executePersonJObj = executePerson.getJSONObject(m);
+                    for (JSONObject.Entry e : executePersonJObj.entrySet()) {
+                        JSONObject jsonObject = JSONObject.parseObject(String.valueOf(e.getValue()));
+                        userNameList.add(jsonObject.getString("userName"));
+                    }
+                }
+                for (JSONObject.Entry e : patrolObject.entrySet()) {
+                    patrolObjectNameList.add(String.valueOf(e.getValue()));
+                }
+                JSONObject resultTmp = new JSONObject();
+                resultTmp.put("executePerson", StringUtils.join(userNameList, ","));
+                resultTmp.put("patrolObject", StringUtils.join(patrolObjectNameList, ","));
+                resultForReturn.add(resultTmp);
 
                 LawTask lawTask = new LawTask();
                 lawTask.setExecutePerson(executePerson.toJSONString());
@@ -393,8 +413,8 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
                 }
             }
         }
-
         result.setIsSuccess(true);
+        result.setData(resultForReturn);
         return result;
     }
 
