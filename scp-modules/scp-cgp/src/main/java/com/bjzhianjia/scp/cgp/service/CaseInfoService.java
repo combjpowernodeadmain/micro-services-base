@@ -482,9 +482,14 @@ public class CaseInfoService {
             eventTypeIdStrSet.add(caseInfo.getEventTypeList());
         }
 
-        List<CaseRegistration> caseRegList =
-            caseRegistrationBiz.getByCaseSource(CaseRegistration.CASE_SOURCE_TYPE_CENTER,
-                caseInfoIdSet);
+        List<CaseRegistration> caseRegList = null;
+        if (BeanUtil.isNotEmpty(caseInfoIdSet)) {
+            caseRegList = caseRegistrationBiz.getByCaseSource(CaseRegistration.CASE_SOURCE_TYPE_CENTER,
+                    caseInfoIdSet);
+        }
+        if(BeanUtil.isEmpty(caseRegList)){
+            caseRegList=new ArrayList<>();
+        }
         // 收集发起了中心交办的事件ID
         List<String> collect =
             caseRegList.stream().map(o -> o.getCaseSource()).distinct()
@@ -511,7 +516,7 @@ public class CaseInfoService {
                 eventType_ID_NAME_Map.put(String.valueOf(eventType.getId()), eventType.getTypeName());
             }
         }
-        
+
         for (CaseInfo caseInfo : caseInfoList) {
 
             JSONObject wfJObject = JSONObject.parseObject(JSON.toJSONString(caseInfo));
@@ -1501,10 +1506,11 @@ public class CaseInfoService {
 
         Set<String> caseInfoIdSet=new HashSet<>();
         caseInfoIdSet.add(String.valueOf(caseInfo.getId()));
-        List<CaseRegistration> caseRegList =
-                caseRegistrationBiz.getByCaseSource(CaseRegistration.CASE_SOURCE_TYPE_CENTER,
-                        caseInfoIdSet);
-
+        List<CaseRegistration> caseRegList = null;
+        if (BeanUtil.isNotEmpty(caseInfoIdSet)) {
+            caseRegList = caseRegistrationBiz.getByCaseSource(CaseRegistration.CASE_SOURCE_TYPE_CENTER,
+                    caseInfoIdSet);
+        }
         if(BeanUtil.isEmpty(caseRegList)){
             baseInfoJObj.put("caseRegistrationId", "");
         }else{
@@ -1598,7 +1604,7 @@ public class CaseInfoService {
                 eventType = eventTypeBiz.selectById(Integer.valueOf(caseInfo.getEventTypeList()));
             } catch (NumberFormatException e) {
                 e.printStackTrace();
-                
+
                 //caseInfo.getEventTypeList()在数据库中应为数字，如果出现格式错误，表示数据出现问题，此catch使异常不至于因此而中断
                 eventType=null;
             }
