@@ -19,6 +19,7 @@ import com.bjzhianjia.scp.cgp.util.DateUtil;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -148,7 +149,7 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
 
     @RequestMapping(value = "randomLawTask", method = RequestMethod.GET)
     @ApiOperation("双随机分配执法任务")
-    public ObjectRestResponse<Void> randomLawTask(
+    public ObjectRestResponse<List<JSONObject>> randomLawTask(
         @RequestParam(defaultValue = "2") @ApiParam("每组队员数 ") Integer peopleNumber,
         @RequestParam(defaultValue = "2") @ApiParam("巡查对象数") Integer regulaObjNumber,
         @RequestParam(defaultValue = "") @ApiParam("网格ids") String griIds,
@@ -160,7 +161,7 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
         @RequestParam(defaultValue = "") @ApiParam("事件类别ids") String eventTypeId,
         @RequestParam(defaultValue = "") @ApiParam("执法任务名称") String lawTitle) {
 
-        ObjectRestResponse<Void> result = new ObjectRestResponse<Void>();
+        ObjectRestResponse<List<JSONObject>> result = new ObjectRestResponse<>();
 
         if(StringUtils.isBlank(startTime)||StringUtils.isBlank(endTime)){
             result.setStatus(400);
@@ -183,13 +184,16 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
         }
 
         try {
-            Result<Void>  _result = lawTaskBiz.randomLawTask(objType, griIds, peopleNumber, regulaObjNumber, _startTime,
+            Result<List<JSONObject>>  _result = lawTaskBiz.randomLawTask(objType, griIds, peopleNumber, regulaObjNumber, _startTime,
                 _endTimeTmp, info, bizTypeCode, eventTypeId,lawTitle);
             //错误反馈
             if(!_result.getIsSuccess()) {
                 result.setStatus(400);
                 result.setMessage(_result.getMessage());
             }
+
+            List<JSONObject> data = _result.getData();
+            result.setData(data);
         } catch (Exception e) {
             result.setStatus(400);
             result.setMessage("分配异常");
