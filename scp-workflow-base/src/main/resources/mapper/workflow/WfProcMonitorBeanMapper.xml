@@ -151,13 +151,14 @@
 	<!-- 统计当前用户任务量 -->
 	<select id="selectUserStatisTask" resultType="java.util.Map">
         SELECT
-        cmonth,
+		cyear,cmonth,
         MAX( CASE procKey WHEN 'comprehensiveManage' THEN csum ELSE 0 END ) comprehensiveManage,
         MAX( CASE procKey WHEN 'LawEnforcementProcess' THEN csum ELSE 0 END ) LawEnforcementProcess
         FROM (
-            SELECT cmonth,procKey,
+            SELECT cyear,cmonth,procKey,
             SUM(ccount) csum FROM(
                 SELECT
+				YEAR(cmonth) cyear,
                 MONTH(cmonth) cmonth,
                 PROC_KEY procKey,
                 COUNT(PROC_KEY) ccount
@@ -169,7 +170,11 @@
                     FROM_UNIXTIME(MAX(swpt1.PROC_TASK_ENDTIME),'%Y/%m/%d') cmonth
                     FROM
                     SCP_WF_PROC swp1
-                    LEFT JOIN SCP_WF_PROC_TASK swpt1 ON swp1.PROC_INST_ID = swpt1.PROC_INST_ID
+                    LEFT JOIN (
+						<!-- 先筛选数据源为当年的数据 -->
+						SELECT * FROM SCP_WF_PROC_TASK swpt1
+						WHERE YEAR(FROM_UNIXTIME(swpt1.PROC_TASK_ENDTIME,'%Y/%m/%d'))=YEAR(NOW())
+					) swpt1 ON swp1.PROC_INST_ID = swpt1.PROC_INST_ID
                     WHERE
                     swp1.PROC_STATUS IN (4, 6)
                     AND swpt1.PROC_TASK_ASSIGNEE = #{procTaskAssignee}
@@ -182,9 +187,9 @@
                 PROC_KEY
             ) ccountTmp
             GROUP BY
-            cmonth,procKey
+            cmonth,procKey,cyear
         ) sumTmp
-        GROUP BY cmonth
+        GROUP BY cmonth,cyear
 	</select>
 	
 	
