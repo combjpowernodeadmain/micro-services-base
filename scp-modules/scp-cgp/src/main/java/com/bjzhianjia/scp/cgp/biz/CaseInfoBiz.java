@@ -938,6 +938,10 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
      * @return
      */
     public TableResultResponse<JSONObject> statisticsByGridLevel(CaseInfo caseInfo, String gridLevel, String startTime, String endTime, Integer page, Integer limit){
+        if (BeanUtils.isEmpty(gridLevel)) {
+            gridLevel = environment.getProperty("areaGrid.gridLevel.zrwg.zfpq");
+        }
+
         // 查询与gridLevel对应的网格ID,返回结果如：(Map){"2","2,3,4,5"},{"10","12,13,14,15"}
         Map<Integer, Set<String>> gridIdBindChildrenMap = areaGridBiz.getByLevelBindChildren(gridLevel);
         /*
@@ -960,7 +964,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         }
 
         // 查询网格等级,"root_biz_grid_level"是网格等级在字典中前缀
-        Map<String, String> gridLevelDictValueMap = dictFeign.getByCode("root_biz_grid_level");
+        Map<String, String> gridLevelDictValueMap = dictFeign.getByCode(environment.getProperty("gridLevelType"));
 
         List<JSONObject> result = this.mapper.statisticsByGridLevel(queryData,caseInfo,startTime,endTime);
         Set<Integer> gridIdInResult=new HashSet<>();
