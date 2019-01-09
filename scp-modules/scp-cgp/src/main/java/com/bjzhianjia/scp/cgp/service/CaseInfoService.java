@@ -15,6 +15,7 @@ import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
 import com.bjzhianjia.scp.cgp.biz.ExecuteInfoBiz;
 import com.bjzhianjia.scp.cgp.biz.LeadershipAssignBiz;
 import com.bjzhianjia.scp.cgp.biz.MayorHotlineBiz;
+import com.bjzhianjia.scp.cgp.biz.MessageCenterBiz;
 import com.bjzhianjia.scp.cgp.biz.PatrolResBiz;
 import com.bjzhianjia.scp.cgp.biz.PatrolTaskBiz;
 import com.bjzhianjia.scp.cgp.biz.PublicOpinionBiz;
@@ -31,6 +32,7 @@ import com.bjzhianjia.scp.cgp.entity.EventType;
 import com.bjzhianjia.scp.cgp.entity.ExecuteInfo;
 import com.bjzhianjia.scp.cgp.entity.LeadershipAssign;
 import com.bjzhianjia.scp.cgp.entity.MayorHotline;
+import com.bjzhianjia.scp.cgp.entity.MessageCenter;
 import com.bjzhianjia.scp.cgp.entity.PatrolRes;
 import com.bjzhianjia.scp.cgp.entity.PatrolTask;
 import com.bjzhianjia.scp.cgp.entity.PublicOpinion;
@@ -175,6 +177,9 @@ public class CaseInfoService {
 
     @Autowired
     private CaseRegistrationBiz caseRegistrationBiz;
+
+    @Autowired
+    private MessageCenterBiz messageCenterBiz;
 
     /**
      * 更新单个对象
@@ -928,6 +933,14 @@ public class CaseInfoService {
                 caseInfo.setSourceType(caseInfoInDB.getSourceType());
                 gotoFinishSource(caseInfo, false);// 去更新事件来源的状态
             }
+            
+            // 只要流程结束，都需要判断需不需要向12345登记员发送消息
+        if (StringUtils.equals(Constances.ProcFlowWork.TOFINISHWORKFLOW, flowDirection)
+            || StringUtils.equals(Constances.ProcFlowWork.TOFINISHWORKFLOW_DUP, flowDirection)
+            || StringUtils.equals(Constances.ProcFlowWork.TOFINISHWORKFLOW_DEPT, flowDirection)) {
+            CaseInfo caseInfoInDB = caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
+            _mayorHolineMsgAssist(caseInfoInDB);
+        }
 
             // 判断是否有当事人信息concernedPerson
             if (concernedPersonJObj != null) {
@@ -1036,6 +1049,25 @@ public class CaseInfoService {
 
         result.setIsSuccess(true);
         return result;
+    }
+
+    /**
+     * 12345消息提醒帮助方法
+     * 该方法会判断事件来源是否为12345，如果是，则生成一条消息，如果不是，则跳过。s
+     * @param caseInfoInDB
+     */
+    private void _mayorHolineMsgAssist(CaseInfo caseInfoInDB) {
+        if(StringUtils.equals(caseInfoInDB.getSourceType(), Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345)){
+            // 表明该事件来源是市长热线
+            MayorHotline mayorHotline = mayorHotlineBiz.selectById(Integer.valueOf(caseInfoInDB.getSourceCode()));
+
+            MessageCenter messageCenter=new MessageCenter();
+            messageCenter.setMsgSourceType(Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345);
+            messageCenter.setMsgSourceId(caseInfoInDB.getSourceCode());
+            messageCenter.setMsgName(mayorHotline.getHotlnTitle());
+            messageCenter.setMsgDesc(mayorHotline.getAppealDesc());
+            messageCenterBiz.add12345Msg(messageCenter);
+        }
     }
 
     /**
@@ -1905,6 +1937,8 @@ public class CaseInfoService {
         // 查询数据库中的caseInfo,以确定与caseInfo相对应的登记表那条记录的ID
         CaseInfo caseInfoInDB = caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
 
+        _mayorHolineMsgAssist(caseInfoInDB);
+
         caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
         caseInfo.setId(Integer.valueOf(bizDataJObject.getString("procBizId")));
         caseInfo.setSourceType(caseInfoInDB.getSourceType());
@@ -2446,7 +2480,7 @@ public class CaseInfoService {
                 break;
             case "termination":
                 objs.getJSONObject(Constants.WfRequestDataTypeAttr.PROC_VARIABLEDATA).put("procSpecialDesc", "");
-                caseInfoToUpdate.setIsFinished(CaseInfo.FINISHED_STATE_FINISH);
+                caseInfoToUpdate.setIsFinished(CaseInfo.FINISHED_STATE_STOP);
                 objs.getJSONObject(Constants.WfRequestDataTypeAttr.PROC_BIZDATA).put("caseInfo",
                         JSON.toJSONString(caseInfoToUpdate));
                 this.endProcess(objs);

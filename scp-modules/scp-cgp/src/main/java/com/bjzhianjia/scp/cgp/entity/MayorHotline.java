@@ -109,6 +109,10 @@ public class MayorHotline implements Serializable {
     @Column(name="hotln_source")
     private String hotlnSource;
 
+    // 反馈意见说明
+    @Column(name = "reply_desc")
+    private String replyDesc;
+
 	/**
 	 * 设置：主键
 	 */
@@ -357,5 +361,13 @@ public class MayorHotline implements Serializable {
 	 */
 	public void setHotlnSource(String hotlnSource) {
 		this.hotlnSource = hotlnSource;
+	}
+
+	public String getReplyDesc() {
+		return replyDesc;
+	}
+
+	public void setReplyDesc(String replyDesc) {
+		this.replyDesc = replyDesc;
 	}
 }

@@ -961,6 +961,9 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
                 gridIdSetBindChildrenJObj.put("gridChildrenSet", gridChildrenSet);
                 queryData.add(gridIdSetBindChildrenJObj);
             }
+        } else {
+            // 如果连网格都没有找到，则认为查询结果可为空，直接返回空结果
+            return new TableResultResponse<>(0, new ArrayList<>());
         }
 
         // 查询网格等级,"root_biz_grid_level"是网格等级在字典中前缀
