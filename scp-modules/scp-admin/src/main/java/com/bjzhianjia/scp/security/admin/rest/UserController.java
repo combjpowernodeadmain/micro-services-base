@@ -297,4 +297,10 @@ public class UserController extends BaseController<UserBiz, User, String> {
 		return result;
 	}
 
+	@ApiOperation("按组CODE集合获取用户")
+	@RequestMapping(value = "/list/groupCode", method = RequestMethod.GET)
+	@ResponseBody
+	public List<JSONObject> getLeaderOrMemberByGroupCode(@RequestParam("groupCode") String groupCode) {
+		return baseBiz.selectLeaderOrMemberByGroupCode(groupCode);
+	}
 }

@@ -203,4 +203,21 @@
         </foreach>
         )
     </select>
+
+    <!-- 按组CODE集合获取用户 -->
+    <select id="selectLeaderOrMemberByGroupCode" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT bu.id userId,bu.name userName
+        FROM base_user bu
+        LEFT JOIN `base_group_leader` bgl ON bgl.user_id=bu.id
+        LEFT JOIN `base_group_member` bgm ON bgm.user_id=bu.id
+        LEFT JOIN `base_group` bg ON (bg.`id`=bgl.`group_id` OR bg.`id`=bgm.`group_id`)
+        WHERE
+        bu.is_deleted='0'
+        AND
+        bg.`code` IN (
+        <foreach collection="groupCodeSet" item="item" separator=",">
+            #{item}
+        </foreach>
+        )
+    </select>
 </mapper>
