@@ -68,7 +68,7 @@ public class RegulaObjectTypeService {
 
 		// 验证所属监管对象类型是否存在，验证当前监管对象类型的层级是否超过三级
 		Integer parentObjectTypeId = regulaObjectType.getParentObjectTypeId();
-		if (parentObjectTypeId != null) {
+		if (parentObjectTypeId != null && parentObjectTypeId != -1) {
 			// 父类型不能是它自己
 			if (parentObjectTypeId.equals(regulaObjectType.getId())) {
 				result.setMessage("所属监管对象类型不能是其自身");
