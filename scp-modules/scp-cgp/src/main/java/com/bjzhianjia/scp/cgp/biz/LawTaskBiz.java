@@ -379,12 +379,14 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 
                 // 将生成的执法人与监管对象组合返回到前端
                 Set<String> userNameList = new HashSet<>();
+                Set<String> userIdList = new HashSet<>();
                 Set<String> patrolObjectNameList = new HashSet<>();
                 for (int m = 0; m < executePerson.size(); m++) {
                     JSONObject executePersonJObj = executePerson.getJSONObject(m);
                     for (JSONObject.Entry e : executePersonJObj.entrySet()) {
                         JSONObject jsonObject = JSONObject.parseObject(String.valueOf(e.getValue()));
                         userNameList.add(jsonObject.getString("userName"));
+                        userIdList.add(String.valueOf(e.getKey()));
                     }
                 }
                 for (JSONObject.Entry e : patrolObject.entrySet()) {
@@ -392,6 +394,7 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
                 }
                 JSONObject resultTmp = new JSONObject();
                 resultTmp.put("executePerson", StringUtils.join(userNameList, ","));
+                resultTmp.put("executePersonId", StringUtils.join(userIdList, ","));
                 resultTmp.put("patrolObject", StringUtils.join(patrolObjectNameList, ","));
                 resultForReturn.add(resultTmp);
 

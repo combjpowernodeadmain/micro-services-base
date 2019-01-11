@@ -850,6 +850,15 @@ public class CaseInfoService {
         log.debug("进行事件审批，参数结构为："+objs.toString());
         Result<Void> result=new Result<>();
 
+        CaseInfo caseInfoInDB =
+            caseInfoBiz
+                .selectById(Integer.valueOf(objs.getJSONObject("bizData").getString("procBizId")));
+        preCompleteProcess(caseInfoInDB,result);
+        if(!result.getIsSuccess()){
+            return result;
+        }
+        result.setIsSuccess(false);
+
         /*
          * 该方法完成两个事件--签收与审批
          * 签收操作与审批操作是两个动作
@@ -913,8 +922,6 @@ public class CaseInfoService {
                  */
                 log.info("该请求流向【结束】，流程即将结束。");
                 // 查询数据库中的caseInfo,以确定与caseInfo相对应的登记表那条记录的ID
-                CaseInfo caseInfoInDB = caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
-
                 caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
                 caseInfo.setIsFinished(CaseInfo.FINISHED_STATE_FINISH);
                 caseInfo.setFinishTime(new Date());// 结案时间
@@ -924,8 +931,6 @@ public class CaseInfoService {
                 // 因重覆而结束
                 log.info("该请求流向【结束】（因事件重复），流程即将结束。");
                 // 查询数据库中的caseInfo,以确定与caseInfo相对应的登记表那条记录的ID
-                CaseInfo caseInfoInDB = caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
-
                 caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
                 caseInfo.setIsFinished(CaseInfo.FINISHED_STATE_FINISH);
                 caseInfo.setIsDuplicate("1");
@@ -938,7 +943,6 @@ public class CaseInfoService {
         if (StringUtils.equals(Constances.ProcFlowWork.TOFINISHWORKFLOW, flowDirection)
             || StringUtils.equals(Constances.ProcFlowWork.TOFINISHWORKFLOW_DUP, flowDirection)
             || StringUtils.equals(Constances.ProcFlowWork.TOFINISHWORKFLOW_DEPT, flowDirection)) {
-            CaseInfo caseInfoInDB = caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
             _mayorHolineMsgAssist(caseInfoInDB);
         }
 
@@ -953,7 +957,6 @@ public class CaseInfoService {
                     JSON.parseObject(concernedPersonJObj.toJSONString(), ConcernedPerson.class);
 
                 //判断当前事件是否已关联了当事人
-                CaseInfo caseInfoInDB = caseInfoBiz.selectById(caseInfo.getId());
                 if (BeanUtil.isNotEmpty(caseInfoInDB.getConcernedPerson())
                     && Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON
                         .equals(caseInfoInDB.getConcernedType())) {
@@ -979,7 +982,6 @@ public class CaseInfoService {
                 ConcernedCompany concernedCompany =
                     JSONObject.parseObject(concernedCompanyJObj.toJSONString(), ConcernedCompany.class);
 
-                CaseInfo caseInfoInDB = caseInfoBiz.selectById(caseInfo.getId());
                 if (BeanUtil.isNotEmpty(caseInfoInDB.getConcernedPerson())
                     && Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG
                         .equals(caseInfoInDB.getConcernedType())) {
@@ -1049,6 +1051,34 @@ public class CaseInfoService {
 
         result.setIsSuccess(true);
         return result;
+    }
+
+    /**
+     * 在进行事件审批的时候，做一些审批前的处理
+     * @param objs
+     */
+    private void preCompleteProcess(CaseInfo caseInfoInDB,Result<Void> result) {
+        // 判断该事件是否起了中心交办，中心交办后，事件是不可以被审批的
+        try {
+            _isCentering(caseInfoInDB, result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setIsSuccess(false);
+            result.setMessage("服务器异常，请联系管理员。");
+        }
+    }
+
+    private void _isCentering(CaseInfo caseInfoInDB, Result<Void> result) {
+        result.setIsSuccess(false);
+        CaseRegistration query=new CaseRegistration();
+        query.setCaseSourceType(CaseRegistration.CASE_SOURCE_TYPE_CENTER);
+        query.setCaseSource(String.valueOf(caseInfoInDB.getId()));
+        CaseRegistration caseRegistration = caseRegistrationBiz.selectOne(query);
+        if(BeanUtil.isNotEmpty(caseRegistration)){
+            result.setMessage("该事件正在【案件办理中】");
+            return;
+        }
+        result.setIsSuccess(true);
     }
 
     /**
