@@ -1,17 +1,21 @@
 package com.bjzhianjia.scp.cgp.biz;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -85,6 +89,9 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 
     @Autowired
     private PropertiesConfig propertiesConfig;
+
+    @Autowired
+    private Environment environment;
 
     public void createLawTask(LawTask lawTask) throws Exception {
         // 生成巡查记录编号
@@ -349,7 +356,24 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 
         Result<List<JSONObject>> result = new Result<>();
         // 执法者列表
-        List<EnforceCertificate> userList = enforceCertificateBiz.getEnforceCertificateList();
+        List<EnforceCertificate> fakeUserList = enforceCertificateBiz.getEnforceCertificateList();
+
+        /*
+         * ----------------新逻辑----------开始----------
+         * 1 在生成执法任务时，第一次随机到哪个中队的执法人员，则在随后生成的执法人员中，只能是哪个中队的人员。
+         * 如，第一次随机到了一中队人员，则将随后选择的全部人员限定在一中队里。
+         * 2 如用户选择的每组执法人员数量大于某一中队里拥有执法证的人员数量，则提示双随机失败。
+         */
+        List<EnforceCertificate> userList = _randomLawTaskGetUserList(fakeUserList);
+
+        if (userList.size() < peopleNumber) {
+            result.setIsSuccess(false);
+            result.setMessage("执法人员数量不足，请重试。");
+            return result;
+        }
+        /*
+         * ----------------新逻辑----------结束----------
+         */
 
         if (userList == null || userList.isEmpty()) {
             result.setIsSuccess(false);
@@ -419,6 +443,81 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
         result.setIsSuccess(true);
         result.setData(resultForReturn);
         return result;
+    }
+
+    /**
+     * 从fakeUserList中随机一个部门，然后从fakeUserList中找出该部门下所有的人
+     * 
+     * @param fakeUserList
+     * @return
+     */
+    @NotNull
+    private List<EnforceCertificate> _randomLawTaskGetUserList(
+        List<EnforceCertificate> fakeUserList) {
+        Random ran = new Random();
+
+        int count=0;
+        boolean isLoop=true;
+        List<EnforceCertificate> userList = new ArrayList<>();
+
+        do{
+            int ranIndex = ran.nextInt(fakeUserList.size());
+            EnforceCertificate enforceCertificate = fakeUserList.get(ranIndex);
+            String usrId = enforceCertificate.getUsrId();
+            // 确定userId所在的部门`
+            JSONArray specifyUserJArray = adminFeign.getInfoByUserIds(usrId);
+            // deptId
+            String deptId = null;
+            if (BeanUtil.isNotEmpty(specifyUserJArray)) {
+                // 一个人有可能属于多个部门,但不一定都是中队部门
+                for (int i = 0; i < specifyUserJArray.size(); i++) {
+                    JSONObject specifyUserJObj = specifyUserJArray.getJSONObject(i);
+                    if (Arrays
+                            .asList(StringUtils.split(environment.getProperty("zhongdui.deptcode"), ","))
+                            .contains(specifyUserJObj.getString("deptCode"))) {
+                        // 该条记录对应的部门是中队
+                        deptId = specifyUserJObj.getString("deptId");
+                        // 为使结果具有随机性，当找到一个部门时，判断是否真的使用该部门
+                        if (ran.nextInt(2) % 2 == 1) {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // 查询与usrId同部门 的人
+            List<JSONObject> usersWithSameDept = null;
+            // 当随机找到的人(userId)不属于中队时，或根本未找到该人属于的部门时，deptId将是NULL
+            if (StringUtils.isNotBlank(deptId)) {
+                usersWithSameDept = adminFeign.getUsersByDeptIds(deptId);
+            }
+
+            if (BeanUtil.isEmpty(usersWithSameDept)) {
+                usersWithSameDept = new ArrayList<>();
+            }
+
+            // 同部门下所有人的ID
+            List<String> userId =
+                    usersWithSameDept.stream().map(o -> o.getString("userId")).distinct()
+                            .collect(Collectors.toList());
+
+            for (EnforceCertificate tmp : fakeUserList) {
+                if (userId.contains(tmp.getUsrId())) {
+                    // 说明该执法队员与第一次随机出的执法队员是一个中队
+                    userList.add(tmp);
+                    // 可以保证userList不再是空
+                    isLoop=false;
+                }
+            }
+
+            // 当循环次数大于用户列表数时还未随机到用户，则停止
+            if (count >= fakeUserList.size()) {
+                isLoop = false;
+            }
+            count++;
+        }while(isLoop);
+
+        return userList;
     }
 
     /**

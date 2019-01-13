@@ -620,6 +620,10 @@ public class CaseInfoService {
         JSONObject resultJObjct = new JSONObject();
         List<String> zhaiyaoList = new ArrayList<>();
         String reportPersonId = "";
+        Map<String, String> eventypeDictValue = dictFeign.getByCode(Constances.ROOT_BIZ_EVENTTYPE);
+        if(BeanUtil.isEmpty(eventypeDictValue)){
+            eventypeDictValue=new HashMap<>();
+        }
         switch (key) {
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345:
                 // 市长热线
@@ -628,7 +632,8 @@ public class CaseInfoService {
                 if (mayorHotline != null) {
                     reportPersonId = mayorHotline.getCrtUserId();
                     resultJObjct = JSONObject.parseObject(JSON.toJSONString(mayorHotline));
-                    resultJObjct.put("eventSourceType", "市长热线12345");
+                    resultJObjct.put("eventSourceType",
+                        eventypeDictValue.get(Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345));
                     resultJObjct.put("sourceCode", mayorHotline.getHotlnCode());
                     //添加主办人姓名
                     resultJObjct.put("crtUserName", mayorHotline.getCrtUserName());
@@ -654,7 +659,8 @@ public class CaseInfoService {
                     dictIdList.add(poinion.getOpinType());
                     dictIdList.add(poinion.getOpinLevel());
                     resultJObjct = JSONObject.parseObject(JSON.toJSONString(poinion));
-                    resultJObjct.put("eventSourceType", "舆情");
+                    resultJObjct.put("eventSourceType", eventypeDictValue
+                        .get(Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CONSENSUS));
                     resultJObjct.put("sourceCode", poinion.getOpinCode());
                     //添加主办人姓名
                     resultJObjct.put("crtUserName", poinion.getCrtUserName());
@@ -668,13 +674,14 @@ public class CaseInfoService {
                 }
                 break;
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_LEADER:
-                // 领导交办
+                // 交办管理
                 LeadershipAssign leadershipAssign =
                     leadershipAssignBiz.selectById(Integer.valueOf(caseInfo.getSourceCode()));
                 // 对查到的数据进行非空判断
                 if(leadershipAssign!=null){
                     resultJObjct = JSONObject.parseObject(JSON.toJSONString(leadershipAssign));
-                    resultJObjct.put("eventSourceType", "领导交办");
+                    resultJObjct.put("eventSourceType",
+                        eventypeDictValue.get(Constances.BizEventType.ROOT_BIZ_EVENTTYPE_LEADER));
                     resultJObjct.put("sourceCode", leadershipAssign.getTaskCode());
                     //添加主办人姓名
                     resultJObjct.put("crtUserName", leadershipAssign.getCrtUserName());
@@ -707,7 +714,8 @@ public class CaseInfoService {
                 PatrolTask patrolTask = patrolTaskResult == null ? new PatrolTask() : patrolTaskResult.getData();
 
                 resultJObjct = JSONObject.parseObject(JSON.toJSONString(patrolTask));
-                resultJObjct.put("eventSourceType", "巡查上报");
+                resultJObjct.put("eventSourceType",
+                    eventypeDictValue.get(Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CHECK));
                 resultJObjct.put("sourceCode", patrolTask.getPatrolCode());
                 //添加主办人姓名
                 resultJObjct.put("crtUserName", patrolTask.getCrtUserName());
@@ -772,7 +780,8 @@ public class CaseInfoService {
 
                 // 对查询到的数据进行非空判断
                 if (resultJObjct != null) {
-                    resultJObjct.put("eventSourceType", "指挥中心热线");
+                    resultJObjct.put("eventSourceType", eventypeDictValue
+                        .get(Constances.BizEventType.ROOT_BIZ_EVENTTYPE_COMMAND_LINE));
                     resultJObjct.put("sourceCode", centerHotlineJObj.getString("hotlnCode"));
                     //添加主办人姓名
                     resultJObjct.put("crtUserName", centerHotlineJObj.getString("crtUserName"));
@@ -1323,13 +1332,13 @@ public class CaseInfoService {
                 publicOpinionBiz.updateSelectiveById(publicOpinion);
                 break;
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_LEADER:
-                // 领导交办
+                // 交办管理
                 if (isTermination) {
                     // 事件终止操作
-                    log.info("更新领导交办事件为【已中止】");
+                    log.info("更新交办管理事件为【已中止】");
                     assist = assist(caseInfo.getSourceCode(), Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_STOP);
                 } else {
-                    log.info("更新领导交办事件为【已完成】");
+                    log.info("更新交办管理事件为【已完成】");
                     assist = assist(caseInfo.getSourceCode(), Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_FINISH);
                 }
                 LeadershipAssign leadershipAssign = JSON.parseObject(assist.toJSONString(), LeadershipAssign.class);
