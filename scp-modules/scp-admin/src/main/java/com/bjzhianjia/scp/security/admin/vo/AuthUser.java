@@ -39,9 +39,6 @@ public class AuthUser implements Serializable{
     
     private String isDisabled;
 
-    private String attr3;
-
-
     public AuthUser() {
     }
 
@@ -98,13 +95,5 @@ public class AuthUser implements Serializable{
     
     public void setIsDisabled(String isDisabled) {
         this.isDisabled = isDisabled;
-    }
-
-    public String getAttr3() {
-        return attr3;
-    }
-
-    public void setAttr3(String attr3) {
-        this.attr3 = attr3;
     }
 }

@@ -135,5 +135,39 @@
         crt_user_id,
         tenant_id
     </select>
-
+    <!-- 分案时获取主办人列表 -->
+    <select id="selectTechnicist" resultType="java.util.Map">
+        SELECT
+        bu.id userId,
+        bu.`name` userName,
+        bu.attr2 major,
+        ba1.`name` areaProvince,
+        ba2.`name` areaCity,
+        bd.`name` departName
+        FROM
+        base_user bu
+        INNER JOIN base_depart_user bdu ON bdu.user_id = bu.id
+        INNER JOIN base_depart bd ON bd.id = bdu.depart_id
+        LEFT JOIN base_areainfo ba1 ON bd.attr1 = ba1.id
+        LEFT JOIN base_areainfo ba2 ON bd.attr2 = ba2.id
+        WHERE
+        1 = 1
+        AND bu.attr2 = #{major}
+        <!-- 部门id -->
+        <if test="departId != null and departId != ''">
+            AND bd.id=#{departId}
+        </if>
+        <!-- 用户名字 -->
+        <if test="userName != null and userName!='' ">
+            AND bu.`name` LIKE "%"#{userName}"%"
+        </if>
+        <!-- 省份编码 -->
+        <if test="areaProvince != null and areaProvince!='' ">
+            AND bd.attr1 = #{areaProvince}
+        </if>
+        <!-- 城市编码 -->
+        <if test="areaCity != null and areaCity!='' ">
+            AND bd.attr2 = #{areaCity}
+        </if>
+    </select>
 </mapper>

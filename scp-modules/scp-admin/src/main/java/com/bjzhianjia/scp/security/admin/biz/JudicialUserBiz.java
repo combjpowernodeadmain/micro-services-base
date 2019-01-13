@@ -77,7 +77,7 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
      * @return
      */
     public TableResultResponse<Map<String, Object>> getPartnerList(User user, String roleId, String departIds, int page,
-                                                                  int limit) {
+                                                                   int limit) {
         Page<Object> pageList = PageHelper.startPage(page, limit);
         List<Map<String, Object>> userList = this.mapper.selectMajorUser(user, departIds, roleId);
         Map<String, String> dictMajorMap = dictFeign.getByCode(User.JUDICIAL_PROFESSIONAL);
@@ -106,7 +106,7 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
      */
     public TableResultResponse<Map<String, Object>> getMajorUsers(User user, String roleId, String departIds, int page,
                                                                   int limit) {
-        //Page<Object> pageList = PageHelper.startPage(page, limit);
+        Page<Object> pageList = PageHelper.startPage(page, limit);
         List<Map<String, Object>> userList = this.mapper.selectMajorUser(user, departIds, roleId);
         Map<String, String> dictMajorMap = dictFeign.getByCode(User.JUDICIAL_PROFESSIONAL);
         if (userList != null && !userList.isEmpty()) {
@@ -120,7 +120,7 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
         } else {
             userList = new ArrayList<>();
         }
-        return new TableResultResponse<>(userList.size(), userList);
+        return new TableResultResponse<>(pageList.getTotal(), userList);
     }
 
 
@@ -213,4 +213,29 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
         }
         userBiz.updateSelectiveById(user);
     }
+
+    /**
+     * 分案时获取主办人（技术人员）列表
+     *
+     * @param major        专业
+     * @param userName     用户名字
+     * @param departId     部门id
+     * @param areaProvince 省级编码
+     * @param areaCity     城市编码
+     * @param page
+     * @param limit
+     * @return
+     */
+    public TableResultResponse<Map<String, Object>> getTechnicist(String major, String userName, String departId,
+                                                                  String areaProvince, String areaCity, int page,
+                                                                  int limit) {
+        Page<Object> pageList = PageHelper.startPage(page, limit);
+        List<Map<String, Object>> userList = this.mapper.selectTechnicist(major, userName, departId, areaProvince,
+                areaCity);
+        if (userList == null && userList.isEmpty()) {
+            userList = new ArrayList<>();
+        }
+        return new TableResultResponse<>(pageList.getTotal(), userList);
+    }
+
 }
