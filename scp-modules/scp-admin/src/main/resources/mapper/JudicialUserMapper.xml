@@ -159,7 +159,8 @@
         </if>
         <!-- 用户名字 -->
         <if test="userName != null and userName!='' ">
-            AND bu.`name` LIKE "%"#{userName}"%"
+            <bind name="userNameLike" value="'%' + userName + '%'"/>
+            AND bu.`name` LIKE #{userNameLike}
         </if>
         <!-- 省份编码 -->
         <if test="areaProvince != null and areaProvince!='' ">
