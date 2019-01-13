@@ -17,13 +17,16 @@
 package com.bjzhianjia.scp.security.gate.feign;
 
 import com.bjzhianjia.scp.security.api.vo.authority.PermissionInfo;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.gate.config.FeignConfiguration;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -47,4 +50,7 @@ public interface IUserFeign {
      */
   @RequestMapping(value="/api/permissions",method = RequestMethod.GET)
   List<PermissionInfo> getAllPermissionInfo();
+
+  @RequestMapping(value = "/user/info", method = RequestMethod.POST)
+  ObjectRestResponse<Map<String,String>> getUserInfoByUsername(@RequestParam("username") String username);
 }

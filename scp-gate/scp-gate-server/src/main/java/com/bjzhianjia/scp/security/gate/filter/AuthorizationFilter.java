@@ -8,7 +8,7 @@ import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 
 /**
- * 
+ *
  * AuthorizationFilter 授权认证拦截器.
  *
  *
@@ -18,7 +18,7 @@ import com.netflix.zuul.context.RequestContext;
  * ------------------------------------------------------------------
  * 2018年10月16日          admin      1.0            ADD
  * </pre>
- * 
+ *
  *
  * @version 1.0
  * @author admin

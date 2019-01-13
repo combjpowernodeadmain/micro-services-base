@@ -24,4 +24,7 @@ package com.bjzhianjia.scp.security.common.constant;
 public class RequestHeaderConstants {
     public final static String TENANT = "X-Tenant-Auth";
     public final static String JWT_TOKEN_TYPE = "Bearer ";
+    public final static String AUTHORIZATION_BASIC="Basic ";
+    public final static String AUTHORIZATION_CLIENT="Y2xpZW50OmNsaWVudA==";
+    public final static String AUTHORIZATION_VUE="dnVlOnZ1ZQ==";
 }
