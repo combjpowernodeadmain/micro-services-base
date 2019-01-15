@@ -1,7 +1,6 @@
 package com.bjzhianjia.scp.cgp.biz;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -357,29 +356,13 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
         // 执法者列表
         List<EnforceCertificate> fakeUserList = enforceCertificateBiz.getEnforceCertificateList();
 
-        /*
-         * ----------------新逻辑----------开始----------
-         * 1 在生成执法任务时，第一次随机到哪个中队的执法人员，则在随后生成的执法人员中，只能是哪个中队的人员。
-         * 如，第一次随机到了一中队人员，则将随后选择的全部人员限定在一中队里。
-         * 2 如用户选择的每组执法人员数量大于某一中队里拥有执法证的人员数量，则提示双随机失败。
-         */
-        List<EnforceCertificate> userList = _randomLawTaskGetUserList(fakeUserList);
+        List<List<EnforceCertificate>> devideEnforceToDept = devideEnfoecerToDept(fakeUserList, peopleNumber);
 
-        if (userList.size() < peopleNumber) {
-            result.setIsSuccess(false);
-            result.setMessage("执法人员数量不足，请重试。");
-            return result;
-        }
-        /*
-         * ----------------新逻辑----------结束----------
-         */
-
-        if (userList == null || userList.isEmpty()) {
+        if(BeanUtil.isEmpty(devideEnforceToDept)){
             result.setIsSuccess(false);
             result.setMessage("执法者为空！");
             return result;
         }
-        List<JSONArray> _userList = this.getUserList(peopleNumber, userList);
 
         // 监管对象列表
         List<RegulaObject> regulaObjects = regulaObjectBiz.selectByTypeAndGri(objType, griIds);
@@ -391,60 +374,157 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 
         List<JSONObject> _regulaObjects = this.getRegulaObject(regulaObjNumber, regulaObjects);
 
+        Random ran=new Random();
+
+        boolean isLoop=true;
+        JSONArray executePerson = null;
+        JSONObject patrolObject = null;
         List<JSONObject> resultForReturn=new ArrayList<>();
-        if (_userList != null && _regulaObjects != null) {
-            JSONArray executePerson = null;
-            JSONObject patrolObject = null;
-            for (int i = 0; i < _userList.size() && i < _regulaObjects.size(); i++) {
+        do{
+            int eIndex = ran.nextInt(devideEnforceToDept.size());
+            int rIndex = ran.nextInt(_regulaObjects.size());
 
-                executePerson = _userList.get(i);
-                patrolObject = _regulaObjects.get(i);
+            List<EnforceCertificate> enforceCertificates = devideEnforceToDept.get(eIndex);
+            patrolObject = _regulaObjects.get(rIndex);
 
-                // 将生成的执法人与监管对象组合返回到前端
-                Set<String> userNameList = new HashSet<>();
-                Set<String> userIdList = new HashSet<>();
-                Set<String> patrolObjectNameList = new HashSet<>();
-                for (int m = 0; m < executePerson.size(); m++) {
-                    JSONObject executePersonJObj = executePerson.getJSONObject(m);
-                    for (JSONObject.Entry e : executePersonJObj.entrySet()) {
-                        JSONObject jsonObject = JSONObject.parseObject(String.valueOf(e.getValue()));
-                        userNameList.add(jsonObject.getString("userName"));
-                        userIdList.add(String.valueOf(e.getKey()));
-                    }
-                }
-                for (JSONObject.Entry e : patrolObject.entrySet()) {
-                    patrolObjectNameList.add(String.valueOf(e.getValue()));
-                }
-                JSONObject resultTmp = new JSONObject();
-                resultTmp.put("executePerson", StringUtils.join(userNameList, ","));
-                resultTmp.put("executePersonId", StringUtils.join(userIdList, ","));
-                resultTmp.put("patrolObject", StringUtils.join(patrolObjectNameList, ","));
-                resultForReturn.add(resultTmp);
+            List<JSONArray> _userList = this.getUserList(peopleNumber, enforceCertificates);
 
-                LawTask lawTask = new LawTask();
-                lawTask.setExecutePerson(executePerson.toJSONString());
-                lawTask.setPatrolObject(patrolObject.toJSONString());
-                lawTask.setStartTime(startTime);
-                lawTask.setEndTime(endTime);
-                lawTask.setState(LawTask.ROOT_BIZ_LAWTASKS_TODO);
-                lawTask.setInfo(info);
-                lawTask.setBizTypeCode(bizTypeCode);
-                lawTask.setEventTypeId(eventTypeId);
-                lawTask.setLawTitle(lawTitle);
-                this.createLawTask(lawTask);
+            executePerson = _userList.get(0);
 
-                // 执法者没有了，则停止分配，或者监管对象没有了，则停止分配
-                if (_userList.size() - 1 == i || _regulaObjects.size() - 1 == i) {
-                    break;
+
+            // 将生成的执法人与监管对象组合返回到前端
+            Set<String> userNameList = new HashSet<>();
+            Set<String> userIdList = new HashSet<>();
+            Set<String> patrolObjectNameList = new HashSet<>();
+            for (int m = 0; m < executePerson.size(); m++) {
+                JSONObject executePersonJObj = executePerson.getJSONObject(m);
+                for (JSONObject.Entry e : executePersonJObj.entrySet()) {
+                    JSONObject jsonObject = JSONObject.parseObject(String.valueOf(e.getValue()));
+                    userNameList.add(jsonObject.getString("userName"));
+                    userIdList.add(String.valueOf(e.getKey()));
                 }
             }
-        }
+            for (JSONObject.Entry e : patrolObject.entrySet()) {
+                patrolObjectNameList.add(String.valueOf(e.getValue()));
+            }
+            JSONObject resultTmp = new JSONObject();
+            resultTmp.put("executePerson", StringUtils.join(userNameList, ","));
+            resultTmp.put("executePersonId", StringUtils.join(userIdList, ","));
+            resultTmp.put("patrolObject", StringUtils.join(patrolObjectNameList, ","));
+            resultForReturn.add(resultTmp);
+            
+            LawTask lawTask = new LawTask();
+            lawTask.setExecutePerson(executePerson.toJSONString());
+            lawTask.setPatrolObject(patrolObject.toJSONString());
+            lawTask.setStartTime(startTime);
+            lawTask.setEndTime(endTime);
+            lawTask.setState(LawTask.ROOT_BIZ_LAWTASKS_TODO);
+            lawTask.setInfo(info);
+            lawTask.setBizTypeCode(bizTypeCode);
+            lawTask.setEventTypeId(eventTypeId);
+            lawTask.setLawTitle(lawTitle);
+            this.createLawTask(lawTask);
+
+            devideEnforceToDept.remove(eIndex);
+            _regulaObjects.remove(rIndex);
+
+            if(devideEnforceToDept.size()<=0 || _regulaObjects.size()<=0){
+                isLoop=false;
+            }
+        }while(isLoop);
 
         _randomLawTestGetUserPic(resultForReturn);
 
         result.setIsSuccess(true);
         result.setData(resultForReturn);
         return result;
+    }
+
+    /**
+     * 将人员按部门进行分组
+     * @param fakeUserList
+     * @param peopleNumber
+     * @return
+     */
+    private List<List<EnforceCertificate>> devideEnfoecerToDept(List<EnforceCertificate> fakeUserList,
+                                                                     int peopleNumber) {
+        if(BeanUtil.isEmpty(fakeUserList)){
+            return new ArrayList<>();
+        }
+
+        Set<String> usrIdList = new HashSet<>();
+        Map<String,EnforceCertificate> enforcerMap=new HashMap<>();
+        fakeUserList.forEach(enforceCertificate -> {
+            usrIdList.add(enforceCertificate.getUsrId());
+            enforcerMap.put(enforceCertificate.getUsrId(), enforceCertificate);
+        });
+
+        if(BeanUtil.isEmpty(usrIdList)){
+            // 执法证记录不为空，但没配人员
+            return new ArrayList<>();
+        }
+
+        JSONArray specifyUserJArray = adminFeign.getInfoByUserIds(StringUtils.join(usrIdList, ","));
+
+        /*
+         * zhongdui.deptcode1=010804
+         * zhongdui.deptcode2=010805
+         * zhongdui.deptcode3=010806
+         */
+
+        List<EnforceCertificate> zh1=new ArrayList<>();
+        List<EnforceCertificate> zh2=new ArrayList<>();
+        List<EnforceCertificate> zh3=new ArrayList<>();
+        // deptId
+        if (BeanUtil.isNotEmpty(specifyUserJArray)) {
+            // 一个人有可能属于多个部门,但不一定都是中队部门
+            for (int i = 0; i < specifyUserJArray.size(); i++) {
+                JSONObject specifyUserJObj = specifyUserJArray.getJSONObject(i);
+                if (environment.getProperty("zhongdui.deptcode1")
+                        .equals(specifyUserJObj.getString("deptCode"))) {
+                    // 该条记录对应的部门是1中队
+                    zh1.add(enforcerMap.get(specifyUserJObj.getString("userId")));
+                }
+                if (environment.getProperty("zhongdui.deptcode2")
+                        .equals(specifyUserJObj.getString("deptCode"))) {
+                    // 该条记录对应的部门是2中队
+                    zh2.add(enforcerMap.get(specifyUserJObj.getString("userId")));
+                }
+                if (environment.getProperty("zhongdui.deptcode3")
+                        .equals(specifyUserJObj.getString("deptCode"))) {
+                    // 该条记录对应的部门是3中队
+                    zh3.add(enforcerMap.get(specifyUserJObj.getString("userId")));
+                }
+            }
+        }
+
+        List<List<EnforceCertificate>> result=new ArrayList<>();
+        _devideEnfoecerToDeptAssist(peopleNumber, zh1,result);
+        _devideEnfoecerToDeptAssist(peopleNumber, zh2,result);
+        _devideEnfoecerToDeptAssist(peopleNumber, zh3,result);
+
+        return result;
+    }
+
+    /**
+     * 将zh中的人按分组放入rr中
+     * @param peopleNumber
+     * @param zh
+     * @param rr
+     */
+    private void _devideEnfoecerToDeptAssist(int peopleNumber, List<EnforceCertificate> zh, List<List<EnforceCertificate>> rr) {
+        while(zh.size()>=peopleNumber){
+            List<EnforceCertificate> tt=new ArrayList<>();
+            for(int i=0;i<zh.size();i++){
+                tt.add(zh.get(i));
+                zh.remove(i);
+                i--;
+                if(tt.size()>=peopleNumber){
+                    break;
+                }
+            }
+            rr.add(tt);
+        }
     }
 
     /**
@@ -477,80 +557,6 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
             }
 
         }
-    }
-
-    /**
-     * 从fakeUserList中随机一个部门，然后从fakeUserList中找出该部门下所有的人
-     * 
-     * @param fakeUserList
-     * @return
-     */
-    private List<EnforceCertificate> _randomLawTaskGetUserList(
-        List<EnforceCertificate> fakeUserList) {
-        Random ran = new Random();
-
-        int count=0;
-        boolean isLoop=true;
-        List<EnforceCertificate> userList = new ArrayList<>();
-
-        do{
-            int ranIndex = ran.nextInt(fakeUserList.size());
-            EnforceCertificate enforceCertificate = fakeUserList.get(ranIndex);
-            String usrId = enforceCertificate.getUsrId();
-            // 确定userId所在的部门`
-            JSONArray specifyUserJArray = adminFeign.getInfoByUserIds(usrId);
-            // deptId
-            String deptId = null;
-            if (BeanUtil.isNotEmpty(specifyUserJArray)) {
-                // 一个人有可能属于多个部门,但不一定都是中队部门
-                for (int i = 0; i < specifyUserJArray.size(); i++) {
-                    JSONObject specifyUserJObj = specifyUserJArray.getJSONObject(i);
-                    if (Arrays
-                            .asList(StringUtils.split(environment.getProperty("zhongdui.deptcode"), ","))
-                            .contains(specifyUserJObj.getString("deptCode"))) {
-                        // 该条记录对应的部门是中队
-                        deptId = specifyUserJObj.getString("deptId");
-                        // 为使结果具有随机性，当找到一个部门时，判断是否真的使用该部门
-                        if (ran.nextInt(2) % 2 == 1) {
-                            break;
-                        }
-                    }
-                }
-            }
-
-            // 查询与usrId同部门 的人
-            List<JSONObject> usersWithSameDept = null;
-            // 当随机找到的人(userId)不属于中队时，或根本未找到该人属于的部门时，deptId将是NULL
-            if (StringUtils.isNotBlank(deptId)) {
-                usersWithSameDept = adminFeign.getUsersByDeptIds(deptId);
-            }
-
-            if (BeanUtil.isEmpty(usersWithSameDept)) {
-                usersWithSameDept = new ArrayList<>();
-            }
-
-            // 同部门下所有人的ID
-            List<String> userId =
-                    usersWithSameDept.stream().map(o -> o.getString("userId")).distinct()
-                            .collect(Collectors.toList());
-
-            for (EnforceCertificate tmp : fakeUserList) {
-                if (userId.contains(tmp.getUsrId())) {
-                    // 说明该执法队员与第一次随机出的执法队员是一个中队
-                    userList.add(tmp);
-                    // 可以保证userList不再是空
-                    isLoop=false;
-                }
-            }
-
-            // 当循环次数大于用户列表数时还未随机到用户，则停止
-            if (count >= fakeUserList.size()) {
-                isLoop = false;
-            }
-            count++;
-        }while(isLoop);
-
-        return userList;
     }
 
     /**
