@@ -226,6 +226,7 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
      *         监管对象列表（id，name）
      */
     public List<RegulaObject> selectByTypeAndGri(String objType, String griIds) {
+        objType = "'" + objType.replaceAll(",", "','") + "'";
         griIds = "'" + griIds.replaceAll(",", "','") + "'";
         return mapper.selectByTypeAndGri(objType, griIds);
 
