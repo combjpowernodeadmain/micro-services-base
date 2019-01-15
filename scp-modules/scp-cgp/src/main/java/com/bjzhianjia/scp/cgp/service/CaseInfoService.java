@@ -2417,6 +2417,10 @@ public class CaseInfoService {
         queryCaseInfo.setSourceType(sourceType);
         queryCaseInfo.setSourceCode(sourceCode);
         CaseInfo caseInfo = this.caseInfoBiz.selectOne(queryCaseInfo);
+        if(BeanUtil.isEmpty(caseInfo)){
+            // 没有对应的事件，则直接返回
+            return new ObjectRestResponse<>();
+        }
 
         // 工作流业务
         JSONObject bizData = new JSONObject();

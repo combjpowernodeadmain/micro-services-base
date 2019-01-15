@@ -60,4 +60,10 @@
 			#{userId}
 		</foreach>
 	</select>
+
+	<select id="selectIdsByGridParentName" resultMap="areaGridMap">
+		SELECT id FROM area_grid WHERE grid_parent IN (
+		SELECT id FROM area_grid WHERE grid_name LIKE "%"#{gridParentName}"%"
+		)
+	</select>
 </mapper>

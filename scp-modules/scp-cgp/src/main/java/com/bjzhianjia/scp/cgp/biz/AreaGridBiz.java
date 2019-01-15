@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -94,9 +95,10 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
      * @param page
      * @param limit
      * @param areaGrid
+     * @param gridParentName
      * @return
      */
-    public TableResultResponse<AreaGridVo> getList(int page, int limit, AreaGrid areaGrid) {
+    public TableResultResponse<AreaGridVo> getList(int page, int limit, AreaGrid areaGrid, String gridParentName) {
         Example example = new Example(AreaGrid.class);
         Example.Criteria criteria = example.createCriteria();
 
@@ -107,6 +109,22 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         }
         if (StringUtils.isNotBlank(areaGrid.getGridLevel())) {
             criteria.andEqualTo("gridLevel", areaGrid.getGridLevel());
+        }
+        if(BeanUtil.isNotEmpty(areaGrid.getGridParent())){
+            criteria.andEqualTo("gridParent", areaGrid.getGridParent());
+        }
+        if(StringUtils.isNotBlank(gridParentName)){
+            // 模糊查询gridParentName对应的网格
+            List<AreaGrid> areaGrids = this.mapper.selectIdsByGridParentName(gridParentName);
+            List<Integer> collect = new ArrayList<>();
+            if (BeanUtil.isNotEmpty(areaGrids)) {
+                collect =
+                    areaGrids.stream().map(o -> o.getId()).distinct().collect(Collectors.toList());
+                criteria.andIn("id", collect);
+            } else {
+                collect.add(-1);
+            }
+            criteria.andIn("id", collect);
         }
 
         // 网格按正序排列，20180914

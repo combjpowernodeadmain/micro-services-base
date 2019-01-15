@@ -202,6 +202,11 @@
 			<version>1.0</version>
 			<scope>provided</scope>
 		</dependency>
+		<!-- websocket -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
 	</dependencies>
 	<!--依赖管理，用于管理spring-cloud的依赖，其中Camden.SR3是版本号 -->
 	<dependencyManagement>

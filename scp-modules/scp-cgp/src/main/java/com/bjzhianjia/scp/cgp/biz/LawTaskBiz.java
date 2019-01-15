@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -440,9 +439,44 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
                 }
             }
         }
+
+        _randomLawTestGetUserPic(resultForReturn);
+
         result.setIsSuccess(true);
         result.setData(resultForReturn);
         return result;
+    }
+
+    /**
+     * 获取每个执法队员的照片
+     * 
+     * @param resultForReturn
+     */
+    private void _randomLawTestGetUserPic(List<JSONObject> resultForReturn) {
+        List<String> executePersonIdList =
+            resultForReturn.stream().map(o -> o.getString("executePersonId")).distinct()
+                .collect(Collectors.toList());
+        Map<String, String> usersByUserIds = null;
+        if (BeanUtil.isNotEmpty(executePersonIdList)) {
+            usersByUserIds = adminFeign.getUsersByUserIds(String.join(",", executePersonIdList));
+        }
+        if (BeanUtil.isEmpty(usersByUserIds)) {
+            usersByUserIds = new HashMap<>();
+        }
+
+        for (JSONObject tmp : resultForReturn) {
+            String executePersonId = tmp.getString("executePersonId");
+            if (StringUtils.isNotBlank(executePersonId)) {
+                // executePersonId保存了多个人的ID，用逗号隔开
+                List<String> attr1List=new ArrayList<>();
+                for (String uId : executePersonId.split(",")) {
+                    JSONObject userJObj = JSONObject.parseObject(usersByUserIds.get(uId));
+                    attr1List.add(String.valueOf(userJObj.get("attr1")));
+                }
+                tmp.put("attr1", String.join(",", attr1List));
+            }
+
+        }
     }
 
     /**
@@ -451,7 +485,6 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
      * @param fakeUserList
      * @return
      */
-    @NotNull
     private List<EnforceCertificate> _randomLawTaskGetUserList(
         List<EnforceCertificate> fakeUserList) {
         Random ran = new Random();
