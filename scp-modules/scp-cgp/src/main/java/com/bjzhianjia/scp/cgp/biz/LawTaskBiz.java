@@ -356,11 +356,17 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
         // 执法者列表
         List<EnforceCertificate> fakeUserList = enforceCertificateBiz.getEnforceCertificateList();
 
+        if(BeanUtil.isEmpty(fakeUserList)){
+            result.setIsSuccess(false);
+            result.setMessage("执法者为空！");
+            return result;
+        }
+
         List<List<EnforceCertificate>> devideEnforceToDept = devideEnfoecerToDept(fakeUserList, peopleNumber);
 
         if(BeanUtil.isEmpty(devideEnforceToDept)){
             result.setIsSuccess(false);
-            result.setMessage("执法者为空！");
+            result.setMessage("执法人员数量不足，无法执行任务分配。");
             return result;
         }
 
@@ -393,9 +399,9 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 
 
             // 将生成的执法人与监管对象组合返回到前端
-            Set<String> userNameList = new HashSet<>();
-            Set<String> userIdList = new HashSet<>();
-            Set<String> patrolObjectNameList = new HashSet<>();
+            List<String> userNameList = new ArrayList<>();
+            List<String> userIdList = new ArrayList<>();
+            List<String> patrolObjectNameList = new ArrayList<>();
             for (int m = 0; m < executePerson.size(); m++) {
                 JSONObject executePersonJObj = executePerson.getJSONObject(m);
                 for (JSONObject.Entry e : executePersonJObj.entrySet()) {

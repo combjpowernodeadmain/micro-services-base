@@ -65,6 +65,7 @@
 			lk.start_time,
 			lk.end_time,
 			lk.state
+        ORDER BY lk.id DESC
 	</select>
 	<!-- 执法人员（userId）执法任务列表 -->
 	<select id="selectLawTaskByUserId" resultType="java.util.Map">
