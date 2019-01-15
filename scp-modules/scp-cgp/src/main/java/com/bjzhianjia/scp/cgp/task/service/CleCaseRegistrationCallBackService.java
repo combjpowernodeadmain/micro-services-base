@@ -210,7 +210,7 @@ public class CleCaseRegistrationCallBackService implements IWfProcTaskCallBackSe
         if (StringUtils.equals(CaseRegistration.CASE_SOURCE_TYPE_CENTER,
                 caseRegistrationInDB.getCaseSourceType())) {
             // 去更新事件状态
-            caseInfoService.centerCallback(caseRegistrationInDB,"termination");
+            caseInfoService.centerCallback(caseRegistrationInDB,PROC_END);
         }
 
         // 当案件中止时，并不影响到执法任务的状态

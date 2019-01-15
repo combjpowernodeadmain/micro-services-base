@@ -31,4 +31,6 @@ public interface AreaGridMapper extends CommonMapper<AreaGrid> {
      * @return
      */
     List<Map<String,Object>> selectByUserIds(@Param("userIds") List<String> userIds);
+
+    List<AreaGrid> selectIdsByGridParentName(@Param("gridParentName") String gridParentName);
 }

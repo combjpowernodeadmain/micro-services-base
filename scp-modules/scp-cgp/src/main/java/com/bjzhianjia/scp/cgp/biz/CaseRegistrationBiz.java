@@ -2713,4 +2713,52 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
         return new JSONObject();
     }
+
+    /**
+     * 按事件来源查询事件详情，也就意味着该处查询的是经过中心交办的案件详情
+     * 
+     * @param sourceType
+     *            事件当时来源类型
+     * @param sourceCode
+     *            事件当时来源ID
+     * @return
+     */
+    public ObjectRestResponse<JSONObject> detailForCaseInfoSource(String sourceType,
+        String sourceCode) {
+
+        ObjectRestResponse<JSONObject> result = new ObjectRestResponse<>();
+
+        /*
+         * 1-> 通过来源查询到对应的事件
+         * 2-> 按事件查询具体对应中心交办后的案件详情
+         */
+        // 1->
+        CaseInfo queryCaseInfo = new CaseInfo();
+        queryCaseInfo.setIsDeleted("0");
+        queryCaseInfo.setSourceCode(sourceCode);
+        queryCaseInfo.setSourceType(sourceType);
+        CaseInfo caseInfo = caseInfoMapper.selectOne(queryCaseInfo);
+
+        if (BeanUtil.isEmpty(caseInfo)) {
+            result.setStatus(200);
+            result.setData(null);
+            return result;
+        }
+
+        CaseRegistration queryCaerRegistration = new CaseRegistration();
+        queryCaerRegistration.setIsDeleted("0");
+        queryCaerRegistration.setCaseSource(String.valueOf(caseInfo.getId()));
+        queryCaerRegistration.setCaseSourceType(CaseRegistration.CASE_SOURCE_TYPE_CENTER);
+        CaseRegistration caseRegistration = this.selectOne(queryCaerRegistration);
+        if (BeanUtil.isEmpty(caseRegistration)) {
+            result.setStatus(200);
+            result.setData(null);
+            return result;
+        }
+
+        JSONObject infoById = this.getInfoById(caseRegistration.getId());
+        result.setData(infoById);
+        result.setStatus(200);
+        return result;
+    }
 }

@@ -574,7 +574,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
 
 
     @RequestMapping(value = "/detailForSource", method = RequestMethod.GET)
-    @ApiOperation("查询详细待办任务")
+    @ApiOperation("按来源查询事件详情，带工作流数据")
     public ObjectRestResponse<JSONObject> detailForSource(
             @RequestParam(value="sourceType") @ApiParam("来源类型code")String sourceType,
             @RequestParam(value="sourceCode") @ApiParam("来源ID") String sourceCode

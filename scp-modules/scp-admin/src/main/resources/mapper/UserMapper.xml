@@ -95,7 +95,7 @@
   <!-- 获取用户详情，包括部门及岗位 -->
   <select id="getUserDetail" resultType="java.util.Map">
 	SELECT bu.`name` userName,bu.`id` userId,bu.`sex`,bu.`mobile_phone` mobilePhone,
-	bd.`name` deptName,bd.`id` deptId,
+	bd.`name` deptName,bd.`id` deptId,bd.`code` deptCode,
 	bp.`name` positionName,bp.`id` positionId,
 	bg.`name` groupName,bg.`id` groupId
 	FROM base_user bu
@@ -199,6 +199,23 @@
 	    AND
 	    bdu.`depart_id` IN (
         <foreach collection="deptSet" item="item" separator=",">
+            #{item}
+        </foreach>
+        )
+    </select>
+
+    <!-- 按组CODE集合获取用户 -->
+    <select id="selectLeaderOrMemberByGroupCode" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT bu.id userId,bu.name userName
+        FROM base_user bu
+        LEFT JOIN `base_group_leader` bgl ON bgl.user_id=bu.id
+        LEFT JOIN `base_group_member` bgm ON bgm.user_id=bu.id
+        LEFT JOIN `base_group` bg ON (bg.`id`=bgl.`group_id` OR bg.`id`=bgm.`group_id`)
+        WHERE
+        bu.is_deleted='0'
+        AND
+        bg.`code` IN (
+        <foreach collection="groupCodeSet" item="item" separator=",">
             #{item}
         </foreach>
         )

@@ -7,11 +7,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -85,6 +87,9 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 
     @Autowired
     private PropertiesConfig propertiesConfig;
+
+    @Autowired
+    private Environment environment;
 
     public void createLawTask(LawTask lawTask) throws Exception {
         // 生成巡查记录编号
@@ -349,14 +354,15 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 
         Result<List<JSONObject>> result = new Result<>();
         // 执法者列表
-        List<EnforceCertificate> userList = enforceCertificateBiz.getEnforceCertificateList();
+        List<EnforceCertificate> fakeUserList = enforceCertificateBiz.getEnforceCertificateList();
 
-        if (userList == null || userList.isEmpty()) {
+        List<List<EnforceCertificate>> devideEnforceToDept = devideEnfoecerToDept(fakeUserList, peopleNumber);
+
+        if(BeanUtil.isEmpty(devideEnforceToDept)){
             result.setIsSuccess(false);
             result.setMessage("执法者为空！");
             return result;
         }
-        List<JSONArray> _userList = this.getUserList(peopleNumber, userList);
 
         // 监管对象列表
         List<RegulaObject> regulaObjects = regulaObjectBiz.selectByTypeAndGri(objType, griIds);
@@ -368,54 +374,189 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 
         List<JSONObject> _regulaObjects = this.getRegulaObject(regulaObjNumber, regulaObjects);
 
+        Random ran=new Random();
+
+        boolean isLoop=true;
+        JSONArray executePerson = null;
+        JSONObject patrolObject = null;
         List<JSONObject> resultForReturn=new ArrayList<>();
-        if (_userList != null && _regulaObjects != null) {
-            JSONArray executePerson = null;
-            JSONObject patrolObject = null;
-            for (int i = 0; i < _userList.size() && i < _regulaObjects.size(); i++) {
+        do{
+            int eIndex = ran.nextInt(devideEnforceToDept.size());
+            int rIndex = ran.nextInt(_regulaObjects.size());
 
-                executePerson = _userList.get(i);
-                patrolObject = _regulaObjects.get(i);
+            List<EnforceCertificate> enforceCertificates = devideEnforceToDept.get(eIndex);
+            patrolObject = _regulaObjects.get(rIndex);
 
-                // 将生成的执法人与监管对象组合返回到前端
-                Set<String> userNameList = new HashSet<>();
-                Set<String> patrolObjectNameList = new HashSet<>();
-                for (int m = 0; m < executePerson.size(); m++) {
-                    JSONObject executePersonJObj = executePerson.getJSONObject(m);
-                    for (JSONObject.Entry e : executePersonJObj.entrySet()) {
-                        JSONObject jsonObject = JSONObject.parseObject(String.valueOf(e.getValue()));
-                        userNameList.add(jsonObject.getString("userName"));
-                    }
-                }
-                for (JSONObject.Entry e : patrolObject.entrySet()) {
-                    patrolObjectNameList.add(String.valueOf(e.getValue()));
-                }
-                JSONObject resultTmp = new JSONObject();
-                resultTmp.put("executePerson", StringUtils.join(userNameList, ","));
-                resultTmp.put("patrolObject", StringUtils.join(patrolObjectNameList, ","));
-                resultForReturn.add(resultTmp);
+            List<JSONArray> _userList = this.getUserList(peopleNumber, enforceCertificates);
 
-                LawTask lawTask = new LawTask();
-                lawTask.setExecutePerson(executePerson.toJSONString());
-                lawTask.setPatrolObject(patrolObject.toJSONString());
-                lawTask.setStartTime(startTime);
-                lawTask.setEndTime(endTime);
-                lawTask.setState(LawTask.ROOT_BIZ_LAWTASKS_TODO);
-                lawTask.setInfo(info);
-                lawTask.setBizTypeCode(bizTypeCode);
-                lawTask.setEventTypeId(eventTypeId);
-                lawTask.setLawTitle(lawTitle);
-                this.createLawTask(lawTask);
+            executePerson = _userList.get(0);
 
-                // 执法者没有了，则停止分配，或者监管对象没有了，则停止分配
-                if (_userList.size() - 1 == i || _regulaObjects.size() - 1 == i) {
-                    break;
+
+            // 将生成的执法人与监管对象组合返回到前端
+            Set<String> userNameList = new HashSet<>();
+            Set<String> userIdList = new HashSet<>();
+            Set<String> patrolObjectNameList = new HashSet<>();
+            for (int m = 0; m < executePerson.size(); m++) {
+                JSONObject executePersonJObj = executePerson.getJSONObject(m);
+                for (JSONObject.Entry e : executePersonJObj.entrySet()) {
+                    JSONObject jsonObject = JSONObject.parseObject(String.valueOf(e.getValue()));
+                    userNameList.add(jsonObject.getString("userName"));
+                    userIdList.add(String.valueOf(e.getKey()));
                 }
             }
-        }
+            for (JSONObject.Entry e : patrolObject.entrySet()) {
+                patrolObjectNameList.add(String.valueOf(e.getValue()));
+            }
+            JSONObject resultTmp = new JSONObject();
+            resultTmp.put("executePerson", StringUtils.join(userNameList, ","));
+            resultTmp.put("executePersonId", StringUtils.join(userIdList, ","));
+            resultTmp.put("patrolObject", StringUtils.join(patrolObjectNameList, ","));
+            resultForReturn.add(resultTmp);
+            
+            LawTask lawTask = new LawTask();
+            lawTask.setExecutePerson(executePerson.toJSONString());
+            lawTask.setPatrolObject(patrolObject.toJSONString());
+            lawTask.setStartTime(startTime);
+            lawTask.setEndTime(endTime);
+            lawTask.setState(LawTask.ROOT_BIZ_LAWTASKS_TODO);
+            lawTask.setInfo(info);
+            lawTask.setBizTypeCode(bizTypeCode);
+            lawTask.setEventTypeId(eventTypeId);
+            lawTask.setLawTitle(lawTitle);
+            this.createLawTask(lawTask);
+
+            devideEnforceToDept.remove(eIndex);
+            _regulaObjects.remove(rIndex);
+
+            if(devideEnforceToDept.size()<=0 || _regulaObjects.size()<=0){
+                isLoop=false;
+            }
+        }while(isLoop);
+
+        _randomLawTestGetUserPic(resultForReturn);
+
         result.setIsSuccess(true);
         result.setData(resultForReturn);
         return result;
+    }
+
+    /**
+     * 将人员按部门进行分组
+     * @param fakeUserList
+     * @param peopleNumber
+     * @return
+     */
+    private List<List<EnforceCertificate>> devideEnfoecerToDept(List<EnforceCertificate> fakeUserList,
+                                                                     int peopleNumber) {
+        if(BeanUtil.isEmpty(fakeUserList)){
+            return new ArrayList<>();
+        }
+
+        Set<String> usrIdList = new HashSet<>();
+        Map<String,EnforceCertificate> enforcerMap=new HashMap<>();
+        fakeUserList.forEach(enforceCertificate -> {
+            usrIdList.add(enforceCertificate.getUsrId());
+            enforcerMap.put(enforceCertificate.getUsrId(), enforceCertificate);
+        });
+
+        if(BeanUtil.isEmpty(usrIdList)){
+            // 执法证记录不为空，但没配人员
+            return new ArrayList<>();
+        }
+
+        JSONArray specifyUserJArray = adminFeign.getInfoByUserIds(StringUtils.join(usrIdList, ","));
+
+        /*
+         * zhongdui.deptcode1=010804
+         * zhongdui.deptcode2=010805
+         * zhongdui.deptcode3=010806
+         */
+
+        List<EnforceCertificate> zh1=new ArrayList<>();
+        List<EnforceCertificate> zh2=new ArrayList<>();
+        List<EnforceCertificate> zh3=new ArrayList<>();
+        // deptId
+        if (BeanUtil.isNotEmpty(specifyUserJArray)) {
+            // 一个人有可能属于多个部门,但不一定都是中队部门
+            for (int i = 0; i < specifyUserJArray.size(); i++) {
+                JSONObject specifyUserJObj = specifyUserJArray.getJSONObject(i);
+                if (environment.getProperty("zhongdui.deptcode1")
+                        .equals(specifyUserJObj.getString("deptCode"))) {
+                    // 该条记录对应的部门是1中队
+                    zh1.add(enforcerMap.get(specifyUserJObj.getString("userId")));
+                }
+                if (environment.getProperty("zhongdui.deptcode2")
+                        .equals(specifyUserJObj.getString("deptCode"))) {
+                    // 该条记录对应的部门是2中队
+                    zh2.add(enforcerMap.get(specifyUserJObj.getString("userId")));
+                }
+                if (environment.getProperty("zhongdui.deptcode3")
+                        .equals(specifyUserJObj.getString("deptCode"))) {
+                    // 该条记录对应的部门是3中队
+                    zh3.add(enforcerMap.get(specifyUserJObj.getString("userId")));
+                }
+            }
+        }
+
+        List<List<EnforceCertificate>> result=new ArrayList<>();
+        _devideEnfoecerToDeptAssist(peopleNumber, zh1,result);
+        _devideEnfoecerToDeptAssist(peopleNumber, zh2,result);
+        _devideEnfoecerToDeptAssist(peopleNumber, zh3,result);
+
+        return result;
+    }
+
+    /**
+     * 将zh中的人按分组放入rr中
+     * @param peopleNumber
+     * @param zh
+     * @param rr
+     */
+    private void _devideEnfoecerToDeptAssist(int peopleNumber, List<EnforceCertificate> zh, List<List<EnforceCertificate>> rr) {
+        while(zh.size()>=peopleNumber){
+            List<EnforceCertificate> tt=new ArrayList<>();
+            for(int i=0;i<zh.size();i++){
+                tt.add(zh.get(i));
+                zh.remove(i);
+                i--;
+                if(tt.size()>=peopleNumber){
+                    break;
+                }
+            }
+            rr.add(tt);
+        }
+    }
+
+    /**
+     * 获取每个执法队员的照片
+     * 
+     * @param resultForReturn
+     */
+    private void _randomLawTestGetUserPic(List<JSONObject> resultForReturn) {
+        List<String> executePersonIdList =
+            resultForReturn.stream().map(o -> o.getString("executePersonId")).distinct()
+                .collect(Collectors.toList());
+        Map<String, String> usersByUserIds = null;
+        if (BeanUtil.isNotEmpty(executePersonIdList)) {
+            usersByUserIds = adminFeign.getUsersByUserIds(String.join(",", executePersonIdList));
+        }
+        if (BeanUtil.isEmpty(usersByUserIds)) {
+            usersByUserIds = new HashMap<>();
+        }
+
+        for (JSONObject tmp : resultForReturn) {
+            String executePersonId = tmp.getString("executePersonId");
+            if (StringUtils.isNotBlank(executePersonId)) {
+                // executePersonId保存了多个人的ID，用逗号隔开
+                List<String> attr1List=new ArrayList<>();
+                for (String uId : executePersonId.split(",")) {
+                    JSONObject userJObj = JSONObject.parseObject(usersByUserIds.get(uId));
+                    attr1List.add(String.valueOf(userJObj.get("attr1")));
+                }
+                tmp.put("attr1", String.join(",", attr1List));
+            }
+
+        }
     }
 
     /**

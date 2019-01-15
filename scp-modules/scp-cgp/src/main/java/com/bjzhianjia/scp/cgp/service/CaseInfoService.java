@@ -15,6 +15,7 @@ import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
 import com.bjzhianjia.scp.cgp.biz.ExecuteInfoBiz;
 import com.bjzhianjia.scp.cgp.biz.LeadershipAssignBiz;
 import com.bjzhianjia.scp.cgp.biz.MayorHotlineBiz;
+import com.bjzhianjia.scp.cgp.biz.MessageCenterBiz;
 import com.bjzhianjia.scp.cgp.biz.PatrolResBiz;
 import com.bjzhianjia.scp.cgp.biz.PatrolTaskBiz;
 import com.bjzhianjia.scp.cgp.biz.PublicOpinionBiz;
@@ -31,6 +32,7 @@ import com.bjzhianjia.scp.cgp.entity.EventType;
 import com.bjzhianjia.scp.cgp.entity.ExecuteInfo;
 import com.bjzhianjia.scp.cgp.entity.LeadershipAssign;
 import com.bjzhianjia.scp.cgp.entity.MayorHotline;
+import com.bjzhianjia.scp.cgp.entity.MessageCenter;
 import com.bjzhianjia.scp.cgp.entity.PatrolRes;
 import com.bjzhianjia.scp.cgp.entity.PatrolTask;
 import com.bjzhianjia.scp.cgp.entity.PublicOpinion;
@@ -175,6 +177,9 @@ public class CaseInfoService {
 
     @Autowired
     private CaseRegistrationBiz caseRegistrationBiz;
+
+    @Autowired
+    private MessageCenterBiz messageCenterBiz;
 
     /**
      * 更新单个对象
@@ -615,6 +620,10 @@ public class CaseInfoService {
         JSONObject resultJObjct = new JSONObject();
         List<String> zhaiyaoList = new ArrayList<>();
         String reportPersonId = "";
+        Map<String, String> eventypeDictValue = dictFeign.getByCode(Constances.ROOT_BIZ_EVENTTYPE);
+        if(BeanUtil.isEmpty(eventypeDictValue)){
+            eventypeDictValue=new HashMap<>();
+        }
         switch (key) {
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345:
                 // 市长热线
@@ -623,7 +632,8 @@ public class CaseInfoService {
                 if (mayorHotline != null) {
                     reportPersonId = mayorHotline.getCrtUserId();
                     resultJObjct = JSONObject.parseObject(JSON.toJSONString(mayorHotline));
-                    resultJObjct.put("eventSourceType", "市长热线12345");
+                    resultJObjct.put("eventSourceType",
+                        eventypeDictValue.get(Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345));
                     resultJObjct.put("sourceCode", mayorHotline.getHotlnCode());
                     //添加主办人姓名
                     resultJObjct.put("crtUserName", mayorHotline.getCrtUserName());
@@ -649,7 +659,8 @@ public class CaseInfoService {
                     dictIdList.add(poinion.getOpinType());
                     dictIdList.add(poinion.getOpinLevel());
                     resultJObjct = JSONObject.parseObject(JSON.toJSONString(poinion));
-                    resultJObjct.put("eventSourceType", "舆情");
+                    resultJObjct.put("eventSourceType", eventypeDictValue
+                        .get(Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CONSENSUS));
                     resultJObjct.put("sourceCode", poinion.getOpinCode());
                     //添加主办人姓名
                     resultJObjct.put("crtUserName", poinion.getCrtUserName());
@@ -663,13 +674,14 @@ public class CaseInfoService {
                 }
                 break;
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_LEADER:
-                // 领导交办
+                // 交办管理
                 LeadershipAssign leadershipAssign =
                     leadershipAssignBiz.selectById(Integer.valueOf(caseInfo.getSourceCode()));
                 // 对查到的数据进行非空判断
                 if(leadershipAssign!=null){
                     resultJObjct = JSONObject.parseObject(JSON.toJSONString(leadershipAssign));
-                    resultJObjct.put("eventSourceType", "领导交办");
+                    resultJObjct.put("eventSourceType",
+                        eventypeDictValue.get(Constances.BizEventType.ROOT_BIZ_EVENTTYPE_LEADER));
                     resultJObjct.put("sourceCode", leadershipAssign.getTaskCode());
                     //添加主办人姓名
                     resultJObjct.put("crtUserName", leadershipAssign.getCrtUserName());
@@ -702,7 +714,8 @@ public class CaseInfoService {
                 PatrolTask patrolTask = patrolTaskResult == null ? new PatrolTask() : patrolTaskResult.getData();
 
                 resultJObjct = JSONObject.parseObject(JSON.toJSONString(patrolTask));
-                resultJObjct.put("eventSourceType", "巡查上报");
+                resultJObjct.put("eventSourceType",
+                    eventypeDictValue.get(Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CHECK));
                 resultJObjct.put("sourceCode", patrolTask.getPatrolCode());
                 //添加主办人姓名
                 resultJObjct.put("crtUserName", patrolTask.getCrtUserName());
@@ -767,7 +780,8 @@ public class CaseInfoService {
 
                 // 对查询到的数据进行非空判断
                 if (resultJObjct != null) {
-                    resultJObjct.put("eventSourceType", "指挥中心热线");
+                    resultJObjct.put("eventSourceType", eventypeDictValue
+                        .get(Constances.BizEventType.ROOT_BIZ_EVENTTYPE_COMMAND_LINE));
                     resultJObjct.put("sourceCode", centerHotlineJObj.getString("hotlnCode"));
                     //添加主办人姓名
                     resultJObjct.put("crtUserName", centerHotlineJObj.getString("crtUserName"));
@@ -845,6 +859,15 @@ public class CaseInfoService {
         log.debug("进行事件审批，参数结构为："+objs.toString());
         Result<Void> result=new Result<>();
 
+        CaseInfo caseInfoInDB =
+            caseInfoBiz
+                .selectById(Integer.valueOf(objs.getJSONObject("bizData").getString("procBizId")));
+        preCompleteProcess(caseInfoInDB,result);
+        if(!result.getIsSuccess()){
+            return result;
+        }
+        result.setIsSuccess(false);
+
         /*
          * 该方法完成两个事件--签收与审批
          * 签收操作与审批操作是两个动作
@@ -908,8 +931,6 @@ public class CaseInfoService {
                  */
                 log.info("该请求流向【结束】，流程即将结束。");
                 // 查询数据库中的caseInfo,以确定与caseInfo相对应的登记表那条记录的ID
-                CaseInfo caseInfoInDB = caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
-
                 caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
                 caseInfo.setIsFinished(CaseInfo.FINISHED_STATE_FINISH);
                 caseInfo.setFinishTime(new Date());// 结案时间
@@ -919,8 +940,6 @@ public class CaseInfoService {
                 // 因重覆而结束
                 log.info("该请求流向【结束】（因事件重复），流程即将结束。");
                 // 查询数据库中的caseInfo,以确定与caseInfo相对应的登记表那条记录的ID
-                CaseInfo caseInfoInDB = caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
-
                 caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
                 caseInfo.setIsFinished(CaseInfo.FINISHED_STATE_FINISH);
                 caseInfo.setIsDuplicate("1");
@@ -928,6 +947,13 @@ public class CaseInfoService {
                 caseInfo.setSourceType(caseInfoInDB.getSourceType());
                 gotoFinishSource(caseInfo, false);// 去更新事件来源的状态
             }
+            
+            // 只要流程结束，都需要判断需不需要向12345登记员发送消息
+        if (StringUtils.equals(Constances.ProcFlowWork.TOFINISHWORKFLOW, flowDirection)
+            || StringUtils.equals(Constances.ProcFlowWork.TOFINISHWORKFLOW_DUP, flowDirection)
+            || StringUtils.equals(Constances.ProcFlowWork.TOFINISHWORKFLOW_DEPT, flowDirection)) {
+            _mayorHolineMsgAssist(caseInfoInDB);
+        }
 
             // 判断是否有当事人信息concernedPerson
             if (concernedPersonJObj != null) {
@@ -940,7 +966,6 @@ public class CaseInfoService {
                     JSON.parseObject(concernedPersonJObj.toJSONString(), ConcernedPerson.class);
 
                 //判断当前事件是否已关联了当事人
-                CaseInfo caseInfoInDB = caseInfoBiz.selectById(caseInfo.getId());
                 if (BeanUtil.isNotEmpty(caseInfoInDB.getConcernedPerson())
                     && Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_PERSON
                         .equals(caseInfoInDB.getConcernedType())) {
@@ -966,7 +991,6 @@ public class CaseInfoService {
                 ConcernedCompany concernedCompany =
                     JSONObject.parseObject(concernedCompanyJObj.toJSONString(), ConcernedCompany.class);
 
-                CaseInfo caseInfoInDB = caseInfoBiz.selectById(caseInfo.getId());
                 if (BeanUtil.isNotEmpty(caseInfoInDB.getConcernedPerson())
                     && Constances.ConcernedStatus.ROOT_BIZ_CONCERNEDT_ORG
                         .equals(caseInfoInDB.getConcernedType())) {
@@ -1036,6 +1060,53 @@ public class CaseInfoService {
 
         result.setIsSuccess(true);
         return result;
+    }
+
+    /**
+     * 在进行事件审批的时候，做一些审批前的处理
+     * @param objs
+     */
+    private void preCompleteProcess(CaseInfo caseInfoInDB,Result<Void> result) {
+        // 判断该事件是否起了中心交办，中心交办后，事件是不可以被审批的
+        try {
+            _isCentering(caseInfoInDB, result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setIsSuccess(false);
+            result.setMessage("服务器异常，请联系管理员。");
+        }
+    }
+
+    private void _isCentering(CaseInfo caseInfoInDB, Result<Void> result) {
+        result.setIsSuccess(false);
+        CaseRegistration query=new CaseRegistration();
+        query.setCaseSourceType(CaseRegistration.CASE_SOURCE_TYPE_CENTER);
+        query.setCaseSource(String.valueOf(caseInfoInDB.getId()));
+        CaseRegistration caseRegistration = caseRegistrationBiz.selectOne(query);
+        if(BeanUtil.isNotEmpty(caseRegistration)){
+            result.setMessage("该事件正在【案件办理中】");
+            return;
+        }
+        result.setIsSuccess(true);
+    }
+
+    /**
+     * 12345消息提醒帮助方法
+     * 该方法会判断事件来源是否为12345，如果是，则生成一条消息，如果不是，则跳过。s
+     * @param caseInfoInDB
+     */
+    private void _mayorHolineMsgAssist(CaseInfo caseInfoInDB) {
+        if(StringUtils.equals(caseInfoInDB.getSourceType(), Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345)){
+            // 表明该事件来源是市长热线
+            MayorHotline mayorHotline = mayorHotlineBiz.selectById(Integer.valueOf(caseInfoInDB.getSourceCode()));
+
+            MessageCenter messageCenter=new MessageCenter();
+            messageCenter.setMsgSourceType(Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345);
+            messageCenter.setMsgSourceId(caseInfoInDB.getSourceCode());
+            messageCenter.setMsgName(mayorHotline.getHotlnTitle());
+            messageCenter.setMsgDesc(mayorHotline.getAppealDesc());
+            messageCenterBiz.add12345Msg(messageCenter);
+        }
     }
 
     /**
@@ -1261,13 +1332,13 @@ public class CaseInfoService {
                 publicOpinionBiz.updateSelectiveById(publicOpinion);
                 break;
             case Constances.BizEventType.ROOT_BIZ_EVENTTYPE_LEADER:
-                // 领导交办
+                // 交办管理
                 if (isTermination) {
                     // 事件终止操作
-                    log.info("更新领导交办事件为【已中止】");
+                    log.info("更新交办管理事件为【已中止】");
                     assist = assist(caseInfo.getSourceCode(), Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_STOP);
                 } else {
-                    log.info("更新领导交办事件为【已完成】");
+                    log.info("更新交办管理事件为【已完成】");
                     assist = assist(caseInfo.getSourceCode(), Constances.LeaderAssignExeStatus.ROOT_BIZ_LDSTATE_FINISH);
                 }
                 LeadershipAssign leadershipAssign = JSON.parseObject(assist.toJSONString(), LeadershipAssign.class);
@@ -1905,6 +1976,8 @@ public class CaseInfoService {
         // 查询数据库中的caseInfo,以确定与caseInfo相对应的登记表那条记录的ID
         CaseInfo caseInfoInDB = caseInfoBiz.selectById(Integer.valueOf(bizDataJObject.getString("procBizId")));
 
+        _mayorHolineMsgAssist(caseInfoInDB);
+
         caseInfo.setSourceCode(caseInfoInDB.getSourceCode());
         caseInfo.setId(Integer.valueOf(bizDataJObject.getString("procBizId")));
         caseInfo.setSourceType(caseInfoInDB.getSourceType());
@@ -2344,6 +2417,10 @@ public class CaseInfoService {
         queryCaseInfo.setSourceType(sourceType);
         queryCaseInfo.setSourceCode(sourceCode);
         CaseInfo caseInfo = this.caseInfoBiz.selectOne(queryCaseInfo);
+        if(BeanUtil.isEmpty(caseInfo)){
+            // 没有对应的事件，则直接返回
+            return new ObjectRestResponse<>();
+        }
 
         // 工作流业务
         JSONObject bizData = new JSONObject();
@@ -2446,7 +2523,7 @@ public class CaseInfoService {
                 break;
             case "termination":
                 objs.getJSONObject(Constants.WfRequestDataTypeAttr.PROC_VARIABLEDATA).put("procSpecialDesc", "");
-                caseInfoToUpdate.setIsFinished(CaseInfo.FINISHED_STATE_FINISH);
+                caseInfoToUpdate.setIsFinished(CaseInfo.FINISHED_STATE_STOP);
                 objs.getJSONObject(Constants.WfRequestDataTypeAttr.PROC_BIZDATA).put("caseInfo",
                         JSON.toJSONString(caseInfoToUpdate));
                 this.endProcess(objs);

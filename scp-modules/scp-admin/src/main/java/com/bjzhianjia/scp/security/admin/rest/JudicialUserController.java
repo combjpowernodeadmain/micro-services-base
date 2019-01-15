@@ -90,30 +90,31 @@ public class JudicialUserController {
     }
 
     /**
-     * 获取会检人员列表
+     * 获取技术人员列表
      *
-     * @param userName  用户名称
-     * @param departIds 用户部门ids
-     * @param major     用户专业
-     * @param page      页码
-     * @param limit     页容量
+     * @param userName     用户名称
+     * @param departId     用户部门id
+     * @param major        用户专业
+     * @param areaProvince 省级编码
+     * @param areaCity     城市编码
+     * @param page         页码
+     * @param limit        页容量
      * @return
      */
-    @ApiOperation("获取会检人员列表")
-    @GetMapping("/partner/list")
-    public TableResultResponse<Map<String, Object>> getPartnerList(
+    @ApiOperation("获取技术人员列表")
+    @GetMapping("/technicist/list")
+    public TableResultResponse<Map<String, Object>> getTechnicist(
             @RequestParam(value = "userName", defaultValue = "") @ApiParam("用户名称") String userName,
-            @RequestParam(value = "departIds", defaultValue = "") @ApiParam("用户部门ids") String departIds,
-            @RequestParam(value = "major", defaultValue = "") @ApiParam("用户专业") String major,
+            @RequestParam(value = "departIds", defaultValue = "") @ApiParam("用户部门id") String departId,
+            @RequestParam(value = "major", required = false) @ApiParam("用户专业") String major,
+            @RequestParam(value = "province", defaultValue = "") @ApiParam("省级编码") String areaProvince,
+            @RequestParam(value = "city", defaultValue = "") @ApiParam("城市编码") String areaCity,
             @RequestParam(value = "page", defaultValue = "1") @ApiParam("页码") Integer page,
             @RequestParam(value = "limit", defaultValue = "10") @ApiParam("页容量") Integer limit) {
 
-        User user = new User();
-        user.setName(userName);
-        user.setAttr2(major);
-        return judicialUserBiz.getPartnerList(user, environment.getProperty(RoleConstant.ROLE_TECHNICIST), departIds,
-                page, limit);
+        return judicialUserBiz.getTechnicist(major, userName, departId, areaProvince, areaCity,page, limit);
     }
+
     /**
      * 获取分案人员列表
      *
@@ -154,22 +155,22 @@ public class JudicialUserController {
     public ObjectRestResponse<User> technologist(@RequestBody @ApiParam(value = "用户信息") User user) {
         ObjectRestResponse<User> result = new ObjectRestResponse<>();
         //attr2 专业 attr3 省份 departId所属检察院
-        if(StringUtils.isBlank(user.getUsername())){
+        if (StringUtils.isBlank(user.getUsername())) {
             result.setMessage("用户账号不能为空！");
             result.setStatus(400);
             return result;
         }
-        if(StringUtils.isBlank(user.getPassword())){
+        if (StringUtils.isBlank(user.getPassword())) {
             result.setMessage("用户密码不能为空！");
             result.setStatus(400);
             return result;
         }
-        if(StringUtils.isBlank(user.getAttr2())){
+        if (StringUtils.isBlank(user.getAttr2())) {
             result.setMessage("用户专业不能为空！");
             result.setStatus(400);
             return result;
         }
-        if(StringUtils.isBlank(user.getDepartId())){
+        if (StringUtils.isBlank(user.getDepartId())) {
             result.setMessage("用户所属检察院不能为空！");
             result.setStatus(400);
             return result;
@@ -187,6 +188,7 @@ public class JudicialUserController {
         result.setData(user);
         return result;
     }
+
     /**
      * 直接分配技术人员
      * 添加用户和角色的关系
@@ -213,6 +215,7 @@ public class JudicialUserController {
         }
         return result;
     }
+
     /**
      * 分配分案人员
      * 添加用户和角色的关系
@@ -352,7 +355,7 @@ public class JudicialUserController {
             @RequestParam(value = "userName", defaultValue = "") @ApiParam("用户名称") String userName,
             @RequestParam(value = "major", defaultValue = "") @ApiParam("用户专业") String major,
             @RequestParam(value = "province", defaultValue = "") @ApiParam("省级编码") String province,
-            @RequestParam(value ="departId", defaultValue = "") @ApiParam(value = "所属检察院id") String departId,
+            @RequestParam(value = "departId", defaultValue = "") @ApiParam(value = "所属检察院id") String departId,
             @RequestParam(value = "page", defaultValue = "1") @ApiParam("页码") Integer page,
             @RequestParam(value = "limit", defaultValue = "10") @ApiParam("页容量") Integer limit) {
 

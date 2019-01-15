@@ -268,38 +268,7 @@ public class RegulaObjectService {
             }
         }
 
-        /*
-         * 新需求要求：
-         * 在修改操作中，对于监管对象信息的监管对象类型，监管对象名称及社会信用代码三个字段信息不可再次进行更改，
-         * 三者改其一该监管对象就不是原来的监管对象了
-         * 对这三者的验证规则进行修改
-         */
-        RegulaObject regulaObjectInDB = this.regulaObjectBiz.selectById(regulaObject.getId());
-        EnterpriseInfo enterpriseInfoInDB = this.enterpriseInfoBiz.selectById(enterpriseInfo.getId());
-        // 将‘监管对象类型，监管对象名称及社会信用代码’与数据库中的信息进行对比，验证是否发生变化
-        if(isUpdate){
-            // flagOfObjType为true说明：监管对象类型不为空，而且传入的监管对象类型与已经记录的不同，此时需要提示异常
-            boolean flagOfObjType =
-                BeanUtil.isNotEmpty(regulaObjectInDB.getObjType())
-                    && !regulaObjectInDB.getObjType().equals(regulaObject.getObjType());
-
-            // flagOfObjName为true说明：监管对象名称不为空，而且传入的监管对象名称与已经记录的不同，此时需要提示异常
-            boolean flagOfObjName =
-                BeanUtil.isNotEmpty(regulaObjectInDB.getObjName())
-                    && !regulaObjectInDB.getObjName().equals(regulaObject.getObjName());
-
-            // flagOfCreditCode为true说明：统一社会信用代码不为空，而且传入的统一社会信用代码与已经记录的不同，此时需要提示异常
-            boolean flagOfCreditCode =
-                BeanUtil.isNotEmpty(enterpriseInfoInDB.getCreditCode())
-                    && !enterpriseInfoInDB.getCreditCode().equals(enterpriseInfo.getCreditCode());
-            
-            boolean noUnique = flagOfObjType || flagOfObjName || flagOfCreditCode;
-            if(noUnique){
-                result.setMessage("监管对象类别、名称及社会信息代码不可修改");
-                return result;
-            }
-        }
-
+        // 监管对象名称唯一性
         String objName = regulaObject.getObjName();
         if (StringUtils.isNotBlank(objName)) {
             Map<String, Object> params = new HashMap<>();

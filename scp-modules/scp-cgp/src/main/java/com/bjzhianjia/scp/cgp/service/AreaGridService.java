@@ -341,10 +341,11 @@ public class AreaGridService {
      * @param page
      * @param limit
      * @param areaGrid
+     * @param gridParentName
      * @return
      */
-    public TableResultResponse<AreaGridVo> getList(int page, int limit, AreaGrid areaGrid) {
-        TableResultResponse<AreaGridVo> tableResult = areaGridBiz.getList(page, limit, areaGrid);
+    public TableResultResponse<AreaGridVo> getList(int page, int limit, AreaGrid areaGrid, String gridParentName) {
+        TableResultResponse<AreaGridVo> tableResult = areaGridBiz.getList(page, limit, areaGrid,gridParentName);
 
         List<AreaGridVo> rows = tableResult.getData().getRows();
 

@@ -142,4 +142,13 @@ public interface AdminFeign {
 	@GetMapping("/depart/list/attr")
 	@ApiOperation("按部门预留属性查询记录")
 	List<JSONObject> listByAttr(@RequestParam(value="attr") String attr,@RequestParam(value = "attrValues") String attrValues);
+
+	/**
+	 * 按组CODE获取用户信息，多个CODE之间用逗号隔开
+	 * @param groupCode
+	 * @return
+	 */
+	@ApiOperation("按组CODE集合获取用户")
+	@RequestMapping(value = "/user/list/groupCode", method = RequestMethod.GET)
+	List<JSONObject> getLeaderOrMemberByGroupCode(@RequestParam("groupCode") String groupCode);
 }

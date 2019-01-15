@@ -493,4 +493,14 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         }
         return result;
     }
+
+    @RequestMapping(value = "/detailForSource", method = RequestMethod.GET)
+    @ApiOperation("按事件来源查询事件详情，也就意味着该处查询的是经过中心交办的案件详情")
+    public ObjectRestResponse<JSONObject> detailForSource(
+            @RequestParam(value="sourceType") @ApiParam("来源类型code")String sourceType,
+            @RequestParam(value="sourceCode") @ApiParam("来源ID") String sourceCode
+    ) {
+
+        return this.baseBiz.detailForCaseInfoSource(sourceType,sourceCode);
+    }
 }

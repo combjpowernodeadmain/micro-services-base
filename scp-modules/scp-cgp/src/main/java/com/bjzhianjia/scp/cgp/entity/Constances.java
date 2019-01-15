@@ -351,6 +351,10 @@ public class Constances {
 		 * 因重覆结束流程
 		 */
 		public static final String TOFINISHWORKFLOW_DUP="toFinishWorkFlow_Dup";
+		/**
+		 * 因重覆结束流程
+		 */
+		public static final String TOFINISHWORKFLOW_DEPT="toFinishWorkFlow_Dept";
 	}
 	
 	/**
