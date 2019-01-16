@@ -216,11 +216,9 @@ public class MayorHotlineController extends BaseController<MayorHotlineBiz, Mayo
     @RequestMapping(value = "/reply/{id}", method = RequestMethod.PUT)
     @ApiOperation("12345反馈")
     public ObjectRestResponse<MayorHotline> checkResponse(
-        @PathVariable(value = "id") @ApiParam(name = "待反馈对象ID") Integer id,
-        @RequestBody @ApiParam(value = "反馈意见说明") MayorHotline mayorHotline) {
+            @PathVariable(value = "id") @ApiParam(name = "待反馈对象ID") Integer id) {
         ObjectRestResponse<MayorHotline> restResult = new ObjectRestResponse<>();
-        mayorHotline.setId(id);
-        Result<Void> reply = mayorHotlineService.reply(mayorHotline);
+        Result<Void> reply = mayorHotlineService.reply(id);
         if (!reply.getIsSuccess()) {
             restResult.setStatus(400);
             restResult.setMessage(reply.getMessage());

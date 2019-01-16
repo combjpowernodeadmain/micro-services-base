@@ -356,11 +356,17 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
         // 执法者列表
         List<EnforceCertificate> fakeUserList = enforceCertificateBiz.getEnforceCertificateList();
 
+        if(BeanUtil.isEmpty(fakeUserList)){
+            result.setIsSuccess(false);
+            result.setMessage("执法者为空！");
+            return result;
+        }
+
         List<List<EnforceCertificate>> devideEnforceToDept = devideEnfoecerToDept(fakeUserList, peopleNumber);
 
         if(BeanUtil.isEmpty(devideEnforceToDept)){
             result.setIsSuccess(false);
-            result.setMessage("执法者为空！");
+            result.setMessage("执法人员数量不足，无法执行任务分配。");
             return result;
         }
 
@@ -393,9 +399,9 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 
 
             // 将生成的执法人与监管对象组合返回到前端
-            Set<String> userNameList = new HashSet<>();
-            Set<String> userIdList = new HashSet<>();
-            Set<String> patrolObjectNameList = new HashSet<>();
+            List<String> userNameList = new ArrayList<>();
+            List<String> userIdList = new ArrayList<>();
+            List<String> patrolObjectNameList = new ArrayList<>();
             for (int m = 0; m < executePerson.size(); m++) {
                 JSONObject executePersonJObj = executePerson.getJSONObject(m);
                 for (JSONObject.Entry e : executePersonJObj.entrySet()) {
@@ -480,20 +486,24 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
             // 一个人有可能属于多个部门,但不一定都是中队部门
             for (int i = 0; i < specifyUserJArray.size(); i++) {
                 JSONObject specifyUserJObj = specifyUserJArray.getJSONObject(i);
+                EnforceCertificate enforceTmp = enforcerMap.get(specifyUserJObj.getString("userId"));
                 if (environment.getProperty("zhongdui.deptcode1")
                         .equals(specifyUserJObj.getString("deptCode"))) {
                     // 该条记录对应的部门是1中队
-                    zh1.add(enforcerMap.get(specifyUserJObj.getString("userId")));
+                    enforceTmp.setDepartId(specifyUserJObj.getString("deptId"));
+                    zh1.add(enforceTmp);
                 }
                 if (environment.getProperty("zhongdui.deptcode2")
                         .equals(specifyUserJObj.getString("deptCode"))) {
                     // 该条记录对应的部门是2中队
-                    zh2.add(enforcerMap.get(specifyUserJObj.getString("userId")));
+                    enforceTmp.setDepartId(specifyUserJObj.getString("deptId"));
+                    zh2.add(enforceTmp);
                 }
                 if (environment.getProperty("zhongdui.deptcode3")
                         .equals(specifyUserJObj.getString("deptCode"))) {
                     // 该条记录对应的部门是3中队
-                    zh3.add(enforcerMap.get(specifyUserJObj.getString("userId")));
+                    enforceTmp.setDepartId(specifyUserJObj.getString("deptId"));
+                    zh3.add(enforceTmp);
                 }
             }
         }
@@ -549,11 +559,16 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
             if (StringUtils.isNotBlank(executePersonId)) {
                 // executePersonId保存了多个人的ID，用逗号隔开
                 List<String> attr1List=new ArrayList<>();
+                List<String> attr2List=new ArrayList<>();
                 for (String uId : executePersonId.split(",")) {
                     JSONObject userJObj = JSONObject.parseObject(usersByUserIds.get(uId));
-                    attr1List.add(String.valueOf(userJObj.get("attr1")));
+                    attr1List.add(userJObj.get("attr1") == null ? ""
+                        : String.valueOf(userJObj.get("attr1")));
+                    attr2List.add(userJObj.get("attr2") == null ? ""
+                        : String.valueOf(userJObj.get("attr2")));
                 }
                 tmp.put("attr1", String.join(",", attr1List));
+                tmp.put("attr2", String.join(",", attr2List));
             }
 
         }

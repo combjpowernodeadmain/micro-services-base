@@ -150,16 +150,19 @@
         INNER JOIN base_depart bd ON bd.id = bdu.depart_id
         LEFT JOIN base_areainfo ba1 ON bd.attr1 = ba1.id
         LEFT JOIN base_areainfo ba2 ON bd.attr2 = ba2.id
+        LEFT JOIN base_group_member bgm ON bgm.user_id = bu.id
         WHERE
         1 = 1
         AND bu.attr2 = #{major}
+        <!-- 只查询技术人员列表 -->
+        AND bgm.group_id = #{groupId}
         <!-- 部门id -->
         <if test="departId != null and departId != ''">
             AND bd.id=#{departId}
         </if>
         <!-- 用户名字 -->
         <if test="userName != null and userName!='' ">
-            <bind name="userNameLike" value="'%' + userName + '%'"/>
+	        <bind name="userNameLike" value="'%' + user.name + '%'"/>
             AND bu.`name` LIKE #{userNameLike}
         </if>
         <!-- 省份编码 -->

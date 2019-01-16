@@ -280,7 +280,7 @@ public class SpecialEventService {
 				String[] split = voTmp.getBizList().split(",");
 				List<String> bizTypeNameList = new ArrayList<>();
 				for (String string : split) {
-					bizTypeNameList.add(bizTypeMap.get(string));
+					bizTypeNameList.add(bizTypeMap.get(string)==null?"":bizTypeMap.get(string));
 				}
 				voTmp.setBizListName(String.join(",", bizTypeNameList));
 			}
