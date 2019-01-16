@@ -64,11 +64,13 @@ public interface JudicialUserMapper extends CommonMapper<User> {
      * @param departId     部门id
      * @param areaProvince 省级编码
      * @param areaCity     城市编码
+     * @param groupId      角色id
      * @return
      */
     List<Map<String, Object>> selectTechnicist(@Param("major") String major,
                                                @Param("userName") String userName,
                                                @Param("departId") String departId,
                                                @Param("areaProvince") String areaProvince,
-                                               @Param("areaCity") String areaCity);
+                                               @Param("areaCity") String areaCity,
+                                               @Param("groupId") String groupId);
 }

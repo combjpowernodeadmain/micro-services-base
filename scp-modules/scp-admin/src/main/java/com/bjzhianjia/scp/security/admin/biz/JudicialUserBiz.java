@@ -2,6 +2,7 @@
 package com.bjzhianjia.scp.security.admin.biz;
 
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
+import com.bjzhianjia.scp.security.admin.constant.RoleConstant;
 import com.bjzhianjia.scp.security.admin.constant.UserConstant;
 import com.bjzhianjia.scp.security.admin.entity.BaseGroupMember;
 import com.bjzhianjia.scp.security.admin.entity.User;
@@ -17,6 +18,7 @@ import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,6 +55,10 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
 
     @Autowired
     private BaseGroupMemberBiz baseGroupMemberBiz;
+
+    @Autowired
+    private Environment environment;
+
 
     /**
      * 获取分案人总数
@@ -230,8 +236,9 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
                                                                   String areaProvince, String areaCity, int page,
                                                                   int limit) {
         Page<Object> pageList = PageHelper.startPage(page, limit);
+        String roleId = environment.getProperty(RoleConstant.ROLE_TECHNICIST);
         List<Map<String, Object>> userList = this.mapper.selectTechnicist(major, userName, departId, areaProvince,
-                areaCity);
+                areaCity,roleId);
         if (userList == null && userList.isEmpty()) {
             userList = new ArrayList<>();
         }
