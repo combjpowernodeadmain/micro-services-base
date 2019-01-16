@@ -486,20 +486,24 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
             // 一个人有可能属于多个部门,但不一定都是中队部门
             for (int i = 0; i < specifyUserJArray.size(); i++) {
                 JSONObject specifyUserJObj = specifyUserJArray.getJSONObject(i);
+                EnforceCertificate enforceTmp = enforcerMap.get(specifyUserJObj.getString("userId"));
                 if (environment.getProperty("zhongdui.deptcode1")
                         .equals(specifyUserJObj.getString("deptCode"))) {
                     // 该条记录对应的部门是1中队
-                    zh1.add(enforcerMap.get(specifyUserJObj.getString("userId")));
+                    enforceTmp.setDepartId(specifyUserJObj.getString("deptId"));
+                    zh1.add(enforceTmp);
                 }
                 if (environment.getProperty("zhongdui.deptcode2")
                         .equals(specifyUserJObj.getString("deptCode"))) {
                     // 该条记录对应的部门是2中队
-                    zh2.add(enforcerMap.get(specifyUserJObj.getString("userId")));
+                    enforceTmp.setDepartId(specifyUserJObj.getString("deptId"));
+                    zh2.add(enforceTmp);
                 }
                 if (environment.getProperty("zhongdui.deptcode3")
                         .equals(specifyUserJObj.getString("deptCode"))) {
                     // 该条记录对应的部门是3中队
-                    zh3.add(enforcerMap.get(specifyUserJObj.getString("userId")));
+                    enforceTmp.setDepartId(specifyUserJObj.getString("deptId"));
+                    zh3.add(enforceTmp);
                 }
             }
         }
