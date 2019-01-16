@@ -555,11 +555,16 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
             if (StringUtils.isNotBlank(executePersonId)) {
                 // executePersonId保存了多个人的ID，用逗号隔开
                 List<String> attr1List=new ArrayList<>();
+                List<String> attr2List=new ArrayList<>();
                 for (String uId : executePersonId.split(",")) {
                     JSONObject userJObj = JSONObject.parseObject(usersByUserIds.get(uId));
-                    attr1List.add(String.valueOf(userJObj.get("attr1")));
+                    attr1List.add(userJObj.get("attr1") == null ? ""
+                        : String.valueOf(userJObj.get("attr1")));
+                    attr2List.add(userJObj.get("attr2") == null ? ""
+                        : String.valueOf(userJObj.get("attr2")));
                 }
                 tmp.put("attr1", String.join(",", attr1List));
+                tmp.put("attr2", String.join(",", attr2List));
             }
 
         }
