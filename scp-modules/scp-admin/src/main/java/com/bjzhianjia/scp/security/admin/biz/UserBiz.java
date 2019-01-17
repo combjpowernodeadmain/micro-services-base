@@ -538,4 +538,17 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
         citeria.andEqualTo("isDeleted", BooleanUtil.BOOLEAN_FALSE);
         return this.mapper.selectCountByExample(example);
     }
+    /**
+     * 按组CODE集合获取用户
+     * @param groupCode 组ID
+     * @return
+     */
+    public List<JSONObject> selectLeaderOrMemberByGroupCode(String groupCode) {
+        if(org.apache.commons.lang3.StringUtils.isBlank(groupCode)){
+            return new ArrayList<>();
+        }
+
+        Set<String> groupCodeSet=new HashSet<>(Arrays.asList(groupCode.split(",")));
+        return this.mapper.selectLeaderOrMemberByGroupCode(groupCodeSet);
+    }
 }
