@@ -14,7 +14,15 @@ import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
@@ -326,7 +334,7 @@ public class JudicialUserController {
             @RequestParam(value = "major", defaultValue = "") @ApiParam("用户专业") String major,
             @RequestParam(value = "province", defaultValue = "") @ApiParam("省级编码") String province,
             @RequestParam(value = "page", defaultValue = "1") @ApiParam("页码") Integer page,
-            @RequestParam(value = "limit", defaultValue = "10") @ApiParam("页容量") Integer limit) {
+            @RequestParam(value = "limit", defaultValue = "100") @ApiParam("页容量") Integer limit) {
 
         User user = new User();
         user.setName(userName);
@@ -357,7 +365,7 @@ public class JudicialUserController {
             @RequestParam(value = "province", defaultValue = "") @ApiParam("省级编码") String province,
             @RequestParam(value = "departId", defaultValue = "") @ApiParam(value = "所属检察院id") String departId,
             @RequestParam(value = "page", defaultValue = "1") @ApiParam("页码") Integer page,
-            @RequestParam(value = "limit", defaultValue = "10") @ApiParam("页容量") Integer limit) {
+            @RequestParam(value = "limit", defaultValue = "100") @ApiParam("页容量") Integer limit) {
 
         User user = new User();
         user.setName(userName);

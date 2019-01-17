@@ -155,6 +155,11 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
             }
             userBiz.insertSelective(user);
         } else {
+            User _user = userBiz.selectOne(user);
+            if(_user == null){
+                throw new RuntimeException("未找到当前用户所属部门！");
+            }
+            user.setDepartId(_user.getDepartId());
             userBiz.updateSelectiveById(user);
         }
         //判断是否已添加指定角色
@@ -217,6 +222,7 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
         if (_user == null) {
             throw new RuntimeException("未找到用户信息！");
         }
+        user.setDepartId(_user.getDepartId());
         userBiz.updateSelectiveById(user);
     }
 
@@ -239,7 +245,16 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
         String roleId = environment.getProperty(RoleConstant.ROLE_TECHNICIST);
         List<Map<String, Object>> userList = this.mapper.selectTechnicist(major, userName, departId, areaProvince,
                 areaCity,roleId);
-        if (userList == null && userList.isEmpty()) {
+        Map<String, String> dictMajorMap = dictFeign.getByCode(User.JUDICIAL_PROFESSIONAL);
+        if (userList != null && !userList.isEmpty()) {
+            if (dictMajorMap != null && !dictMajorMap.isEmpty()) {
+                for (Map<String, Object> userMap : userList) {
+                    //专业名称
+                    String majorName = dictMajorMap.get(userMap.get("major"));
+                    userMap.put("majorName", majorName);
+                }
+            }
+        } else {
             userList = new ArrayList<>();
         }
         return new TableResultResponse<>(pageList.getTotal(), userList);
