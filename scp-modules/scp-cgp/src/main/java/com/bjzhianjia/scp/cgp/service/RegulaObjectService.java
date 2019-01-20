@@ -523,6 +523,9 @@ public class RegulaObjectService {
         String typeCodeId = enterpriseInfo.getTypeCode();
         String certificateTypeId = enterpriseInfo.getCertificateType();
         String bizTypeId = regulaObject.getBizList();
+        if(StringUtils.isBlank(bizTypeId)){
+            bizTypeId="";
+        }
 
         Set<String> dictIds = new HashSet<>();
         dictIds.add(typeCodeId);
@@ -559,6 +562,9 @@ public class RegulaObjectService {
          * 事件类别
          */
         String eventList = regulaObject.getEventList();
+        if(StringUtils.isBlank(eventList)){
+            eventList="";
+        }
         // 解析事件类别ID
         Set<String> eventListId = new HashSet<>();
         String[] eventSplit1 = eventList.split(";");
