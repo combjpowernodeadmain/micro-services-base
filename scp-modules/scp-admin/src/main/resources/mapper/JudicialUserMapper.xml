@@ -143,11 +143,13 @@
         bu.attr2 major,
         ba1.`name` areaProvince,
         ba2.`name` areaCity,
-        bd.`name` departName
+        bd.`name` departName,
+        bu.crt_user_id,
+        bu.tenant_id
         FROM
         base_user bu
         INNER JOIN base_depart_user bdu ON bdu.user_id = bu.id
-        INNER JOIN base_depart bd ON bd.id = bdu.depart_id
+        INNER JOIN base_depart bd ON bd.id = bu.depart_id
         LEFT JOIN base_areainfo ba1 ON bd.attr1 = ba1.id
         LEFT JOIN base_areainfo ba2 ON bd.attr2 = ba2.id
         LEFT JOIN base_group_member bgm ON bgm.user_id = bu.id
@@ -162,7 +164,7 @@
         </if>
         <!-- 用户名字 -->
         <if test="userName != null and userName!='' ">
-	        <bind name="userNameLike" value="'%' + user.name + '%'"/>
+	        <bind name="userNameLike" value="'%' + userName + '%'"/>
             AND bu.`name` LIKE #{userNameLike}
         </if>
         <!-- 省份编码 -->
@@ -173,5 +175,14 @@
         <if test="areaCity != null and areaCity!='' ">
             AND bd.attr2 = #{areaCity}
         </if>
+        GROUP BY
+        bu.id ,
+        bu.`name` ,
+        bu.attr2 ,
+        ba1.`name` ,
+        ba2.`name` ,
+        bd.`name`,
+        bu.crt_user_id,
+        bu.tenant_id
     </select>
 </mapper>

@@ -157,8 +157,14 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
     public void updateSelectiveById(User entity) {
         EntityUtils.setUpdatedInfo(entity);
         User user = mapper.selectByPrimaryKey(entity.getId());
+        //判断是否修改当前用户部门
         if (!user.getDepartId().equals(entity.getDepartId())) {
+            if(BeanUtils.isEmpty(entity.getDepartId())){
+                throw new RuntimeException("修改所属组织机构不能为空！");
+            }
+            //可能存在多个部门，所以删除之前旧部门（可以通过部门id和用户id确认一条数据）
             departMapper.deleteDepartUser(user.getDepartId(), entity.getId());
+            //新增修改后的部门关系
             departMapper.insertDepartUser(UUIDUtils.generateUuid(), entity.getDepartId(), entity.getId(),BaseContextHandler.getTenantID());
         }
         // 如果非超级管理员,无法修改用户的租户信息
@@ -532,7 +538,6 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
         citeria.andEqualTo("isDeleted", BooleanUtil.BOOLEAN_FALSE);
         return this.mapper.selectCountByExample(example);
     }
-
     /**
      * 按组CODE集合获取用户
      * @param groupCode 组ID
