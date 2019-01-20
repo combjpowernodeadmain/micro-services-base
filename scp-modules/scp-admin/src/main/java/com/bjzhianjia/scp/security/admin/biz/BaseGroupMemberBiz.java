@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.security.admin.biz;
 
 import com.ace.cache.annotation.CacheClear;
+import com.bjzhianjia.scp.security.common.util.BeanUtils;
 import com.bjzhianjia.scp.security.common.util.UUIDUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -44,7 +45,12 @@ public class BaseGroupMemberBiz extends BusinessBiz<BaseGroupMemberMapper, BaseG
         BaseGroupMember baseGroupMember = new BaseGroupMember();
         baseGroupMember.setUserId(userId);
         baseGroupMember.setGroupId(groupId);
-        return this.selectOne(baseGroupMember);
+        List<BaseGroupMember> list = this.selectList(baseGroupMember);
+        if(BeanUtils.isNotEmpty(list)){
+           return list.get(0);
+        }else{
+            return null;
+        }
     }
 
     /**
