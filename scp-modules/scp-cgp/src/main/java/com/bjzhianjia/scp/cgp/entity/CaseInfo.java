@@ -52,7 +52,7 @@ public class CaseInfo implements Serializable {
 	    //事件编号
     @Column(name = "case_code")
     private String caseCode;
-	
+
 	    //事件标题
     @Column(name = "case_title")
     private String caseTitle;

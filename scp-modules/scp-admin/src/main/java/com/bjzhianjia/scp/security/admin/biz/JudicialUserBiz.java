@@ -2,6 +2,7 @@
 package com.bjzhianjia.scp.security.admin.biz;
 
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
+import com.bjzhianjia.scp.security.admin.constant.RoleConstant;
 import com.bjzhianjia.scp.security.admin.constant.UserConstant;
 import com.bjzhianjia.scp.security.admin.entity.BaseGroupMember;
 import com.bjzhianjia.scp.security.admin.entity.User;
@@ -17,6 +18,7 @@ import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,6 +56,10 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
     @Autowired
     private BaseGroupMemberBiz baseGroupMemberBiz;
 
+    @Autowired
+    private Environment environment;
+
+
     /**
      * 获取分案人总数
      *
@@ -77,7 +83,7 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
      * @return
      */
     public TableResultResponse<Map<String, Object>> getPartnerList(User user, String roleId, String departIds, int page,
-                                                                  int limit) {
+                                                                   int limit) {
         Page<Object> pageList = PageHelper.startPage(page, limit);
         List<Map<String, Object>> userList = this.mapper.selectMajorUser(user, departIds, roleId);
         Map<String, String> dictMajorMap = dictFeign.getByCode(User.JUDICIAL_PROFESSIONAL);
@@ -106,7 +112,7 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
      */
     public TableResultResponse<Map<String, Object>> getMajorUsers(User user, String roleId, String departIds, int page,
                                                                   int limit) {
-        //Page<Object> pageList = PageHelper.startPage(page, limit);
+        Page<Object> pageList = PageHelper.startPage(page, limit);
         List<Map<String, Object>> userList = this.mapper.selectMajorUser(user, departIds, roleId);
         Map<String, String> dictMajorMap = dictFeign.getByCode(User.JUDICIAL_PROFESSIONAL);
         if (userList != null && !userList.isEmpty()) {
@@ -120,7 +126,7 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
         } else {
             userList = new ArrayList<>();
         }
-        return new TableResultResponse<>(userList.size(), userList);
+        return new TableResultResponse<>(pageList.getTotal(), userList);
     }
 
 
@@ -149,6 +155,11 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
             }
             userBiz.insertSelective(user);
         } else {
+            User _user = userBiz.selectOne(user);
+            if(_user == null){
+                throw new RuntimeException("未找到当前用户所属部门！");
+            }
+            user.setDepartId(_user.getDepartId());
             userBiz.updateSelectiveById(user);
         }
         //判断是否已添加指定角色
@@ -211,6 +222,42 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
         if (_user == null) {
             throw new RuntimeException("未找到用户信息！");
         }
+        user.setDepartId(_user.getDepartId());
         userBiz.updateSelectiveById(user);
     }
+
+    /**
+     * 分案时获取主办人（技术人员）列表
+     *
+     * @param major        专业
+     * @param userName     用户名字
+     * @param departId     部门id
+     * @param areaProvince 省级编码
+     * @param areaCity     城市编码
+     * @param page
+     * @param limit
+     * @return
+     */
+    public TableResultResponse<Map<String, Object>> getTechnicist(String major, String userName, String departId,
+                                                                  String areaProvince, String areaCity, int page,
+                                                                  int limit) {
+        Page<Object> pageList = PageHelper.startPage(page, limit);
+        String roleId = environment.getProperty(RoleConstant.ROLE_TECHNICIST);
+        List<Map<String, Object>> userList = this.mapper.selectTechnicist(major, userName, departId, areaProvince,
+                areaCity,roleId);
+        Map<String, String> dictMajorMap = dictFeign.getByCode(User.JUDICIAL_PROFESSIONAL);
+        if (userList != null && !userList.isEmpty()) {
+            if (dictMajorMap != null && !dictMajorMap.isEmpty()) {
+                for (Map<String, Object> userMap : userList) {
+                    //专业名称
+                    String majorName = dictMajorMap.get(userMap.get("major"));
+                    userMap.put("majorName", majorName);
+                }
+            }
+        } else {
+            userList = new ArrayList<>();
+        }
+        return new TableResultResponse<>(pageList.getTotal(), userList);
+    }
+
 }

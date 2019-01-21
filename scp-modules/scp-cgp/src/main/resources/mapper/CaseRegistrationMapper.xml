@@ -117,6 +117,44 @@
 			</if>
 		</if>
 	</sql>
+
+	<sql id="isParamNull02">
+		<!-- 未删除 -->
+		is_deleted=0
+		<!-- 业务条线 -->
+		<if
+				test="caseRegistration.bizType != null and caseRegistration.bizType != '' ">
+			and biz_type=#{caseRegistration.bizType}
+		</if>
+		<!-- 案件处理类型 -->
+		<if
+				test="caseRegistration.dealType != null and caseRegistration.dealType != '' ">
+			and deal_type=#{caseRegistration.dealType}
+		</if>
+		<!-- 网格范围（网格id） -->
+		<if test="gridIds != null and gridIds != '' ">
+			and gird_id in (#{gridIds})
+		</if>
+		<!-- 案件来源 -->
+		<if
+				test="caseRegistration.caseSourceType != null and caseRegistration.caseSourceType != '' ">
+			and case_source_type=#{caseRegistration.caseSourceType}
+		</if>
+		<!-- 执法分队 -->
+		<if
+				test="caseRegistration.deptId != null and caseRegistration.deptId != '' ">
+			and dept_id like "%"#{caseRegistration.deptId}"%"
+		</if>
+		<!-- 日期范围（开始时间和结束时间） -->
+		<if test="startTime !=null and startTime!='' ">
+			<if test="endTime !=null and endTime!='' ">
+				<![CDATA[
+				and #{startTime}<=crt_time and crt_time <= #{endTime}
+				]]>
+			</if>
+		</if>
+	</sql>
+
 	<!-- 状态处理分布 -->
 	<select id="selectState" resultType="java.util.Map">
 		SELECT
@@ -125,7 +163,7 @@
 		FROM
 		cle_case_registration
 		WHERE
-		<include refid="isParamNull" />
+		<include refid="isParamNull02" />
 		GROUP BY
 		deal_type
 	</select>
@@ -138,7 +176,7 @@
 		FROM
 		cle_case_registration
 		WHERE
-		<include refid="isParamNull" />
+		<include refid="isParamNull02" />
 		GROUP BY
 		case_source_type
 	</select>
@@ -151,7 +189,7 @@
 		FROM
 		cle_case_registration
 		WHERE biz_type is not null and
-		<include refid="isParamNull" />
+		<include refid="isParamNull02" />
 		GROUP BY
 		biz_type
 	</select>
@@ -256,12 +294,15 @@
 	inspectItem,
 	code,
 	name,
-	total,
-	MAX( CASE dealType WHEN 'root_biz_caseDealType_zlgz' THEN dealTypeCount ELSE 0 END ) root_biz_caseDealType_zlgz,
-	MAX( CASE dealType WHEN 'root_biz_caseDealType_xccf' THEN dealTypeCount ELSE 0 END ) root_biz_caseDealType_xccf,
-	MAX( CASE dealType WHEN 'root_biz_caseDealType_ybcx' THEN dealTypeCount ELSE 0 END ) root_biz_caseDealType_ybcx,
-	MAX( CASE dealType WHEN 'root_biz_caseDealType_wfxwt' THEN dealTypeCount ELSE 0 END ) root_biz_caseDealType_wfxwt,
-	MAX( CASE dealType WHEN 'root_biz_caseDealType_ajys' THEN dealTypeCount ELSE 0 END ) root_biz_caseDealType_ajys
+	total
+
+        <!-- 动态生成案件处理类型的SQL -->
+    <if test="dealTypes != null and dealTypes.size() >0">
+        ,
+        <foreach collection="dealTypes" item="item" separator=",">
+            MAX( CASE dealType WHEN #{item} THEN dealTypeCount ELSE 0 END ) #{item}
+        </foreach>
+    </if>
 	FROM
 		(
 			SELECT
@@ -282,7 +323,7 @@
 					FROM
 						cle_case_registration
 					WHERE
-					<include refid="isParamNull"/>
+					<include refid="isParamNull02"/>
 					GROUP BY
 						inspect_item,
 						deal_type

@@ -416,10 +416,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
             _end = DateUtils.addDays(_end, 1);
             endTime = DateUtil.dateFromDateToStr(_end, "yyyy-MM-dd HH:mm:ss");
         }
-        // TableResultResponse<JSONObject> result =
-        // caseInfoBiz.getGrid(caseInfo, gridLevel, startTime, endTime, page,
-        // limit);
-        return caseInfoBiz.statisticsByGridLevel(gridLevel);
+        return caseInfoBiz.statisticsByGridLevel(caseInfo, gridLevel, startTime, endTime, page,limit);
     }
     
     @RequestMapping(value = "/list/sourceType", method = RequestMethod.GET)
@@ -573,5 +570,16 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
             StringUtils.isEmpty(procPropsKey) ? null : Arrays.asList(procPropsKey.split(",")));
         queryData.put("procCtaskCode", procCtaskCode);
         return caserInfoService.approveHistoryOfSpeNode(queryData);
+    }
+
+
+    @RequestMapping(value = "/detailForSource", method = RequestMethod.GET)
+    @ApiOperation("按来源查询事件详情，带工作流数据")
+    public ObjectRestResponse<JSONObject> detailForSource(
+            @RequestParam(value="sourceType") @ApiParam("来源类型code")String sourceType,
+            @RequestParam(value="sourceCode") @ApiParam("来源ID") String sourceCode
+    ) {
+
+        return caserInfoService.detailForSource(sourceType,sourceCode);
     }
 }

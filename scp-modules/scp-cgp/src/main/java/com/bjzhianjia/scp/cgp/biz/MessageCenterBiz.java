@@ -21,7 +21,9 @@ import com.bjzhianjia.scp.cgp.mapper.SuperviseRecordMapper;
 import com.bjzhianjia.scp.cgp.mapper.UrgeRecordMapper;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONArray;
@@ -86,6 +88,9 @@ public class MessageCenterBiz extends BusinessBiz<MessageCenterMapper, MessageCe
 
     @Autowired
     private CLESuperviseRecordMapper cLESuperviseRecordMapper;
+    
+    @Autowired
+    private Environment environment;
 
     /**
      * 消息中心
@@ -646,6 +651,50 @@ public class MessageCenterBiz extends BusinessBiz<MessageCenterMapper, MessageCe
         // 当待添加对象不为空时，才执行添加操作
         if(BeanUtil.isNotEmpty(messageCentersInDB)){
             this.mapper.addMessageCenterList(messageCentersInDB);
+        }
+    }
+
+    /**
+     * 添加消息
+     * 该方法消息来源于业务服务，与工作流无关
+     * @param procBizData
+     */
+    public void add12345Msg(MessageCenter simpleMsg) {
+        if(BeanUtil.isEmpty(simpleMsg)){
+            return ;
+        }
+
+        simpleMsg.setIsRead("0");
+        simpleMsg.setIsDeleted("0");
+        simpleMsg.setCrtTime(new Date());
+        simpleMsg.setTenantId(BaseContextHandler.getTenantID());
+
+        List<MessageCenter> listToInsert = new ArrayList<>();
+
+        List<JSONObject> leaderOrMemberByGroupCode =
+            adminFeign
+                .getLeaderOrMemberByGroupCode(environment.getProperty("baseGroup.code.mayerLine"));
+
+        if(BeanUtil.isEmpty(leaderOrMemberByGroupCode)){
+            // 说明没有人需要接收到消息
+            return;
+        }
+
+        List<String> userIdList =
+            leaderOrMemberByGroupCode.stream().map(o -> o.getString("userId")).distinct()
+                .collect(Collectors.toList());
+
+        for (String userId : userIdList) {
+            MessageCenter messageCenter = new MessageCenter();
+
+            BeanUtils.copyProperties(simpleMsg, messageCenter);
+            messageCenter.setCrtUserId(userId);
+            listToInsert.add(messageCenter);
+        }
+
+        // 添加消息记录
+        if (BeanUtil.isNotEmpty(listToInsert)) {
+            this.mapper.addMessageCenterList(listToInsert);
         }
     }
 }

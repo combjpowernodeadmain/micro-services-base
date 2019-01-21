@@ -39,7 +39,6 @@ public class AuthUser implements Serializable{
     
     private String isDisabled;
 
-
     public AuthUser() {
     }
 

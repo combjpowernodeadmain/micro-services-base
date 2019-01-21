@@ -79,7 +79,7 @@
 		WHERE
 			ro.obj_type IN (
 			<if test="objType != null and objType != ''">
-				#{objType}
+				${objType}
 			</if>
 			)
 		AND ro.gri_id IN (

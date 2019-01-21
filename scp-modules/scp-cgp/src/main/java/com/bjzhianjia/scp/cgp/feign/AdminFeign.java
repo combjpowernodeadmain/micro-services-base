@@ -3,7 +3,6 @@ package com.bjzhianjia.scp.cgp.feign;
 import java.util.List;
 import java.util.Map;
 
-import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.auth.client.config.FeignApplyConfiguration;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -134,4 +134,21 @@ public interface AdminFeign {
 	 */
 	@RequestMapping(value = "/external/deptIds", method = RequestMethod.GET)
 	Map<String, String> getDepartByDeptIds(@RequestParam("deptIds") String deptIds);
+
+	@GetMapping("/depart/list/all")
+	@ApiOperation("查询所有部门")
+	List<JSONObject> deptListAll();
+
+	@GetMapping("/depart/list/attr")
+	@ApiOperation("按部门预留属性查询记录")
+	List<JSONObject> listByAttr(@RequestParam(value="attr") String attr,@RequestParam(value = "attrValues") String attrValues);
+
+	/**
+	 * 按组CODE获取用户信息，多个CODE之间用逗号隔开
+	 * @param groupCode
+	 * @return
+	 */
+	@ApiOperation("按组CODE集合获取用户")
+	@RequestMapping(value = "/user/list/groupCode", method = RequestMethod.GET)
+	List<JSONObject> getLeaderOrMemberByGroupCode(@RequestParam("groupCode") String groupCode);
 }

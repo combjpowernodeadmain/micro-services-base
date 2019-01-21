@@ -180,7 +180,7 @@ public class AffairCacheBiz extends BusinessBiz<AffairCacheMapper, AffairCache> 
             criteria.andEqualTo("affairCode", affairCode);
         }
         if (StringUtil.isNotBlank(affairName)) {
-            criteria.andEqualTo("affairName", affairName);
+            criteria.andLike("affairName", "%"+affairName+"%");
         }
         if (StringUtil.isNotBlank(clerkName)) {
             criteria.andLike("clerkName", "%" + clerkName + "%");

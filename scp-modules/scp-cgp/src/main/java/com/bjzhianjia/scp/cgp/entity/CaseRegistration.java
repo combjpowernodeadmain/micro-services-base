@@ -239,6 +239,10 @@ public class CaseRegistration implements Serializable {
     @Column(name="case_spot_check")
     private String caseSpotCheck;
 
+    // 案件办理后照片
+    @Column(name = "case_end_pic")
+    private String caseEndPic;
+
     /**
      * 设置：主键
      */
@@ -796,5 +800,21 @@ public class CaseRegistration implements Serializable {
      */
     public void setCaseSpotCheck(String caseSpotCheck) {
         this.caseSpotCheck = caseSpotCheck;
+    }
+
+    /**
+     * 获取：案件办理后照片
+     * @return
+     */
+    public String getCaseEndPic() {
+        return caseEndPic;
+    }
+
+    /**
+     * 设置：案件办理后照片
+     * @param caseEndPic
+     */
+    public void setCaseEndPic(String caseEndPic) {
+        this.caseEndPic = caseEndPic;
     }
 }

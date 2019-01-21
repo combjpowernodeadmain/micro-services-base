@@ -10,8 +10,10 @@ import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.cgp.vo.MayorHotlineVo;
+import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -368,12 +370,13 @@ public class MayorHotlineService {
 	 * 
 	 * @author 尚
 	 * @param id
+	 * @param replyDesc
 	 * @return
 	 */
 	public Result<Void> reply(Integer id) {
 		Result<Void> result = new Result<>();
 		result.setIsSuccess(false);
-		
+
 		String doneExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_DONE);
 		String feedBackExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_FEEDBACK);
 

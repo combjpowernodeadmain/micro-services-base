@@ -1,18 +1,3 @@
-/*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
-
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
-
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
 
 package com.bjzhianjia.scp.security.admin.mapper;
 
@@ -59,8 +44,8 @@ public interface JudicialUserMapper extends CommonMapper<User> {
      * @return
      */
     List<Map<String, Object>> selectMajorUser(@Param("user") User user,
-                                                     @Param("departIds") String departIds,
-                                                     @Param("groupId") String groupId);
+                                              @Param("departIds") String departIds,
+                                              @Param("groupId") String groupId);
     /**
      * 获取排除角色后的用户列表
      *
@@ -70,4 +55,22 @@ public interface JudicialUserMapper extends CommonMapper<User> {
      */
     List<Map<String, Object>> selectUserDebarRole(@Param("user") User user,
                                                   @Param("groupId") String groupId);
+
+    /**
+     * 分案时获取主办人（技术人员）列表
+     *
+     * @param major        专业
+     * @param userName     用户名字
+     * @param departId     部门id
+     * @param areaProvince 省级编码
+     * @param areaCity     城市编码
+     * @param groupId      角色id
+     * @return
+     */
+    List<Map<String, Object>> selectTechnicist(@Param("major") String major,
+                                               @Param("userName") String userName,
+                                               @Param("departId") String departId,
+                                               @Param("areaProvince") String areaProvince,
+                                               @Param("areaCity") String areaCity,
+                                               @Param("groupId") String groupId);
 }

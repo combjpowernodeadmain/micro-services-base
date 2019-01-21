@@ -123,9 +123,15 @@ public class WfProcUserAuthBiz extends WfBaseBiz {
                     log.error("用户授权信息不完整，没有租户Id，不能进行流程操作。", WorkflowEnumResults.WF_COMM_02000005);
                     throw new WorkflowException(WorkflowEnumResults.WF_COMM_02000005);
                 }
-                
-                authData.setProcTaskUser(userCode);
-                
+
+                /*
+                 * 进行处理任务时，有可能不直接来自于前端的请求，所以当前登录人也可能不是签收人
+                 * 如果不是前端的请求，给authData.setProcTaskUser(userCode)赋值来标识（也必须赋值）
+                 */
+                if(null == authData.getProcTaskUser()){
+					authData.setProcTaskUser(userCode);
+				}
+
                 /*
                  * procDeptId用户验证部门权限<br/>
                  * 该部门ID之前从BaseContexttHandler中获取，现在改为从前端传入<br/>

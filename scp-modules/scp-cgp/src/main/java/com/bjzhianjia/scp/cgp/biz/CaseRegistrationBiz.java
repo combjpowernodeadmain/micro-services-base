@@ -192,12 +192,25 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         // 确定执法人员的部门
         addEnforcerDept(caseRegistration);
 
+        // 如果案件有图片信息，将图片路径中的空格去除掉
+        _trimPicPathWhiteSpace(caseRegistration);
+
         this.insertSelective(caseRegistration);
         // 将生成的立案ID装入procBizData带回工作流，在工作流中会对procBizId属性进行是否为“-1”的判断，如果是“-1”，将用该ID替换“-1”
         caseRegJObj.put("procBizId", caseId);
 
         result.setIsSuccess(true);
         return result;
+    }
+
+    private void _trimPicPathWhiteSpace(CaseRegistration caseRegistration) {
+        if (StringUtils.isNotBlank(caseRegistration.getCaseSpotPic())) {
+            List<String> picList = new ArrayList<>();
+            for (String string : StringUtils.split(caseRegistration.getCaseSpotPic(), ",")) {
+                picList.add(StringUtils.trim(string));
+            }
+            caseRegistration.setCaseSpotPic(String.join(",", picList));
+        }
     }
 
     /**
@@ -1638,8 +1651,23 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
     public TableResultResponse<Map<String, Object>> getInspectItem(CaseRegistration caseRegistration, String startTime,
         String endTime, String gridIds, Integer page, Integer limit) {
 
+        /*
+         * 获取案件处理类型，用于动态生成SQL
+         * 避免在添加新的处理类型后，SQL语句报错或查不到结果
+         */
+        Map<String, String> dealTypeMap = dictFeign.getByCode(Constances.ROOT_BIZ_CASEDEALTYPE);
+        Set<String> dealTypes;
+        if (BeanUtil.isNotEmpty(dealTypeMap)) {
+            dealTypes = dealTypeMap.keySet();
+        } else {
+            TableResultResponse<Map<String, Object>> result = new TableResultResponse<>();
+            result.setStatus(400);
+            result.setMessage("未找到案件处理类型，请进行配置。");
+            return result;
+        }
+
         Page<Object> result = PageHelper.startPage(page, limit);
-        List<Map<String, Object>> list = this.mapper.selectInspectItem(caseRegistration, startTime, endTime, gridIds);
+        List<Map<String, Object>> list = this.mapper.selectInspectItem(caseRegistration, startTime, endTime, gridIds,dealTypes);
         if (BeanUtil.isEmpty(list)) {
             return new TableResultResponse<Map<String, Object>>(0, null);
         }
@@ -1939,6 +1967,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                  * 起始：如果没有地址信息，则抛出异常
                  * 现在：将地理信息必传限制去掉，如果没有地理信息，则跳过，有则填充
                  */
+                try {
+                    caseRegistration.setCaseLatitude(mapInfoJObj.getString("lat"));
+                    caseRegistration.setCaseOngitude(mapInfoJObj.getString("lng"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 Point point = new Point(mapInfoJObj.getDouble("lng"), mapInfoJObj.getDouble("lat"));
                 AreaGrid areaGridReturn = areaGridBiz.isPolygonContainsPoint(point);
                 if(BeanUtil.isNotEmpty(areaGridReturn)){
@@ -1971,6 +2005,9 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
         // 确定执法人员的部门
         addEnforcerDept(caseRegistration);
+
+        // 如果案件有图片信息，将图片路径中的空格去除掉
+        _trimPicPathWhiteSpace(caseRegistration);
 
         this.insertSelective(caseRegistration);
         // 将生成的立案ID装入procBizData带回工作流，在工作流中会对procBizId属性进行是否为“-1”的判断，如果是“-1”，将用该ID替换“-1”
@@ -2613,5 +2650,115 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 break;
             default:
         }
+
+
+    }
+
+    /**
+     * 按来源查询案件
+     * @param caseSourceType
+     * @param caseSourceSet
+     * @return
+     */
+    public List<CaseRegistration> getByCaseSource(String caseSourceType,Set<String> caseSourceSet){
+        Example example=new Example(CaseRegistration.class);
+        Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isDeleted", "0");
+        criteria.andEqualTo("caseSourceType",caseSourceType);
+        criteria.andIn("caseSource", caseSourceSet );
+
+        List<CaseRegistration> caseRegistrations = this.selectByExample(example);
+
+        if(BeanUtils.isEmpty(caseRegistrations)){
+            return new ArrayList<>();
+        }
+
+        return caseRegistrations;
+    }
+
+    /**
+     *
+     * @param id
+     * @return
+     */
+    public JSONObject getInfoById(String id) {
+        /*
+         * 1 查询与id关联的工作流实例ID
+         * 2 生成工作流需要的请求参数结构
+         */
+
+        // 工作流业务
+        JSONObject bizData = new JSONObject();
+        // 事件流程编码
+        bizData.put("procKey", "LawEnforcementProcess");
+        // 业务ids
+        bizData.put(Constants.WfProcessBizDataAttr.PROC_BIZID, "'"+String.valueOf(id)+"'");
+        JSONObject objs = initWorkflowQuery(bizData);
+
+        JSONObject queryData=new JSONObject();
+
+        // 查询流程实例ID
+        List<Map<String, Object>> procInstIdList = wfMonitorService.getProcInstIdByUserId(objs);
+
+        queryData.put
+                ("caseRegistrationId",id);
+        objs.put("queryData", queryData);
+        if (BeanUtil.isNotEmpty(procInstIdList)) {
+            // 请求中，只通过一个id进行查询，所以返回结果如果不为空，则长度一定为1
+            String procInstId = String.valueOf(procInstIdList.get(0).get("procInstId"));
+            objs.getJSONObject("procData").put("procInstId", procInstId);
+
+            return this.getInfoById(objs);
+        }
+
+        return new JSONObject();
+    }
+
+    /**
+     * 按事件来源查询事件详情，也就意味着该处查询的是经过中心交办的案件详情
+     * 
+     * @param sourceType
+     *            事件当时来源类型
+     * @param sourceCode
+     *            事件当时来源ID
+     * @return
+     */
+    public ObjectRestResponse<JSONObject> detailForCaseInfoSource(String sourceType,
+        String sourceCode) {
+
+        ObjectRestResponse<JSONObject> result = new ObjectRestResponse<>();
+
+        /*
+         * 1-> 通过来源查询到对应的事件
+         * 2-> 按事件查询具体对应中心交办后的案件详情
+         */
+        // 1->
+        CaseInfo queryCaseInfo = new CaseInfo();
+        queryCaseInfo.setIsDeleted("0");
+        queryCaseInfo.setSourceCode(sourceCode);
+        queryCaseInfo.setSourceType(sourceType);
+        CaseInfo caseInfo = caseInfoMapper.selectOne(queryCaseInfo);
+
+        if (BeanUtil.isEmpty(caseInfo)) {
+            result.setStatus(200);
+            result.setData(null);
+            return result;
+        }
+
+        CaseRegistration queryCaerRegistration = new CaseRegistration();
+        queryCaerRegistration.setIsDeleted("0");
+        queryCaerRegistration.setCaseSource(String.valueOf(caseInfo.getId()));
+        queryCaerRegistration.setCaseSourceType(CaseRegistration.CASE_SOURCE_TYPE_CENTER);
+        CaseRegistration caseRegistration = this.selectOne(queryCaerRegistration);
+        if (BeanUtil.isEmpty(caseRegistration)) {
+            result.setStatus(200);
+            result.setData(null);
+            return result;
+        }
+
+        JSONObject infoById = this.getInfoById(caseRegistration.getId());
+        result.setData(infoById);
+        result.setStatus(200);
+        return result;
     }
 }

@@ -354,7 +354,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             stopCount = stopCount == null ? 0 : stopCount;
             // 已完成
             Integer finishCount = result.getInteger(stateKey[1]);
-            finishCount = finishCount == null ? 0 : stopCount;
+            finishCount = finishCount == null ? 0 : finishCount;
             // 已完成 = 已完成 + 已终止
             result.put(stateKey[1], stopCount + finishCount);
 
@@ -929,10 +929,19 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
     /**
      * 按网格等级统计事件量，所统计的事件量包含子网格<br/>
      *
+     * @param caseInfo
      * @param gridLevel
+     * @param startTime
+     * @param endTime
+     * @param page
+     * @param limit
      * @return
      */
-    public TableResultResponse<JSONObject> statisticsByGridLevel(String gridLevel){
+    public TableResultResponse<JSONObject> statisticsByGridLevel(CaseInfo caseInfo, String gridLevel, String startTime, String endTime, Integer page, Integer limit){
+        if (BeanUtils.isEmpty(gridLevel)) {
+            gridLevel = environment.getProperty("areaGrid.gridLevel.zrwg.zfpq");
+        }
+
         // 查询与gridLevel对应的网格ID,返回结果如：(Map){"2","2,3,4,5"},{"10","12,13,14,15"}
         Map<Integer, Set<String>> gridIdBindChildrenMap = areaGridBiz.getByLevelBindChildren(gridLevel);
         /*
@@ -952,21 +961,22 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
                 gridIdSetBindChildrenJObj.put("gridChildrenSet", gridChildrenSet);
                 queryData.add(gridIdSetBindChildrenJObj);
             }
+        } else {
+            // 如果连网格都没有找到，则认为查询结果可为空，直接返回空结果
+            return new TableResultResponse<>(0, new ArrayList<>());
         }
 
-        List<JSONObject> result = this.mapper.statisticsByGridLevel(queryData);
+        // 查询网格等级,"root_biz_grid_level"是网格等级在字典中前缀
+        Map<String, String> gridLevelDictValueMap = dictFeign.getByCode(environment.getProperty("gridLevelType"));
+
+        List<JSONObject> result = this.mapper.statisticsByGridLevel(queryData,caseInfo,startTime,endTime);
         Set<Integer> gridIdInResult=new HashSet<>();
         if(BeanUtil.isNotEmpty(result)){
 
-            List<String> gridLevelDictKey = result.stream().map(o -> o.getString("gridLevel")).distinct().collect(Collectors.toList());
-
             // 查询网格等级
-            Map<String, String> gridLevelDictValueMap=new HashMap<>();;
-            if(BeanUtil.isNotEmpty(gridLevelDictKey)){
-                gridLevelDictValueMap = dictFeign.getByCodeIn(String.join(",", gridLevelDictKey));
-                if(BeanUtil.isEmpty(gridLevelDictValueMap)){
-                    gridLevelDictValueMap=new HashMap<>();
-                }
+
+            if (BeanUtil.isEmpty(gridLevelDictValueMap)) {
+                gridLevelDictValueMap = new HashMap<>();
             }
 
             for(JSONObject tmp:result){
@@ -995,6 +1005,10 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         if(BeanUtil.isNotEmpty(gridIdToFilling)){
             List<AreaGrid> areaGrids = areaGridMapper.selectByIds(String.join(",", gridIdToFilling));
             if(BeanUtil.isNotEmpty(areaGrids)){
+                Map<Integer, String> areaGridIdNameMap =
+                    areaGrids.stream()
+                        .collect(Collectors.toMap(AreaGrid::getId, AreaGrid::getGridName));
+
                 for(AreaGrid tmp:areaGrids){
                     JSONObject jsonTmp=new JSONObject();
                     jsonTmp.put("grid", tmp.getId());
@@ -1003,6 +1017,11 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
                     jsonTmp.put("stateTodo", 0);
                     jsonTmp.put("stateStop", 0);
                     jsonTmp.put("total", 0);
+                    jsonTmp.put("gridLevel", tmp.getGridLevel());
+                    jsonTmp.put("gridLevelName", gridLevelDictValueMap.get(tmp.getGridLevel()));
+                    jsonTmp.put("gridCode", tmp.getGridCode());
+                    jsonTmp.put("gridParent", tmp.getGridParent());
+                    jsonTmp.put("gridParentName", areaGridIdNameMap.get(tmp.getGridParent()));
                     result.add(jsonTmp);
                 }
             }

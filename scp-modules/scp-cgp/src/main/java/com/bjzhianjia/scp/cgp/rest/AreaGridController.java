@@ -138,12 +138,16 @@ public class AreaGridController extends BaseController<AreaGridBiz, AreaGrid, In
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     @ApiOperation("分页获取网格列表")
     public TableResultResponse<AreaGridVo> list(@RequestParam(defaultValue = "10") int limit,
-        @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "") String gridName,
-        @RequestParam(defaultValue = "") String gridLevel) {
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(defaultValue = "") String gridName,
+        @RequestParam(defaultValue = "") String gridLevel,
+        @RequestParam(value = "gridParent", required = false) Integer gridParent,
+        @RequestParam(value = "gridParentName", defaultValue = "") String gridParentName) {
         AreaGrid areaGrid = new AreaGrid();
         areaGrid.setGridName(gridName);
         areaGrid.setGridLevel(gridLevel);
-        TableResultResponse<AreaGridVo> list = areaGridService.getList(page, limit, areaGrid);
+        areaGrid.setGridParent(gridParent);
+        TableResultResponse<AreaGridVo> list = areaGridService.getList(page, limit, areaGrid,gridParentName);
         return list;
     }
 

@@ -96,4 +96,11 @@ public interface UserMapper extends CommonMapper<User> {
      * @return
      */
     List<JSONObject> selectUserListByDepts(@Param("deptSet") Set<String> deptSet);
+
+    /**
+     * 按部门CODE集合查询用户信息
+     * @param groupCodeSet
+     * @return
+     */
+    List<JSONObject> selectLeaderOrMemberByGroupCode(@Param("groupCodeSet") Set<String> groupCodeSet);
 }

@@ -117,6 +117,10 @@
 				<!-- 修改按节点名称查找为精确查询 -->
 				and task.PROC_CTASKNAME = #{procCtaskname}
 			</if>
+			<if test="procCtaskcode != '' and procCtaskcode != null">
+				<!-- 修改按节点ID查找为精确查询 -->
+				and task.PROC_CTASKCODE in (${procCtaskcode})
+			</if>
 			<if test="procMemo != '' and procMemo != null">
 				and proc.PROC_MEMO LIKE "%"#{procMemo}"%"
 			</if>
@@ -147,13 +151,14 @@
 	<!-- 统计当前用户任务量 -->
 	<select id="selectUserStatisTask" resultType="java.util.Map">
         SELECT
-        cmonth,
+		cyear,cmonth,
         MAX( CASE procKey WHEN 'comprehensiveManage' THEN csum ELSE 0 END ) comprehensiveManage,
         MAX( CASE procKey WHEN 'LawEnforcementProcess' THEN csum ELSE 0 END ) LawEnforcementProcess
         FROM (
-            SELECT cmonth,procKey,
+            SELECT cyear,cmonth,procKey,
             SUM(ccount) csum FROM(
                 SELECT
+				YEAR(cmonth) cyear,
                 MONTH(cmonth) cmonth,
                 PROC_KEY procKey,
                 COUNT(PROC_KEY) ccount
@@ -165,7 +170,11 @@
                     FROM_UNIXTIME(MAX(swpt1.PROC_TASK_ENDTIME),'%Y/%m/%d') cmonth
                     FROM
                     SCP_WF_PROC swp1
-                    LEFT JOIN SCP_WF_PROC_TASK swpt1 ON swp1.PROC_INST_ID = swpt1.PROC_INST_ID
+                    LEFT JOIN (
+						<!-- 先筛选数据源为当年的数据 -->
+						SELECT * FROM SCP_WF_PROC_TASK swpt1
+						WHERE YEAR(FROM_UNIXTIME(swpt1.PROC_TASK_ENDTIME,'%Y/%m/%d'))=YEAR(NOW())
+					) swpt1 ON swp1.PROC_INST_ID = swpt1.PROC_INST_ID
                     WHERE
                     swp1.PROC_STATUS IN (4, 6)
                     AND swpt1.PROC_TASK_ASSIGNEE = #{procTaskAssignee}
@@ -178,9 +187,9 @@
                 PROC_KEY
             ) ccountTmp
             GROUP BY
-            cmonth,procKey
+            cmonth,procKey,cyear
         ) sumTmp
-        GROUP BY cmonth
+        GROUP BY cmonth,cyear
 	</select>
 	
 	
@@ -840,4 +849,61 @@
         WHERE
         PROC_CTASKID=#{procTaskId}
     </select>
+
+
+	<select id="getUserTodoTaskBizId" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+		proc.PROC_ID procId,
+		proc.PROC_KEY procKey,
+		proc.PROC_NAME procName,
+		proc.PROC_INST_ID procInstId,
+		proc.PROC_BIZID procBizid,
+		proc.PROC_BIZTYPE procBiztype,
+		proc.PROC_ORGCODE procOrgcode,
+		proc.PROC_MEMO procMemo,
+		task.PROC_TASK_STATUS procTaskStatus,
+		task.PROC_TASK_PROPERTIES procTaskProperties,
+		CASE
+		WHEN task.PROC_TASK_STATUS = '1' THEN
+		'待签收'
+		WHEN task.PROC_TASK_STATUS = '2' THEN
+		'待处理'
+		WHEN task.PROC_TASK_STATUS = '3' THEN
+		'已处理'
+		WHEN task.PROC_TASK_STATUS = '4' THEN
+		'已终止'
+		ELSE
+		'未知'
+		END procTaskStatusName,
+		task.ID id,
+		task.PROC_CTASKID procCtaskId,
+		task.PROC_CTASKCODE procCtaskcode,
+		task.PROC_CTASKNAME procCtaskname,
+		task.PROC_TASK_COMMITTER procTaskCommitter,
+		task.PROC_APPROVEURL procApproveurl,
+		task.PROC_SELF_PROPERTIES procSelfProperties,
+		task.PROC_TASK_ASSIGNEE procTaskAssignee,
+		<!--IF (-->
+		<!--task.PROC_TASK_STATUS = '1',-->
+		<!--task.PROC_TASK_GROUP,-->
+		<!--task.PROC_TASK_ASSIGNEE-->
+		<!--) procTaskAssignee,-->
+		task.PROC_LICENSOR procLicensor,
+		FROM_UNIXTIME(task.PROC_TASK_COMMITTIME, '%Y/%m/%d %H:%i:%s') procTaskCommittime,
+		FROM_UNIXTIME(task.PROC_TASK_ASSIGNTIME, '%Y/%m/%d %H:%i:%s') procTaskAssigntime,
+		task.PROC_REFUSETASK procRefusetask
+		FROM SCP_WF_PROC proc
+		JOIN SCP_WF_PROC_TASK task
+		ON proc.PROC_INST_ID = task.PROC_INST_ID
+		LEFT JOIN SCP_WF_PROC_DELEGATE delegate
+		ON	delegate.PROC_INST_ID =	proc.PROC_INST_ID
+		AND delegate.PROC_MANDATARY = #{procTaskUser}
+		AND	delegate.PROC_LICENSE_ISVALID =	'1'
+		WHERE
+		proc.PROC_STATUS = '0'
+		AND task.PROC_TASK_STATUS IN ('1', '2')
+		AND task.PROC_KEY=#{procKey}
+		AND task.PROC_BIZID=#{procBizId}
+		ORDER BY task.PROC_TASK_COMMITTIME ASC
+	</select>
 </mapper>

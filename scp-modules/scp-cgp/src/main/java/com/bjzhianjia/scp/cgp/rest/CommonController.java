@@ -167,7 +167,6 @@ public class CommonController {
                 return tableresult;
             }
 
-            TableResultResponse<JSONObject> userToDoTasks = caseRegistrationBiz.getAllTasks(objs);
             TableResultResponse<JSONObject> jsonObjectTableResultResponse = caseRegistrationBiz.pushOfTwoWays(objs);
             return jsonObjectTableResultResponse;
         } catch (Exception e) {
@@ -211,10 +210,13 @@ public class CommonController {
         Result<Void> result = new Result<>();
         String msg = "Authentication failed. Please Get the correct key.";
 
+        String clientStr = environment.getProperty("common.external.client");
+        JSONObject clientJObj = JSONObject.parseObject(clientStr);
+
         // 对appKey做验证
         String appKey = objs.getString("appKey");
-        if(!StringUtils.equals(environment.getProperty("common.external.appKey"), appKey)){
-            result.setMessage(msg);
+        if(!clientJObj.keySet().contains(appKey)){
+            result.setMessage("'appKey' does not exist or error.");
             result.setIsSuccess(false);
             return result;
         }
@@ -235,11 +237,15 @@ public class CommonController {
             objs02.put("procData", String.join("", procData2));
             objs02.put("queryData", String.join("", queryData2));
             objs02.put("variableData", String.join("", variableData2));
-            String secret = environment.getProperty("common.external.secret","");
+            String secret = clientJObj.getJSONObject(appKey).getString("secret");
+            // String secret =
+            // environment.getProperty("common.external.secret","");
             objs02.put("secret", secret);
             objs02.put("appKey", appKey);
 
             List<String> sortObjsList = _getJObjSortStrings(objs02);
+
+            System.out.println(String.join("", sortObjsList));
 
             String signOfServer =
                 DigestUtils.md5DigestAsHex(String.join("", sortObjsList).getBytes());
@@ -247,7 +253,7 @@ public class CommonController {
 
             //验证签名是否正确
             if (!sign.equals(signOfServer)) {
-                result.setMessage(msg);
+                result.setMessage("'sign' is error,please try again.");
                 result.setIsSuccess(false);
                 return result;
             }
@@ -258,7 +264,7 @@ public class CommonController {
                 Long timestamp = authData.getLong("timestamp");
                 //不存在时间戳，则认证失败
                 if(timestamp == null || timestamp == 0){
-                    result.setMessage(msg);
+                    result.setMessage("'timestamp' is not present,please check the query data.");
                     result.setIsSuccess(false);
                     return result;
                 }
@@ -268,7 +274,7 @@ public class CommonController {
                 long endTime = DateUtil.addMinute(timestampDate,Integer.valueOf(environment.getProperty("common.external.expi"))).getTime();
                 long nowTime = new Date().getTime();
                 if(endTime < nowTime ){
-                    result.setMessage(msg);
+                    result.setMessage("'sign' expired,please try to generate another one.");
                     result.setIsSuccess(false);
                     return result;
                 }
