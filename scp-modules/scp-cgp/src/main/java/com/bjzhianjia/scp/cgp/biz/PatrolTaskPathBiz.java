@@ -99,17 +99,23 @@ public class PatrolTaskPathBiz extends BusinessBiz<PatrolTaskPathMapper, PatrolT
 
         String _startTime = DateUtil.dateFromDateToStr(startTime, "yyyy-MM-dd HH:mm:ss");
         String _endTime = DateUtil.dateFromDateToStr(endTime, "yyyy-MM-dd HH:mm:ss");
+
+        // 查询的结束日期向后推一天
+        Date endTimeT =
+                DateUtil
+                        .theDayOfTommorrow(DateUtil.dateFromStrToDate(_endTime, DateUtil.DATE_FORMAT_DF));
         
         //结束日期往前推4天，最大查询4天的轨迹记录
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(endTime);
+        calendar.setTime(endTimeT);
         calendar.set(Calendar.DATE, calendar.get(Calendar.DATE)-4);
         Date maxStartTime = calendar.getTime();
         String maxEndTime = DateUtil.dateFromDateToStr(maxStartTime, "yyyy-MM-dd HH:mm:ss");
         
         StringBuilder sql = new StringBuilder();
         sql.append("(('").append(_startTime).append("'").append("<=crt_time  and '").append(maxEndTime).append("'<=crt_time)");
-        sql.append(" and crt_time<=").append("'").append(_endTime).append("')");
+        sql.append(" and crt_time<=").append("'")
+            .append(DateUtil.dateFromDateToStr(endTimeT, DateUtil.DATE_FORMAT_DF)).append("')");
         
         criteria.andCondition(sql.toString());
         list = patrolTaskPathMapper.selectByExample(example);
