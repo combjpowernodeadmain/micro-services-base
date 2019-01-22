@@ -84,8 +84,9 @@
 			AND (task.PROC_TENANTPERMISSION = '0' OR task.PROC_TENANTPERMISSION = '1' and proc.PROC_TENANT_ID = #{procTenantId})
 			AND (task.PROC_ORGPERMISSION = '0' 
 				OR task.PROC_ORGPERMISSION = '1' and task.PROC_ORGCODE = #{procOrgCode}
-				OR task.PROC_ORGPERMISSION = '2' and (task.PROC_ORGCODE = #{procOrgCode} or
+				OR task.PROC_ORGPERMISSION = '2' and (task.PROC_ORGCODE = #{procOrgCode}
 					<if test="procAuthOrgCodes != null and procAuthOrgCodes.size > 0">
+						or
 						task.PROC_ORGCODE in
 						<foreach item="item" index="index" collection="procAuthOrgCodes" open="("
 							separator="," close=")">
