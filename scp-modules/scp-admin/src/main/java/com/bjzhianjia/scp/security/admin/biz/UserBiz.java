@@ -1,6 +1,7 @@
 
 package com.bjzhianjia.scp.security.admin.biz;
 
+import com.bjzhianjia.scp.security.admin.entity.Depart;
 import com.bjzhianjia.scp.security.common.util.BeanUtils;
 import com.bjzhianjia.scp.security.common.util.BooleanUtil;
 import com.bjzhianjia.scp.security.common.util.EntityUtils;
@@ -267,10 +268,10 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
      * @param deptId
      * @return
      */
-    public TableResultResponse<User> getUserByDept(String deptId,int page,int limit){
+    public TableResultResponse<JSONObject> getUserByDept(String deptId,int page,int limit){
 
         Page<Object> result =PageHelper.startPage(page, limit);
-        List<User> userList = departMapper.selectDepartUsers(deptId, null);
+        List<JSONObject> userList = this.mapper.selectDepartUsers(deptId, null);
 
 //    	Example example=new Example(User.class);
 //    	Example.Criteria criteria=example.createCriteria();
@@ -279,7 +280,7 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
 //    	example.orderBy("id");
 //    	Page<Object> result =PageHelper.startPage(page, limit);
 //    	List<User> userList = mapper.selectByExample(example);
-        return new TableResultResponse<User>(result.getTotal(), userList);
+        return new TableResultResponse<JSONObject>(result.getTotal(), userList);
     }
 
     /**
@@ -333,11 +334,22 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
     private List<Map<String , Object>> bindPositionToUser(List<User> userList) {
         List<Map<String , Object>> result = new ArrayList<>();
         List<String> userIdList = userList.stream().map((o) -> o.getId()).distinct().collect(Collectors.toList());
+        List<String> departIdList = userList.stream().map(o -> o.getDepartId()).distinct().collect(Collectors.toList());
 
         String join = String.join(",", userIdList);
         join = "'" + join.replaceAll(",", "','") + "'";
 
         List<PositionVo> positionMapList = positionMapper.selectPositionByUser(join);
+        String departIds = StringUtils.join(departIdList, ",");
+        List<Depart> departs = new ArrayList<>();
+        if(StringUtils.isNotBlank(departIds)){
+            departIds="'"+ StringUtils.replace(departIds, ",", "','")+"'";
+            departs=departMapper.selectByIds(departIds);
+        }
+        Map<String, Depart> departIdInstanceMap = new HashMap<>();
+        if (BeanUtils.isNotEmpty(departs)) {
+            departIdInstanceMap=departs.stream().collect(Collectors.toMap(Depart::getId, depart -> depart));
+        }
 
         //封装用户职务
         //数据格式：userId：username1，username2
@@ -359,6 +371,13 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
                 data.put("id", user.getId());
                 data.put("name", user.getName());
                 data.put("position", positionMap.get(user.getId()));
+                data.put("attr2", user.getAttr2());
+                Depart depart = departIdInstanceMap.get(user.getDepartId());
+                if (null != depart) {
+                    data.put("departName", depart.getName());
+                } else {
+                    data.put("departName", "");
+                }
                 result.add(data);
             }
         }

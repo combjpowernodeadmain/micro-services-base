@@ -312,4 +312,18 @@ public class WfMonitorBiz extends WfBaseBiz {
             logger.info("流程查询--查询流程实例ids完成.");
         }
     }
+
+    /**
+     * 按procKey,ProcCTaskCode,procBizId查询记录
+     * @param objs
+     * @return
+     */
+    public List<JSONObject> selectByProcKeyAndCTaskCodeAndBizId(JSONObject objs) throws WorkflowException{
+        logger.info("流程查询--开始查询流程实例...");
+        try {
+            return iqbWfMyProcBeanMapper.selectByProcKeyAndCTaskCodeAndBizId(objs);
+        } finally {
+            logger.info("流程查询--查询流程实例完成.");
+        }
+    }
 }

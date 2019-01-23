@@ -297,4 +297,10 @@ public class AreaGridController extends BaseController<AreaGridBiz, AreaGrid, In
             this.baseBiz.allPotition(areaGrid);
         return areaGridTableResultResponse;
     }
+
+    @RequestMapping(value = "/tree/gridLevel", method = RequestMethod.GET)
+    @ApiOperation("获取网格树")
+    public List<AreaGridTree> getTreeGridLevel(@RequestParam(value = "gridLevel") String gridLevel) {
+        return this.baseBiz.getAreaGridLevelTrees(gridLevel);
+    }
 }
