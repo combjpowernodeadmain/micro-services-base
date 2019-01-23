@@ -13,6 +13,7 @@
 package com.bjzhianjia.scp.cgp.rest;
 
 import java.util.Date;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -147,8 +148,21 @@ public class PatrolTaskPathController
             return result;
         }
 
-        Date _startTime = DateUtil.dateFromStrToDate(startTime, "yyyy-MM-dd HH:mm:ss");
-        Date _endTime = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
+        String fullDatePattern = "\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}";
+        String simplePattern = "\\d{4}-\\d{2}-\\d{2}";
+        boolean fullDate = Pattern.matches(fullDatePattern, startTime) && Pattern.matches(fullDatePattern, endTime);
+        boolean simpleDate = Pattern.matches(simplePattern, startTime) && Pattern.matches(simplePattern, endTime);
+
+        Date _startTime = null;
+        Date _endTime = null;
+        if(fullDate){
+            _startTime = DateUtil.dateFromStrToDate(startTime, "yyyy-MM-dd HH:mm:ss");
+            _endTime = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
+        }else if(simpleDate){
+            _startTime = DateUtil.dateFromStrToDate(startTime, "yyyy-MM-dd");
+            _endTime = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd");
+        }
+
 
         JSONArray array = patrolTaskPathBiz.getByUserIdAndDate(userId, _startTime, _endTime);
 
