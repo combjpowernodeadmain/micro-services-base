@@ -11,6 +11,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.bjzhianjia.scp.cgp.entity.MessageCenter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -91,6 +92,9 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
     @Autowired
     private Environment environment;
 
+    @Autowired
+    private MessageCenterBiz messageCenterBiz;
+
     public void createLawTask(LawTask lawTask) throws Exception {
         // 生成巡查记录编号
         LawTask maxOne = this.getMaxOne();
@@ -127,6 +131,17 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
                 this.addExecutePerso(lawTask);
             }
             super.updateSelectiveById(lawTask);
+
+            // root_biz_lawTaskS_doing
+            if(StringUtils.equals(lawTask.getState(), LawTask.ROOT_BIZ_LAWTASKS_DOING)){
+                // 更新操作，进行消息添加
+                MessageCenter simpleMsg=new MessageCenter();
+                simpleMsg.setMsgSourceId(String.valueOf(lawTask.getId()));
+                simpleMsg.setMsgSourceType("root_biz_caseSourceT_task");
+                simpleMsg.setMsgName(lawTask.getLawTitle());
+                simpleMsg.setMsgDesc(lawTask.getInfo());
+                messageCenterBiz.addLawTaskMessage(simpleMsg);
+            }
         }
     }
 

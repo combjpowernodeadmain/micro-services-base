@@ -84,7 +84,8 @@ public interface CaseInfoMapper extends CommonMapper<CaseInfo> {
      * @param endTime   结束时间
      * @return
      */
-    public List<Map<String ,Object>> selectBizLine(@Param("caseInfo") CaseInfo caseInfo,@Param("gridIds")String gridIds,
+    public List<Map<String ,Object>> selectBizLine(@Param("caseInfo") CaseInfo caseInfo,
+                                                   @Param("gridIdSet")Set<String> gridIds,
         @Param("startTime") String startTime, @Param("endTime") String endTime);
     
     /**

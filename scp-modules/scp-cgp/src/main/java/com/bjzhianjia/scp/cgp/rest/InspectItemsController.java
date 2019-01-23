@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.rest;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
@@ -63,14 +64,8 @@ public class InspectItemsController extends BaseController<InspectItemsBiz,Inspe
 	@RequestMapping(value = "/get/{id}",method = RequestMethod.GET)
     @ResponseBody
     @ApiOperation("查询单个对象")
-    public ObjectRestResponse<InspectItems> get(@PathVariable @ApiParam(name="待查询对象ID") Integer id){
-        ObjectRestResponse<InspectItems> entityObjectRestResponse = new ObjectRestResponse<>();
-        Object o = inspectItemsBiz.selectById(id);
-        InspectItems inspectItems = (InspectItems)o;
-       
-        entityObjectRestResponse.data(inspectItems);
-        
-        return entityObjectRestResponse;
+    public ObjectRestResponse<JSONObject> getInspectItems(@PathVariable @ApiParam(name="待查询对象ID") Integer id){
+		return inspectItemsBizService.getInspectItems(id);
     }
 	
 	@RequestMapping(value = "/add",method = RequestMethod.POST)
