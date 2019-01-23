@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSONObject;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -178,5 +181,28 @@ public class InspectItemsService {
 		result.setIsSuccess(true);
 		result.setMessage("成功");
 		return result;
+	}
+
+	/**
+	 * 查询巡查事件详情
+	 * @param id
+	 * @return
+	 */
+	public ObjectRestResponse<JSONObject> getInspectItems(Integer id){
+		ObjectRestResponse<JSONObject> restResult=new ObjectRestResponse<>();
+		InspectItems inspectItems = this.inspectItemsBiz.selectById(id);
+		if(BeanUtil.isEmpty(inspectItems)){
+			return restResult;
+		}
+		JSONObject itemJObj = JSONObject.parseObject(JSONObject.toJSONString(inspectItems));
+		Map<String, String> dictValue = dictFeign.getByCode(inspectItems.getBizType());
+		if(BeanUtil.isNotEmpty(dictValue)){
+			itemJObj.put("bizTypeName", dictValue.get(inspectItems.getBizType()));
+		}else{
+			itemJObj.put("bizTypeName", "");
+		}
+
+		restResult.setData(itemJObj);
+		return restResult;
 	}
 }

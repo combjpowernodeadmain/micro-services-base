@@ -367,24 +367,49 @@ public class MayorHotlineService {
 
 	/**
 	 * 记录反馈
-	 * 
+	 *
 	 * @author 尚
 	 * @param id
 	 * @param replyDesc
 	 * @return
 	 */
-	public Result<Void> reply(Integer id) {
+	public Result<Void> reply(MayorHotline rawMayorHotline) {
+		Integer id=rawMayorHotline.getId();
+		String replyDesc=rawMayorHotline.getReplyDesc();
+
 		Result<Void> result = new Result<>();
 		result.setIsSuccess(false);
 
 		String doneExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_DONE);
 		String feedBackExeStatus = CommonUtil.exeStatusUtil(dictFeign, Constances.MayorHotlineExeStatus.ROOT_BIZ_12345STATE_FEEDBACK);
 
-		MayorHotline mayorHotline = mayorHotlineBiz.selectById(id);
-		if (mayorHotline.getExeStatus().equals(doneExeStatus)) {
-			mayorHotline.setExeStatus(feedBackExeStatus);
-			mayorHotline.setReplyDatetime(new Date());// 记录反馈的时间
-			mayorHotlineBiz.updateSelectiveById(mayorHotline);
+		MayorHotline mayorHotlineInDB = mayorHotlineBiz.selectById(id);
+
+		MayorHotline mayorHotlineToUpdate=new MayorHotline();
+		if (StringUtils.equals( mayorHotlineInDB.getExeStatus(), doneExeStatus)) {
+			mayorHotlineToUpdate.setId(mayorHotlineInDB.getId());
+			mayorHotlineToUpdate.setExeStatus(feedBackExeStatus);
+			mayorHotlineToUpdate.setReplyDatetime(new Date());// 记录反馈的时间
+			mayorHotlineToUpdate.setReplyDesc(replyDesc);
+			mayorHotlineBiz.updateSelectiveById(mayorHotlineToUpdate);
+
+			// 更新该12345登记的事件信息
+			CaseInfo queryCaseInfo = new CaseInfo();
+			queryCaseInfo.setSourceType(Constances.BizEventType.ROOT_BIZ_EVENTTYPE_12345);
+			queryCaseInfo.setSourceCode(String.valueOf(mayorHotlineToUpdate.getId()));
+			CaseInfo caseInfo = caseInfoBiz.selectOne(queryCaseInfo);
+			if (BeanUtil.isEmpty(caseInfo)) {
+				result.setIsSuccess(false);
+				result.setMessage("该市长热线对应的事件信息不存在或已被删除，请联系管理员。");
+				return result;
+			}
+			CaseInfo caseInfoToUpdate = new CaseInfo();
+			caseInfoToUpdate.setId(caseInfo.getId());
+			caseInfoToUpdate.setReplyDesc(replyDesc);
+			caseInfoToUpdate.setReplyPerson(BaseContextHandler.getUserID());
+			caseInfoToUpdate.setReplyTime(new Date());
+			this.caseInfoBiz.updateSelectiveById(caseInfoToUpdate);
+
 			result.setIsSuccess(true);
 			result.setMessage("成功");
 			return result;

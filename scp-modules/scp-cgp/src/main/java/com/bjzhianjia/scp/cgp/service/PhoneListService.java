@@ -208,18 +208,13 @@ public class PhoneListService {
             deptInfo = JSONObject.parseObject(String.valueOf(result.get("departId")));
             deptName=deptInfo.getString("name") == null ? "" : deptInfo.getString("name");
         } catch (Exception e) {
-            Map<String, String> depart =
-                adminFeign.getDepart(String.valueOf(result.get("departId")));
-            if (BeanUtil.isNotEmpty(depart)) {
-                List<String> departJSONStr = new ArrayList<>(depart.values());
-                deptInfo = JSONObject.parseObject(departJSONStr.get(0));
-                deptName = deptInfo.getString("name");
-            }
+            e.getMessage();
         }
 
         // 查询父级部门信息
         if (!StringUtils.equals(deptInfo.getString("parentId"),"-1")
-                && !StringUtils.equals(deptInfo.getString("parentId"), "root")) {
+                && !StringUtils.equals(deptInfo.getString("parentId"), "root")
+        && StringUtils.isNotBlank(deptInfo.getString("parentId"))) {
             // 说明该部门有父级部门且不为根部门
             Map<String, String> parentDeptMap =
                     adminFeign.getDepart(deptInfo.getString("parentId"));

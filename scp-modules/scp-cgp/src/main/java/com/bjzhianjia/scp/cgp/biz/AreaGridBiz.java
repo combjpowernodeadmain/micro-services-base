@@ -9,14 +9,17 @@ import com.bjzhianjia.scp.cgp.mapper.AreaGridMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
 import com.bjzhianjia.scp.cgp.util.SpatialRelationUtil;
+import com.bjzhianjia.scp.cgp.vo.AreaGridTree;
 import com.bjzhianjia.scp.cgp.vo.AreaGridVo;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.util.BeanUtils;
+import com.bjzhianjia.scp.security.common.util.TreeUtil;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -504,6 +507,59 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
             if (areaGrid.getId().equals(areaGridTmp.getGridParent())) {
                 // 说明该网格是传入网格id的子网格
                 _bindChildren(areaGrids, areaGridTmp,gridIdSetBindChildrenInMap);
+            }
+        }
+    }
+
+    /**
+     * 按网格等级获取网格树
+     * @return
+     */
+    public List<AreaGridTree> getAreaGridLevelTrees(String gridLevel) {
+        List<AreaGrid> allAreaGrid = this.selectListAll();
+        List<AreaGrid> byGridLevel = this.getByGridLevel(gridLevel);
+
+        // 获取byGridLevel的父网格
+        Set<AreaGrid> gridBindParent=new HashSet<>();
+        if(BeanUtil.isNotEmpty(byGridLevel)
+        && BeanUtil.isNotEmpty(allAreaGrid)){
+            for(AreaGrid tmp:byGridLevel){
+                revursiveParentGrid(allAreaGrid,gridBindParent,tmp);
+            }
+        }
+
+        List<AreaGridTree> trees = new ArrayList<>();
+
+        Map<Integer, String> gridIdNameMap =
+                gridBindParent.stream().collect(Collectors.toMap(AreaGrid::getId, AreaGrid::getGridName));
+
+        gridBindParent.forEach(o -> {
+            String gridWithParent =
+                    gridIdNameMap.get(o.getGridParent()) == null ? o.getGridName()
+                            : o.getGridName() + "(" + gridIdNameMap.get(o.getGridParent()) + ")";
+            trees.add(new AreaGridTree(o.getId(), o.getGridParent(), o.getGridName(),
+                    o.getGridCode(), gridWithParent));
+        });
+
+        return TreeUtil.bulid(trees, -1, null);
+    }
+
+    /**
+     * 递归查询父级网格
+     * @param allAreaGrid
+     * @param gridBindParent
+     */
+    private void revursiveParentGrid(List<AreaGrid> allAreaGrid, Set<AreaGrid> gridBindParent,
+        AreaGrid currentAreaGrid) {
+        gridBindParent.add(currentAreaGrid);
+        for (AreaGrid tmp : allAreaGrid) {
+            if (StringUtils.equals(String.valueOf(currentAreaGrid.getGridParent()),
+                String.valueOf(tmp.getId()))) {
+                // 说明tmp是currentAreaGrid的父节点
+                gridBindParent.add(tmp);
+                if (-1 != tmp.getGridParent()) {
+                    revursiveParentGrid(allAreaGrid, gridBindParent, tmp);
+                }
             }
         }
     }

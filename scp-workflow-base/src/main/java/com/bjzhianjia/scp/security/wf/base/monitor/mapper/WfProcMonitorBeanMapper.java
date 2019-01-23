@@ -3,6 +3,7 @@ package com.bjzhianjia.scp.security.wf.base.monitor.mapper;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import com.alibaba.fastjson.JSONObject;
@@ -116,5 +117,12 @@ public interface WfProcMonitorBeanMapper {
      * @param objs
      * @return
      */
-    JSONObject getUserTodoTaskBizId(JSONObject objs);
+    JSONObject getUserTodoTaskBizId(@Param("objs") JSONObject objs);
+
+    /**
+     * 按procKey,ProcCTaskCode,procBizId查询记录
+     * @param objs
+     * @return
+     */
+    List<JSONObject> selectByProcKeyAndCTaskCodeAndBizId(@Param("objs")JSONObject objs);
 }

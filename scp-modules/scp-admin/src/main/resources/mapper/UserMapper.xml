@@ -220,4 +220,21 @@
         </foreach>
         )
     </select>
+
+    <select id="selectDepartUsers" resultType="com.alibaba.fastjson.JSONObject">
+        select u.name,u.username,u.id,u.sex,u.description,u.depart_id departId,u.attr2,d.name departName 
+        from
+        base_depart d
+        inner join base_depart_user bdu
+        on bdu.depart_id = d.id
+        inner join
+        base_user u
+        on bdu.user_id = u.id
+        where bdu.depart_id = #{departId}
+        <if test="userName!=null">
+            and u.name like #{userName}
+            and u.is_deleted = '0'
+            and u.is_disabled = '0'
+        </if>
+    </select>
 </mapper>

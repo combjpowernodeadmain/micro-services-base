@@ -534,4 +534,18 @@ public class WfMonitorServiceImpl implements IWfMonitorService {
         JSONObject queryObj = parseQueryData(authData, bizData);
         return wfMonitorBiz.getUserTodoTaskBizId(queryObj);
     }
+
+    /**
+     * 按procKey,ProcCTaskCode,procBizId查询记录
+     * @param objs
+     * @return
+     */
+    public List<JSONObject> selectByProcKeyAndCTaskCodeAndBizId(JSONObject objs){
+        try {
+            return wfMonitorBiz.selectByProcKeyAndCTaskCodeAndBizId(objs);
+        } catch (WorkflowException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
 }

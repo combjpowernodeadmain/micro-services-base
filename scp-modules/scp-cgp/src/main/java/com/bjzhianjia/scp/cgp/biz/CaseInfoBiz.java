@@ -486,7 +486,6 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         // 网格等级
         List<AreaGrid> areaGridList = null;
         // 网格ids
-        String gridIds="";
         Set<String> gridIdSet=new HashSet<>();
         if (StringUtils.isNotBlank(gridLevel)) {
             areaGridList = areaGridBiz.getByGridLevel(gridLevel);
@@ -494,7 +493,6 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
                 for(AreaGrid areaGridTmp:areaGridList){
                     gridIdSet.add(String.valueOf(areaGridTmp.getId()));
                 }
-                gridIds=String.join(",", gridIdSet);
             }
         }
 
@@ -516,7 +514,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         }
         // 封装数据库中的数据
         List<Map<String, Object>> bizLineList =
-            this.mapper.selectBizLine(caseInfo, gridIds, startTime, endTime);
+            this.mapper.selectBizLine(caseInfo, gridIdSet, startTime, endTime);
         if (BeanUtil.isNotEmpty(bizLineList)) {
             for (Map<String, Object> bizLineMap : bizLineList) {
                 obj = new JSONObject();
@@ -1004,11 +1002,17 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         }
         if(BeanUtil.isNotEmpty(gridIdToFilling)){
             List<AreaGrid> areaGrids = areaGridMapper.selectByIds(String.join(",", gridIdToFilling));
+            List<String> parentIds =
+                    areaGrids.stream().map(o -> String.valueOf(o.getGridParent())).distinct()
+                            .collect(Collectors.toList());
+            List<AreaGrid> areaGrids1 = areaGridMapper.selectByIds(String.join(",", parentIds));
+            Map<Integer, String> areaGridIdNameMap = new HashMap<>();
+            if (BeanUtil.isNotEmpty(areaGrids1)) {
+                areaGridIdNameMap =
+                        areaGrids1.stream()
+                                .collect(Collectors.toMap(AreaGrid::getId, AreaGrid::getGridName));
+            }
             if(BeanUtil.isNotEmpty(areaGrids)){
-                Map<Integer, String> areaGridIdNameMap =
-                    areaGrids.stream()
-                        .collect(Collectors.toMap(AreaGrid::getId, AreaGrid::getGridName));
-
                 for(AreaGrid tmp:areaGrids){
                     JSONObject jsonTmp=new JSONObject();
                     jsonTmp.put("grid", tmp.getId());

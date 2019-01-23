@@ -26,7 +26,8 @@ public class UserService {
 
 	public JSONArray getUsersByName(String name) {
 	    List<User> rows = userBiz.getUsersByFakeName(name);
-		JSONArray jsonArray = bindPositionToUser(rows);
+		List<JSONObject> jsonObjects = JSON.parseArray(JSON.toJSONString(rows), JSONObject.class);
+		JSONArray jsonArray = bindPositionToUser(jsonObjects);
 		if(jsonArray == null) {
 		    jsonArray = new JSONArray();
 		}
@@ -40,9 +41,10 @@ public class UserService {
 	 * @param userList
 	 * @return
 	 */
-	private JSONArray bindPositionToUser(List<User> userList) {
+	private JSONArray bindPositionToUser(List<JSONObject> userList) {
 
-		List<String> userIdList = userList.stream().map((o) -> o.getId()).distinct().collect(Collectors.toList());
+		List<String> userIdList =
+				userList.stream().map((o) -> o.getString("id")).distinct().collect(Collectors.toList());
 
 		String join = String.join(",", userIdList);
 		join = "'" + join.replaceAll(",", "','") + "'";
@@ -81,10 +83,10 @@ public class UserService {
 	public JSONObject getUserByDept(String deptId, int page, int limit) {
 		
 		
-		TableResultResponse<User> result = userBiz.getUserByDept(deptId, page, limit);
-		TableResultResponse<User>.TableData<User> data = result.getData();
+		TableResultResponse<JSONObject> result = userBiz.getUserByDept(deptId, page, limit);
+		TableResultResponse<JSONObject>.TableData<JSONObject> data = result.getData();
 
-		List<User> rows = data.getRows();
+		List<JSONObject> rows = data.getRows();
 		long total = data.getTotal();
 
 		JSONObject object = new JSONObject();

@@ -201,7 +201,13 @@
 		case_info
 		WHERE
 		<include refid="isParamNull"/>
-			<!--AND grid in(#{gridIds})-->
+		<if test="gridIdSet !=null and gridIdSet.size() > 0">
+			and grid in (
+			<foreach collection="gridIdSet" item="item" separator=",">
+				#{item}
+			</foreach>
+			)
+		</if>
 		GROUP BY
 		biz_list
 	</select>
