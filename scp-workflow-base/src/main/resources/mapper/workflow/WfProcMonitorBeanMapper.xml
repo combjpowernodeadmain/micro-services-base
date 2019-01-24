@@ -839,7 +839,7 @@
         SELECT
         PROC_INST_ID procInstId,
         PROC_BIZID procBizId,
-        #<!-- 添加当前节点名称及任务提交时间 -->
+        <!-- 添加当前节点名称及任务提交时间 -->
         PROC_CTASKNAME procCtaskName,
         PROC_CTASKID procCtaskId,
         PROC_TASK_STATUS procTaskStatus,
@@ -906,5 +906,21 @@
 		AND task.PROC_KEY=#{objs.procKey}
 		AND task.PROC_BIZID=#{objs.procBizId}
 		ORDER BY task.PROC_TASK_COMMITTIME ASC
+	</select>
+
+	<select id="selectByProcKeyAndCTaskCodeAndBizId" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT task.PROC_KEY procKey,task.PROC_BIZID procBizId
+		FROM scp_wf_proc_task task
+		WHERE task.PROC_KEY=#{objs.procKey}
+		AND task.PROC_CTASKCODE IN (
+		<foreach collection="objs.procCTaskCode" item="item" separator=",">
+			#{item}
+		</foreach>
+		)
+		AND task.PROC_BIZID IN (
+		<foreach collection="objs.procBizId" item="item" separator=",">
+			#{item}
+		</foreach>
+		)
 	</select>
 </mapper>
