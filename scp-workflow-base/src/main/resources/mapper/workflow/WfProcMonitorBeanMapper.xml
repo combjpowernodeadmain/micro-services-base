@@ -898,13 +898,13 @@
 		ON proc.PROC_INST_ID = task.PROC_INST_ID
 		LEFT JOIN SCP_WF_PROC_DELEGATE delegate
 		ON	delegate.PROC_INST_ID =	proc.PROC_INST_ID
-		AND delegate.PROC_MANDATARY = #{procTaskUser}
+		AND delegate.PROC_MANDATARY = #{objs.procTaskUser}
 		AND	delegate.PROC_LICENSE_ISVALID =	'1'
 		WHERE
 		proc.PROC_STATUS = '0'
 		AND task.PROC_TASK_STATUS IN ('1', '2')
-		AND task.PROC_KEY=#{procKey}
-		AND task.PROC_BIZID=#{procBizId}
+		AND task.PROC_KEY=#{objs.procKey}
+		AND task.PROC_BIZID=#{objs.procBizId}
 		ORDER BY task.PROC_TASK_COMMITTIME ASC
 	</select>
 </mapper>

@@ -200,7 +200,33 @@
 		FROM
 		case_info
 		WHERE
-		<include refid="isParamNull"/>
+		is_deleted=0
+		<!-- 业务线条 -->
+		<if test="caseInfo.bizList != null and caseInfo.bizList != ''">
+			and biz_list=#{caseInfo.bizList}
+		</if>
+		<!-- 事件类别 -->
+		<if
+				test="caseInfo.eventTypeList != null and caseInfo.eventTypeList != ''">
+			and event_type_list=#{caseInfo.eventTypeList}
+		</if>
+		<!-- 事件来源 -->
+		<if
+				test="caseInfo.sourceType != null and caseInfo.sourceType != ''">
+			and source_type=#{caseInfo.sourceType}
+		</if>
+		<!-- 事件级别 -->
+		<if test="caseInfo.caseLevel != null and caseInfo.caseLevel != ''">
+			and case_level=#{caseInfo.caseLevel}
+		</if>
+		<!-- 日期范围（开始时间和结束时间） -->
+		<if test="startTime !=null and startTime!='' ">
+			<if test="endTime !=null and endTime!='' ">
+				<![CDATA[
+					and #{startTime}<=crt_time and crt_time <= #{endTime}
+					]]>
+			</if>
+		</if>
 		<if test="gridIdSet !=null and gridIdSet.size() > 0">
 			and grid in (
 			<foreach collection="gridIdSet" item="item" separator=",">
