@@ -862,7 +862,7 @@ public class CaseInfoService {
         CaseInfo caseInfoInDB =
             caseInfoBiz
                 .selectById(Integer.valueOf(objs.getJSONObject("bizData").getString("procBizId")));
-        preCompleteProcess(caseInfoInDB,result);
+        preCompleteProcess(caseInfoInDB,result,objs);
         if(!result.getIsSuccess()){
             return result;
         }
@@ -925,7 +925,8 @@ public class CaseInfoService {
                 caseInfo.setExecuteDept("");
             }
 
-           if (Constances.ProcFlowWork.TOFINISHWORKFLOW.equals(flowDirection)) {
+           if (Constances.ProcFlowWork.TOFINISHWORKFLOW.equals(flowDirection) ||
+                   Constances.ProcFlowWork.TOFINISHWORKFLOW_DEPT.equals(flowDirection)) {
                 /*
                  * 任务已走向结束<br/> 去执行相应业务应该完成的操作<br/> 1 立案单isFinished：1<br/> 2 来源各变化
                  */
@@ -1066,10 +1067,10 @@ public class CaseInfoService {
      * 在进行事件审批的时候，做一些审批前的处理
      * @param objs
      */
-    private void preCompleteProcess(CaseInfo caseInfoInDB,Result<Void> result) {
+    private void preCompleteProcess(CaseInfo caseInfoInDB,Result<Void> result,JSONObject objs) {
         // 判断该事件是否起了中心交办，中心交办后，事件是不可以被审批的
         try {
-            _isCentering(caseInfoInDB, result);
+            _isCentering(caseInfoInDB, result,objs);
         } catch (Exception e) {
             e.printStackTrace();
             result.setIsSuccess(false);
@@ -1077,13 +1078,15 @@ public class CaseInfoService {
         }
     }
 
-    private void _isCentering(CaseInfo caseInfoInDB, Result<Void> result) {
+    private void _isCentering(CaseInfo caseInfoInDB, Result<Void> result,JSONObject objs) {
         result.setIsSuccess(false);
         CaseRegistration query=new CaseRegistration();
         query.setCaseSourceType(CaseRegistration.CASE_SOURCE_TYPE_CENTER);
         query.setCaseSource(String.valueOf(caseInfoInDB.getId()));
         CaseRegistration caseRegistration = caseRegistrationBiz.selectOne(query);
-        if(BeanUtil.isNotEmpty(caseRegistration)){
+        if (BeanUtil.isNotEmpty(caseRegistration)
+            && !objs.getJSONObject(Constants.WfRequestDataTypeAttr.PROC_VARIABLEDATA)
+                .getBooleanValue("anjToCaseInfo")) {
             result.setMessage("该事件正在【案件办理中】");
             return;
         }
@@ -2511,6 +2514,8 @@ public class CaseInfoService {
                 .put(Constants.WfProcessVariableDataAttr.PROC_APPRSTATUS, "1");
         objs.getJSONObject(Constants.WfRequestDataTypeAttr.PROC_VARIABLEDATA)
                 .put("flowDirection", "toFinishWorkFlow_Dept");
+        objs.getJSONObject(Constants.WfRequestDataTypeAttr.PROC_VARIABLEDATA)
+                .put("anjToCaseInfo", true);
 
         switch (type) {
             case "end":

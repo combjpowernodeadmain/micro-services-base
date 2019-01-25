@@ -272,21 +272,30 @@ public class PhoneListService {
             userId = String.valueOf(map.get("userId"));
             gridInfo = tempAridMap.get(userId);
             gridName = String.valueOf(map.get("gridName"));
-            gridRole = BeanUtils.isEmpty(dictMap) ? "" : dictMap.get(String.valueOf(map.get("gridRole")));
+            gridRole =
+                BeanUtils.isEmpty(dictMap) ? ""
+                    : dictMap.get(String.valueOf(map.get("gridRole"))) == null ? ""
+                        : dictMap.get(String.valueOf(map.get("gridRole")));
             parentGridName =
                 map.get("parentGridName") == null ? "" : String.valueOf(map.get("parentGridName"));
             //一个用户可能存在多个网格信息
             if (tempAridMap.get(userId) != null) {
                 if(StringUtils.isEmpty(parentGridName)){
-                    gridInfo += ";" + gridName + "_" + gridRole;
+                    gridInfo +=
+                        StringUtils.isBlank(gridRole) ? ";" + gridName
+                            : ";" + gridName + "_" + gridRole;
                 }else{
-                    gridInfo += ";" + gridName + "（"+ parentGridName+"）_" + gridRole;
+                    gridInfo +=
+                        StringUtils.isBlank(gridRole) ? ";" + gridName + "（" + parentGridName + "）"
+                            : ";" + gridName + "（" + parentGridName + "）_" + gridRole;
                 }
             } else {
                 if(StringUtils.isEmpty(parentGridName)){
-                    gridInfo = gridName + "_" + gridRole;
+                    gridInfo = StringUtils.isBlank(gridRole) ? gridName : gridName + "_" + gridRole;
                 }else{
-                    gridInfo = gridName + "（"+ parentGridName+"）_" + gridRole;
+                    gridInfo =
+                        StringUtils.isBlank(gridRole) ? gridName + "（" + parentGridName + "）"
+                            : gridName + "（" + parentGridName + "）_" + gridRole;
                 }
             }
             tempAridMap.put(userId, gridInfo);
