@@ -164,7 +164,8 @@ public class EnforceCertificateService {
             if (BeanUtil.isNotEmpty(userDetail)) {
                 for (int j = 0; j < userDetail.size(); j++) {
                     JSONObject deptJObj = userDetail.getJSONObject(j);
-                    deptNameList.add(deptJObj.getString("deptName"));
+                    deptNameList.add(deptJObj.getString("deptName") == null ? ""
+                        : deptJObj.getString("deptName"));
                 }
             }
             jsonObject.put("deptName", String.join(",", deptNameList));

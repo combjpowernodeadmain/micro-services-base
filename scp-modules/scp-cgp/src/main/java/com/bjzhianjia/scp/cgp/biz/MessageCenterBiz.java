@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.bjzhianjia.scp.cgp.entity.AreaGridMember;
 import com.bjzhianjia.scp.cgp.entity.CLESuperviseRecord;
 import com.bjzhianjia.scp.cgp.entity.CLEUrgeRecord;
@@ -368,7 +369,7 @@ public class MessageCenterBiz extends BusinessBiz<MessageCenterMapper, MessageCe
             } else {
                 messageCenterJObjList =
                     messageCenterList.stream()
-                        .map(o -> JSONObject.parseObject(JSONObject.toJSONString(o)))
+                        .map(o -> JSONObject.parseObject(JSONObject.toJSONString(o, SerializerFeature.WriteDateUseDateFormat)))
                         .collect(Collectors.toList());
             }
 
@@ -896,7 +897,9 @@ public class MessageCenterBiz extends BusinessBiz<MessageCenterMapper, MessageCe
                     jsonObjects.stream().map(o -> o.getString("procBizId")).distinct()
                         .collect(Collectors.toList());
                 for (MessageCenter tmp : list) {
-                    JSONObject jObjTmp = JSONObject.parseObject(JSONObject.toJSONString(tmp));
+                    JSONObject jObjTmp =
+                        JSONObject.parseObject(
+                            JSONObject.toJSONString(tmp, SerializerFeature.WriteDateUseDateFormat));
                     if(collect.contains(tmp.getMsgSourceId())){
                         // 说明该事件不应该提醒到WEB
                         jObjTmp.put("isToAppOperator", true);

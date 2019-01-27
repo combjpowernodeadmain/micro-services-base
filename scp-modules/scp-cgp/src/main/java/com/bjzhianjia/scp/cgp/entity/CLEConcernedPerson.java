@@ -84,6 +84,10 @@ public class CLEConcernedPerson implements Serializable {
 	    //部门ID
     @Column(name = "dept_id")
     private String deptId;
+
+    // 当事人职业
+    @Column(name = "duties")
+    private String duties;
 	
 
 	/**
@@ -289,5 +293,13 @@ public class CLEConcernedPerson implements Serializable {
 	 */
 	public String getDeptId() {
 		return deptId;
+	}
+
+	public String getDuties() {
+		return duties;
+	}
+
+	public void setDuties(String duties) {
+		this.duties = duties;
 	}
 }
