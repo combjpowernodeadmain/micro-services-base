@@ -95,27 +95,6 @@ pipeline {
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
-                                execCommand: 'mv /data/scp/3_dict/scp-dict.jar /data/scp/3_dict/scp-dict.${BUILD_ID}.jar', 
-                                execTimeout: 120000, 
-                                flatten: false, 
-                                makeEmptyDirs: false, 
-                                noDefaultExcludes: false, 
-                                patternSeparator: '[, ]+', 
-                                remoteDirectory: '', 
-                                remoteDirectorySDF: false, 
-                                removePrefix: '', 
-                                sourceFiles: ''
-                            )
-                        ], 
-                        usePromotionTimestamp: false, 
-                        useWorkspaceInPromotion: false, 
-                        verbose: false
-                    ),
-                    sshPublisherDesc(
-                        configName: 'XiashuIntranetServer', 
-                        transfers: [
-                            sshTransfer(
-                                excludes: '', 
                                 execCommand: 'mv /data/scp/5_gate/scp-gate.jar /data/scp/5_gate/scp-gate.${BUILD_ID}.jar', 
                                 execTimeout: 120000, 
                                 flatten: false, 
@@ -138,27 +117,6 @@ pipeline {
                             sshTransfer(
                                 excludes: '', 
                                 execCommand: 'mv /data/scp/6_cgp/scp-cgp.jar /data/scp/6_cgp/scp-cgp.${BUILD_ID}.jar', 
-                                execTimeout: 120000, 
-                                flatten: false, 
-                                makeEmptyDirs: false, 
-                                noDefaultExcludes: false, 
-                                patternSeparator: '[, ]+', 
-                                remoteDirectory: '', 
-                                remoteDirectorySDF: false, 
-                                removePrefix: '', 
-                                sourceFiles: ''
-                            )
-                        ], 
-                        usePromotionTimestamp: false, 
-                        useWorkspaceInPromotion: false, 
-                        verbose: false
-                    ),
-                    sshPublisherDesc(
-                        configName: 'XiashuIntranetServer', 
-                        transfers: [
-                            sshTransfer(
-                                excludes: '', 
-                                execCommand: 'mv /data/scp/7_tool/scp-tool.jar /data/scp/7_tool/scp-tool.${BUILD_ID}.jar', 
                                 execTimeout: 120000, 
                                 flatten: false, 
                                 makeEmptyDirs: false, 
@@ -201,18 +159,6 @@ pipeline {
                             sshTransfer(excludes: '', 
                                 execCommand: '', 
                                 execTimeout: 120000, 
-                                flatten: false, 
-                                makeEmptyDirs: false, 
-                                noDefaultExcludes: false, 
-                                patternSeparator: '[, ]+', 
-                                remoteDirectory: '3_dict', 
-                                remoteDirectorySDF: false, 
-                                removePrefix: 'scp-modules/scp-dict/target/', 
-                                sourceFiles: 'scp-modules/scp-dict/target/scp-dict.jar'
-                            ), 
-                            sshTransfer(excludes: '', 
-                                execCommand: '', 
-                                execTimeout: 120000, 
                                 flatten: false,
                                 makeEmptyDirs: false, 
                                 noDefaultExcludes: false, 
@@ -232,17 +178,6 @@ pipeline {
                                 remoteDirectorySDF: false, 
                                 removePrefix: 'scp-modules/scp-cgp/target/', 
                                 sourceFiles: 'scp-modules/scp-cgp/target/scp-cgp.jar'
-                            ), 
-                            sshTransfer(excludes: '', 
-                                execCommand: '', 
-                                execTimeout: 120000, 
-                                flatten: false, makeEmptyDirs: false, 
-                                noDefaultExcludes: false, 
-                                patternSeparator: '[, ]+', 
-                                remoteDirectory: '7_tool', 
-                                remoteDirectorySDF: false, 
-                                removePrefix: 'scp-modules/scp-tool/target/', 
-                                sourceFiles: 'scp-modules/scp-tool/target/scp-tool.jar'
                             )
                         ], 
                         usePromotionTimestamp: false, 
