@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.cgp.biz;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -487,47 +488,70 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 
         JSONArray specifyUserJArray = adminFeign.getInfoByUserIds(StringUtils.join(usrIdList, ","));
 
-        /*
-         * zhongdui.deptcode1=010804
-         * zhongdui.deptcode2=010805
-         * zhongdui.deptcode3=010806
-         */
+        if (BeanUtil.isEmpty(specifyUserJArray)) {
+            // 说明配过执法证的人在用户表里没找到，有可能用户被删除
+            return new ArrayList<>();
+        }
 
-        List<EnforceCertificate> zh1=new ArrayList<>();
-        List<EnforceCertificate> zh2=new ArrayList<>();
-        List<EnforceCertificate> zh3=new ArrayList<>();
-        // deptId
-        if (BeanUtil.isNotEmpty(specifyUserJArray)) {
-            // 一个人有可能属于多个部门,但不一定都是中队部门
-            for (int i = 0; i < specifyUserJArray.size(); i++) {
-                JSONObject specifyUserJObj = specifyUserJArray.getJSONObject(i);
-                EnforceCertificate enforceTmp = enforcerMap.get(specifyUserJObj.getString("userId"));
-                if (environment.getProperty("zhongdui.deptcode1")
-                        .equals(specifyUserJObj.getString("deptCode"))) {
-                    // 该条记录对应的部门是1中队
-                    enforceTmp.setDepartId(specifyUserJObj.getString("deptId"));
-                    zh1.add(enforceTmp);
-                }
-                if (environment.getProperty("zhongdui.deptcode2")
-                        .equals(specifyUserJObj.getString("deptCode"))) {
-                    // 该条记录对应的部门是2中队
-                    enforceTmp.setDepartId(specifyUserJObj.getString("deptId"));
-                    zh2.add(enforceTmp);
-                }
-                if (environment.getProperty("zhongdui.deptcode3")
-                        .equals(specifyUserJObj.getString("deptCode"))) {
-                    // 该条记录对应的部门是3中队
-                    enforceTmp.setDepartId(specifyUserJObj.getString("deptId"));
-                    zh3.add(enforceTmp);
+        /*
+         * 在specifyUserJArray中可能存在一个人属于多个部门的情况,如果存在这种情况，则将其随机分配给一个部门
+         * 在生成的执法任务结果中，不能出现一个人处于多个部门情况
+         * userId deptId
+         * jdch7rs uusi27f
+         * jdch7rs jfu822n
+         */
+        Map<String, JSONObject> usrIdListInJArray = new HashMap<>();
+        Random ran = new Random();
+        for (int i = 0; i < specifyUserJArray.size(); i++) {
+            JSONObject specifyUserJObj = specifyUserJArray.getJSONObject(i);
+            if (!usrIdListInJArray.keySet().contains(specifyUserJObj.getString("userId"))) {
+                // 如果usrIdListInJArray中还不包含userId，则将specifyUserJObj添加到specifyUserJObjList
+                usrIdListInJArray.put(specifyUserJObj.getString("userId"), specifyUserJObj);
+            } else {
+                /*
+                 * 如果usrIdListInJArray中已经包含userId，则随机决定新添加还是留原来的
+                 */
+                if (ran.nextInt(2) % 2 == 0) {
+                    usrIdListInJArray.put(specifyUserJObj.getString("userId"), specifyUserJObj);
                 }
             }
         }
+        List<JSONObject> specifyUserJObjList = new ArrayList<>(usrIdListInJArray.values());
 
-        List<List<EnforceCertificate>> result=new ArrayList<>();
-        _devideEnfoecerToDeptAssist(peopleNumber, zh1,result);
-        _devideEnfoecerToDeptAssist(peopleNumber, zh2,result);
-        _devideEnfoecerToDeptAssist(peopleNumber, zh3,result);
+        // 当前系统中，所有部门code集
+        List<String> deptCodeSet =
+            specifyUserJObjList.stream().map(o -> o.getString("deptCode")).distinct()
+                .collect(Collectors.toList());
+        // 在配置文件中,被配置为中队的部门code
+        List<String> deptCodeInProfile =
+            Arrays.asList(StringUtils.split(environment.getProperty("zhongdui.deptcode"), ","));
 
+        Map<String, List<EnforceCertificate>> zhDeptCodeEnforcerMap = new HashMap<>();
+        deptCodeSet.forEach(deptCode -> {
+            List<EnforceCertificate> zh = new ArrayList<>();
+
+            specifyUserJObjList.forEach(specifyUserJObj->{
+                if (deptCode != null && deptCodeInProfile.contains(deptCode)) {
+                    // 每次遍历，对应一个中队部门
+                    if (StringUtils.equals(specifyUserJObj.getString("deptCode"), deptCode)) {
+                        // 说明specifyUserJObj对象与deptCode部门关联
+                        EnforceCertificate enforceTmp =
+                                enforcerMap.get(specifyUserJObj.getString("userId"));
+                        enforceTmp.setDepartId(specifyUserJObj.getString("deptId"));
+                        zh.add(enforceTmp);
+                    }
+                }
+            });
+            if (BeanUtil.isNotEmpty(zh)) {
+                zhDeptCodeEnforcerMap.put(deptCode, zh);
+            }
+        });
+
+        List<List<EnforceCertificate>> result = new ArrayList<>();
+
+        for (Map.Entry<String, List<EnforceCertificate>> e : zhDeptCodeEnforcerMap.entrySet()) {
+            _devideEnfoecerToDeptAssist(peopleNumber, e.getValue(), result);
+        }
         return result;
     }
 
