@@ -395,6 +395,7 @@ SELECT
             LEFT JOIN area_grid ag3 ON ag3.id=grandParentTmp.gridGrandParent
 		) grandGrandParentTmp ON grandGrandParentTmp.gridId=ci.`grid`
 		WHERE grid IS NOT NULL
+		AND ci.is_deleted='0'
         <if test="isFinish != null and isFinish != ''">
             AND ci.is_finished=#{isFinish}
         </if>

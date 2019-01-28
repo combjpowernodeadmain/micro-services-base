@@ -363,6 +363,11 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             // 删除多余字段
             result.remove(stateKey[0]);
         }
+
+        // 补0
+        for (int i = 1; i < stateKey.length; i++) {
+            result.putIfAbsent(stateKey[i], 0);
+        }
         return result;
     }
 
@@ -483,17 +488,12 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
     public JSONArray getStatisBizLine(CaseInfo caseInfo, String gridLevel, String startTime, String endTime) {
         JSONArray result = new JSONArray();
 
-        // 网格等级
-        List<AreaGrid> areaGridList = null;
         // 网格ids
-        Set<String> gridIdSet=new HashSet<>();
-        if (StringUtils.isNotBlank(gridLevel)) {
-            areaGridList = areaGridBiz.getByGridLevel(gridLevel);
-            if(BeanUtil.isNotEmpty(areaGridList)){
-                for(AreaGrid areaGridTmp:areaGridList){
-                    gridIdSet.add(String.valueOf(areaGridTmp.getId()));
-                }
-            }
+        Set<String> gridIdSet = new HashSet<>();
+        Map<Integer, Set<String>> gridIdBindChildren =
+            areaGridBiz.getByLevelBindChildren(gridLevel);
+        for (Map.Entry<Integer, Set<String>> e : gridIdBindChildren.entrySet()) {
+            gridIdSet.addAll(e.getValue());
         }
 
         Map<String, String> bizType = dictFeign.getByCode(Constances.ROOT_BIZ_TYPE);
