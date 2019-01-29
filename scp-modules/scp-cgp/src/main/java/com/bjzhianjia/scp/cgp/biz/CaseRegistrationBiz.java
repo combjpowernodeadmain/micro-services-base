@@ -168,6 +168,11 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
 
         // 添加立案单
         CaseRegistration caseRegistration = JSON.parseObject(caseRegJObj.toJSONString(), CaseRegistration.class);
+        if (StringUtils.isNotBlank(caseRegJObj.getString("brief"))
+            && StringUtils.isBlank(caseRegistration.getDealSuggest())) {
+            // 说明前端将说明信息传入了brief变量中，将其取出赋给dealSuggest
+            caseRegistration.setDealSuggest(caseRegJObj.getString("brief"));
+        }
         // 案件定位
         JSONObject mapInfo = caseRegJObj.getJSONObject("mapInfo");
         if(BeanUtil.isNotEmpty(mapInfo)){
