@@ -45,6 +45,8 @@ import org.springframework.security.oauth2.config.annotation.configurers.ClientD
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.ClientDetails;
+import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
@@ -85,7 +87,8 @@ public class OAuthSecurityConfig extends AuthorizationServerConfigurerAdapter {
     private RedisConnectionFactory redisConnectionFactory;
     @Autowired
     private TokenStore tokenStore;
-
+    @Autowired
+    private ClientDetailsService clientDetailsService;
 
     @Bean
     public RedisTokenStore redisTokenStore(){
@@ -165,8 +168,11 @@ public class OAuthSecurityConfig extends AuthorizationServerConfigurerAdapter {
             public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
                 OauthUser user = (OauthUser) authentication.getUserAuthentication().getPrincipal();// 与登录时候放进去的UserDetail实现类一直查看link{SecurityConfiguration}
                 /** 自定义一些token属性 ***/
+                String clientId = authentication.getOAuth2Request().getClientId();
+                ClientDetails clientDetails = clientDetailsService.loadClientByClientId(clientId);
+                Integer accessTokenValiditySeconds = clientDetails.getAccessTokenValiditySeconds();
                 final Map<String, Object> additionalInformation = new HashMap<>();
-                Date expireTime = DateTime.now().plusSeconds(jwtTokenUtil.getExpire()).toDate();
+                Date expireTime = DateTime.now().plusSeconds(accessTokenValiditySeconds).toDate();
                 additionalInformation.put(CommonConstants.JWT_KEY_EXPIRE, expireTime);
                 additionalInformation.put(CommonConstants.JWT_KEY_USER_ID, user.getId());
                 additionalInformation.put(CommonConstants.JWT_KEY_TENANT_ID, user.getTenantId());
