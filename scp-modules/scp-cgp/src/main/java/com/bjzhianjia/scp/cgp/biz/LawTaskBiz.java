@@ -313,6 +313,7 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
                     if (obj != null) {
                         // 法者分队（部门名称）
                         obj.put("deptName", dept_ID_NAME_Map.get(obj.getString("deptId")));
+                        obj.put("userId", userId);
                         _userObjs.add(obj);
                     }
                 }
