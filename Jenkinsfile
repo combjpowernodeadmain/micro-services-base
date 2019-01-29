@@ -4,9 +4,6 @@ pipeline {
         buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '5')
         preserveStashes buildCount: 5
     }
-    triggers{
-        cron('H 22 * * *')
-    }
     tools {
         maven 'MAVEN'
         jdk 'JDK8'
@@ -25,7 +22,7 @@ pipeline {
         stage ('Build') {
             steps {
                 withMaven(globalMavenSettingsConfig: 'MavenNexusLutuoSettings', jdk: 'JDK8', maven: 'MAVEN', mavenSettingsConfig: 'MavenNexusLutuoSettings', publisherStrategy: 'EXPLICIT') {
-                    sh 'mvn clean install -Dmven.test.skip=true -U'   
+                    sh 'mvn clean install -Dmven.test.skip=true -U '
                 }
                 
             }
@@ -36,11 +33,11 @@ pipeline {
             }
         }
 
-        stage ('Stop Services in Xiashu') {
+        stage ('Stop Services in aliyun') {
             steps {
                 sshPublisher(publishers: [
                     sshPublisherDesc(
-                        configName: 'XiashuIntranetServer', 
+                        configName: 'AliyunServerZZ001',
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
@@ -65,12 +62,12 @@ pipeline {
             }
         }
 
-        stage ('Rename Files in Xiashu') {
+        stage ('Rename Files in aliyun') {
             steps {
                 sshPublisher(publishers: [
 
                     sshPublisherDesc(
-                        configName: 'XiashuIntranetServer', 
+                        configName: 'AliyunServerZZ001',
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
@@ -91,7 +88,28 @@ pipeline {
                         verbose: false
                     ),
                     sshPublisherDesc(
-                        configName: 'XiashuIntranetServer', 
+                        configName: 'AliyunServerZZ001',
+                        transfers: [
+                            sshTransfer(
+                                excludes: '', 
+                                execCommand: 'mv /data/scp/3_dict/scp-dict.jar /data/scp/3_dict/scp-dict.${BUILD_ID}.jar', 
+                                execTimeout: 120000, 
+                                flatten: false, 
+                                makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: '', 
+                                sourceFiles: ''
+                            )
+                        ], 
+                        usePromotionTimestamp: false, 
+                        useWorkspaceInPromotion: false, 
+                        verbose: false
+                    ),
+                    sshPublisherDesc(
+                        configName: 'AliyunServerZZ001',
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
@@ -112,11 +130,32 @@ pipeline {
                         verbose: false
                     ),
                     sshPublisherDesc(
-                        configName: 'XiashuIntranetServer', 
+                        configName: 'AliyunServerZZ001',
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
                                 execCommand: 'mv /data/scp/6_cgp/scp-cgp.jar /data/scp/6_cgp/scp-cgp.${BUILD_ID}.jar', 
+                                execTimeout: 120000, 
+                                flatten: false, 
+                                makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: '', 
+                                sourceFiles: ''
+                            )
+                        ], 
+                        usePromotionTimestamp: false, 
+                        useWorkspaceInPromotion: false, 
+                        verbose: false
+                    ),
+                    sshPublisherDesc(
+                        configName: 'AliyunServerZZ001',
+                        transfers: [
+                            sshTransfer(
+                                excludes: '', 
+                                execCommand: 'mv /data/scp/7_tool/scp-tool.jar /data/scp/7_tool/scp-tool.${BUILD_ID}.jar', 
                                 execTimeout: 120000, 
                                 flatten: false, 
                                 makeEmptyDirs: false, 
@@ -136,12 +175,12 @@ pipeline {
 
             }
         }
-        stage ('Copy Files To Xiashu') {
+        stage ('Copy Files To aliyun') {
             steps {
-                sh 'echo Deploy to Xiashu'
+                sh 'echo Deploy to aliyun'
                 sshPublisher(publishers: [
                     sshPublisherDesc(
-                        configName: 'XiashuIntranetServer', 
+                        configName: 'AliyunServerZZ001',
                         transfers: [
                              
                             sshTransfer(excludes: '', 
@@ -159,6 +198,18 @@ pipeline {
                             sshTransfer(excludes: '', 
                                 execCommand: '', 
                                 execTimeout: 120000, 
+                                flatten: false, 
+                                makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '3_dict', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: 'scp-modules/scp-dict/target/', 
+                                sourceFiles: 'scp-modules/scp-dict/target/scp-dict.jar'
+                            ), 
+                            sshTransfer(excludes: '', 
+                                execCommand: '', 
+                                execTimeout: 120000, 
                                 flatten: false,
                                 makeEmptyDirs: false, 
                                 noDefaultExcludes: false, 
@@ -171,13 +222,25 @@ pipeline {
                             sshTransfer(excludes: '', 
                                 execCommand: '', 
                                 execTimeout: 120000, 
-                                flatten: false, makeEmptyDirs: false, 
+                                flatten: false,
+                                makeEmptyDirs: false,
                                 noDefaultExcludes: false, 
                                 patternSeparator: '[, ]+', 
                                 remoteDirectory: '6_cgp', 
                                 remoteDirectorySDF: false, 
                                 removePrefix: 'scp-modules/scp-cgp/target/', 
                                 sourceFiles: 'scp-modules/scp-cgp/target/scp-cgp.jar'
+                            ), 
+                            sshTransfer(excludes: '', 
+                                execCommand: '', 
+                                execTimeout: 120000, 
+                                flatten: false, makeEmptyDirs: false, 
+                                noDefaultExcludes: false, 
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: '7_tool', 
+                                remoteDirectorySDF: false, 
+                                removePrefix: 'scp-modules/scp-tool/target/', 
+                                sourceFiles: 'scp-modules/scp-tool/target/scp-tool.jar'
                             )
                         ], 
                         usePromotionTimestamp: false, 
@@ -190,11 +253,11 @@ pipeline {
         }
 
 
-        stage ('Start Services in Xiashu') {
+        stage ('Start Services in aliyun') {
             steps {
                 sshPublisher(publishers: [
                     sshPublisherDesc(
-                        configName: 'XiashuIntranetServer', 
+                        configName: 'AliyunServerZZ001',
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
