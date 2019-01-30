@@ -689,6 +689,8 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                     obj.put("crtTime", caseRegistration.getCrtTime());
                     // 在列表中添加当事人类型
                     obj.put("concernedType", caseRegistration.getConcernedType());
+                    obj.put("caseCode", caseRegistration.getCaseCode() == null ? ""
+                        : caseRegistration.getCaseCode());
                     result.add(obj);
                 }
 
