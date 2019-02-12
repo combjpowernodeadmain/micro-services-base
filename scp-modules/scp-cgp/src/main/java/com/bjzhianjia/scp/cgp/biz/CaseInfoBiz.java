@@ -368,6 +368,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         for (int i = 1; i < stateKey.length; i++) {
             result.putIfAbsent(stateKey[i], 0);
         }
+        result.putIfAbsent("overtime",0);
         return result;
     }
 
