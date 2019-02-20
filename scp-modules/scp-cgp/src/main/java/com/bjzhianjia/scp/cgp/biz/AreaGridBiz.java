@@ -551,7 +551,7 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
      */
     private void revursiveParentGrid(List<AreaGrid> allAreaGrid, Set<AreaGrid> gridBindParent,
         AreaGrid currentAreaGrid) {
-        gridBindParent.add(currentAreaGrid);
+//        gridBindParent.add(currentAreaGrid);
         for (AreaGrid tmp : allAreaGrid) {
             if (StringUtils.equals(String.valueOf(currentAreaGrid.getGridParent()),
                 String.valueOf(tmp.getId()))) {

@@ -1,22 +1,5 @@
 package com.bjzhianjia.scp.cgp.service;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-
-import com.bjzhianjia.scp.cgp.util.DateUtil;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.biz.CommandCenterHotlineBiz;
 import com.bjzhianjia.scp.cgp.entity.CommandCenterHotline;
@@ -28,6 +11,20 @@ import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Service;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * @author 尚
@@ -73,6 +70,10 @@ public class CommandCenterHotlineService {
             return new TableResultResponse<>(0, new ArrayList<>());
         }
 
+        Map<Integer, String> collect =
+                hotLineList.stream().collect(Collectors.toMap(CommandCenterHotline::getId,
+                        CommandCenterHotline::getExeStatus));
+
         try {
             mergeCore.mergeResult(CommandCenterHotline.class, hotLineList);
         } catch (NoSuchMethodException e) {
@@ -86,6 +87,9 @@ public class CommandCenterHotlineService {
         }
 
         List<JSONObject> jObjResult = queryAssist(hotLineList);
+        jObjResult.forEach(hotlineJObj -> hotlineJObj.put("exeStatusCode",
+                collect.get(hotlineJObj.getInteger("id"))));
+
         return new TableResultResponse<>(restResult.getData().getTotal(), jObjResult);
     }
 
