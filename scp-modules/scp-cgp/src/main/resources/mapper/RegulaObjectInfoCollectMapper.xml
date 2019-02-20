@@ -21,7 +21,13 @@
     </resultMap>
 
     <select id="list" resultType="com.alibaba.fastjson.JSONObject">
-        select roic.`id` infoCollectId,roic.`info_committer` infoCommitter,roic.`info_commit_time` infoCommitTime,roic.`info_approve_status` infoApproveStatus,
+        select roic.`id` infoCollectId,roic.`info_committer` infoCommitter,roic.info_committer_name infoCommitterName,roic.`info_commit_time` infoCommitTime,roic.`info_approve_status` infoApproveStatus,
+        roic.info_commit_type infoCommitType,
+        CASE roic.info_commit_type
+        WHEN '0' THEN '新增'
+        WHEN '1' THEN '更改'
+        ELSE ''
+        END infoCommitTypeName,
         roic.`info_approve_opinion` infoApproveOpinion,
         ro.`obj_name` objName,ro.`obj_code` objCode,ro.`id` objId,
         rot.`object_type_name` objectTypeName
@@ -58,6 +64,10 @@
             <if test="queryJObj.infoApproverName != null and queryJObj.infoApproverName != ''">
                 and roic.`info_approver_name` like "%"#{queryJObj.infoApproverName}"%"
             </if>
+            <if test="queryJObj.infoCommitType != null and queryJObj.infoCommitType != ''">
+                and roic.info_commit_type = #{queryJObj.infoCommitType}
+            </if>
         </where>
+        ORDER BY roic.id DESC
     </select>
 </mapper>
