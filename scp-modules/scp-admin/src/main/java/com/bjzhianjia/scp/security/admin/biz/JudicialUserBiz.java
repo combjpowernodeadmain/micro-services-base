@@ -3,7 +3,6 @@ package com.bjzhianjia.scp.security.admin.biz;
 
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.admin.constant.RoleConstant;
-import com.bjzhianjia.scp.security.admin.constant.UserConstant;
 import com.bjzhianjia.scp.security.admin.entity.BaseGroupMember;
 import com.bjzhianjia.scp.security.admin.entity.User;
 import com.bjzhianjia.scp.security.admin.feign.DictFeign;
@@ -11,11 +10,11 @@ import com.bjzhianjia.scp.security.admin.mapper.GroupMapper;
 import com.bjzhianjia.scp.security.admin.mapper.JudicialUserMapper;
 import com.bjzhianjia.scp.security.common.biz.BaseBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.common.util.BeanUtils;
 import com.bjzhianjia.scp.security.common.util.BooleanUtil;
 import com.bjzhianjia.scp.security.common.util.UUIDUtils;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -89,11 +88,7 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
         Map<String, String> dictMajorMap = dictFeign.getByCode(User.JUDICIAL_PROFESSIONAL);
         if (userList != null && !userList.isEmpty()) {
             if (dictMajorMap != null && !dictMajorMap.isEmpty()) {
-                for (Map<String, Object> userMap : userList) {
-                    //专业名称
-                    String majorName = dictMajorMap.get(userMap.get("major"));
-                    userMap.put("majorName", majorName);
-                }
+                this.getMajorsName(userList, dictMajorMap);
             }
         } else {
             userList = new ArrayList<>();
@@ -117,11 +112,7 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
         Map<String, String> dictMajorMap = dictFeign.getByCode(User.JUDICIAL_PROFESSIONAL);
         if (userList != null && !userList.isEmpty()) {
             if (dictMajorMap != null && !dictMajorMap.isEmpty()) {
-                for (Map<String, Object> userMap : userList) {
-                    //专业名称
-                    String majorName = dictMajorMap.get(userMap.get("major"));
-                    userMap.put("majorName", majorName);
-                }
+                this.getMajorsName(userList, dictMajorMap);
             }
         } else {
             userList = new ArrayList<>();
@@ -239,25 +230,48 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
      * @return
      */
     public TableResultResponse<Map<String, Object>> getTechnicist(String major, String userName, String departId,
-                                                                  String areaProvince, String areaCity, int page,
-                                                                  int limit) {
+                                                                  String areaProvince, String areaCity,
+                                                                  String areaCounty, int page,int limit) {
         Page<Object> pageList = PageHelper.startPage(page, limit);
         String roleId = environment.getProperty(RoleConstant.ROLE_TECHNICIST);
         List<Map<String, Object>> userList = this.mapper.selectTechnicist(major, userName, departId, areaProvince,
-                areaCity,roleId);
+                areaCity,areaCounty,roleId);
         Map<String, String> dictMajorMap = dictFeign.getByCode(User.JUDICIAL_PROFESSIONAL);
         if (userList != null && !userList.isEmpty()) {
             if (dictMajorMap != null && !dictMajorMap.isEmpty()) {
-                for (Map<String, Object> userMap : userList) {
-                    //专业名称
-                    String majorName = dictMajorMap.get(userMap.get("major"));
-                    userMap.put("majorName", majorName);
-                }
+                this.getMajorsName(userList, dictMajorMap);
             }
         } else {
             userList = new ArrayList<>();
         }
         return new TableResultResponse<>(pageList.getTotal(), userList);
     }
-
+    /**
+     * 封装专业名称
+     *
+     * @param userList     用户信息集合
+     * @param dictMajorMap 专业编码和专业名称集合
+     */
+    private void getMajorsName(List<Map<String, Object>> userList, Map<String, String> dictMajorMap) {
+        String _major;
+        String[] majors;
+        StringBuilder majorsName = new StringBuilder();
+        for (Map<String, Object> userMap : userList) {
+            _major = String.valueOf(userMap.get("major"));
+            if (StringUtils.isNotBlank(_major)) {
+                majors = _major.split(",");
+                if (BeanUtils.isNotEmpty(majors)) {
+                    majorsName = new StringBuilder();
+                    for (int i = 0; i < majors.length; i++) {
+                        //专业名称
+                        majorsName.append(dictMajorMap.get(majors[i]));
+                        if (i != majors.length - 1) {
+                            majorsName.append(",");
+                        }
+                    }
+                }
+            }
+            userMap.put("majorName", majorsName.toString());
+        }
+    }
 }

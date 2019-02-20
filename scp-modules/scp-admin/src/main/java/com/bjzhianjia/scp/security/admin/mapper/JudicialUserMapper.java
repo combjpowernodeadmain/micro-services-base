@@ -63,7 +63,7 @@ public interface JudicialUserMapper extends CommonMapper<User> {
      * @param userName     用户名字
      * @param departId     部门id
      * @param areaProvince 省级编码
-     * @param areaCity     城市编码
+     * @param areaCounty   区县编码
      * @param groupId      角色id
      * @return
      */
@@ -72,5 +72,6 @@ public interface JudicialUserMapper extends CommonMapper<User> {
                                                @Param("departId") String departId,
                                                @Param("areaProvince") String areaProvince,
                                                @Param("areaCity") String areaCity,
+                                               @Param("areaCounty") String areaCounty,
                                                @Param("groupId") String groupId);
 }

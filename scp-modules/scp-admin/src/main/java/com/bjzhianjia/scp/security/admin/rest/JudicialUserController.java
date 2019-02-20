@@ -117,10 +117,12 @@ public class JudicialUserController {
             @RequestParam(value = "major", required = false) @ApiParam("用户专业") String major,
             @RequestParam(value = "province", defaultValue = "") @ApiParam("省级编码") String areaProvince,
             @RequestParam(value = "city", defaultValue = "") @ApiParam("城市编码") String areaCity,
+            @RequestParam(value = "town", defaultValue = "") @ApiParam("区县编码") String areaCounty,
             @RequestParam(value = "page", defaultValue = "1") @ApiParam("页码") Integer page,
             @RequestParam(value = "limit", defaultValue = "10") @ApiParam("页容量") Integer limit) {
 
-        return judicialUserBiz.getTechnicist(major, userName, departId, areaProvince, areaCity,page, limit);
+        return judicialUserBiz.getTechnicist(major, userName, departId, areaProvince, areaCity, areaCounty, page,
+                limit);
     }
 
     /**

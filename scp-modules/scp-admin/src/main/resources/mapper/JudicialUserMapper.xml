@@ -80,7 +80,8 @@
         </if>
         <!--专业-->
         <if test="user.attr2!=null and user.attr2!=''">
-            AND bu.attr2 = #{user.attr2}
+            <bind name="major" value="'%'+user.attr2+'%'"/>
+            AND bu.attr2 like #{major}
         </if>
         <!--省级-->
         <if test="user.attr3!=null and user.attr3!=''">
@@ -115,7 +116,8 @@
         </if>
         <!--专业-->
         <if test="user.attr2!=null and user.attr2!=''">
-            AND bu.attr2 = #{user.attr2}
+            <bind name="major" value="'%'+user.attr2+'%'"/>
+            AND bu.attr2 like #{major}
         </if>
         <!--省级-->
         <if test="user.attr3!=null and user.attr3!=''">
@@ -143,6 +145,7 @@
         bu.attr2 major,
         ba1.`name` areaProvince,
         ba2.`name` areaCity,
+        ba3.`name` areaCounty,
         bd.`name` departName,
         bu.crt_user_id,
         bu.tenant_id
@@ -152,10 +155,15 @@
         INNER JOIN base_depart bd ON bd.id = bu.depart_id
         LEFT JOIN base_areainfo ba1 ON bd.attr1 = ba1.id
         LEFT JOIN base_areainfo ba2 ON bd.attr2 = ba2.id
+        LEFT JOIN base_areainfo ba3 ON bd.attr3 = ba3.id
         LEFT JOIN base_group_member bgm ON bgm.user_id = bu.id
         WHERE
         1 = 1
-        AND bu.attr2 = #{major}
+        <!--专业-->
+        <if test="major!=null and major!=''">
+            <bind name="majors" value="'%'+major+'%'"/>
+            AND bu.attr2 like #{majors}
+        </if>
         <!-- 只查询技术人员列表 -->
         AND bgm.group_id = #{groupId}
         <!-- 部门id -->
@@ -175,12 +183,17 @@
         <if test="areaCity != null and areaCity!='' ">
             AND bd.attr2 = #{areaCity}
         </if>
+        <!-- 区、县编码 -->
+        <if test="areaCounty != null and areaCounty!='' ">
+            AND bd.attr3 = #{areaCounty}
+        </if>
         GROUP BY
         bu.id ,
         bu.`name` ,
         bu.attr2 ,
         ba1.`name` ,
         ba2.`name` ,
+        ba3.`name` ,
         bd.`name`,
         bu.crt_user_id,
         bu.tenant_id
