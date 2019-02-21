@@ -70,4 +70,8 @@
         </where>
         ORDER BY roic.id DESC
     </select>
+
+    <update id="updateToFinished">
+        UPDATE regula_object_info_collect SET is_finished = '1' WHERE obj_id = #{objId}
+    </update>
 </mapper>

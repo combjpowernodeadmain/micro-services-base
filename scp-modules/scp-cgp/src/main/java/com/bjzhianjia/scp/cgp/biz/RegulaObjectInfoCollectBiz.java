@@ -24,6 +24,7 @@ import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import tk.mybatis.mapper.entity.Example;
 
 /**
  * 监管对象信息采集过程记录
@@ -91,18 +92,20 @@ public class RegulaObjectInfoCollectBiz extends BusinessBiz<RegulaObjectInfoColl
 
         if (environment.getProperty("regulaObjectInfoCollectAgree")
             .equals(regulaObjectInfoCollect.getInfoApproveStatus())) {
-            // 审批通过,修改监管对象表状态is_disable为‘0’
+            // 审批通过,修改监管对象表状态is_disable为‘0’,审核regulaObjectInfoCollect-->is_finished='1'
+
+            RegulaObjectInfoCollect infoCollectInDB =
+                    this.selectById(regulaObjectInfoCollect.getId());
             RegulaObject regulaObject = new RegulaObject();
             if (BeanUtil.isEmpty(regulaObjectInfoCollect.getObjId())) {
                 // 前端未传入监管对象ID过来
-                RegulaObjectInfoCollect infoCollectInDB =
-                    this.selectById(regulaObjectInfoCollect.getId());
                 regulaObject.setId(infoCollectInDB.getObjId());
             } else {
                 regulaObject.setId(regulaObjectInfoCollect.getObjId());
             }
             regulaObject.setIsDisabled("0");
             regulaObjectBiz.updateSelectiveById(regulaObject);
+            this.mapper.updateToFinished(infoCollectInDB.getObjId());
         }else{
             // 如果审批不通过，则须指定不通过的原因
             if(StringUtils.isEmpty(regulaObjectInfoCollect.getInfoApproveOpinion())){
@@ -116,5 +119,31 @@ public class RegulaObjectInfoCollectBiz extends BusinessBiz<RegulaObjectInfoColl
         objectResult.setStatus(200);
         objectResult.setMessage("信息审批成功");
         return objectResult;
+    }
+
+    /**
+     * 获取监管对象的审核历史
+     * @param objId
+     * @return
+     */
+    public TableResultResponse<RegulaObjectInfoCollect> approveHistory(Integer objId) {
+        TableResultResponse<RegulaObjectInfoCollect> tableResult = new TableResultResponse<>();
+
+        Example example = new Example(RegulaObjectInfoCollect.class);
+        Example.Criteria criteria = example.createCriteria();
+
+        // isFinished=0表示正在审核的
+        criteria.andEqualTo("isFinished", "0");
+        criteria.andEqualTo("objId", objId);
+
+        List<RegulaObjectInfoCollect> regulaObjectInfoCollects = this.selectByExample(example);
+
+        if (BeanUtil.isEmpty(regulaObjectInfoCollects)) {
+            tableResult.getData().setRows(new ArrayList<>());
+        } else {
+            tableResult.getData().setRows(regulaObjectInfoCollects);
+        }
+
+        return tableResult;
     }
 }

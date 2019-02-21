@@ -97,4 +97,10 @@ public class RegulaObjectInfoCollectController extends BaseController<RegulaObje
 
         return this.baseBiz.approve(regulaObjectInfoCollect);
     }
+
+    @GetMapping("/history")
+    @ApiOperation("监管对象审核历史")
+    public TableResultResponse<RegulaObjectInfoCollect> approveHistory(@RequestParam("objId") @ApiParam("监管对象ID") Integer objId) {
+        return this.baseBiz.approveHistory(objId);
+    }
 }

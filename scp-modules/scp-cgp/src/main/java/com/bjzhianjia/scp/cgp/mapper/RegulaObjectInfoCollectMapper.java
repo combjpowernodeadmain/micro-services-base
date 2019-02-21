@@ -22,4 +22,6 @@ public interface RegulaObjectInfoCollectMapper extends CommonMapper<RegulaObject
      * @return
      */
 	List<JSONObject> list(@Param("queryJObj")JSONObject queryJObj);
+
+    void updateToFinished(@Param("objId") Integer objId);
 }
