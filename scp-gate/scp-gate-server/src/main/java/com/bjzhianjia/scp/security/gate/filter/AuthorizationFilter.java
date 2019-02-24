@@ -66,7 +66,7 @@ public class AuthorizationFilter extends ZuulFilter {
         // 不对其进行路由
         if (!before()) {
             ctx.setSendZuulResponse(false);
-            ctx.setResponseStatusCode(HttpStatus.SC_FORBIDDEN);
+            ctx.setResponseStatusCode(4003);
             ctx.setResponseBody("Authorized expired, please contact the administrator!");
             return null;
         }
