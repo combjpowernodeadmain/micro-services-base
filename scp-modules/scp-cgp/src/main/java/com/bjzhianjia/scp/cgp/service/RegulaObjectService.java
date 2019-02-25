@@ -319,10 +319,13 @@ public class RegulaObjectService {
         Map<String, Object> conditions = new HashMap<>();
         conditions.put("regulaObjId", regulaObject.getId());
         List<EnterpriseInfo> enterpriseInfoList = enterpriseInfoBiz.getByMap(conditions);
+
+        boolean isContainEnterpriseInfo=false;
         if (enterpriseInfoList != null && !enterpriseInfoList.isEmpty()) {
             enterpriseInfo.setId(enterpriseInfoList.get(0).getId());
+            isContainEnterpriseInfo=true;
         } else {
-            throw new NullPointerException("没有与待更新的监管对象对应的企业信息");
+            enterpriseInfo.setRegulaObjId(regulaObject.getId());
         }
 
         Result<Void> result = new Result<>();
@@ -333,7 +336,11 @@ public class RegulaObjectService {
         }
 
         regulaObjectBiz.updateSelectiveById(regulaObject);
-        enterpriseInfoBiz.updateSelectiveById(enterpriseInfo);
+        if (isContainEnterpriseInfo) {
+            enterpriseInfoBiz.updateSelectiveById(enterpriseInfo);
+        } else {
+            enterpriseInfoBiz.insertSelective(enterpriseInfo);
+        }
         this.initCacheData();
         return result;
     }
@@ -616,6 +623,10 @@ public class RegulaObjectService {
                 JSONObject.parseObject(enterpriseInfoJStr));
 
         Regula_EnterPriseVo result = JSON.parseObject(other.toJSONString(), Regula_EnterPriseVo.class);
+
+        if(BeanUtil.isEmpty(result.getRegulaObjId())){
+            result.setRegulaObjId(regulaObject.getId());
+        }
 
         JSONObject regulaObjTypeJObj = new JSONObject();
         regulaObjTypeJObj.put("id", regulaObjectType.getId());

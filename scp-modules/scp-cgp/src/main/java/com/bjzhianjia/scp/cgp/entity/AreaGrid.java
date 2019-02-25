@@ -20,6 +20,7 @@ public class AreaGrid implements Serializable {
 	
 	//
 	@Id
+	@GeneratedValue(generator = "JDBC")
 	private Integer id;
 
 	// 网格编号
