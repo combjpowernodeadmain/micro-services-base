@@ -38,7 +38,7 @@ server:
 gate:
   # 开发不进行权限校验的路径
   ignore:
-    startWith: /tool/oss/uploads/,/tool/oss/download/,/jtp/annotation/download/, /static,/cgp/static/,/cgp/service/,/auth/oauth/,/auth/jwt,/admin/v2/api-docs,/dict/v2/api-docs,/auth/v2/api-docs,/workflow/v2/api-docs,/cgp/v2/api-docs,/dict/dictValue/type/comm_sex,/cgp/writsInstances/true/instance,/cgp/common/webDefault,/dict/common/webDefault,/cgp/writsTemplates/downLoads
+    startWith: /tool/oss/uploads/,/tool/oss/download/,/jtp/annotation/download/, /static,/cgp/static/,/cgp/service/,/auth/oauth/,/auth/jwt,/admin/v2/api-docs,/dict/v2/api-docs,/auth/v2/api-docs,/workflow/v2/api-docs,/cgp/v2/api-docs,/dict/dictValue/type/comm_sex,/cgp/writsInstances/true/instance,/cgp/common/webDefault,/dict/common/webDefault,/cgp/writsTemplates/downLoads,/cgp/staffInfoCollection/i
 
 auth:
   serviceId: scp-auth
