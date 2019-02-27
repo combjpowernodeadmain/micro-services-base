@@ -359,4 +359,9 @@ public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
 
         return result;
     }
+
+
+    public List<Depart> getAll() {
+        return this.mapper.getAll();
+    }
 }

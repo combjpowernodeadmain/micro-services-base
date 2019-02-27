@@ -56,6 +56,7 @@ public class MybatisDataConfig {
             "com.bjzhianjia.scp.security.admin.mapper.UserMapper.selectMemberGroupCodesByUserId",
                 "com.bjzhianjia.scp.security.admin.mapper.UserMapper.getUserDetail",
                 "com.bjzhianjia.scp.security.admin.mapper.UserMapper.selectByIds"
-                ,"com.bjzhianjia.scp.security.admin.mapper.DepartMapper.selectByIds"));
+                ,"com.bjzhianjia.scp.security.admin.mapper.DepartMapper.selectByIds",
+                "com.bjzhianjia.scp.security.admin.mapper.DepartMapper.getAll"));
     }
 }

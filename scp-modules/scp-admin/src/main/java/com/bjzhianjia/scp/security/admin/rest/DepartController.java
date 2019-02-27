@@ -11,6 +11,7 @@ import com.bjzhianjia.scp.security.admin.vo.DepartTree;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreClientToken;
+import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.rest.BaseController;
@@ -174,5 +175,18 @@ public class DepartController extends BaseController<DepartBiz, Depart, String> 
     @ApiOperation("按部门预留属性查询记录")
     public List<JSONObject> listByAttr(@RequestParam(value="attr") String attr,@RequestParam(value = "attrValues") String attrValues){
         return this.baseBiz.listByAttr(attr,attrValues);
+    }
+
+    @ApiOperation("获取部门树")
+    @RequestMapping(value = "/i/tree", method = RequestMethod.GET)
+    @IgnoreClientToken
+    @IgnoreUserToken
+    public List<DepartTree> getITree() {
+        List<Depart> departs = this.baseBiz.getAll();
+        List<DepartTree> trees = new ArrayList<>();
+        departs.forEach(dictType -> {
+            trees.add(new DepartTree(dictType.getId(), dictType.getParentId(), dictType.getName(), dictType.getCode()));
+        });
+        return TreeUtil.bulid(trees, "-1", null);
     }
 }
