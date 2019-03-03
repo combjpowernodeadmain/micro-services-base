@@ -87,6 +87,7 @@ public class CommonController {
         @RequestParam(value = "g",defaultValue = "243") @ApiParam(value = "图片中文字颜色，默认243") Integer g,
         @RequestParam(value = "imgFormatName",defaultValue = "png") @ApiParam(value = "图片格式，默认为'png'") String imgFormatName,
         HttpServletResponse response) {
+        log.debug("生成图片标题");
         try {
             Font font = new Font(frontType, isBlod?Font.BOLD:Font.PLAIN, frontSize);//字体
 

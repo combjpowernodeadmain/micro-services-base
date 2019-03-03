@@ -37,10 +37,10 @@
           base_user u
         on bdu.user_id = u.id
       where bdu.depart_id = #{departId}
-       <if test="userName!=null">
-        and u.name like #{userName}
         and u.is_deleted = '0'
         and u.is_disabled = '0'
+       <if test="userName!=null">
+        and u.name like #{userName}
        </if>
     </select>
 
