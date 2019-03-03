@@ -76,7 +76,19 @@ public class FastdfsStorageService extends CloudStorageService {
 			
 			this.client = new TrackerClient();
 			this.trackerServer = client.getConnection();
+			
+			log.info("***************trackerServer跟综访问信息********************");
+			log.info("hostName:"+this.trackerServer.getInetSocketAddress().getHostName());
+			log.info("address:"+this.trackerServer.getInetSocketAddress().getAddress());
+			log.info("port:"+this.trackerServer.getInetSocketAddress().getPort());
+			log.info("***************trackerServer跟综访问信息********************");
+			
 			this.storageServer = client.getStoreStorage(trackerServer);
+			log.info("***************storageServer存储服务信息********************");
+			log.info("hostName"+this.storageServer.getInetSocketAddress().getHostName());
+			log.info("address:"+this.storageServer.getInetSocketAddress().getAddress());
+			log.info("port:"+this.storageServer.getInetSocketAddress().getPort());
+			log.info("***************storageServer存储服务信息********************");
 		} catch (IOException | MyException e) {
 			e.printStackTrace();
 			log.error("Init the fastdfs properties error: {}", e);
