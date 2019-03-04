@@ -496,9 +496,12 @@ public class CaseInfoService {
             caseRegList=new ArrayList<>();
         }
         // 收集发起了中心交办的事件ID
-        List<String> collect =
-            caseRegList.stream().map(o -> o.getCaseSource()).distinct()
-                .collect(Collectors.toList());
+        Set<String> collect = new HashSet<>();
+        Map<String,String> caseRegIdIdMap=new HashMap<>();
+        caseRegList.forEach(caseReg->{
+            collect.add(caseReg.getCaseSource());
+            caseRegIdIdMap.put(caseReg.getCaseSource(), caseReg.getId());
+        });
 
         /*
          * 查询业务条线，查询事件来源，查询事件级别
@@ -533,6 +536,8 @@ public class CaseInfoService {
             }else{
                 wfJObject.put("isCenter", false);
             }
+
+            wfJObject.put("caseRegistrationId", caseRegIdIdMap.get(String.valueOf(caseInfo.getId())));
 
             wfJObject.put("bizListName", getRootBizTypeName(caseInfo.getBizList(), rootBizList));
             wfJObject.put("eventTypeListName", getEventTypeName(eventType_ID_NAME_Map, caseInfo.getEventTypeList()));
