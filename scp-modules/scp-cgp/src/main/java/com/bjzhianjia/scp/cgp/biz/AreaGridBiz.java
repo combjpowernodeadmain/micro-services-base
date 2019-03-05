@@ -224,7 +224,13 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
                 if(StringUtils.isBlank(areaGrid.getMapInfo())) {
                     continue;
                 }
-                JSONArray array = JSONArray.parseArray(areaGrid.getMapInfo());
+                JSONArray array = null;
+                try {
+                    // 当网格没有配坐标时，解析JSONArray将会发生错误
+                    array = JSONArray.parseArray(areaGrid.getMapInfo());
+                } catch (Exception e) {
+                    array=new JSONArray();
+                }
                 List<Point> listPoint = array.toJavaList(Point.class);
                 if(listPoint == null) {
                     continue;
