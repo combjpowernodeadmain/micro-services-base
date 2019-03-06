@@ -131,6 +131,7 @@ public class PatrolTask implements Serializable {
 
 	//最后更新时间
 	@Column(name = "upd_time")
+	@JSONField(format="yyyy-MM-dd HH:mm:ss")
 	private Date updTime;
 
 	/**
