@@ -390,6 +390,8 @@ public class RegulaObjectService {
                 collect = third.stream().map(o -> o.getId()).distinct().collect(Collectors.toList());
             }
 
+            collect.addAll(secondCategoryId);
+
             tableResult = regulaObjectBiz.getList(regulaObject, page, limit, collect);
         } else {
             tableResult = regulaObjectBiz.getList(regulaObject, page, limit, null);

@@ -121,6 +121,19 @@ public class PatrolTask implements Serializable {
 	@Column(name = "inspect_ids")
 	private String inspectIds;
 
+	//最后更新人
+	@Column(name = "upd_user_name")
+	private String updUserName;
+
+	//最后更新人ID
+	@Column(name = "upd_user_id")
+	private String updUserId;
+
+	//最后更新时间
+	@Column(name = "upd_time")
+	@JSONField(format="yyyy-MM-dd HH:mm:ss")
+	private Date updTime;
+
 	/**
 	 * 设置：
 	 */
@@ -437,5 +450,29 @@ public class PatrolTask implements Serializable {
 	 */
 	public void setInspectIds(String inspectIds) {
 		this.inspectIds = inspectIds;
+	}
+
+	public String getUpdUserName() {
+		return updUserName;
+	}
+
+	public void setUpdUserName(String updUserName) {
+		this.updUserName = updUserName;
+	}
+
+	public String getUpdUserId() {
+		return updUserId;
+	}
+
+	public void setUpdUserId(String updUserId) {
+		this.updUserId = updUserId;
+	}
+
+	public Date getUpdTime() {
+		return updTime;
+	}
+
+	public void setUpdTime(Date updTime) {
+		this.updTime = updTime;
 	}
 }

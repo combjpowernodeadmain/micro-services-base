@@ -503,4 +503,32 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
 
         return this.baseBiz.detailForCaseInfoSource(sourceType,sourceCode);
     }
+
+    /**
+     * 案件综合查询
+     *
+     * @param objs
+     * @param request
+     * @return
+     */
+    @ApiOperation("案件管理")
+    @ResponseBody
+    @RequestMapping(value = { "/management" }, method = RequestMethod.POST)
+    public TableResultResponse<JSONObject> getCaseRegistrationManageList(@RequestBody JSONObject objs,
+        HttpServletRequest request) {
+        TableResultResponse<JSONObject> userToDoTasks = this.baseBiz.getCaseRegistrationManageList(objs);
+        return userToDoTasks;
+    }
+
+    @PostMapping("/suspent")
+    @ApiOperation("事件删除")
+    public ObjectRestResponse<Void> suspentCaseInfo(@RequestBody JSONObject objs){
+        return this.baseBiz.suspentCaseInfo(objs);
+    }
+
+    @PostMapping("/active")
+    @ApiOperation("事件删除")
+    public ObjectRestResponse<Void> activeCaseInfo(@RequestBody JSONObject objs){
+        return this.baseBiz.activeCaseInfo(objs);
+    }
 }
