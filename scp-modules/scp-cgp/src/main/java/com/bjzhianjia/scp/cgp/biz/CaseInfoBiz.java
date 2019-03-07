@@ -2,12 +2,7 @@ package com.bjzhianjia.scp.cgp.biz;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.bjzhianjia.scp.cgp.entity.AreaGrid;
-import com.bjzhianjia.scp.cgp.entity.CaseInfo;
-import com.bjzhianjia.scp.cgp.entity.Constances;
-import com.bjzhianjia.scp.cgp.entity.PatrolTask;
-import com.bjzhianjia.scp.cgp.entity.RegulaObject;
-import com.bjzhianjia.scp.cgp.entity.SpecialEvent;
+import com.bjzhianjia.scp.cgp.entity.*;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.mapper.AreaGridMapper;
 import com.bjzhianjia.scp.cgp.mapper.CaseInfoMapper;
@@ -94,6 +89,9 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
 
     @Autowired
     private AreaGridMapper areaGridMapper;
+
+    @Autowired
+    private CaseRegistrationBiz caseRegistrationBiz;
 
     /**
      * 查询未删除的总数
@@ -215,11 +213,23 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         String isFinished = queryData.getString("procCtaskname");// 1:已结案2:已终止
         String sourceType = queryData.getString("sourceType");// 来源类型
         String sourceCode = queryData.getString("sourceCode");// 来源id
+        String isDeleted = queryData.getString("isDeleted");
+        boolean caesRegIng = queryData.getBooleanValue("caesRegIng");
+        boolean processing = queryData.getBooleanValue("processing");
 
         Example example = new Example(CaseInfo.class);
         Criteria criteria = example.createCriteria();
 
-        criteria.andEqualTo("isDeleted", "0");
+        if (queryData.getBooleanValue("isIntegratedQuery")) {
+            // 综合查询
+            // 综合查询有需求按是否删除来进行查询
+            if (StringUtils.isNotBlank(isDeleted)) {
+                criteria.andEqualTo("isDeleted", isDeleted);
+            }
+        } else {
+            // 非综合查询，只能查询到未删除的
+            criteria.andEqualTo("isDeleted", "0");
+        }
         // 事件标题
         if (StringUtils.isNotBlank(caseInfo.getCaseTitle())) {
             if (caseInfo.getCaseTitle().length() > 127) {
@@ -296,12 +306,43 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         if (StringUtils.isNotBlank(caseInfo.getCaseCode())) {
             criteria.andLike("caseCode", "%" + caseInfo.getCaseCode() + "%");
         }
+
+        // 查询事件中正在进行案件办理的部分
+        if (caesRegIng) {
+            List<CaseRegistration> caseRegistrationList = this.caseInfoInReg(ids);
+            if (BeanUtil.isNotEmpty(caseRegistrationList)) {
+                List<String> idsInReg = caseRegistrationList.stream().map(CaseRegistration::getCaseSource).distinct()
+                    .collect(Collectors.toList());
+                criteria.andIn("id", idsInReg);
+            }
+        }
+
+        // 查询事件中没有进行案件办理的部分，即真办结状态
+        if (processing) {
+            List<CaseRegistration> caseRegistrationList = this.caseInfoInReg(ids);
+            if (BeanUtil.isNotEmpty(caseRegistrationList)) {
+                List<String> idsInReg = caseRegistrationList.stream().map(CaseRegistration::getCaseSource).distinct()
+                    .collect(Collectors.toList());
+                criteria.andNotIn("id", idsInReg);
+            }
+        }
+
         example.setOrderByClause("crt_time desc");
 
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<CaseInfo> list = this.mapper.selectByExample(example);
 
         return new TableResultResponse<CaseInfo>(pageInfo.getTotal(), list);
+    }
+
+    private List<CaseRegistration> caseInfoInReg(Set<Integer> ids) {
+        Example example=new Example(CaseRegistration.class).selectProperties("caseSource");
+
+        Criteria criteria = example.createCriteria();
+        criteria.andIn("caseSource",ids);
+        criteria.andEqualTo("caseSourceType", environment.getProperty("caseSourceTypeCenter"));
+
+        return caseRegistrationBiz.selectByExample(example);
     }
 
     /**

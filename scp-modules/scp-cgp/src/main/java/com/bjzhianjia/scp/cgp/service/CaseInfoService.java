@@ -50,8 +50,10 @@ import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.common.util.BooleanUtil;
 import com.bjzhianjia.scp.security.wf.base.constant.Constants;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
+import com.bjzhianjia.scp.security.wf.base.exception.WorkflowException;
 import com.bjzhianjia.scp.security.wf.base.monitor.entity.WfProcBackBean;
 import com.bjzhianjia.scp.security.wf.base.monitor.service.impl.WfMonitorServiceImpl;
 import com.bjzhianjia.scp.security.wf.base.task.biz.WfProcTaskBiz;
@@ -322,6 +324,25 @@ public class CaseInfoService {
         if ("true".equals(queryData.getString("isQuery"))) {
             queryCaseInfo = JSONObject.parseObject(queryData.toJSONString(), CaseInfo.class);
             if (StringUtils.isNotBlank(queryData.getString("procCtaskname"))) {
+                if (StringUtils.equals(new String(
+                        environment.getProperty("caseInfo.integratedQuery.executeStatus.processing")
+                            .getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8),
+                    queryData.getString("procCtaskname"))) {
+                    queryData.put("processing", true);
+                }
+
+                if (StringUtils.equals(new String(
+                        environment.getProperty("caseInfo.integratedQuery.executeStatus.caesRegIng")
+                            .getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8),
+                    queryData.getString("procCtaskname"))) {
+                    queryData.put("caesRegIng", true);
+
+                    // 对于工作流来说，案件办理中实际上是办结
+                    queryData.put("procCtaskname",new String(
+                        environment.getProperty("caseInfo.integratedQuery.executeStatus.processing")
+                            .getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8));
+                }
+
                 // 是否按进度进行查找(即任务表中·PROC_CTASKNAME·字段)
                 bizData = objs.getJSONObject("bizData");
                 bizData.put("procCtaskname", queryData.getString("procCtaskname"));
@@ -397,49 +418,7 @@ public class CaseInfoService {
      * @return
      */
     public TableResultResponse<JSONObject> getAllTasks(JSONObject objs) {
-        CaseInfo queryCaseInfo = new CaseInfo();
-        JSONObject queryData = objs.getJSONObject("queryData");
-
-        JSONObject bizData = objs.getJSONObject("bizData");
-        // 事件工作流的定义代码
-        bizData.put("prockey", "comprehensiveManage");
-        if ("true".equals(queryData.getString("isQuery"))) {
-            queryCaseInfo = JSONObject.parseObject(queryData.toJSONString(), CaseInfo.class);
-            if (StringUtils.isNotBlank(queryData.getString("procCtaskname"))) {
-                // 是否按进度进行查找(即任务表中·PROC_CTASKNAME·字段)
-                if (!CaseInfo.FINISHED_STATE_FINISH.equals(queryData.getString("procCtaskname"))
-                    && !CaseInfo.FINISHED_STATE_STOP.equals(queryData.getString("procCtaskname"))) {
-                    bizData.put("procCtaskname", queryData.getString("procCtaskname"));
-                }
-                
-                /*
-                 * 当按状态进行查询时，待结案节点比较特殊
-                 * 1 流程走完后，状态会停留在待结案，所以无论查询待结案还是已办结，都会将该结节查出，对结果集造成混淆
-                 * 2 对查询条件进行处理，如果查询的是待结案的状态，则在与业务数据进行整合时，只整合未完成的数据，去除
-                 * 已完成数据对待结案查询的干扰
-                 */
-                if ("待结案".equals(queryData.getString("procCtaskname"))) {
-                    queryData.put("toFinish", CaseInfo.FINISHED_STATE_TODO);
-                }
-            }
-        }
-        objs.put("bizData", bizData);
-
-        List<JSONObject> jObjList = new ArrayList<>();
-
-        // 查询待办工作流任务
-        PageInfo<WfProcBackBean> pageInfo = wfMonitorService.getAllTasks(objs);
-        List<WfProcBackBean> list = pageInfo.getList();
-
-        if (list != null && !list.isEmpty()) {
-            // 有待办任务
-            TableResultResponse<JSONObject> restResult =
-                queryAssist(queryCaseInfo, queryData, jObjList, pageInfo, objs);
-            return restResult;
-        } else {
-            // 无待办任务
-            return new TableResultResponse<>(0, jObjList);
-        }
+        return allTasksAssist(objs,false);
     }
 
     private TableResultResponse<JSONObject> queryAssist(CaseInfo queryCaseInfo, JSONObject queryData,
@@ -2577,4 +2556,157 @@ public class CaseInfoService {
             executeInfoBiz.insertSelective(executeInfo);
         }
     }
+
+    /**
+     * 事件删除并挂起工作流
+     *
+     * @param objs
+     * @return
+     */
+    @Transactional
+    public ObjectRestResponse<Void> suspentCaseInfo(JSONObject objs) {
+        ObjectRestResponse<Void> restResult = new ObjectRestResponse<>();
+
+        /*
+         * 1-> 更新事件记录
+         * 2-> 挂起流程
+         */
+        // 1->
+        JSONObject bizData = objs.getJSONObject("bizData");
+        Integer procBizId = bizData.getInteger("procBizId");
+        if (BeanUtil.isNotEmpty(procBizId)) {
+            CaseInfo caseInfo = new CaseInfo();
+            caseInfo.setId(procBizId);
+            caseInfo.setIsDeleted(BooleanUtil.BOOLEAN_TRUE);
+            this.caseInfoBiz.updateSelectiveById(caseInfo);
+        }
+
+        // 2->
+        try {
+            wfProcTaskService.suspendProcess(objs);
+        } catch (WorkflowException e) {
+            restResult.setStatus(400);
+            restResult.setMessage(e.getMessage());
+            return restResult;
+        }
+
+        restResult.setMessage("事件删除成功");
+        restResult.setStatus(200);
+        return restResult;
+    }
+
+    /**
+     * 事件恢复
+     * @param objs
+     * @return
+     */
+    public ObjectRestResponse<Void> activeCaseInfo(JSONObject objs) {
+        ObjectRestResponse<Void> restResult = new ObjectRestResponse<>();
+
+        /*
+         * 1-> 更新事件记录
+         * 2-> 挂起流程
+         */
+        // 1->
+        JSONObject bizData = objs.getJSONObject("bizData");
+        Integer procBizId = bizData.getInteger("procBizId");
+        if (BeanUtil.isNotEmpty(procBizId)) {
+            CaseInfo caseInfo = new CaseInfo();
+            caseInfo.setId(procBizId);
+            caseInfo.setIsDeleted(BooleanUtil.BOOLEAN_FALSE);
+            this.caseInfoBiz.updateSelectiveById(caseInfo);
+        }
+
+        // 2->
+        try {
+            wfProcTaskService.activeProcess(objs);
+        } catch (WorkflowException e) {
+            restResult.setStatus(400);
+            restResult.setMessage(e.getMessage());
+            return restResult;
+        }
+
+        restResult.setMessage("事件恢复成功");
+        restResult.setStatus(200);
+        return restResult;
+    }
+
+    /**
+     * 事件管理页面列表
+     *
+     * @author chenshuai
+     * @param objs
+     * @return
+     */
+    public TableResultResponse<JSONObject> getCaseInfoManageList(JSONObject objs) {
+        return allTasksAssist(objs,true);
+    }
+
+    private TableResultResponse<JSONObject> allTasksAssist(JSONObject objs,boolean isIntegratedQuery) {
+        CaseInfo queryCaseInfo = new CaseInfo();
+        JSONObject queryData = objs.getJSONObject("queryData");
+
+        // 表明当前查询为事件管理页面查询
+        queryData.put("isIntegratedQuery", isIntegratedQuery);
+        JSONObject bizData = objs.getJSONObject("bizData");
+        // 事件工作流的定义代码
+        bizData.put("prockey", "comprehensiveManage");
+        if ("true".equals(queryData.getString("isQuery"))) {
+            queryCaseInfo = JSONObject.parseObject(queryData.toJSONString(), CaseInfo.class);
+            if (StringUtils.isNotBlank(queryData.getString("procCtaskname"))) {
+                /*
+                 * 当按状态进行查询时，待结案节点比较特殊
+                 * 1 流程走完后，状态会停留在待结案，所以无论查询待结案还是已办结，都会将该结节查出，对结果集造成混淆
+                 * 2 对查询条件进行处理，如果查询的是待结案的状态，则在与业务数据进行整合时，只整合未完成的数据，去除
+                 * 已完成数据对待结案查询的干扰
+                 */
+                if ("待结案".equals(queryData.getString("procCtaskname"))) {
+                    queryData.put("toFinish", CaseInfo.FINISHED_STATE_TODO);
+                }
+
+                if (StringUtils.equals(new String(
+                        environment.getProperty("caseInfo.integratedQuery.executeStatus.processing")
+                            .getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8),
+                    queryData.getString("procCtaskname"))) {
+                    queryData.put("processing", true);
+                }
+
+                if (StringUtils.equals(new String(
+                        environment.getProperty("caseInfo.integratedQuery.executeStatus.caesRegIng")
+                            .getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8),
+                    queryData.getString("procCtaskname"))) {
+                    queryData.put("caesRegIng", true);
+
+                    // 对于工作流来说，案件办理中实际上是办结
+                    queryData.put("procCtaskname",new String(
+                        environment.getProperty("caseInfo.integratedQuery.executeStatus.processing")
+                            .getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8));
+                }
+
+                // 是否按进度进行查找(即任务表中·PROC_CTASKNAME·字段)
+                if (!CaseInfo.FINISHED_STATE_FINISH.equals(queryData.getString("procCtaskname"))
+                    && !CaseInfo.FINISHED_STATE_STOP.equals(queryData.getString("procCtaskname"))) {
+                    bizData.put("procCtaskname", queryData.getString("procCtaskname"));
+                }
+            }
+        }
+        objs.put("bizData", bizData);
+
+        List<JSONObject> jObjList = new ArrayList<>();
+
+        // 查询待办工作流任务
+        PageInfo<WfProcBackBean> pageInfo = wfMonitorService.getAllTasks(objs);
+        List<WfProcBackBean> list = pageInfo.getList();
+
+        if (list != null && !list.isEmpty()) {
+            // 有待办任务
+            TableResultResponse<JSONObject> restResult =
+                queryAssist(queryCaseInfo, queryData, jObjList, pageInfo, objs);
+            return restResult;
+        } else {
+            // 无待办任务
+            return new TableResultResponse<>(0, jObjList);
+        }
+    }
+
 }

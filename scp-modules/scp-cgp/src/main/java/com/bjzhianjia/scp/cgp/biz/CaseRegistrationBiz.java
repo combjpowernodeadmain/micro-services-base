@@ -37,10 +37,12 @@ import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.util.BeanUtils;
+import com.bjzhianjia.scp.security.common.util.BooleanUtil;
 import com.bjzhianjia.scp.security.common.util.UUIDUtils;
 import com.bjzhianjia.scp.security.wf.base.constant.Constants;
 import com.bjzhianjia.scp.security.wf.base.design.entity.WfProcPropsBean;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
+import com.bjzhianjia.scp.security.wf.base.exception.WorkflowException;
 import com.bjzhianjia.scp.security.wf.base.monitor.entity.WfProcBackBean;
 import com.bjzhianjia.scp.security.wf.base.monitor.service.impl.WfMonitorServiceImpl;
 import com.bjzhianjia.scp.security.wf.base.task.entity.WfProcTaskHistoryBean;
@@ -774,44 +776,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      * @return
      */
     public TableResultResponse<JSONObject> getAllTasks(JSONObject objs) {
-        List<JSONObject> result = new ArrayList<>();
-
-        // 业务查询条件
-        JSONObject queryData = objs.getJSONObject("queryData");
-        CaseRegistration queryCaseRegistration = new CaseRegistration();
-        queryCaseRegistration = JSONObject.parseObject(queryData.toJSONString(), CaseRegistration.class);
-
-        // 工作流查询条件
-        JSONObject bizData = objs.getJSONObject("bizData");
-        // 事件工作流的定义代码
-        bizData.put("prockey", "LawEnforcementProcess");
-        if (StringUtils.isNotBlank(queryData.getString("procCtaskname"))) {
-            /*
-             * 是否按进度进行查找(即任务表中·PROC_CTASKNAME·字段)
-             * 在需要中，进度除了流程图中节点进度外，还有自定义的【已结案】【已中止】进度
-             * 参数都通过procCtaskname传入,需进行判断是否为自定义进度
-             * 如果是自定义进度，则不进工作流中进行节点名称查询
-             */
-            if (!(CaseRegistration.EXESTATUS_STATE_FINISH
-                .equals(queryData.getString("procCtaskname"))
-                || CaseRegistration.EXESTATUS_STATE_STOP
-                    .equals(queryData.getString("procCtaskname")))) {
-                bizData.put("procCtaskname", queryData.getString("procCtaskname"));
-            }
-        }
-        objs.put("bizData", bizData);
-
-        // 查询所有工作流任务
-        PageInfo<WfProcBackBean> pageInfo = wfMonitorService.getAllTasks(objs);
-        List<WfProcBackBean> wfProcBackBeanList = pageInfo.getList();
-
-        if (wfProcBackBeanList != null && !wfProcBackBeanList.isEmpty()) {
-            // 有待办任务
-            return queryAssist(queryCaseRegistration, queryData, result, wfProcBackBeanList);
-        } else {
-            // 无待办任务
-            return new TableResultResponse<>(0, result);
-        }
+        return allTasksAssist(objs,false);
     }
 
     /**
@@ -1090,11 +1055,20 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         String exeStatus = queryData.getString("procCtaskname");// 1:已结案2:已终止
         String caseSourceType = queryData.getString("caseSourceType");// 来源类型
         // String caseSource = queryData.getString("caseSource");// 来源id
+        String isDeleted = queryData.getString("isDeleted");
 
         Example example = new Example(CaseRegistration.class);
         Criteria criteria = example.createCriteria();
 
-        criteria.andEqualTo("isDeleted", "0");
+        if(queryData.getBooleanValue("isIntegratedQuery")){
+            // 案件管理有需求按是否删除来进行查询
+            if(StringUtils.isNotBlank(isDeleted)){
+                criteria.andEqualTo("isDeleted", isDeleted);
+            }
+        }else{
+            // 非综合查询，只能查询到未删除的
+            criteria.andEqualTo("isDeleted", "0");
+        }
         if (StringUtils.isNotBlank(caseRegistration.getCaseName())) {
             criteria.andLike("caseName", "%" + caseRegistration.getCaseName() + "%");
         }
@@ -2767,5 +2741,131 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         result.setData(infoById);
         result.setStatus(200);
         return result;
+    }
+
+    /**
+     * 案件删除
+     * @param objs
+     * @return
+     */
+    public ObjectRestResponse<Void> suspentCaseInfo(JSONObject objs) {
+        ObjectRestResponse<Void> restResult = new ObjectRestResponse<>();
+
+        /*
+         * 1-> 更新事件记录
+         * 2-> 挂起流程
+         */
+        // 1->
+        JSONObject bizData = objs.getJSONObject("bizData");
+        String procBizId = bizData.getString("procBizId");
+        if (BeanUtil.isNotEmpty(procBizId)) {
+            CaseRegistration caseReg = new CaseRegistration();
+            caseReg.setId(procBizId);
+            caseReg.setIsDeleted(BooleanUtil.BOOLEAN_TRUE);
+            this.updateSelectiveById(caseReg);
+        }
+
+        // 2->
+        try {
+            wfProcTaskService.suspendProcess(objs);
+        } catch (WorkflowException e) {
+            restResult.setStatus(400);
+            restResult.setMessage(e.getMessage());
+            return restResult;
+        }
+
+        restResult.setMessage("案件删除成功");
+        restResult.setStatus(200);
+        return restResult;
+    }
+
+    /**
+     * 案件恢复
+     * @param objs
+     * @return
+     */
+    public ObjectRestResponse<Void> activeCaseInfo(JSONObject objs) {
+        ObjectRestResponse<Void> restResult = new ObjectRestResponse<>();
+
+        /*
+         * 1-> 更新事件记录
+         * 2-> 挂起流程
+         */
+        // 1->
+        JSONObject bizData = objs.getJSONObject("bizData");
+        String procBizId = bizData.getString("procBizId");
+        if (BeanUtil.isNotEmpty(procBizId)) {
+            CaseRegistration caseReg = new CaseRegistration();
+            caseReg.setId(procBizId);
+            caseReg.setIsDeleted(BooleanUtil.BOOLEAN_FALSE);
+            this.updateSelectiveById(caseReg);
+        }
+
+        // 2->
+        try {
+            wfProcTaskService.activeProcess(objs);
+        } catch (WorkflowException e) {
+            restResult.setStatus(400);
+            restResult.setMessage(e.getMessage());
+            return restResult;
+        }
+
+        restResult.setMessage("案件恢复成功");
+        restResult.setStatus(200);
+        return restResult;
+    }
+
+
+    /**
+     * 案件管理
+     *
+     * @param objs
+     *            {"bizData":{}, "procData":{}, "authData":{"procAuthType":"2"},
+     *            "variableData":{}, "queryData":{ } }<br/>
+     * @return
+     */
+    public TableResultResponse<JSONObject> getCaseRegistrationManageList(JSONObject objs) {
+        return allTasksAssist(objs,true);
+    }
+
+    private TableResultResponse<JSONObject> allTasksAssist(JSONObject objs,boolean isIntegratedQuery) {
+        List<JSONObject> result = new ArrayList<>();
+
+        // 业务查询条件
+        JSONObject queryData = objs.getJSONObject("queryData");
+        // 表征当前查询是否为案件管理页面
+        queryData.put("isIntegratedQuery", isIntegratedQuery);
+        CaseRegistration queryCaseRegistration = new CaseRegistration();
+        queryCaseRegistration = JSONObject.parseObject(queryData.toJSONString(), CaseRegistration.class);
+
+        // 工作流查询条件
+        JSONObject bizData = objs.getJSONObject("bizData");
+        // 事件工作流的定义代码
+        bizData.put("prockey", "LawEnforcementProcess");
+        if (StringUtils.isNotBlank(queryData.getString("procCtaskname"))) {
+            /*
+             * 是否按进度进行查找(即任务表中·PROC_CTASKNAME·字段)
+             * 在需要中，进度除了流程图中节点进度外，还有自定义的【已结案】【已中止】进度
+             * 参数都通过procCtaskname传入,需进行判断是否为自定义进度
+             * 如果是自定义进度，则不进工作流中进行节点名称查询
+             */
+            if (!(CaseRegistration.EXESTATUS_STATE_FINISH.equals(queryData.getString("procCtaskname"))
+                || CaseRegistration.EXESTATUS_STATE_STOP.equals(queryData.getString("procCtaskname")))) {
+                bizData.put("procCtaskname", queryData.getString("procCtaskname"));
+            }
+        }
+        objs.put("bizData", bizData);
+
+        // 查询所有工作流任务
+        PageInfo<WfProcBackBean> pageInfo = wfMonitorService.getAllTasks(objs);
+        List<WfProcBackBean> wfProcBackBeanList = pageInfo.getList();
+
+        if (wfProcBackBeanList != null && !wfProcBackBeanList.isEmpty()) {
+            // 有待办任务
+            return queryAssist(queryCaseRegistration, queryData, result, wfProcBackBeanList);
+        } else {
+            // 无待办任务
+            return new TableResultResponse<>(0, result);
+        }
     }
 }

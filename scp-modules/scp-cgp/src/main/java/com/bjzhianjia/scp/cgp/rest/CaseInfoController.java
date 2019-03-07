@@ -582,4 +582,33 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
 
         return caserInfoService.detailForSource(sourceType,sourceCode);
     }
+
+    /**
+     * 事件管理列表
+     *
+     * @param objs
+     * @param request
+     * @return
+     */
+    @ApiOperation("事件管理")
+    @ResponseBody
+    @RequestMapping(value = { "/management" }, method = RequestMethod.POST)
+    public TableResultResponse<JSONObject> getCaseInfoManageList(@RequestBody JSONObject objs, HttpServletRequest request) {
+        log.debug("SCP信息---开始查询所有任务列表...");
+
+        TableResultResponse<JSONObject> tasks = caserInfoService.getCaseInfoManageList(objs);
+        return tasks;
+    }
+
+    @PostMapping("/suspent")
+    @ApiOperation("事件删除")
+    public ObjectRestResponse<Void> suspentCaseInfo(@RequestBody JSONObject objs){
+        return this.caserInfoService.suspentCaseInfo(objs);
+    }
+
+    @PostMapping("/active")
+    @ApiOperation("事件删除")
+    public ObjectRestResponse<Void> activeCaseInfo(@RequestBody JSONObject objs){
+        return this.caserInfoService.activeCaseInfo(objs);
+    }
 }

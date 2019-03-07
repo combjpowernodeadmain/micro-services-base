@@ -93,8 +93,9 @@
 							#{item}
 						</foreach>
 					</if>)
-				OR task.PROC_ORGPERMISSION = '3'  and
+				OR task.PROC_ORGPERMISSION = '3'
 					<if test="procAuthOrgCodes != null and procAuthOrgCodes.size > 0">
+						and
 						task.PROC_ORGCODE in
 						<foreach item="item" index="index" collection="procAuthOrgCodes" open="("
 							separator="," close=")">
