@@ -2600,6 +2600,7 @@ public class CaseInfoService {
      * @param objs
      * @return
      */
+    @Transactional
     public ObjectRestResponse<Void> activeCaseInfo(JSONObject objs) {
         ObjectRestResponse<Void> restResult = new ObjectRestResponse<>();
 

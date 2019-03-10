@@ -2748,6 +2748,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      * @param objs
      * @return
      */
+    @Transactional
     public ObjectRestResponse<Void> suspentCaseInfo(JSONObject objs) {
         ObjectRestResponse<Void> restResult = new ObjectRestResponse<>();
 
@@ -2784,6 +2785,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      * @param objs
      * @return
      */
+    @Transactional
     public ObjectRestResponse<Void> activeCaseInfo(JSONObject objs) {
         ObjectRestResponse<Void> restResult = new ObjectRestResponse<>();
 
