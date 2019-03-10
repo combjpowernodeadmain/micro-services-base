@@ -263,10 +263,12 @@ public class JudicialUserBiz extends BaseBiz<JudicialUserMapper, User> {
                 if (BeanUtils.isNotEmpty(majors)) {
                     majorsName = new StringBuilder();
                     for (int i = 0; i < majors.length; i++) {
-                        //专业名称
-                        majorsName.append(dictMajorMap.get(majors[i]));
-                        if (i != majors.length - 1) {
-                            majorsName.append(",");
+                        if(StringUtils.isNotBlank(dictMajorMap.get(majors[i]))){
+                            //专业名称
+                            majorsName.append(dictMajorMap.get(majors[i]));
+                            if (i != majors.length - 1) {
+                                majorsName.append(",");
+                            }
                         }
                     }
                 }
