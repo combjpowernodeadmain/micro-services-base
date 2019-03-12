@@ -69,7 +69,7 @@
 				</if>
                 <!-- 当proc_task_group为空时，在流程图配置里，PROC_DEPTPERMISSION一定为1，实现非组策略 -->
 				task.PROC_TASK_GROUP = ''
-				OR delegate.PROC_MANDATARY=#{procTaskUser} and	task.PROC_TASK_GROUP=delegate.PROC_LICENSOR_ROLE )				 
+				OR delegate.PROC_MANDATARY=#{procTaskUser} and	task.PROC_TASK_GROUP=delegate.PROC_LICENSOR_ROLE )
 			)
 			OR (
 				task.PROC_TASK_STATUS = '2' AND task.PROC_TASK_ASSIGNEE = #{procTaskUser} 				 

@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.bjzhianjia.scp.security.wf.base.constant.Constants;
 import com.bjzhianjia.scp.security.wf.base.constant.Constants.WfProcessAuthData;
 
 /**
@@ -179,5 +180,30 @@ public class WfProcAuthDataBean implements java.io.Serializable {
 
     public boolean isEmpty() {
         return authData == null || authData.isEmpty();
+    }
+
+    public void setProcTaskGroup (String procTaskGroup){
+        this.put(Constants.WfProcessDataAttr.PROC_TASKGROUP,procTaskGroup);
+    }
+
+    public String getProcTaskGroup(){
+        return (String)authData.get(Constants.WfProcessDataAttr.PROC_TASKGROUP);
+    }
+
+    public String getDeptPermission () {
+        return (String)authData.get(Constants.WfProcTaskProperty.PROC_DEPTPERMISSION);
+    }
+
+    public void setDeptPermission(String deptPermission){
+        this.put(Constants.WfProcTaskProperty.PROC_DEPTPERMISSION, deptPermission);
+    }
+
+
+    public String getSelfPermission1(){
+        return (String)authData.get(Constants.WfProcTaskProperty.PROC_SELFPERMISSION1);
+    }
+
+    public void setSelfPermission1(String selfPermission1){
+        put(Constants.WfProcTaskProperty.PROC_SELFPERMISSION1, selfPermission1);
     }
 }

@@ -886,18 +886,28 @@ public class CaseInfoService {
              * 判断流向是否走向部门处理中
              * 当去部门办理或是事前事后核查时，都是部门策略
              */
-            // 该值为true说明是去部门处理中或是事前事后核查
-            boolean isCheckDeptAuth = StringUtils.equals(environment.getProperty("isCheckProcessingAuth"), flowDirection) ||
-                    isCheckAreaGridAuthList.contains(flowDirection);
+            // 该值为true说明是去部门处理中
+            boolean isCheckDeptAuth = StringUtils.equals(environment.getProperty("isCheckProcessingAuth"), flowDirection);
             if (isCheckDeptAuth) {
-                String deptId = objs.getJSONObject("authData").getString("procDeptId");
+//                String deptId = objs.getJSONObject("authData").getString("procDeptId");
                 /*
                  * 验证所选部门下的人是否全部不具有【我的待办】权限
                  * 该部门下只要有一个人具有【我的待办】权限，那么该事件就可以被办理
                  */
-                _checkDeptAuth(result, deptId);
+                _checkDeptAuth(result ,objs);
                 if (!result.getIsSuccess()){
                     // 说明验证没有成功
+                    return result;
+                }
+                result.setIsSuccess(false);
+            }
+
+            // 该值为true说明是事前事后核查
+            boolean isCheckAreaGridAuthB = isCheckAreaGridAuthList.contains(flowDirection);
+            if (isCheckAreaGridAuthB) {
+                checkAuditOrFinishCheckCompleteProcess(result, objs);
+                resetObjs(objs);
+                if(!result.getIsSuccess()){
                     return result;
                 }
                 result.setIsSuccess(false);
@@ -1062,6 +1072,76 @@ public class CaseInfoService {
         }
     }
 
+    /**
+     * 核查是否符合审批条件
+     *
+     * @param result
+     * @param objs
+     */
+    private void checkAuditOrFinishCheckCompleteProcess(Result<Void> result, JSONObject objs) {
+        result.setIsSuccess(false);
+
+        JSONObject authData = objs.getJSONObject("authData");
+        String procSelfPermissionData1 = authData.getString(Constants.WfProcessAuthData.PROC_SELFPERMISSIONDATA1);
+        String gridRole = authData.getString("gridRole");
+
+        if (StringUtils.isBlank(procSelfPermissionData1)) {
+            result.setMessage("请设定所属网格后再发起核查操作！");
+            return;
+        } else {
+            AreaGrid areaGrid = areaGridBiz.selectById(Integer.valueOf(procSelfPermissionData1.split("_")[0]));
+            if (!Arrays.asList(StringUtils.split(environment.getProperty("checkCompleteProcess.areaGridLevel"),","))
+                .contains(areaGrid.getGridLevel())) {
+                result.setMessage("请选择三级网格或专属网格！");
+                return;
+            }
+        }
+
+        if(StringUtils.isNotBlank(gridRole)){
+            // 进行了按网格进行核查,验证网格下是否有网格员
+            if (checkMemForContainAreaGrid(result, procSelfPermissionData1,gridRole)) return;
+        }
+
+        result.setIsSuccess(true);
+    }
+
+    /**
+     * 重新整理objs参数
+     *
+     * @param objs
+     */
+    private void resetObjs(JSONObject objs) {
+        JSONObject authData = objs.getJSONObject("authData");
+        String procSelfPermissionData1 = authData.getString(Constants.WfProcessAuthData.PROC_SELFPERMISSIONDATA1);
+        String gridRole = authData.getString("gridRole");
+
+        if (StringUtils.isBlank(gridRole)) {
+            authData.put(Constants.WfProcTaskProperty.PROC_SELFPERMISSION1, "0");
+        } else {
+            authData.put(Constants.WfProcessDataAttr.PROC_TASKGROUP, "");
+            authData.put(Constants.WfProcessAuthData.PROC_SELFPERMISSIONDATA1, procSelfPermissionData1 + "_" + gridRole);
+        }
+        objs.put("authData", authData);
+    }
+
+    /**
+     *
+     * @param objs
+     */
+    private void resetObjsForDeptAuth(JSONObject objs,Result<Void> result) {
+        JSONObject authData = objs.getJSONObject("authData");
+        String procSelfPermissionData1 = authData.getString(Constants.WfProcessAuthData.PROC_SELFPERMISSIONDATA1);
+        String gridRole = authData.getString("gridRole");
+
+        if (StringUtils.isBlank(gridRole)) {
+            authData.put(Constants.WfProcTaskProperty.PROC_SELFPERMISSION1, "0");
+        } else {
+            authData.put(Constants.WfProcessDataAttr.PROC_TASKGROUP, "");
+            authData.put(Constants.WfProcessAuthData.PROC_SELFPERMISSIONDATA1, procSelfPermissionData1 + "_" + gridRole);
+        }
+        objs.put("authData", authData);
+    }
+
     private void _isCentering(CaseInfo caseInfoInDB, Result<Void> result,JSONObject objs) {
         result.setIsSuccess(false);
         CaseRegistration query=new CaseRegistration();
@@ -1100,13 +1180,36 @@ public class CaseInfoService {
      * 当选择部门策略时，验证所选部门下的人是否全部不具有【我的待办】权限
      * @param result 结果集
      * @param deptId 待验证部门
+     * @param objs
      */
-    private void _checkDeptAuth(Result<Void> result, String deptId) {
-        if (StringUtils.isBlank(deptId)) {
-            result.setMessage("请指定处理部门");
+    private void _checkDeptAuth(Result<Void> result, JSONObject objs) {
+        String deptId = objs.getJSONObject("authData").getString("procDeptId");
+
+        JSONObject authData = objs.getJSONObject("authData");
+        String procSelfPermissionData1 = authData.getString("procSelfPermissionData1");
+        String gridRole = authData.getString("gridRole");
+
+        if (StringUtils.isBlank(deptId) && StringUtils.isBlank(gridRole)) {
+            result.setMessage("请指定处理部门或网格角色");
             result.setIsSuccess(false);
             return;
         }
+
+        if (StringUtils.isBlank(gridRole)) {
+            authData.put(Constants.WfProcTaskProperty.PROC_SELFPERMISSION1, "0");
+            authData.put(Constants.WfProcTaskProperty.PROC_DEPTPERMISSION, "1");
+            authData.put(Constants.WfProcessDataAttr.PROC_TASKGROUP, environment.getProperty("baseGroup.bumenjiekouren"));
+        } else {
+            if (checkMemForContainAreaGrid(result, procSelfPermissionData1, gridRole)) return;
+
+            authData.put(Constants.WfProcTaskProperty.PROC_SELFPERMISSION1, "1");
+            authData.put(Constants.WfProcTaskProperty.PROC_DEPTPERMISSION, "0");
+            authData.put(Constants.WfProcessDataAttr.PROC_TASKGROUP, "");
+            authData.put(Constants.WfProcessAuthData.PROC_SELFPERMISSIONDATA1, procSelfPermissionData1 + "_" + gridRole);
+        }
+
+        objs.put("authData", authData);
+
         List<JSONObject> authoritiesByDept = adminFeign.getAuthoritiesByDept(deptId);
         if (BeanUtil.isNotEmpty(authoritiesByDept)) {
             List<String> codeList =
@@ -1128,6 +1231,37 @@ public class CaseInfoService {
     }
 
     /**
+     * 验证某网格下是否包含某网格角色
+     * @param result
+     * @param procSelfPermissionData1
+     * @param gridRole
+     * @return
+     */
+    private boolean checkMemForContainAreaGrid(Result<Void> result, String procSelfPermissionData1, String gridRole) {
+        Set<String> gridIds = new HashSet<>();
+        gridIds.add(procSelfPermissionData1);
+        List<AreaGridMember> byGridIds = areaGridMemberBiz.getByGridIds(gridIds);
+
+        // 验证是否失败，为true说明验证失败
+        boolean flag=true;
+
+        if (BeanUtil.isNotEmpty(byGridIds)) {
+            List<String> gridRoleList =
+                byGridIds.stream().map(AreaGridMember::getGridRole).distinct().collect(Collectors.toList());
+            if(gridRoleList.contains(gridRole)){
+                // 说明相应网格下包含角色为grodRole的人员
+                flag=false;
+            }
+        }
+
+        if(flag) {
+            result.setMessage("当前网格没有相应网格员，操作失败！");
+            result.setIsSuccess(false);
+        }
+        return flag;
+    }
+
+    /**
      * 处理去工作流提交前的数据
      * @param caseInfo
      * @param objs
@@ -1135,6 +1269,7 @@ public class CaseInfoService {
     private void preWorkFlow(CaseInfo caseInfo, JSONObject objs) {
         // 检查事件照片
         handlePicInCaseInfo(caseInfo,objs);
+//        resetObjs(objs);
     }
 
     /**

@@ -99,6 +99,7 @@ public class CoordinatePointBiz extends BusinessBiz<CoordinatePointMapper, Coord
 
         restResult.setStatus(200);
         restResult.setMessage("坐标转换完成");
+        log.info("坐标转换完成");
         return restResult;
     }
 

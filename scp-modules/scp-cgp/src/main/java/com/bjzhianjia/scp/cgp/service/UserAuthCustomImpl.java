@@ -140,8 +140,20 @@ public class UserAuthCustomImpl implements IWfProcUserAuthService {
              * 合并areaGridIdList里对应网格的父级网格ID
              */
             Set<String> mergeParentAreaGrid = areaGridBiz.mergeParentAreaGrid(areaGridIdList);
-            
-            String areaGridIdStr = "'" + String.join(",", mergeParentAreaGrid).replaceAll(",", "','")+"'";//拼接sql中替换点位符的字符串
+
+            List<AreaGridMember> byGridIds = areaGridMemberBiz.getByGridIds(mergeParentAreaGrid);
+            for(int i=0;i<byGridIds.size();i++){
+                AreaGridMember areaGridMember = byGridIds.get(i);
+                if(areaGridIdList.contains(String.valueOf(areaGridMember.getGridId()))){
+                    byGridIds.remove(areaGridMember);
+                    i--;
+                }
+            }
+            byGridIds.addAll(areaGridList);
+            List<String> collect = byGridIds.stream().map(o -> o.getGridId() + "_" + o.getGridRole()).distinct()
+                .collect(Collectors.toList());
+
+            String areaGridIdStr = "'" + String.join(",", collect).replaceAll(",", "','")+"'";//拼接sql中替换点位符的字符串
             return areaGridIdStr;
         }
         

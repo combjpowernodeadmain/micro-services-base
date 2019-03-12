@@ -3385,12 +3385,16 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 			// 设置流程任务数据权限类型
 			wfProcTaskBean.setProcDatapermission(getProcTaskDataPermission(properties));
 			wfProcTaskBean.setProcOrgpermission(getProcTaskOrgPermission(properties));
-	        wfProcTaskBean.setProcDeptpermission(getProcTaskDeptPermission(properties));
+			wfProcTaskBean.setProcDeptpermission(authData.getDeptPermission() != null ?
+				authData.getDeptPermission() :
+				getProcTaskDeptPermission(properties));
 	        // 修改审批时，设置部门策略的方式wfPreProcTaskBean.getProcDepartId()-->authData.getProcDeptId()==2018-10-09
 	        wfProcTaskBean.setProcDepartId(authData.getProcDeptId());
 	        wfProcTaskBean.setProcTenantpermission(getProcTenantPermission(properties));
 	        wfProcTaskBean.setProcTenantId(wfPreProcTaskBean.getProcTenantId());
-	        wfProcTaskBean.setProcSelfpermission1(getProcTaskSelfPermission1(properties));
+			wfProcTaskBean.setProcSelfpermission1(authData.getSelfPermission1() != null ?
+				authData.getSelfPermission1() :
+				getProcTaskSelfPermission1(properties));
 	        wfProcTaskBean.setProcSelfdata1(authData.getProcSelfPermissionData1());
 	        wfProcTaskBean.setProcSelfpermission2(getProcTaskSelfPermission2(properties));
 	        wfProcTaskBean.setProcSelfdata2(authData.getProcSelfPermissionData2());
@@ -3450,7 +3454,8 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 				String candidateGroups = wfProcDesinerBiz
 						.getTaskCandidateGroups(activities,
 								newTask.getTaskDefinitionKey(),procVarData);//添加流程变量形参
-				wfProcTaskBean.setProcTaskGroup(candidateGroups);
+				wfProcTaskBean.setProcTaskGroup(
+					authData.getProcTaskGroup() != null ? authData.getProcTaskGroup() : candidateGroups);
 				wfProcTaskBean.setProcTaskStatus(FlowStatus.TASK01.getRetCode()); // 流程任务没有指定受理人，任务状态未签收
 			}
 
