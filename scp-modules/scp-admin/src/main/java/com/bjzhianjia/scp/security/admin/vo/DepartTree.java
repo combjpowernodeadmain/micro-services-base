@@ -9,6 +9,7 @@ import com.bjzhianjia.scp.security.common.vo.TreeNodeVO;
 public class DepartTree extends TreeNodeVO<DepartTree> {
     String label;
     String code;
+    private String orderNum;
 
     public String getLabel() {
         return label;
@@ -34,5 +35,13 @@ public class DepartTree extends TreeNodeVO<DepartTree> {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getOrderNum() {
+        return orderNum;
+    }
+
+    public void setOrderNum(String orderNum) {
+        this.orderNum = orderNum;
     }
 }
