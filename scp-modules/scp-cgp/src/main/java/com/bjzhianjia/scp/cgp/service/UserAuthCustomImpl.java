@@ -135,26 +135,30 @@ public class UserAuthCustomImpl implements IWfProcUserAuthService {
         List<String> areaGridIdList=new ArrayList<>();
         if(BeanUtil.isNotEmpty(areaGridList)) {
             areaGridIdList=areaGridList.stream().map(o->String.valueOf(o.getGridId())).distinct().collect(Collectors.toList());
-            
-            /*
-             * 合并areaGridIdList里对应网格的父级网格ID
-             */
-            Set<String> mergeParentAreaGrid = areaGridBiz.mergeParentAreaGrid(areaGridIdList);
 
-            List<AreaGridMember> byGridIds = areaGridMemberBiz.getByGridIds(mergeParentAreaGrid);
-            for(int i=0;i<byGridIds.size();i++){
-                AreaGridMember areaGridMember = byGridIds.get(i);
-                if(areaGridIdList.contains(String.valueOf(areaGridMember.getGridId()))){
-                    byGridIds.remove(areaGridMember);
-                    i--;
+            if(BeanUtil.isNotEmpty(areaGridIdList)){
+                /*
+                 * 合并areaGridIdList里对应网格的父级网格ID
+                 */
+                Set<String> mergeParentAreaGrid = areaGridBiz.mergeParentAreaGrid(areaGridIdList);
+
+                if(BeanUtil.isNotEmpty(mergeParentAreaGrid)){
+                    List<AreaGridMember> byGridIds = areaGridMemberBiz.getByGridIds(mergeParentAreaGrid);
+                    for(int i=0;i<byGridIds.size();i++){
+                        AreaGridMember areaGridMember = byGridIds.get(i);
+                        if(areaGridIdList.contains(String.valueOf(areaGridMember.getGridId()))){
+                            byGridIds.remove(areaGridMember);
+                            i--;
+                        }
+                    }
+                    byGridIds.addAll(areaGridList);
+                    List<String> collect = byGridIds.stream().map(o -> o.getGridId() + "_" + o.getGridRole()).distinct()
+                        .collect(Collectors.toList());
+
+                    String areaGridIdStr = "'" + String.join(",", collect).replaceAll(",", "','")+"'";//拼接sql中替换点位符的字符串
+                    return areaGridIdStr;
                 }
             }
-            byGridIds.addAll(areaGridList);
-            List<String> collect = byGridIds.stream().map(o -> o.getGridId() + "_" + o.getGridRole()).distinct()
-                .collect(Collectors.toList());
-
-            String areaGridIdStr = "'" + String.join(",", collect).replaceAll(",", "','")+"'";//拼接sql中替换点位符的字符串
-            return areaGridIdStr;
         }
         
         /*
