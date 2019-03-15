@@ -52,8 +52,8 @@ public class AuthorizationFilter extends ZuulFilter {
             // 系统时间
             Calendar starTime = Calendar.getInstance();
             Calendar endTime = Calendar.getInstance();
-			// 2019-5-01 00:00:00
-            endTime.setTimeInMillis(1556640000000L);
+			// 2019-08-01 00:00:00
+            endTime.setTimeInMillis(1564588800000L);
             // 比较时间  
             return starTime.before(endTime);
         } catch (Exception exception) {
