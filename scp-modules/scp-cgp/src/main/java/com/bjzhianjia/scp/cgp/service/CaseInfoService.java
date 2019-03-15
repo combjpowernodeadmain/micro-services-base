@@ -1116,8 +1116,11 @@ public class CaseInfoService {
         String gridRole = authData.getString("gridRole");
 
         if (StringUtils.isBlank(gridRole)) {
+            log.debug("按角色权限进行办理");
             authData.put(Constants.WfProcTaskProperty.PROC_SELFPERMISSION1, "0");
         } else {
+            log.debug("按网格员角色进行办理");
+            authData.put(Constants.WfProcTaskProperty.PROC_SELFPERMISSION1, "1");
             authData.put(Constants.WfProcessDataAttr.PROC_TASKGROUP, "");
             authData.put(Constants.WfProcessAuthData.PROC_SELFPERMISSIONDATA1, procSelfPermissionData1 + "_" + gridRole);
         }
@@ -1196,10 +1199,12 @@ public class CaseInfoService {
         }
 
         if (StringUtils.isBlank(gridRole)) {
+            log.debug("按部门进行办理");
             authData.put(Constants.WfProcTaskProperty.PROC_SELFPERMISSION1, "0");
             authData.put(Constants.WfProcTaskProperty.PROC_DEPTPERMISSION, "1");
             authData.put(Constants.WfProcessDataAttr.PROC_TASKGROUP, environment.getProperty("baseGroup.bumenjiekouren"));
         } else {
+            log.debug("按网格角色进行办理");
             if (checkMemForContainAreaGrid(result, procSelfPermissionData1, gridRole)) return;
 
             authData.put(Constants.WfProcTaskProperty.PROC_SELFPERMISSION1, "1");
@@ -1210,21 +1215,23 @@ public class CaseInfoService {
 
         objs.put("authData", authData);
 
-        List<JSONObject> authoritiesByDept = adminFeign.getAuthoritiesByDept(deptId);
-        if (BeanUtil.isNotEmpty(authoritiesByDept)) {
-            List<String> codeList =
-                authoritiesByDept.stream().map(o -> o.getString("code")).distinct()
-                    .collect(Collectors.toList());
-            if (!codeList.contains(environment.getProperty("wfTodoList"))) {
+        if(StringUtils.isNotBlank(deptId)){
+            List<JSONObject> authoritiesByDept = adminFeign.getAuthoritiesByDept(deptId);
+            if (BeanUtil.isNotEmpty(authoritiesByDept)) {
+                List<String> codeList =
+                    authoritiesByDept.stream().map(o -> o.getString("code")).distinct()
+                        .collect(Collectors.toList());
+                if (!codeList.contains(environment.getProperty("wfTodoList"))) {
+                    result.setMessage("该部门尚无权限处理该事件，请更换部门。");
+                    result.setIsSuccess(false);
+                    return;
+                }
+            } else {
+                // 如果authoritiesByDept为空，也认为是无处理权限
                 result.setMessage("该部门尚无权限处理该事件，请更换部门。");
                 result.setIsSuccess(false);
                 return;
             }
-        } else {
-            // 如果authoritiesByDept为空，也认为是无处理权限
-            result.setMessage("该部门尚无权限处理该事件，请更换部门。");
-            result.setIsSuccess(false);
-            return;
         }
 
         result.setIsSuccess(true);
