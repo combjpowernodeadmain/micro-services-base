@@ -7,6 +7,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.bjzhianjia.scp.cgp.entity.EnforceCertificate;
+import com.bjzhianjia.scp.cgp.entity.PatrolTaskPath;
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
+import com.bjzhianjia.scp.cgp.vo.LawEnforcePathVo;
+import com.bjzhianjia.scp.core.context.BaseContextHandler;
+import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
+import io.swagger.annotations.ApiParam;
+import lombok.extern.log4j.Log4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +28,7 @@ import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.github.pagehelper.PageHelper;
 
+import org.springframework.web.bind.annotation.RequestBody;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
 
@@ -40,10 +49,17 @@ import tk.mybatis.mapper.entity.Example.Criteria;
  *
  */
 @Service
+@Log4j
 public class LawEnforcePathBiz extends BusinessBiz<LawEnforcePathMapper, LawEnforcePath> {
 
     @Autowired
     private LawEnforcePathMapper lawEnforcePathMapper;
+
+    @Autowired
+    private EnforceCertificateBiz enforceCertificateBiz;
+
+    @Autowired
+    private PatrolTaskPathBiz patrolTaskPathBiz;
 
     /**
      * 查询指定用户，指定时间段的行为轨迹
@@ -187,5 +203,54 @@ public class LawEnforcePathBiz extends BusinessBiz<LawEnforcePathMapper, LawEnfo
             result.put(lawEnforcePath.getCrtUserId(), obj);
         }
         return result;
+    }
+
+    /**
+     * 添加执法人员轨迹
+     * @param lawEnforcePathVo
+     * @return
+     */
+    public ObjectRestResponse<Void> addLawEnforcePath(@ApiParam("执法轨迹") @RequestBody LawEnforcePathVo lawEnforcePathVo) {
+        ObjectRestResponse<Void> restResult=new ObjectRestResponse<>();
+
+        JSONObject json = null;
+        try {
+            json = JSONObject.parseObject(lawEnforcePathVo.getMapInfo());
+            if (json == null) {
+                restResult.setStatus(400);
+                return restResult;
+            }
+
+            EnforceCertificate enforceCertificate =
+                enforceCertificateBiz.getEnforceCertificateByUserId(BaseContextHandler.getUserID());
+
+            if(BeanUtil.isNotEmpty(enforceCertificate)){
+                // 当前人员是执法人员
+                //mapInfo 数据封装
+                log.debug("添加执法人员轨迹");
+                LawEnforcePath lawEnforcePath = new LawEnforcePath();
+                lawEnforcePath.setLat(json.getDouble("lat"));
+                lawEnforcePath.setLng(json.getDouble("lng"));
+                lawEnforcePath.setTerminalId(lawEnforcePathVo.getTerminalId());
+                lawEnforcePath.setDeptId(BaseContextHandler.getDepartID());
+                lawEnforcePath.setTanentId(BaseContextHandler.getTenantID());
+                this.insertSelective(lawEnforcePath);
+            }else {
+                log.debug("添加网格人员轨迹");
+                PatrolTaskPath patrolTaskPath=new PatrolTaskPath();
+                patrolTaskPath.setLat(json.getDouble("lat"));
+                patrolTaskPath.setLng(json.getDouble("lng"));
+                patrolTaskPath.setTerminalId(lawEnforcePathVo.getTerminalId());
+                patrolTaskPath.setDeptId(BaseContextHandler.getDepartID());
+                patrolTaskPath.setTanentId(BaseContextHandler.getTenantID());
+                patrolTaskPathBiz.insertSelective(patrolTaskPath);
+            }
+
+        } catch (Exception e) {
+            restResult.setMessage("添加失败");
+            restResult.setStatus(400);
+            return restResult;
+        }
+        return restResult;
     }
 }

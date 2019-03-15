@@ -217,7 +217,6 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
     	if(entity != null && entity.getId() != null) {
     		//code不进行修改
     		String code = entity.getCode();
-        	entity.setCode(null);
         	dictValueBiz.updata(entity);
         	
         	//修改完成返回code
