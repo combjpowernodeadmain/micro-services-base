@@ -1,13 +1,6 @@
 package com.bjzhianjia.scp.security.admin.biz;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -218,7 +211,13 @@ public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
         //构建成前台需要的树型数据
         //bulid 方法会构建指定部门的子集，所以第二个参数需要传入当前部门的父级id， 否则无法封装当前部门信息
         //resultData.get(0) 当前部门
-        result.data(TreeUtil.bulid(resultData, resultData.get(0).getParentId(), null));
+        result.data(TreeUtil.bulid(resultData, resultData.get(0).getParentId(),(Comparator<DepartTree>)(o1,o2)->{
+            try {
+                return o1.getOrderNum().compareTo(o2.getOrderNum());
+            } catch (Exception e) {
+                return 0;
+            }
+        }));
         return result;
     }
 
@@ -258,6 +257,7 @@ public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
         departTree.setLabel(depart.getName());
         departTree.setId(depart.getId());
         departTree.setParentId(depart.getParentId());
+        departTree.setOrderNum(depart.getAttr2());
         return departTree;
     }
     /**

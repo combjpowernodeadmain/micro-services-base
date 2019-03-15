@@ -52,7 +52,9 @@ public class TreeUtil<T extends TreeNodeVO> {
                 }
             }
             if (comparator != null) {
-                treeNode.getChildren().sort(comparator);
+                if(treeNode.getChildren() != null){
+                    treeNode.getChildren().sort(comparator);
+                }
             }
         }
         if (comparator != null && trees.size() > 1) {

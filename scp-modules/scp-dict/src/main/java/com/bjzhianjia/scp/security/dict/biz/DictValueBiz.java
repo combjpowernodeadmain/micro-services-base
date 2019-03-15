@@ -8,9 +8,16 @@ import com.bjzhianjia.scp.security.dict.entity.DictType;
 import com.bjzhianjia.scp.security.dict.entity.DictValue;
 import com.bjzhianjia.scp.security.dict.mapper.DictValueMapper;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.env.Environment;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +25,8 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.imageio.ImageIO;
 
 /**
  * 
@@ -31,12 +40,45 @@ public class DictValueBiz extends BusinessBiz<DictValueMapper, DictValue> {
 	
 	@Autowired
 	private DictValueMapper dictValueMapper;
+
+	@Autowired
+	private Environment environment;
+
+	@Autowired
+	private CommonBiz commonBiz;
 	
 	
 	@Override
 	public void insertSelective(DictValue entity) {
 		entity.setId(UUIDUtils.generateUuid());
 		super.insertSelective(entity);
+
+		String code = entity.getCode();
+
+		generateImgTitleToDist(code);
+	}
+
+	private void generateImgTitleToDist(String code) {
+		if (StringUtils.startsWith(code, environment.getProperty("root_system_commonCenterTitle"))) {
+			String outputPath = environment.getProperty("commandCenterTitle.imgPath");
+			OutputStream os = null;
+			try {
+				BufferedImage bufferedImage = commonBiz.generateImg();
+				File file = new File(outputPath);
+				os = new FileOutputStream(file);
+				ImageIO.write(bufferedImage, "png", os);
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				if (os != null) {
+					try {
+						os.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
 	}
 
 	public Map<String, String> getDictValues(String id) {
@@ -136,8 +178,12 @@ public class DictValueBiz extends BusinessBiz<DictValueMapper, DictValue> {
      * @param entity
      */
     public void updata(DictValue entity) {
+		String code = entity.getCode();
+		entity.setCode(null);
     	dictValueMapper.updateByPrimaryKeySelective(entity);
-    }
+
+		generateImgTitleToDist(code);
+	}
     /**
      * 根据code条件进行查询总数
      * @param code

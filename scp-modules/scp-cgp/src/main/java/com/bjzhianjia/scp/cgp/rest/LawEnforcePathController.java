@@ -82,28 +82,14 @@ public class LawEnforcePathController extends BaseController<LawEnforcePathBiz,L
         }
 
         //mapinfo转换为单独的字段
-        JSONObject json = null;
-        try {
-            json = JSONObject.parseObject(lawEnforcePathVo.getMapInfo());
-            if (json == null) {
-                return restResult;
-            }
-            //mapInfo 数据封装
-            LawEnforcePath lawEnforcePath = new LawEnforcePath();
-            lawEnforcePath.setLat(json.getDouble("lat"));
-            lawEnforcePath.setLng(json.getDouble("lng"));
-            lawEnforcePath.setTerminalId(lawEnforcePathVo.getTerminalId());
-            lawEnforcePath.setDeptId(BaseContextHandler.getDepartID());
-            lawEnforcePath.setTanentId(BaseContextHandler.getTenantID());
-            lawEnforcePathBiz.insertSelective(lawEnforcePath);
-        } catch (Exception e) {
-            restResult.setMessage("添加失败");
-            return restResult;
-        }
+        ObjectRestResponse<Void> voidObjectRestResponse = this.baseBiz.addLawEnforcePath(lawEnforcePathVo);
+        if (voidObjectRestResponse.getStatus()==400) return restResult;
         restResult.setStatus(200);
         restResult.setMessage("ok");
         return restResult;
     }
+
+
 
     /**
      * 查询指定用户，指定时间段的行为轨迹

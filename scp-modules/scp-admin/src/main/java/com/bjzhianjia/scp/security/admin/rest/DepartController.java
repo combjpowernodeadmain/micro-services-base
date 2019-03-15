@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -50,9 +51,18 @@ public class DepartController extends BaseController<DepartBiz, Depart, String> 
         List<Depart> departs = this.baseBiz.selectListAll();
         List<DepartTree> trees = new ArrayList<>();
         departs.forEach(dictType -> {
-            trees.add(new DepartTree(dictType.getId(), dictType.getParentId(), dictType.getName(), dictType.getCode()));
+            DepartTree departTree =
+                new DepartTree(dictType.getId(), dictType.getParentId(), dictType.getName(), dictType.getCode());
+            departTree.setOrderNum(dictType.getAttr2());
+            trees.add(departTree);
         });
-        return TreeUtil.bulid(trees, "-1", null);
+        return TreeUtil.bulid(trees, "-1", (Comparator<DepartTree>) (o1, o2) -> {
+            try {
+                return o1.getOrderNum().compareTo(o2.getOrderNum());
+            } catch (Exception e) {
+                return 0;
+            }
+        });
     }
 
     @ApiOperation("获取部门关联用户")
@@ -185,8 +195,17 @@ public class DepartController extends BaseController<DepartBiz, Depart, String> 
         List<Depart> departs = this.baseBiz.getAll();
         List<DepartTree> trees = new ArrayList<>();
         departs.forEach(dictType -> {
-            trees.add(new DepartTree(dictType.getId(), dictType.getParentId(), dictType.getName(), dictType.getCode()));
+            DepartTree departTree =
+                new DepartTree(dictType.getId(), dictType.getParentId(), dictType.getName(), dictType.getCode());
+            departTree.setOrderNum(dictType.getAttr2());
+            trees.add(departTree);
         });
-        return TreeUtil.bulid(trees, "-1", null);
+        return TreeUtil.bulid(trees, "-1", (Comparator<DepartTree>) (o1, o2) -> {
+            try {
+                return o1.getOrderNum().compareTo(o2.getOrderNum());
+            } catch (Exception e) {
+                return 0;
+            }
+        });
     }
 }

@@ -10,14 +10,15 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.imageio.ImageIO;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.image.BufferedImage;
+import java.io.*;
 
 /**
  * CommonController 类描述. 用于处理通用的请求
@@ -46,6 +47,9 @@ public class CommonController {
     @Autowired
     private CommonBiz commonBiz;
 
+    @Autowired
+    private Environment environment;
+
     @IgnoreClientToken
     @IgnoreUserToken
     @GetMapping("/webDefault")
@@ -60,11 +64,38 @@ public class CommonController {
         return restResult;
     }
 
+    @IgnoreClientToken
+    @IgnoreUserToken
     @RequestMapping(value = "/commandCenterTitle", method = RequestMethod.GET)
     @ApiOperation("生成指挥中心主页标题图片")
     public void getCommandCenterTitle(HttpServletResponse response) throws Exception {
         log.debug("生成图片标题");
-        BufferedImage bi1 = commonBiz.generateImg();
-        ImageIO.write(bi1, "png", response.getOutputStream());
+
+//        final String imgPath="D:\\test.png";
+        String imgPath=environment.getProperty("commandCenterTitle.imgPath");
+
+        File file=null;
+        InputStream is=null;
+
+        try {
+            file=new File(imgPath);
+            is=new FileInputStream(file);
+
+            byte[] bytes = new byte[(int) file.length()];
+            is.read(bytes);
+
+            response.setContentType("image/png");
+            ServletOutputStream outputStream = response.getOutputStream();
+
+            outputStream.write(bytes);
+            outputStream.flush();
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            if (is!=null){
+                is.close();
+            }
+        }
     }
 }
