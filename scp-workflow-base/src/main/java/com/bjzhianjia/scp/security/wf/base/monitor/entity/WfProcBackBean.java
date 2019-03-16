@@ -53,6 +53,7 @@ public class WfProcBackBean implements java.io.Serializable {
 	private String procTaskProperties;
 	private String procApproveurl;// 流程审批URL
 	private String procSelfProperties;
+	private String procSelPermission1;
 
 	public String getProcApproveurl() {
 		return procApproveurl;
@@ -244,5 +245,13 @@ public class WfProcBackBean implements java.io.Serializable {
 
 	public void setProcSelfProperties(String procSelfProperties) {
 		this.procSelfProperties = procSelfProperties;
+	}
+
+	public String getProcSelPermission1() {
+		return procSelPermission1;
+	}
+
+	public void setProcSelPermission1(String procSelPermission1) {
+		this.procSelPermission1 = procSelPermission1;
 	}
 }

@@ -238,8 +238,10 @@
 		SELECT
 		cyear,
 		cmonth,
-		total,
-		
+		total
+		<if test="deptParam != null and deptParam.size() > 0">
+			,
+		</if>
 		<foreach collection="deptParam" item="item"  separator=",">
 			MAX( CASE deptId WHEN #{item.deptId} THEN COUNT ELSE 0 END ) #{item.deptId}
 		</foreach>

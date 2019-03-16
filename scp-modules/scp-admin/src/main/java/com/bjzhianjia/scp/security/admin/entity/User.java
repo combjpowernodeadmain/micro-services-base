@@ -41,7 +41,7 @@ public class User implements Serializable{
 
     private String email;
 
-    @MergeField(key = "comm_sex", feign = DictFeign.class, method = "getDictValues")
+    @MergeField(key = "comm_sex", feign = DictFeign.class, method = "getByCode")
     private String sex;
 
     private String type;

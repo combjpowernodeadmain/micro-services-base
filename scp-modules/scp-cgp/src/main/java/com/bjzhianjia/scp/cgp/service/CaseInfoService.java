@@ -553,6 +553,7 @@ public class CaseInfoService {
                 // 在返回列表里添加任务到达时间与处理时间
                 wfJObject.put("procTaskCommittime",wfProcBackBean.getProcTaskCommittime());
                 wfJObject.put("procTaskAssigntime",wfProcBackBean.getProcTaskAssigntime());
+                wfJObject.put("procSelPermission1",wfProcBackBean.getProcSelPermission1());
             }
 
             wfJObject.put("caseInfoId", caseInfo.getId());

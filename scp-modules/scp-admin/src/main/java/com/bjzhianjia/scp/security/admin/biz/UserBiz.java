@@ -97,16 +97,14 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
         result.setStatus(400);
         result.setData(false);
 
-        // 如果非超级管理员,无法重置用户的密码
-        // if
-        // (BooleanUtil.BOOLEAN_FALSE.equals(mapper.selectByPrimaryKey(BaseContextHandler.getUserID()).getIsSuperAdmin()))
-        // {
-        // result.setMessage("当前用户没有权限！");
-        // return result;
-        // }
-
         User user = this.getByUsername(username);
         if (user != null && StringUtils.isNotBlank(user.getPassword())) {
+            if(StringUtils.equals(BooleanUtil.BOOLEAN_TRUE,user.getIsSuperAdmin())){
+                // 说明要修改的密码是超级管理员，提示不能修改
+                result.setMessage("不能修改【超级管理员】密码");
+                return result;
+            }
+
             String password = encoder.encode(newPass);
             user.setPassword(password);
             this.updateSelectiveById(user);
@@ -569,5 +567,37 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
 
         Set<String> groupCodeSet=new HashSet<>(Arrays.asList(groupCode.split(",")));
         return this.mapper.selectLeaderOrMemberByGroupCode(groupCodeSet);
+    }
+
+    /**
+     * 分页获取用户列表
+     *
+     * @param params
+     * @return
+     */
+    public TableResultResponse<User> getUserList(Map<String, Object> params) {
+        int page = Integer.parseInt(params.get("page").toString());
+        int limit = Integer.parseInt(params.get("limit").toString());
+
+        // name=admin&username=admin
+        Example example = new Example(User.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isDeleted", BooleanUtil.BOOLEAN_FALSE);
+        criteria.andNotEqualTo("isSuperAdmin", BooleanUtil.BOOLEAN_TRUE);
+        if (StringUtils.isNotBlank((String) params.get("name"))) {
+            criteria.andLike("name", "%" + params.get("name") + "%");
+        }
+
+        Example.Criteria criteria1 = example.or();
+        criteria1.andEqualTo("isDeleted", BooleanUtil.BOOLEAN_FALSE);
+        criteria1.andNotEqualTo("isSuperAdmin", BooleanUtil.BOOLEAN_TRUE);
+        if (StringUtils.isNotBlank((String) params.get("username"))) {
+            criteria1.andLike("username", "%" + params.get("username") + "%");
+        }
+
+        Page<Object> pageInfo = PageHelper.startPage(page, limit);
+        List<User> users = this.selectByExample(example);
+
+        return new TableResultResponse<>(pageInfo.getTotal(), users);
     }
 }

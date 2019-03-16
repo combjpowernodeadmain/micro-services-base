@@ -255,7 +255,7 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         }
 
         JSONArray data = this.baseBiz.getCaseSource(caseRegistration, startTime, endTime, gridIds);
-        if (data != null && data.size() > 0) {
+        if (data != null) {
             result.setData(data);
         } else {
             result.setMessage("未找到相关信息");

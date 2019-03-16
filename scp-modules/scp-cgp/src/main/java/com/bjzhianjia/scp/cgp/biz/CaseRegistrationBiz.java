@@ -1296,10 +1296,11 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         Map<String, String> stateCode = dictFeign.getByCode(Constances.ROOT_BIZ_CASEDEALTYPE);
         List<Map<String, Object>> caseList = this.mapper.selectState(caseRegistration, startTime, endTime, gridIds);
 
+        Map<String, Object> tempData = new HashMap<>();
+        Set<String> setKey = null;
+
         if (BeanUtil.isNotEmpty(caseList)) {
             // 封装数据集
-            Map<String, Object> tempData = new HashMap<>();
-            Set<String> setKey = null;
             Object count = null;
             for (Map<String, Object> map : caseList) {
                 tempData.put(String.valueOf(map.get("dealType")), map.get("count"));
@@ -1318,6 +1319,23 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                     // 类型数量
                     count = tempData.get(key);
                     obj.put("count", count == null ? 0 : count);
+                    result.add(obj);
+                }
+            }
+        }else{
+            // 封装返回集
+            JSONObject obj = null;
+            if (stateCode != null && !stateCode.isEmpty()) {
+                setKey = stateCode.keySet();
+
+                for (String key : setKey) {
+                    obj = new JSONObject();
+                    // 类型code
+                    obj.put("code", key);
+                    // 类型名称
+                    obj.put("name", stateCode.get(key));
+                    // 类型数量
+                    obj.put("count", 0);
                     result.add(obj);
                 }
             }
@@ -1344,16 +1362,16 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         List<Map<String, Object>> caseList =
             this.mapper.selectCaseSource(caseRegistration, startTime, endTime, gridIds);
 
+        Set<String> setKey = null;
+        // 封装返回集
+        JSONObject obj = null;
+        Object count = null;
         if (BeanUtil.isNotEmpty(caseList)) {
             // 封装数据集
             Map<String, Object> tempData = new HashMap<>();
-            Set<String> setKey = null;
-            Object count = null;
             for (Map<String, Object> map : caseList) {
                 tempData.put(String.valueOf(map.get("caseSourceType")), map.get("count"));
             }
-            // 封装返回集
-            JSONObject obj = null;
             if (sourceType != null && !sourceType.isEmpty()) {
                 setKey = sourceType.keySet();
 
@@ -1366,6 +1384,21 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                     // 类型数量
                     count = tempData.get(key);
                     obj.put("count", count == null ? 0 : count);
+                    result.add(obj);
+                }
+            }
+        }else{
+            if (sourceType != null && !sourceType.isEmpty()) {
+                setKey = sourceType.keySet();
+
+                for (String key : setKey) {
+                    obj = new JSONObject();
+                    // 类型code
+                    obj.put("code", key);
+                    // 类型名称
+                    obj.put("name", sourceType.get(key));
+                    // 类型数量
+                    obj.put("count", 0);
                     result.add(obj);
                 }
             }

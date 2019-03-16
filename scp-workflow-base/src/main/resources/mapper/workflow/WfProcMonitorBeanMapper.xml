@@ -32,6 +32,7 @@
 			task.PROC_TASK_COMMITTER procTaskCommitter, 
 			task.PROC_APPROVEURL procApproveurl, 
 			task.PROC_SELF_PROPERTIES procSelfProperties,
+			task.PROC_SELFPERMISSION1 procSelPermission1,
 			IF (
 				task.PROC_TASK_STATUS = '1',
 				task.PROC_TASK_GROUP,
