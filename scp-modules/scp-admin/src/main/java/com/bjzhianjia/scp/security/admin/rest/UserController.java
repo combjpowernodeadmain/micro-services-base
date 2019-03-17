@@ -305,7 +305,7 @@ public class UserController extends BaseController<UserBiz, User, String> {
 	}
 
 	@ApiOperation("分页获取数据")
-	@RequestMapping(value = "/page02",method = RequestMethod.GET)
+	@RequestMapping(value = "/list/base",method = RequestMethod.GET)
 	@ResponseBody
 	public TableResultResponse<User> list(@RequestParam Map<String, Object> params){
 		//查询列表数据
