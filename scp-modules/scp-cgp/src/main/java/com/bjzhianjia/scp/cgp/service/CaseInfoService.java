@@ -1091,10 +1091,15 @@ public class CaseInfoService {
             return;
         } else {
             AreaGrid areaGrid = areaGridBiz.selectById(Integer.valueOf(procSelfPermissionData1.split("_")[0]));
-            if (!Arrays.asList(StringUtils.split(environment.getProperty("checkCompleteProcess.areaGridLevel"),","))
-                .contains(areaGrid.getGridLevel())) {
-                result.setMessage("请选择三级网格或专属网格！");
-                return;
+            String areaGridLevel = environment.getProperty("checkCompleteProcess.areaGridLevel");
+
+            if (StringUtils.isNotBlank(areaGridLevel)) {
+                // 当配置了网格限制时，对进行判断是否符合规则。否则认为不限制
+                if (!Arrays.asList(StringUtils.split(areaGridLevel, ",")).contains(areaGrid.getGridLevel())) {
+                    result.setMessage(new String(environment.getProperty("checkCompleteProcess.fAreaGridLevel.msg")
+                        .getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8));
+                    return;
+                }
             }
         }
 

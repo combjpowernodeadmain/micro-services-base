@@ -80,7 +80,9 @@ public class AttendanceInfoController extends BaseController<AttendanceInfoBiz, 
         int startIndex = (page - 1) * limit;
         map.put("startIndex", startIndex);
         map.put("name", name);
-        map.put("account", userName);
+        if(StringUtils.isNotBlank(userName)){
+            map.put("account", "%" + userName + "%");
+        }
         map.put("status", status);
         map.put("departId", departId);
         map.put("startDate", startDate);
