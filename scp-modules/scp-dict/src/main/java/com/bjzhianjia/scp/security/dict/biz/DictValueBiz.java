@@ -63,6 +63,16 @@ public class DictValueBiz extends BusinessBiz<DictValueMapper, DictValue> {
 			String outputPath = environment.getProperty("commandCenterTitle.imgPath");
 			OutputStream os = null;
 			try {
+				// 验证图片是否存在
+				String subOutputPath = StringUtils.substringBeforeLast(outputPath, "/");
+				File checkFile = new File(subOutputPath);
+				if (!checkFile.exists()) {
+					boolean isMkDirs = checkFile.mkdirs();
+					if (!isMkDirs) {
+						throw new Exception("服务器异常，请重试。");
+					}
+				}
+
 				BufferedImage bufferedImage = commonBiz.generateImg();
 				File file = new File(outputPath);
 				os = new FileOutputStream(file);

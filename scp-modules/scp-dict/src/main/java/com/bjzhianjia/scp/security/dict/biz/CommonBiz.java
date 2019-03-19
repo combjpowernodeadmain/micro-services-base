@@ -103,7 +103,7 @@ public class CommonBiz {
 
         Color color = new Color(Integer.parseInt(frontColorInProfile, 16));
 
-        Font font = new Font(frontType, Font.BOLD, frontSizeInProfile);//字体
+        Font font = new Font(frontType, Font.PLAIN, frontSizeInProfile);//字体
 
         return ImageUtil.generateImg(widthInProfile, heightInProfile, textInProfile, color, font, 0d, 1.0f);
     }
