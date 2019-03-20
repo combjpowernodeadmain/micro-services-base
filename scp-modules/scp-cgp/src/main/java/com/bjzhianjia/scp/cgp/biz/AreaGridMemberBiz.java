@@ -469,7 +469,7 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
         // 聚和网格员定位
         Map<String, JSONObject> memMap = new HashMap<>();
         if (gridMemIdList != null && !gridMemIdList.isEmpty()) {
-            memMap = patrolTaskPathBiz.getByUserIds(String.join(",", gridMemIdList));
+            memMap = lawEnforcePathBiz.getByUserIds(String.join(",", gridMemIdList));
         }
 
         List<JSONObject> jListResult = new ArrayList<>();
