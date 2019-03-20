@@ -224,27 +224,16 @@ public class LawEnforcePathBiz extends BusinessBiz<LawEnforcePathMapper, LawEnfo
             EnforceCertificate enforceCertificate =
                 enforceCertificateBiz.getEnforceCertificateByUserId(BaseContextHandler.getUserID());
 
-            if(BeanUtil.isNotEmpty(enforceCertificate)){
-                // 当前人员是执法人员
-                //mapInfo 数据封装
-                log.debug("添加执法人员轨迹");
-                LawEnforcePath lawEnforcePath = new LawEnforcePath();
-                lawEnforcePath.setLat(json.getDouble("lat"));
-                lawEnforcePath.setLng(json.getDouble("lng"));
-                lawEnforcePath.setTerminalId(lawEnforcePathVo.getTerminalId());
-                lawEnforcePath.setDeptId(BaseContextHandler.getDepartID());
-                lawEnforcePath.setTanentId(BaseContextHandler.getTenantID());
-                this.insertSelective(lawEnforcePath);
-            }else {
-                log.debug("添加网格人员轨迹");
-                PatrolTaskPath patrolTaskPath=new PatrolTaskPath();
-                patrolTaskPath.setLat(json.getDouble("lat"));
-                patrolTaskPath.setLng(json.getDouble("lng"));
-                patrolTaskPath.setTerminalId(lawEnforcePathVo.getTerminalId());
-                patrolTaskPath.setDeptId(BaseContextHandler.getDepartID());
-                patrolTaskPath.setTanentId(BaseContextHandler.getTenantID());
-                patrolTaskPathBiz.insertSelective(patrolTaskPath);
-            }
+            // 当前人员是执法人员
+            //mapInfo 数据封装
+            log.debug("添加执法人员轨迹");
+            LawEnforcePath lawEnforcePath = new LawEnforcePath();
+            lawEnforcePath.setLat(json.getDouble("lat"));
+            lawEnforcePath.setLng(json.getDouble("lng"));
+            lawEnforcePath.setTerminalId(lawEnforcePathVo.getTerminalId());
+            lawEnforcePath.setDeptId(BaseContextHandler.getDepartID());
+            lawEnforcePath.setTanentId(BaseContextHandler.getTenantID());
+            this.insertSelective(lawEnforcePath);
 
         } catch (Exception e) {
             restResult.setMessage("添加失败");

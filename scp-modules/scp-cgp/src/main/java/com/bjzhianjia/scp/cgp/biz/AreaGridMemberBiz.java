@@ -76,6 +76,9 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
     @Autowired
     private PatrolTaskPathBiz patrolTaskPathBiz;
 
+    @Autowired
+    private LawEnforcePathBiz lawEnforcePathBiz;
+
     /**
      * 按条件获取网格成员对象集合
      * 
@@ -280,7 +283,8 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
         // 聚和网格员定位
         Map<String, JSONObject> memMap = new HashMap<>();
         if (gridMemIds != null && !gridMemIds.isEmpty()) {
-            memMap = patrolTaskPathBiz.getByUserIds(String.join(",", gridMemIds));
+            memMap = lawEnforcePathBiz.getByUserIds(String.join(",", gridMemIds));
+//            memMap = patrolTaskPathBiz.getByUserIds(String.join(",", gridMemIds));
         }
 
         if (memMap != null && !memMap.isEmpty()) {
