@@ -382,7 +382,7 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
          */
 
         // 网格人员定位
-        JSONObject mapInfoAndTime = patrolTaskPathBiz.getMapInfoByUserId(memId);
+        JSONObject mapInfoAndTime = lawEnforcePathBiz.getMapInfoByUserId(memId);
 
         jsonObject.put("gridName", String.join(",", gridNameList));
         jsonObject.put("gridRoleName", String.join(",", roleNameList));
