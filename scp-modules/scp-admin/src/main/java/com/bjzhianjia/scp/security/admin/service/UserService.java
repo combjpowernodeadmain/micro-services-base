@@ -2,8 +2,11 @@ package com.bjzhianjia.scp.security.admin.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.bjzhianjia.scp.security.admin.feign.DictFeign;
+import com.bjzhianjia.scp.security.common.util.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,9 @@ public class UserService {
 	private UserBiz userBiz;
 	@Autowired
 	private PositionMapper positionMapper;
+
+	@Autowired
+	private DictFeign dictFeign;
 
 	public JSONArray getUsersByName(String name) {
 	    List<User> rows = userBiz.getUsersByFakeName(name);
@@ -86,10 +92,20 @@ public class UserService {
 		TableResultResponse<JSONObject> result = userBiz.getUserByDept(deptId, page, limit);
 		TableResultResponse<JSONObject>.TableData<JSONObject> data = result.getData();
 
+		JSONObject object = new JSONObject();
 		List<JSONObject> rows = data.getRows();
+		if(BeanUtils.isEmpty(rows)){
+			object.put("total", 0);
+			object.put("row", new JSONArray());
+		}
+
+		Map<String, String> sexValue = dictFeign.getByCode("comm_sex");
+		if(BeanUtils.isNotEmpty(sexValue)){
+			rows.forEach(row-> row.put("sex", sexValue.get(row.getString("sex"))));
+		}
+
 		long total = data.getTotal();
 
-		JSONObject object = new JSONObject();
 		object.put("total", total);
 		JSONArray jsonArray = bindPositionToUser(rows);
 		object.put("row", jsonArray);
