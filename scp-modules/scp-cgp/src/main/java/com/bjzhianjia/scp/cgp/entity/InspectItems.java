@@ -109,6 +109,9 @@ public class InspectItems implements Serializable {
 	    //租户ID
     @Column(name = "tenant_id")
     private String tenantId;
+
+    @Column(name = "key_word")
+    private String keyWord;
 	
 
 	/**
@@ -338,5 +341,13 @@ public class InspectItems implements Serializable {
 	 */
 	public String getTenantId() {
 		return tenantId;
+	}
+
+	public String getKeyWord() {
+		return keyWord;
+	}
+
+	public void setKeyWord(String keyWord) {
+		this.keyWord = keyWord;
 	}
 }
