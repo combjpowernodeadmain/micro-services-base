@@ -62,6 +62,10 @@ public class LawEnforcePath implements Serializable {
     @Column(name = "tanent_id")
     private String tanentId;
 
+    // 该点是否可用
+    @Column(name = "is_enable")
+    private String isEnable;
+
     /**
      * 设置：主键
      */
@@ -186,5 +190,13 @@ public class LawEnforcePath implements Serializable {
      */
     public String getTanentId() {
         return tanentId;
+    }
+
+    public String getIsEnable() {
+        return isEnable;
+    }
+
+    public void setIsEnable(String isEnable) {
+        this.isEnable = isEnable;
     }
 }

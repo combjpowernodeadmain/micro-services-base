@@ -6,13 +6,16 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import com.bjzhianjia.scp.cgp.entity.EnforceCertificate;
-import com.bjzhianjia.scp.cgp.entity.PatrolTaskPath;
+import com.bjzhianjia.scp.cgp.entity.*;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
+import com.bjzhianjia.scp.cgp.util.SpatialRelationUtil;
 import com.bjzhianjia.scp.cgp.vo.LawEnforcePathVo;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
+import com.bjzhianjia.scp.security.common.util.BeanUtils;
+import com.bjzhianjia.scp.security.common.util.BooleanUtil;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.log4j.Log4j;
 import org.apache.commons.lang.StringUtils;
@@ -22,7 +25,6 @@ import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.constances.CommonConstances;
-import com.bjzhianjia.scp.cgp.entity.LawEnforcePath;
 import com.bjzhianjia.scp.cgp.mapper.LawEnforcePathMapper;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
@@ -60,6 +62,12 @@ public class LawEnforcePathBiz extends BusinessBiz<LawEnforcePathMapper, LawEnfo
 
     @Autowired
     private PatrolTaskPathBiz patrolTaskPathBiz;
+
+    @Autowired
+    private AreaGridBiz areaGridBiz;
+
+    @Autowired
+    private AreaGridMemberBiz areaGridMemberBiz;
 
     /**
      * 查询指定用户，指定时间段的行为轨迹
@@ -132,6 +140,8 @@ public class LawEnforcePathBiz extends BusinessBiz<LawEnforcePathMapper, LawEnfo
             .append(DateUtil.dateFromDateToStr(endTimeT, DateUtil.DATE_FORMAT_DF)).append("')");
 
         criteria.andCondition(sql.toString());
+        // 只获取可展示的点
+        criteria.andEqualTo("isEnable", BooleanUtil.BOOLEAN_TRUE);
         list = lawEnforcePathMapper.selectByExample(example);
 
         return list != null ? list : new ArrayList<>();
@@ -233,6 +243,13 @@ public class LawEnforcePathBiz extends BusinessBiz<LawEnforcePathMapper, LawEnfo
             lawEnforcePath.setTerminalId(lawEnforcePathVo.getTerminalId());
             lawEnforcePath.setDeptId(BaseContextHandler.getDepartID());
             lawEnforcePath.setTanentId(BaseContextHandler.getTenantID());
+
+            try {
+                checkIsEnable(json, lawEnforcePath);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             this.insertSelective(lawEnforcePath);
 
         } catch (Exception e) {
@@ -241,5 +258,47 @@ public class LawEnforcePathBiz extends BusinessBiz<LawEnforcePathMapper, LawEnfo
             return restResult;
         }
         return restResult;
+    }
+
+    private void checkIsEnable(JSONObject json, LawEnforcePath lawEnforcePath) {
+        // 判断目前人员是否在网格内
+        List<AreaGridMember> gridMemberList = areaGridMemberBiz.getGridByMemId(BaseContextHandler.getUserID());
+        boolean flag = false;
+        if (BeanUtils.isNotEmpty(gridMemberList)) {
+            // 说明当前人员属于某个网格
+
+            List<Integer> gridIds =
+                gridMemberList.stream().map(AreaGridMember::getGridId).distinct().collect(Collectors.toList());
+            List<AreaGrid> areaGridList = areaGridBiz.getByIds(gridIds);
+            if (BeanUtils.isNotEmpty(gridIds)) {
+                areaGridList =
+                    areaGridBiz.getByIds(gridIds) == null ? new ArrayList<>() : areaGridBiz.getByIds(gridIds);
+            }
+
+            JSONArray array = null;
+
+            Point point = new Point(json.getDouble("lng"), json.getDouble("lat"));
+            for (AreaGrid grid : areaGridList) {
+                array = JSONArray.parseArray(grid.getMapInfo());
+                List<Point> listPoint = array.toJavaList(Point.class);
+                if (listPoint == null) {
+                    continue;
+                }
+                if (SpatialRelationUtil.isPolygonContainsPoint(listPoint, point)) {
+                    // flag==true,说明他在自己的某网格内，只要找到这样的网格，就退出循环
+                    flag = true;
+                    break;
+                }
+            }
+        } else {
+            // 说明当前人员不是网格员，执法人员要正常插入数据
+            flag = true;
+        }
+
+        if (flag) {
+            lawEnforcePath.setIsEnable(BooleanUtil.BOOLEAN_TRUE);
+        } else {
+            lawEnforcePath.setIsEnable(BooleanUtil.BOOLEAN_FALSE);
+        }
     }
 }

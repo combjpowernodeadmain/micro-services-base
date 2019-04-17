@@ -2,29 +2,12 @@ package com.bjzhianjia.scp.cgp.service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.bjzhianjia.scp.cgp.biz.CaseInfoBiz;
-import com.bjzhianjia.scp.cgp.biz.EventTypeBiz;
-import com.bjzhianjia.scp.cgp.biz.InspectItemsBiz;
-import com.bjzhianjia.scp.cgp.biz.PatrolResBiz;
-import com.bjzhianjia.scp.cgp.biz.PatrolTaskBiz;
-import com.bjzhianjia.scp.cgp.biz.RegulaObjectBiz;
-import com.bjzhianjia.scp.cgp.biz.RegulaObjectTypeBiz;
-import com.bjzhianjia.scp.cgp.biz.SpecialEventBiz;
-import com.bjzhianjia.scp.cgp.entity.CaseInfo;
-import com.bjzhianjia.scp.cgp.entity.ConcernedCompany;
-import com.bjzhianjia.scp.cgp.entity.ConcernedPerson;
-import com.bjzhianjia.scp.cgp.entity.Constances;
-import com.bjzhianjia.scp.cgp.entity.EventType;
-import com.bjzhianjia.scp.cgp.entity.InspectItems;
-import com.bjzhianjia.scp.cgp.entity.PatrolRes;
-import com.bjzhianjia.scp.cgp.entity.PatrolTask;
-import com.bjzhianjia.scp.cgp.entity.RegulaObject;
-import com.bjzhianjia.scp.cgp.entity.RegulaObjectType;
-import com.bjzhianjia.scp.cgp.entity.Result;
-import com.bjzhianjia.scp.cgp.entity.SpecialEvent;
+import com.bjzhianjia.scp.cgp.biz.*;
+import com.bjzhianjia.scp.cgp.entity.*;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.CommonUtil;
+import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
@@ -33,6 +16,7 @@ import com.bjzhianjia.scp.security.wf.base.utils.StringUtil;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -47,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 巡查任务逻辑层
@@ -100,7 +85,10 @@ public class PatrolTaskService {
     
     @Autowired
     private PropertiesProxy propertiesProxy;
-	
+
+    @Autowired
+    private AreaGridBiz areaGridBiz;
+
 	/**
 	 * 创建巡查任务
 	 * 
@@ -141,19 +129,37 @@ public class PatrolTaskService {
         boolean isPatrolTaskNameBlank = StringUtils.isBlank(patrolTask.getPatrolName());
         List<String> patrolTaskNameList = new ArrayList<>();
         if (isPatrolTaskNameBlank) {
-            // 发生地址
-            if (StringUtils.isNotBlank(patrolTask.getAddress())) {
-                patrolTaskNameList.add(patrolTask.getAddress());
-            }
-            // 事件类别
-            if (BeanUtil.isNotEmpty(patrolTask.getEventTypeId())) {
-                EventType eventType = eventTypeBiz.getById(patrolTask.getEventTypeId());
-                if (BeanUtil.isNotEmpty(eventType)) {
-                    patrolTaskNameList.add(eventType.getTypeName());
-                }
-            }
+        	/*
+        	 * 巡查事项清单关键字-事项类别-网格名称-日期
+        	 */
+			// 关键字
+			String inspectIds = patrolTask.getInspectIds();
+			List<InspectItems> itemList = inspectItemsBiz.getByInspectIds(inspectIds);
+			if(BeanUtil.isNotEmpty(itemList)){
+				List<String> itemNameList =
+					itemList.stream().map(InspectItems::getKeyWord).distinct().collect(Collectors.toList());
+				String keywords = String.join(",", itemNameList);
+				patrolTaskNameList.add(keywords);
+			}
 
-            patrolTask.setPatrolName(String.join("_", patrolTaskNameList));
+			// 事件类别
+			if (BeanUtil.isNotEmpty(patrolTask.getEventTypeId())) {
+				EventType eventType = eventTypeBiz.getById(patrolTask.getEventTypeId());
+				if (BeanUtil.isNotEmpty(eventType)) {
+					patrolTaskNameList.add(eventType.getTypeName());
+				}
+			}
+
+			// 网格名称
+			AreaGrid areaGrid = areaGridBiz.selectById(patrolTask.getAreaGridId());
+			if(BeanUtil.isNotEmpty(areaGrid)){
+				patrolTaskNameList.add(areaGrid.getGridName());
+			}
+
+			// 日期
+			patrolTaskNameList.add(DateUtil.dateFromDateToStr(new Date(), "yyyyMM"));
+
+            patrolTask.setPatrolName(String.join("-", patrolTaskNameList));
         }
 
 		// 当事人（个人，单位）

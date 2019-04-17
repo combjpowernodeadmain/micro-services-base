@@ -362,7 +362,18 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         List<AreaGrid> areaGridList = this.selectByExample(example);
 
         List<JSONObject> resultJObj=new ArrayList<>();
-        if(BeanUtil.isNotEmpty(areaGridList)) {
+        if (BeanUtil.isNotEmpty(areaGridList)) {
+            List<Integer> parentIds =
+                areaGridList.stream().map(AreaGrid::getGridParent).distinct().collect(Collectors.toList());
+            Map<Integer, String> parentIdNameMap = new HashMap<>();
+            if (BeanUtils.isNotEmpty(parentIds)) {
+                List<AreaGrid> parentList = this.getByIds(parentIds);
+                if (BeanUtils.isNotEmpty(parentList)) {
+                    parentIdNameMap =
+                        parentList.stream().collect(Collectors.toMap(AreaGrid::getId, AreaGrid::getGridName));
+                }
+            }
+
             for (AreaGrid areaGrid : areaGridList) {
                 JSONObject propertiesJObj;
                 try {
@@ -370,6 +381,7 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
                     propertiesJObj =
                         propertiesProxy.swapProperties(areaGrid, "gridName", "id", "mapInfo",
                             "gridLevel");
+                    propertiesJObj.put("parentGridName", parentIdNameMap.get(areaGrid.getGridParent()));
                     resultJObj.add(propertiesJObj);
                 } catch (Throwable e) {
                     e.printStackTrace();
