@@ -228,6 +228,10 @@
 					SCP_WF_PROC_TASK swpt
 				WHERE
 					swpt.PROC_KEY=#{prockey}
+				<!-- 签收人 -->
+				<if test="procTaskAssignee != null and procTaskAssignee != ''  ">
+					AND swpt.PROC_TASK_ASSIGNEE = #{procTaskAssignee}
+				</if>
 				GROUP BY
 					swpt.PROC_INST_ID
 			)
