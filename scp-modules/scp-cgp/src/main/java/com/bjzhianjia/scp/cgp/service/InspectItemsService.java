@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -201,7 +202,15 @@ public class InspectItemsService {
 		}else{
 			itemJObj.put("bizTypeName", "");
 		}
-
+		// 获取事件类型名称
+		if (StringUtils.isNotBlank(inspectItems.getType())) {
+			EventType eventType = eventTypeBiz.getById(Integer.valueOf(inspectItems.getType()));
+			if (eventType != null) {
+				itemJObj.put("eventTypeName", eventType.getTypeName());
+			} else {
+				itemJObj.put("eventTypeName","");
+			}
+		}
 		restResult.setData(itemJObj);
 		return restResult;
 	}
