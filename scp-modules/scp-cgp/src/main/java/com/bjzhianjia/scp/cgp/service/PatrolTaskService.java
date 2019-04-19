@@ -135,24 +135,28 @@ public class PatrolTaskService {
 			// 关键字
 			String inspectIds = patrolTask.getInspectIds();
 			List<InspectItems> itemList = inspectItemsBiz.getByInspectIds(inspectIds);
-			if(BeanUtil.isNotEmpty(itemList)){
+			if (BeanUtil.isNotEmpty(itemList)) {
 				List<String> itemNameList =
 					itemList.stream().map(InspectItems::getKeyWord).distinct().collect(Collectors.toList());
-				String keywords = String.join(",", itemNameList);
-				patrolTaskNameList.add(keywords);
+				String keywords = org.apache.commons.lang3.StringUtils.join(itemNameList, ",");
+				if (org.apache.commons.lang3.StringUtils.isNotBlank(keywords)) {
+					patrolTaskNameList.add(keywords);
+				}
 			}
 
 			// 事件类别
 			if (BeanUtil.isNotEmpty(patrolTask.getEventTypeId())) {
 				EventType eventType = eventTypeBiz.getById(patrolTask.getEventTypeId());
-				if (BeanUtil.isNotEmpty(eventType)) {
+				if (BeanUtil.isNotEmpty(eventType) && org.apache.commons.lang3.StringUtils
+					.isNotBlank(eventType.getTypeName())) {
 					patrolTaskNameList.add(eventType.getTypeName());
 				}
 			}
 
 			// 网格名称
 			AreaGrid areaGrid = areaGridBiz.selectById(patrolTask.getAreaGridId());
-			if(BeanUtil.isNotEmpty(areaGrid)){
+			if (BeanUtil.isNotEmpty(areaGrid) && org.apache.commons.lang3.StringUtils
+				.isNotBlank(areaGrid.getGridName())) {
 				patrolTaskNameList.add(areaGrid.getGridName());
 			}
 
