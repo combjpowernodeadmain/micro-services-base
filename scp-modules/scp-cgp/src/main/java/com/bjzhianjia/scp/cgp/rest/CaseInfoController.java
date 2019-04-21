@@ -611,4 +611,17 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
     public ObjectRestResponse<Void> activeCaseInfo(@RequestBody JSONObject objs){
         return this.caserInfoService.activeCaseInfo(objs);
     }
+
+    @ApiOperation("关注工单列表")
+    @ResponseBody
+    @RequestMapping(value = { "/userToDoTasksFocusOn" }, method = RequestMethod.GET)
+    public TableResultResponse<JSONObject> getUserToDoTasksOfFocusOn(
+        @RequestParam(value = "page",defaultValue = "1") Integer page,
+        @RequestParam(value = "limit",defaultValue = "10") Integer limit
+    ) {
+        log.debug("SCP信息---开始查询用户关注工单列表...");
+
+        TableResultResponse<JSONObject> userToDoTasks = caserInfoService.getUserToDoTasksOfFocusOn(page,limit);
+        return userToDoTasks;
+    }
 }

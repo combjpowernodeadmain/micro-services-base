@@ -14,6 +14,7 @@ import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.util.BeanUtils;
+import com.bjzhianjia.scp.security.common.util.BooleanUtil;
 import com.bjzhianjia.scp.security.wf.base.constant.Constants;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.monitor.service.impl.WfMonitorServiceImpl;
@@ -1073,5 +1074,50 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             }
         }
         return new TableResultResponse<>(result.size(), result);
+    }
+
+    public TableResultResponse<CaseInfo> getListFocusOn(Set<Integer> bizIds,int page,int limit) {
+        TableResultResponse<CaseInfo> result=new TableResultResponse<>();
+
+        if(BeanUtils.isEmpty(bizIds)){
+            return new TableResultResponse<>(0, new ArrayList<>());
+        }
+
+        Example example = new Example(CaseInfo.class);
+        Criteria criteria = example.createCriteria();
+
+        criteria.andEqualTo("isDeleted", BooleanUtil.BOOLEAN_FALSE);
+        criteria.andIn("id", bizIds);
+
+        String nowDate = DateUtil.dateFromDateToStr(new Date(), DateUtil.DEFAULT_DATE_FORMAT);
+        StringBuffer sqlBuffer = new StringBuffer("(is_supervise='1' OR is_urge='1'\n" + "\tOR '").append(nowDate)
+            .append("' > dead_line\n");
+
+        String focusOnCaseLevel = environment.getProperty("focusOnCaseLevel");
+        if(StringUtils.isBlank(focusOnCaseLevel)){
+            result.setMessage("请设置focusOnCaseLevel");
+            result.setStatus(400);
+            return result;
+        }
+
+        String[] split = focusOnCaseLevel.split(",");
+        for(int i=0;i<split.length;i++){
+            String str=split[i];
+            if(i==split.length-1){
+                sqlBuffer.append("\tOR case_level='").append(str).append("')");
+            }else{
+                sqlBuffer.append("\tOR case_level='").append(str).append("'");
+            }
+        }
+
+
+        criteria.andCondition(sqlBuffer.toString());
+
+        example.setOrderByClause("crt_time desc");
+
+        Page<Object> pageInfo = PageHelper.startPage(page, limit);
+        List<CaseInfo> list = this.mapper.selectByExample(example);
+
+        return new TableResultResponse<>(pageInfo.getTotal(), list);
     }
 }
