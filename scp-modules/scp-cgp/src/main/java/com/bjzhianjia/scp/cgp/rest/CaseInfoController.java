@@ -96,7 +96,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     @ApiOperation("分页获取对象")
-    public TableResultResponse<CaseInfo> page(
+    public TableResultResponse<JSONObject> page(
         @RequestParam(value = "gridId", required = false) @ApiParam("网格ID") Integer gridId,
         @RequestParam(value = "regulaObjList", required = false) @ApiParam("监管对象") String regulaObjList,
         @RequestParam(value = "page", defaultValue = "1") @ApiParam(name = "当前页") Integer page,
@@ -104,14 +104,12 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         CaseInfo caseInfo = new CaseInfo();
         caseInfo.setGrid(gridId);
         caseInfo.setRegulaObjList(regulaObjList);
-        TableResultResponse<CaseInfo> restResult = caserInfoService.getList(caseInfo, page, limit, false);
-
-        return restResult;
+        return caserInfoService.getList(caseInfo, page, limit, false);
     }
 
     @RequestMapping(value = "/list/unFinish/{id}", method = RequestMethod.GET)
     @ApiOperation("分页获取对象")
-    public TableResultResponse<CaseInfo> pageNoFinish(@PathVariable("id") Integer id,
+    public TableResultResponse<JSONObject> pageNoFinish(@PathVariable("id") Integer id,
         @RequestParam(value = "page", defaultValue = "1") @ApiParam(name = "当前页") Integer page,
         @RequestParam(value = "limit", defaultValue = "10") @ApiParam(name = "页容量") Integer limit,
         @RequestParam(value = "caseCode", defaultValue = "") @ApiParam(name = "事件编号") String caseCode,
@@ -122,9 +120,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         caseInfo.setCaseCode(caseCode);
         caseInfo.setCaseTitle(caseTitle);
 
-        TableResultResponse<CaseInfo> restResult = caserInfoService.getList(caseInfo, page, limit, true);
-
-        return restResult;
+        return caserInfoService.getList(caseInfo, page, limit, true);
     }
 
     @RequestMapping(value = "/get/{id}", method = RequestMethod.GET)

@@ -210,7 +210,7 @@ public class CaseInfoService {
      * @param limit
      * @return
      */
-    public TableResultResponse<CaseInfo> getList(CaseInfo caseInfo, int page, int limit, boolean isNoFinish) {
+    public TableResultResponse<JSONObject> getList(CaseInfo caseInfo, int page, int limit, boolean isNoFinish) {
         return caseInfoBiz.getList(caseInfo, page, limit, isNoFinish);
     }
 
@@ -574,7 +574,20 @@ public class CaseInfoService {
                 }
             }
 
+            wfJObject.put("crtTime", caseInfo.getCrtTime());
+            wfJObject.put("deadLine", caseInfo.getDeadLine());
+
             jObjList.add(wfJObject);
+        }
+
+        // 添加时限
+        try {
+            caseInfoBiz.addDeadlineFlag(jObjList);
+        } catch (Exception e) {
+            TableResultResponse<JSONObject> error=new TableResultResponse<>();
+            error.setStatus(400);
+            error.setMessage(e.getMessage());
+            return error;
         }
 
         return new TableResultResponse<>(tableResult.getData().getTotal(), jObjList);
@@ -3054,6 +3067,15 @@ public class CaseInfoService {
             }
 
             jObjList.add(wfJObject);
+        }
+
+        try {
+            caseInfoBiz.addDeadlineFlag(jObjList);
+        } catch (Exception e) {
+            TableResultResponse<JSONObject> error=new TableResultResponse<>();
+            error.setStatus(400);
+            error.setMessage(e.getMessage());
+            return error;
         }
 
         return new TableResultResponse<>(tableResult.getData().getTotal(), jObjList);

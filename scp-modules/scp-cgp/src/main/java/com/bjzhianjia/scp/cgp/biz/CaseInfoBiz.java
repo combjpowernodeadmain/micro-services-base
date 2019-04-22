@@ -30,15 +30,7 @@ import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -151,7 +143,9 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
      * @param limit
      * @return
      */
-    public TableResultResponse<CaseInfo> getList(CaseInfo caseInfo, int page, int limit, boolean isNoFinish) {
+    public TableResultResponse<JSONObject> getList(CaseInfo caseInfo, int page, int limit, boolean isNoFinish) {
+        TableResultResponse<JSONObject> result=new TableResultResponse<>();
+
         Example example = new Example(CaseInfo.class);
 
         Criteria criteria = example.createCriteria();
@@ -190,7 +184,84 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             e.printStackTrace();
         }
 
-        return new TableResultResponse<CaseInfo>(pageInfo.getTotal(), list);
+        // 添加限时标志
+        List<JSONObject> jsonResult=new ArrayList<>();
+        for(CaseInfo item:list){
+            jsonResult.add(JSONObject.parseObject(JSONObject.toJSONString(item)));
+        }
+        try {
+            addDeadlineFlag(jsonResult);
+        } catch (Exception e) {
+            result.setStatus(400);
+            result.setMessage(e.getMessage());
+            return result;
+        }
+
+        return new TableResultResponse<>(pageInfo.getTotal(), jsonResult);
+    }
+
+    public void addDeadlineFlag(List<JSONObject> list) throws Exception {
+        if(BeanUtils.isEmpty(list)){
+            return;
+        }
+
+        String deadlineFlag = environment.getProperty("deadlineFlag");
+        if(StringUtils.isBlank(deadlineFlag)){
+            throw new Exception("请设置工单时间字典配置:deadlineFlag=root_system_deadlineFlag");
+        }
+        Map<String, String> dictValies = dictFeign.getDictIdByCode(deadlineFlag,true);
+        if(BeanUtils.isEmpty(dictValies)){
+            throw new Exception("请设置工单时间字典");
+        }
+
+
+        Integer[] fraction=new Integer[dictValies.size()];
+        Map<Integer,JSONObject> dictValueinstanceMap=new HashMap<>();
+        int i=0;
+        for(Map.Entry<String,String> e:dictValies.entrySet()){
+            JSONObject jsonObject = JSONObject.parseObject(e.getValue());
+            Integer value = jsonObject.getInteger("value");
+            fraction[i]=value;
+            dictValueinstanceMap.put(value, jsonObject);
+            i++;
+        }
+
+        Arrays.sort(fraction);
+
+        for (JSONObject item : list) {
+            if(StringUtils.equals(item.getString("isFinished"), "0")){
+                // 还在进行中
+                Date crtTime = item.getDate("crtTime");
+                Date deadLine = item.getDate("deadLine");
+                Date now = new Date();
+
+                if (BeanUtils.isEmpty(deadLine) || BeanUtils.isEmpty(crtTime) || deadLine.before(crtTime)) {
+                    // 如果办理期限比创建时间还要短，则认为该事件期限为不紧急
+                    JSONObject dictValue = dictValueinstanceMap.get(fraction[0]);
+                    item.put("deadLineFlag", dictValue.getString("labelDefault"));
+                    continue;
+                }
+
+                if(now.after(deadLine)){
+                    JSONObject dictValue = dictValueinstanceMap.get(fraction[fraction.length-1]);
+                    item.put("deadLineFlag", dictValue.getString("labelDefault"));
+                    continue;
+                }
+
+                long diff = deadLine.getTime() - crtTime.getTime();
+                for (int j = fraction.length-1; j >= 0; j--) {
+                    Integer index = fraction[j];
+                    JSONObject dictvalue = dictValueinstanceMap.get(index);
+                    if ((crtTime.getTime() + diff * (dictvalue.getInteger("value") / 100.0)) <= (now.getTime())) {
+                        item.put("deadLineFlag", dictvalue.getString("labelDefault"));
+                        break;
+                    }
+                }
+            }else{
+                JSONObject dictValue = dictValueinstanceMap.get(fraction[0]);
+                item.put("deadLineFlag", dictValue.getString("labelDefault"));
+            }
+        }
     }
 
     /**
