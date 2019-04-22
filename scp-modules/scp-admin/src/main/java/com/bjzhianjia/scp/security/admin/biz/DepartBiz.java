@@ -4,7 +4,9 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.util.BeanUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,12 +40,22 @@ import tk.mybatis.mapper.entity.Example.Criteria;
  * @version 1.0
  */
 @Service
+@Slf4j
 public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private MergeCore mergeCore;
+
     @MergeResult(resultParser = TableResultParser.class)
     public TableResultResponse<User> getDepartUsers(String departId,String userName) {
         List<User> users = this.mapper.selectDepartUsers(departId,userName);
+        try {
+            mergeCore.mergeResult(User.class, users);
+        } catch (Exception ex) {
+            log.error("merge data exception", ex);
+        }
         return new TableResultResponse<User>(users.size(),users);
     }
 

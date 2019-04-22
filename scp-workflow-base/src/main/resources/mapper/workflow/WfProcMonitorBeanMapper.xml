@@ -222,18 +222,36 @@
 			SCP_WF_PROC_TASK task
 		WHERE
 			task.ID IN (
-				SELECT
-					MAX(swpt.id)
-				FROM
-					SCP_WF_PROC_TASK swpt
-				WHERE
-					swpt.PROC_KEY=#{prockey}
-				<!-- 签收人 -->
-				<if test="procTaskAssignee != null and procTaskAssignee != ''  ">
-					AND swpt.PROC_TASK_ASSIGNEE = #{procTaskAssignee}
-				</if>
-				GROUP BY
-					swpt.PROC_INST_ID
+				<choose>
+					<when test="procTaskAssignee != null and procTaskAssignee != ''">
+						SELECT
+							MAX(swpt2.ID) ID
+						FROM
+							SCP_WF_PROC_TASK swpt2
+						WHERE
+							swpt2.PROC_BIZID IN (
+								SELECT DISTINCT
+									swpt3.PROC_BIZID
+								FROM
+									SCP_WF_PROC_TASK swpt3
+								WHERE
+									swpt3.PROC_KEY = #{prockey}
+									AND swpt3.PROC_TASK_ASSIGNEE = #{procTaskAssignee}
+							)
+						GROUP BY
+							swpt2.PROC_BIZID
+					</when>
+					<otherwise>
+						SELECT
+							MAX(swpt.id)
+						FROM
+							SCP_WF_PROC_TASK swpt
+						WHERE
+							swpt.PROC_KEY=#{prockey}
+						GROUP BY
+							swpt.PROC_INST_ID
+					</otherwise>
+				</choose>
 			)
 		<if test="procCtaskname != null and procCtaskname != ''  ">
 			<!-- 修改按节点名称查找为精确查询 -->
