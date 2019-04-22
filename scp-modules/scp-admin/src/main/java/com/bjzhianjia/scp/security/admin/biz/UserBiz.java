@@ -570,34 +570,29 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
     }
 
     /**
-     * 分页获取用户列表
-     *
-     * @param params
+     *  重构用户列表，排除已删除和超级管理员用户
+     * @param query
      * @return
      */
-    public TableResultResponse<User> getUserList(Map<String, Object> params) {
-        int page = Integer.parseInt(params.get("page").toString());
-        int limit = Integer.parseInt(params.get("limit").toString());
-
-        // name=admin&username=admin
+    @Override
+    public TableResultResponse<User> selectByQuery(Query query) {
         Example example = new Example(User.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("isDeleted", BooleanUtil.BOOLEAN_FALSE);
         criteria.andNotEqualTo("isSuperAdmin", BooleanUtil.BOOLEAN_TRUE);
-        if (StringUtils.isNotBlank((String) params.get("name"))) {
-            criteria.andLike("name", "%" + params.get("name") + "%");
+        if (StringUtils.isNotBlank((String) query.get("name"))) {
+            criteria.andLike("name", "%" + query.get("name") + "%");
         }
 
         Example.Criteria criteria1 = example.or();
         criteria1.andEqualTo("isDeleted", BooleanUtil.BOOLEAN_FALSE);
         criteria1.andNotEqualTo("isSuperAdmin", BooleanUtil.BOOLEAN_TRUE);
-        if (StringUtils.isNotBlank((String) params.get("username"))) {
-            criteria1.andLike("username", "%" + params.get("username") + "%");
+        if (StringUtils.isNotBlank((String) query.get("username"))) {
+            criteria1.andLike("username", "%" + query.get("username") + "%");
         }
 
-        Page<Object> pageInfo = PageHelper.startPage(page, limit);
-        List<User> users = this.selectByExample(example);
-
-        return new TableResultResponse<>(pageInfo.getTotal(), users);
+        Page<Object> result = PageHelper.startPage(query.getPage(), query.getLimit());
+        List<User> list = this.selectByExample(example);
+        return new TableResultResponse<User>(result.getTotal(), list);
     }
 }
