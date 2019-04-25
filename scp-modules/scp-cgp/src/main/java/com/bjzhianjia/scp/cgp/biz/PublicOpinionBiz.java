@@ -94,12 +94,15 @@ public class PublicOpinionBiz extends BusinessBiz<PublicOpinionMapper, PublicOpi
         Criteria criteria = example.createCriteria();
 
         criteria.andEqualTo("isDeleted", "0");
-        if (StringUtils.isNotBlank(publicOpinion.getOpinTitle())) {
-            criteria.andLike("opinTitle", "%" + publicOpinion.getOpinTitle() + "%");
+        // 通过舆情标题或者编码查询
+        if (StringUtils.isNotBlank(publicOpinion.getOpinCode()) || StringUtils.isNotBlank(publicOpinion.getOpinTitle())) {
+            StringBuilder sql = new StringBuilder();
+            sql.append("( (opin_title like '%").append(publicOpinion.getOpinTitle()).append("%') ")
+                    .append(" OR (opin_code like '%").append(publicOpinion.getOpinCode()).append("%')")
+                    .append(") ");
+            criteria.andCondition(sql.toString());
         }
-        if (StringUtils.isNotBlank(publicOpinion.getOpinCode())) {
-            criteria.andLike("opinCode", "%" + publicOpinion.getOpinCode() + "%");
-        }
+
         if (StringUtils.isNotBlank(publicOpinion.getOpinLevel())) {
             criteria.andEqualTo("opinLevel", publicOpinion.getOpinLevel());
         }

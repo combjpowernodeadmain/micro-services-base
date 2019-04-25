@@ -72,6 +72,7 @@ public class CommandCenterHotlineController
         @RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
         @RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
         @RequestParam(defaultValue = "") @ApiParam(name = "热线标题") String hotlnTitle,
+        @RequestParam(defaultValue = "") @ApiParam(name = "热线编号") String hotlnCode,
         @RequestParam(defaultValue = "") @ApiParam(name = "诉求人") String appealPerson,
         @RequestParam(defaultValue = "") @ApiParam(name = "热线事件分类") String bizType,
         @RequestParam(defaultValue = "") @ApiParam(name = "处理状态") String exeStatus,
@@ -79,10 +80,11 @@ public class CommandCenterHotlineController
         @RequestParam(required = false) @ApiParam("查询结束时间") String endTime) {
 
         CommandCenterHotline commandCenterHotline = new CommandCenterHotline();
-        commandCenterHotline.setHotlnTitle(hotlnTitle);
+        commandCenterHotline.setHotlnTitle(hotlnTitle.trim());
         commandCenterHotline.setAppealPerson(appealPerson);
         commandCenterHotline.setBizType(bizType);
         commandCenterHotline.setExeStatus(exeStatus);
+        commandCenterHotline.setHotlnCode(hotlnCode.trim());
 
         return commandCenterHotlineServoce.getList(commandCenterHotline, page, limit, startTime,
             endTime);

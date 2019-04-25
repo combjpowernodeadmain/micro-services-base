@@ -60,9 +60,13 @@
 		<if test="speName !=null and speName!=''">
 			AND se.spe_name LIKE "%"#{speName}"%"
 		</if>
-		<if
-			test="patrolTask.patrolName !=null and patrolTask.patrolName!=''">
-			AND pk.patrol_name LIKE "%"#{patrolTask.patrolName}"%"
+		<!-- 巡查事项名称或者编码查询 -->
+		<if test="patrolTask.patrolCode !='' or patrolTask.patrolName!=''">
+			AND (
+				( pk.patrol_name LIKE "%"#{patrolTask.patrolName}"%" )
+				OR
+				(pk.patrol_code LIKE "%"#{patrolTask.patrolCode}"%")
+			)
 		</if>
 		<if test="patrolTask.bizTypeId!=null and patrolTask.bizTypeId!=''">
 			AND pk.biz_type_id=#{patrolTask.bizTypeId}
