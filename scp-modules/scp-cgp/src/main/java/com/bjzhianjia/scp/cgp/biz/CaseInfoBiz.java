@@ -302,12 +302,17 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             // 非综合查询，只能查询到未删除的
             criteria.andEqualTo("isDeleted", "0");
         }
-        // 事件标题
-        if (StringUtils.isNotBlank(caseInfo.getCaseTitle())) {
+        // 事件标题或事件编号
+        if (StringUtils.isNotBlank(caseInfo.getCaseTitle()) || StringUtils.isNotBlank(caseInfo.getCaseCode())) {
             if (caseInfo.getCaseTitle().length() > 127) {
                 throw new BizException("事件名称应该小于127个字符");
             }
-            criteria.andLike("caseTitle", "%" + caseInfo.getCaseTitle() + "%");
+            StringBuilder sql = new StringBuilder();
+            sql.append(" ( ")
+                .append(" ( case_title LIKE ").append(" '%").append(caseInfo.getCaseTitle()).append("%') ")
+                .append(" OR ( case_code LIKE ").append(" '%").append(caseInfo.getCaseCode()).append("%') ")
+                .append(" ) ");
+            criteria.andCondition(sql.toString());
         }
         // 事件相关业务条线
         if (StringUtils.isNotBlank(caseInfo.getBizList())) {
@@ -373,10 +378,6 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             && Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CHECK.equals(sourceType)) {
             criteria.andEqualTo("sourceType", sourceType);
             criteria.andEqualTo("sourceCode", sourceCode);
-        }
-        // 事件编号
-        if (StringUtils.isNotBlank(caseInfo.getCaseCode())) {
-            criteria.andLike("caseCode", "%" + caseInfo.getCaseCode() + "%");
         }
 
         // 查询事件中正在进行案件办理的部分
