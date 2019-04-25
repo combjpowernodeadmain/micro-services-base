@@ -889,7 +889,12 @@ public class CaseInfoService {
             }
             caseInfo.setId(Integer.valueOf(bizDataJObject.getString("procBizId")));
 
-            // 获取流程走向，以判断流程是否结束
+            //  设置deadLine结束时间为所选日期最后一刻
+            if(BeanUtil.isNotEmpty(caseInfo.getDeadLine())){
+                caseInfo.setDeadLine(DateUtil.getDayEndTime(caseInfo.getDeadLine()));
+            }
+
+           // 获取流程走向，以判断流程是否结束
             String flowDirection = variableDataJObject.getString("flowDirection");
 
             // 获取事前事后核查节点
