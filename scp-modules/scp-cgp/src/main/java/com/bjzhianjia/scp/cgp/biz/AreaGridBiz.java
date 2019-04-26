@@ -102,7 +102,23 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
      * @return
      */
     public TableResultResponse<AreaGridVo> getList(int page, int limit, AreaGrid areaGrid, String gridParentName) {
-        Example example = new Example(AreaGrid.class);
+        // 去除列表查询中的mapinfo
+        Example example = new Example(AreaGrid.class).selectProperties(
+            "id",
+            "gridCode",
+            "gridName",
+            "gridLevel",
+            "gridParent",
+            "gridTeam",
+            "gridNumbers",
+            "gridHousehold",
+            "gridPersons",
+            "gridAreas",
+            "gridRange",
+            "mgrDept",
+            "isDeleted",
+            "isDisabled"
+        );
         Example.Criteria criteria = example.createCriteria();
 
         criteria.andEqualTo("isDeleted", "0");
