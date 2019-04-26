@@ -187,16 +187,18 @@ public class PublicOpinionController extends BaseController<PublicOpinionBiz, Pu
 	public TableResultResponse<PublicOpinionVo> list(@RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
 			@RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
 			@RequestParam(defaultValue = "") @ApiParam(name = "舆情事件编号") String opinCode,
+			@RequestParam(defaultValue = "") @ApiParam(name = "舆情事件标题") String opinTitle,
 			@RequestParam(defaultValue = "") @ApiParam(name = "舆情等级") String opinLevel,
 			@RequestParam(defaultValue = "") @ApiParam(name = "来源类型") String opinType,
 			@RequestParam(defaultValue = "") @ApiParam(name = "处理状态") String exeStatus,
 			@RequestParam(defaultValue = "") @ApiParam(name = "按时间查询(起始时间)") String startTime,
 			@RequestParam(defaultValue = "") @ApiParam(name = "按时间查询 (终止时间)") String endTime) {
 		PublicOpinion publicOpinion = new PublicOpinion();
-		publicOpinion.setOpinCode(opinCode);
+		publicOpinion.setOpinCode(opinCode.trim());
 		publicOpinion.setOpinLevel(opinLevel);
 		publicOpinion.setOpinType(opinType);
 		publicOpinion.setExeStatus(exeStatus);
+		publicOpinion.setOpinTitle(opinTitle.trim());
 
 		TableResultResponse<PublicOpinionVo> list = publicOpinionService.getList(publicOpinion, page, limit, startTime,
 				endTime);

@@ -92,8 +92,13 @@ public class MayorHotlineBiz extends BusinessBiz<MayorHotlineMapper, MayorHotlin
         Criteria criteria = example.createCriteria();
 
         criteria.andEqualTo("isDeleted", "0");
-        if (StringUtils.isNotBlank(mayorHotline.getHotlnTitle())) {
-            criteria.andLike("hotlnTitle", "%" + mayorHotline.getHotlnTitle() + "%");
+        // 通过热线名称或者编码查询
+        if (StringUtils.isNotBlank(mayorHotline.getHotlnTitle()) || StringUtils.isNotBlank(mayorHotline.getHotlnCode())) {
+            StringBuilder sql = new StringBuilder();
+            sql.append("( (hotln_title like '%").append(mayorHotline.getHotlnTitle()).append("%') ")
+                    .append(" OR (hotln_code like '%").append(mayorHotline.getHotlnCode()).append("%')")
+                    .append(") ");
+            criteria.andCondition(sql.toString());
         }
 
         String appealPerson = mayorHotline.getAppealPerson();

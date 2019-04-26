@@ -197,9 +197,15 @@ public class CommandCenterHotlineBiz extends BusinessBiz<CommandCenterHotlineMap
         Criteria criteria = example.createCriteria();
 
         criteria.andEqualTo("isDeleted", "0");
+        // 通过热线名称或者编码查询
         if (StringUtils.isNotBlank(commandCenterHotline.getHotlnTitle())) {
-            criteria.andLike("hotlnTitle", "%"+commandCenterHotline.getHotlnTitle()+"%");
+            StringBuilder sql = new StringBuilder();
+            sql.append("( (hotln_title like '%").append(commandCenterHotline.getHotlnTitle()).append("%') ")
+                    .append(" OR (hotln_code like '%").append(commandCenterHotline.getHotlnCode()).append("%')")
+                    .append(") ");
+            criteria.andCondition(sql.toString());
         }
+
         if (StringUtils.isNotBlank(commandCenterHotline.getAppealPerson())) {
             criteria.andLike("appealPerson", "%"+commandCenterHotline.getAppealPerson()+"%");
         }
