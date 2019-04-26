@@ -309,8 +309,8 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             }
             StringBuilder sql = new StringBuilder();
             sql.append(" ( ")
-                .append(" ( case_title LIKE ").append(" '%").append(caseInfo.getCaseTitle()).append("%') ")
-                .append(" OR ( case_code LIKE ").append(" '%").append(caseInfo.getCaseCode()).append("%') ")
+                .append(" ( case_title LIKE ").append(" '%").append(caseInfo.getCaseTitle().trim()).append("%') ")
+                .append(" OR ( case_code LIKE ").append(" '%").append(caseInfo.getCaseCode().trim()).append("%') ")
                 .append(" ) ");
             criteria.andCondition(sql.toString());
         }
