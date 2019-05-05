@@ -125,4 +125,12 @@ public interface WfProcMonitorBeanMapper {
      * @return
      */
     List<JSONObject> selectByProcKeyAndCTaskCodeAndBizId(@Param("objs")JSONObject objs);
+
+    /**
+     * 查询与用户关联的，待办或已办的，且正在进行的任务
+     *
+     * @param objs
+     * @return
+     */
+    List<WfProcBackBean> getUserToDoOrDoneTasksOfDoing(JSONObject objs);
 }

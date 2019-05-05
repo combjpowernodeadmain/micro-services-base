@@ -326,4 +326,19 @@ public class WfMonitorBiz extends WfBaseBiz {
             logger.info("流程查询--查询流程实例完成.");
         }
     }
+
+    /**
+     * 查询与用户关联的，待办或已办的，且正在进行的任务
+     * @param objs
+     * @return
+     */
+    public List<WfProcBackBean> getUserToDoOrDoneTasksOfDoing(JSONObject objs) throws WorkflowException {
+        logger.info("用户待办任务查询--开始查询用户待办任务...");
+
+        try {
+            return iqbWfMyProcBeanMapper.getUserToDoOrDoneTasksOfDoing(objs);
+        } finally {
+            logger.info("用户待办任务查询--查询用户待办任务完成.");
+        }
+    }
 }

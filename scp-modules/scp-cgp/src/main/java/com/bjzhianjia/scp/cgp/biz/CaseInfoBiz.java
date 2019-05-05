@@ -1159,6 +1159,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         Criteria criteria = example.createCriteria();
 
         criteria.andEqualTo("isDeleted", BooleanUtil.BOOLEAN_FALSE);
+        criteria.andEqualTo("isFinished",BooleanUtil.BOOLEAN_FALSE);
         criteria.andIn("id", bizIds);
 
         String nowDate = DateUtil.dateFromDateToStr(new Date(), DateUtil.DEFAULT_DATE_FORMAT);

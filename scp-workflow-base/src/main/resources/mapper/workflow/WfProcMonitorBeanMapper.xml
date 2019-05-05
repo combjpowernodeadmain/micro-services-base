@@ -50,8 +50,8 @@
 		 	AND delegate.PROC_MANDATARY = #{procTaskUser}
 			AND	delegate.PROC_LICENSE_ISVALID =	'1' 
 		WHERE
-			proc.PROC_STATUS = '0' 
-			AND task.PROC_TASK_STATUS IN ('1', '2') 
+			proc.PROC_STATUS = '0'
+			AND task.PROC_TASK_STATUS IN ('1', '2')
 			AND (
 			(
 				task.PROC_TASK_STATUS = '1' 
@@ -946,5 +946,132 @@
 			#{item}
 		</foreach>
 		)
+	</select>
+
+	<!-- 查询与用户关联的，待办或已办的，且正在进行的任务 -->
+	<select id="getUserToDoOrDoneTasksOfDoing" resultType="com.bjzhianjia.scp.security.wf.base.monitor.entity.WfProcBackBean">
+		SELECT
+		DISTINCT(proc.PROC_BIZID) procBizId
+		FROM SCP_WF_PROC proc
+		JOIN SCP_WF_PROC_TASK task
+		ON proc.PROC_INST_ID = task.PROC_INST_ID
+		LEFT JOIN SCP_WF_PROC_DELEGATE delegate
+		ON	delegate.PROC_INST_ID =	proc.PROC_INST_ID
+		AND delegate.PROC_MANDATARY = #{procTaskUser}
+		AND	delegate.PROC_LICENSE_ISVALID =	'1'
+		WHERE
+		(
+			proc.PROC_STATUS = '0'
+			AND task.PROC_TASK_ASSIGNEE = '3e75d25ec77a43558675ce3f11d18afd'
+		)
+
+		OR
+
+		(
+			proc.PROC_STATUS = '0'
+		AND task.PROC_TASK_STATUS IN ('1', '2')
+
+		AND (
+		(
+		task.PROC_TASK_STATUS = '1'
+		AND (
+		<if test="procTaskRoles != null and procTaskRoles.size > 0">
+			<!--
+            满足多候选组查询,如：
+            id  proc_task_group
+            100 group1,group2
+            表中数据如上，当某人属于group1,group3时，满足候选条件
+             -->
+			<foreach item="item" index="index" collection="procTaskRoles">
+				task.PROC_TASK_GROUP like "%"#{item}"%"
+				OR
+			</foreach>
+		</if>
+		<!-- 当proc_task_group为空时，在流程图配置里，PROC_DEPTPERMISSION一定为1，实现非组策略 -->
+		task.PROC_TASK_GROUP = ''
+		OR delegate.PROC_MANDATARY=#{procTaskUser} and	task.PROC_TASK_GROUP=delegate.PROC_LICENSOR_ROLE )
+		)
+			OR (
+			task.PROC_TASK_STATUS = '2' AND task.PROC_TASK_ASSIGNEE = #{procTaskUser}
+			)
+		)
+			AND (
+			task.PROC_DATAPERMISSION = '0'
+			OR task.PROC_DATAPERMISSION = '1' AND proc.PROC_ORGCODE = #{procOrgCode}
+			OR task.PROC_DATAPERMISSION = '2'	AND SUBSTR(proc.PROC_ORGCODE, 1, LENGTH(#{procOrgCode}))=#{procOrgCode} and	LENGTH(proc.PROC_ORGCODE) > LENGTH(#{procOrgCode})
+			OR task.PROC_DATAPERMISSION = '3'	AND SUBSTR(proc.PROC_ORGCODE, 1, LENGTH(#{procOrgCode}))=#{procOrgCode}
+			OR task.PROC_DATAPERMISSION = '9' AND task.PROC_APPOINT_USERS = #{procTaskUser})
+			AND (task.PROC_TENANTPERMISSION = '0' OR task.PROC_TENANTPERMISSION = '1' and proc.PROC_TENANT_ID = #{procTenantId})
+			AND (task.PROC_ORGPERMISSION = '0'
+			OR task.PROC_ORGPERMISSION = '1' and task.PROC_ORGCODE = #{procOrgCode}
+			OR task.PROC_ORGPERMISSION = '2' and (task.PROC_ORGCODE = #{procOrgCode}
+			<if test="procAuthOrgCodes != null and procAuthOrgCodes.size > 0">
+				or
+				task.PROC_ORGCODE in
+				<foreach item="item" index="index" collection="procAuthOrgCodes" open="("
+						 separator="," close=")">
+					#{item}
+				</foreach>
+			</if>)
+			OR task.PROC_ORGPERMISSION = '3'
+			<if test="procAuthOrgCodes != null and procAuthOrgCodes.size > 0">
+				and
+				task.PROC_ORGCODE in
+				<foreach item="item" index="index" collection="procAuthOrgCodes" open="("
+						 separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			OR task.PROC_ORGPERMISSION = '9' AND task.PROC_APPOINT_USERS = #{procTaskUser})
+			AND (
+			task.PROC_DEPTPERMISSION = '0' OR task.PROC_DEPTPERMISSION = '1' and task.PROC_DEPART_ID = #{procDeptId}
+			)
+			AND (task.PROC_SELFPERMISSION1 = '0' OR task.PROC_SELFPERMISSION1 = '1' and task.PROC_SELFDATA1 in (${procSelfPermissionData1}))<!-- procSelfPermissionData1设定为网格，一个人可能属于多个网格 -->
+			AND (task.PROC_SELFPERMISSION2 = '0' OR task.PROC_SELFPERMISSION2 = '1' and task.PROC_SELFDATA2 = #{procSelfPermissionData2})
+			AND (task.PROC_SELFPERMISSION3 = '0' OR task.PROC_SELFPERMISSION3 = '1' and task.PROC_SELFDATA3 = #{procSelfPermissionData3})
+			AND (task.PROC_SELFPERMISSION4 = '0' OR task.PROC_SELFPERMISSION4 = '1' and task.PROC_SELFDATA4 = #{procSelfPermissionData4})
+			AND (task.PROC_SELFPERMISSION5 = '0' OR task.PROC_SELFPERMISSION5 = '1' and task.PROC_SELFDATA5 = #{procSelfPermissionData5})
+		)
+
+
+
+
+		AND task.PROC_KEY=#{prockey}
+		<if test="procName != '' and procName != null">
+			and proc.PROC_NAME LIKE "%"#{procName}"%"
+		</if>
+		<if test="procCtaskname != '' and procCtaskname != null">
+			<!-- 修改按节点名称查找为精确查询 -->
+			and task.PROC_CTASKNAME = #{procCtaskname}
+		</if>
+		<if test="procCtaskcode != '' and procCtaskcode != null">
+			<!-- 修改按节点ID查找为精确查询 -->
+			and task.PROC_CTASKCODE in (${procCtaskcode})
+		</if>
+		<if test="procMemo != '' and procMemo != null">
+			and proc.PROC_MEMO LIKE "%"#{procMemo}"%"
+		</if>
+		<if test="procTaskStatus != '' and procTaskStatus != null">
+			and task.PROC_TASK_STATUS = #{procTaskStatus}
+		</if>
+		<if test="procBizid != '' and procBizid != null">
+			and proc.PROC_BIZID LIKE "%"#{procBizid}"%"
+		</if>
+		<!-- 查询条件：流程创建时间-开始 -->
+		<if test="procCreateTimeStart != null and procCreateTimeStart != ''">
+			AND proc.PROC_CREATETIME &gt;= #{procCreateTimeStart}
+		</if>
+		<!-- 查询条件：流程创建时间-结束 -->
+		<if test="procCreateTimeEnd != null and procCreateTimeEnd != ''">
+			AND proc.PROC_CREATETIME &lt;= #{procCreateTimeEnd}
+		</if>
+		<!-- 查询条件：流程任务到达时间-开始 -->
+		<if test="procTaskCommitTimeStart != null and procTaskCommitTimeStart != ''">
+			AND task.PROC_TASK_COMMITTIME &gt;= #{procTaskCommitTimeStart}
+		</if>
+		<!-- 查询条件：流程任务到达时间-结束 -->
+		<if test="procTaskCommitTimeEnd != null and procTaskCommitTimeEnd != ''">
+			AND task.PROC_TASK_COMMITTIME &lt;= #{procTaskCommitTimeEnd}
+		</if>
 	</select>
 </mapper>
