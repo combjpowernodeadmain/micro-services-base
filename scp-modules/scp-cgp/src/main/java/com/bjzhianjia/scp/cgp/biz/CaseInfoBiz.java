@@ -401,11 +401,61 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         }
 
         example.setOrderByClause("crt_time desc");
+        // 设置排序字段
+        this.setSortColumn(example, queryData);
 
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<CaseInfo> list = this.mapper.selectByExample(example);
 
         return new TableResultResponse<CaseInfo>(pageInfo.getTotal(), list);
+    }
+
+    /**
+     * 设置排序字段
+     * <p>
+     * 此方法直接接受前端的参数进行sql拼接，修改此方法需注意sql注入
+     * </p>
+     *
+     * @param example   查询对象
+     * @param queryData 查询条件
+     */
+    private void setSortColumn(Example example, JSONObject queryData) {
+        // 排序字段。格式: "字段名:(ascending|descending)" ascending升序，descending降序
+        Object sortColumn = queryData.get("sortColumn");
+        // 判断是否有排序条件
+        if (BeanUtils.isNotEmpty(sortColumn)) {
+            String column = String.valueOf(sortColumn);
+            String[] columns = column.split(":");
+            // 排序字段的解析长度
+            int len = 2;
+            if (len == columns.length) {
+                String orderColumn = null;
+                // 获取sql拼接字段
+                switch (columns[0]) {
+                    // 案件编号
+                    case "caseCode":
+                        orderColumn = "case_code ";
+                        break;
+                    // 发生时间
+                    case "occurTime":
+                        orderColumn = "occur_time ";
+                        break;
+                    // 处理时间
+                    case "updTime":
+                        orderColumn = "upd_time ";
+                        break;
+                    default:
+                        break;
+                }
+                // 获取排序规则
+                String sort = "desc";
+                if (!sort.equals(columns[1])) {
+                    sort = "asc";
+                }
+                // 设置排序字段和规则
+                example.setOrderByClause(orderColumn + sort);
+            }
+        }
     }
 
     private List<CaseRegistration> caseInfoInReg(Set<Integer> ids) {
