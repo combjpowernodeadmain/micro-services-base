@@ -33,4 +33,15 @@ public interface AreaGridMapper extends CommonMapper<AreaGrid> {
     List<Map<String,Object>> selectByUserIds(@Param("userIds") List<String> userIds);
 
     List<AreaGrid> selectIdsByGridParentName(@Param("gridParentName") String gridParentName);
+
+    /**
+     * 获取网格的父级网格名称
+     *
+     * @param gridId 网格id
+     * @return {
+     * "gridName":"网格名称",
+     * "parentGridName":"网格父级名称",
+     * }
+     */
+    Map<String,String> selectParentNameById(@Param("gridId") String gridId);
 }

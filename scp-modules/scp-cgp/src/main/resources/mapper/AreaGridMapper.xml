@@ -66,4 +66,17 @@
 		SELECT id FROM area_grid WHERE grid_name LIKE "%"#{gridParentName}"%"
 		)
 	</select>
+	<!-- 获取网格的父级网格名称-->
+	<select id="selectParentNameById" resultType="java.util.Map">
+		SELECT
+			ag.grid_name gridName,
+			pag.grid_name parentGridName
+		FROM
+			area_grid ag
+		LEFT JOIN area_grid pag ON pag.id = ag.grid_parent
+		WHERE
+			ag.id = #{gridId}
+		AND ag.is_deleted = '0'
+		AND ag.is_disabled = '0'
+	</select>
 </mapper>

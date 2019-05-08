@@ -597,4 +597,22 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
             }
         }
     }
+
+    /**
+     * 获取网格的父级网格名称
+     *
+     * @param gridId 网格id
+     * @return {
+     * "gridName":"网格名称",
+     * "parentGridName":"网格父级名称",
+     * }
+     */
+    public Map<String, String> getParentNameById(String gridId) {
+
+        if (StringUtils.isBlank(gridId)) {
+            return new HashMap<>();
+        }
+        return this.mapper.selectParentNameById(gridId);
+    }
+
 }
