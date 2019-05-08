@@ -951,7 +951,8 @@
 	<!-- 查询与用户关联的，待办或已办的，且正在进行的任务 -->
 	<select id="getUserToDoOrDoneTasksOfDoing" resultType="com.bjzhianjia.scp.security.wf.base.monitor.entity.WfProcBackBean">
 		SELECT
-		DISTINCT(proc.PROC_BIZID) procBizId
+		DISTINCT(proc.PROC_BIZID) procBizId,
+		proc.PROC_INST_ID procInstId
 		FROM SCP_WF_PROC proc
 		JOIN SCP_WF_PROC_TASK task
 		ON proc.PROC_INST_ID = task.PROC_INST_ID
