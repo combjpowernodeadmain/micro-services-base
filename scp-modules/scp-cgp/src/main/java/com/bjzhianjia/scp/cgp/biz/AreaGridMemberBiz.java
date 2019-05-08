@@ -10,6 +10,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import com.bjzhianjia.scp.security.common.util.BeanUtils;
+import com.bjzhianjia.scp.security.common.util.BooleanUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -529,4 +531,71 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
 
         return new TableResultResponse<>(0, new ArrayList<>());
     }
+
+    /**
+     * 通过网格id、网格角色编码，获取成员列表
+     *
+     * @param gridId   所属网格id
+     * @param gridRole 网格角色编码
+     * @param page     页码
+     * @param limit    页容量
+     * @return
+     */
+    public TableResultResponse<JSONObject> getByGridIdAndGridRole(String gridId, String gridRole, int page, int limit) {
+        TableResultResponse<JSONObject> result = new TableResultResponse<>();
+        List<JSONObject> resultData = new ArrayList<>();
+
+        // 获取网格名称
+        Map<String, String> grid = areaGridBiz.getParentNameById(gridId);
+        String gridName = grid.get("gridName") + "（" + grid.get("parentGridName") + "）";
+
+        // 获取网格成员列表
+        Example example = new Example(AreaGridMember.class).selectProperties("gridMember");
+        Criteria criteria = example.createCriteria();
+        // 网格id，网格角色编码
+        criteria.andEqualTo("gridId", gridId.trim());
+        criteria.andEqualTo("gridRole", gridRole.trim());
+        // 未删除，未禁用
+        criteria.andEqualTo("isDeleted", BooleanUtil.BOOLEAN_FALSE);
+        criteria.andEqualTo("isDisabled", BooleanUtil.BOOLEAN_FALSE);
+
+        Page pageObj = PageHelper.startPage(page, limit);
+        List<AreaGridMember> areaGridMemberList = this.mapper.selectByExample(example);
+
+        if (BeanUtils.isEmpty(areaGridMemberList)) {
+            result.setStatus(200);
+            result.setMessage("未在网格中找到成员列表！");
+            return result;
+        }
+        // 获取用户ids
+        StringBuilder userIds = new StringBuilder();
+        AreaGridMember areaGridMember = null;
+        for (int i = 0, size = areaGridMemberList.size(); i < size; i++) {
+            areaGridMember = areaGridMemberList.get(i);
+            userIds.append(areaGridMember.getGridMember());
+            if (i != size - 1) {
+                userIds.append(",");
+            }
+        }
+
+        JSONArray users = adminFeign.getUserDetail(userIds.toString());
+        if (BeanUtils.isEmpty(users)) {
+            result.setStatus(200);
+            result.setMessage("未找到所属网格成员信息！");
+            return result;
+        }
+        // 获取成员信息
+        JSONObject obj = null;
+        JSONObject user = null;
+        for (int i = 0, size = users.size(); i < size; i++) {
+            obj = users.getJSONObject(i);
+            user = new JSONObject();
+            user.put("gridName", gridName);
+            user.put("userName", obj.getString("userName"));
+            user.put("mobilePhone", obj.getString("mobilePhone"));
+            resultData.add(user);
+        }
+        return  new TableResultResponse<>(pageObj.getEndRow(), resultData);
+    }
+
 }

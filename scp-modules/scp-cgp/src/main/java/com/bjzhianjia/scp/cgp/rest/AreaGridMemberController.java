@@ -101,4 +101,23 @@ public class AreaGridMemberController extends BaseController<AreaGridMemberBiz, 
         AreaGridMember areaGridMember = new AreaGridMember();
         return this.baseBiz.getListExcludeRole(areaGridMember, page, limit);
     }
+
+    /**
+     * 通过网格id、网格角色编码，获取成员列表
+     *
+     * @param gridId   所属网格id
+     * @param gridRole 网格角色编码
+     * @param page     页码
+     * @param limit    页容量
+     * @return
+     */
+    @GetMapping("/gridId/{gridId}/gridRole/{gridRole}")
+    @ApiOperation("通过网格id、网格角色编码，获取成员列表")
+    public TableResultResponse<JSONObject> getByGridIdAndGridRole(
+            @PathVariable("gridId") @ApiParam("所属网格id") String gridId,
+            @PathVariable("gridRole") @ApiParam("网格角色编码") String gridRole,
+            @RequestParam(value = "page", defaultValue = "1") @ApiParam("页码") Integer page,
+            @RequestParam(value = "limit", defaultValue = "20") @ApiParam("页容量") Integer limit) {
+        return this.baseBiz.getByGridIdAndGridRole(gridId, gridRole, page, limit);
+    }
 }
