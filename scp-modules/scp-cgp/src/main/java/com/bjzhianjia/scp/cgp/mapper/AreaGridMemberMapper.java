@@ -47,5 +47,5 @@ public interface AreaGridMemberMapper extends CommonMapper<AreaGridMember> {
 
     List<String> distinctGridMember();
 
-    List<AreaGridMember> getListExcludeRole(AreaGridMember areaGridMember);
+    List<AreaGridMember> getListExcludeRole(@Param("areaGridMember") AreaGridMember areaGridMember);
 }

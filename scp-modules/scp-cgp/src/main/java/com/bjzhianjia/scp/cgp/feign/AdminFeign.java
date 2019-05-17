@@ -151,4 +151,8 @@ public interface AdminFeign {
 	@ApiOperation("按组CODE集合获取用户")
 	@RequestMapping(value = "/user/list/groupCode", method = RequestMethod.GET)
 	List<JSONObject> getLeaderOrMemberByGroupCode(@RequestParam("groupCode") String groupCode);
+
+	@ApiOperation("根据人名进行模糊查询")
+	@RequestMapping(value = "/user/getByName", method = RequestMethod.GET)
+	JSONArray getUsersByName(@RequestParam(value = "name") String name);
 }
