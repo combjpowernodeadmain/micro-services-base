@@ -57,4 +57,8 @@ public interface PatrolTaskMapper extends CommonMapper<PatrolTask> {
 	 * @return
 	 */
 	List<JSONObject> listOfRegObj(@Param("queryData")JSONObject queryData);
+
+	List<Map<String, Object>> selectPatrolTaskListByRole(@Param("patrolTask") PatrolTask patrolTask,
+		@Param("speName") String speName, @Param("startTime") Date startTime, @Param("endTime") Date endTime,
+		@Param("gridIdList") List<Integer> gridIdListOfMem);
 }

@@ -61,11 +61,18 @@
 			AND se.spe_name LIKE "%"#{speName}"%"
 		</if>
 		<!-- 巡查事项名称或者编码查询 -->
-		<if test="patrolTask.patrolCode !='' or patrolTask.patrolName!=''">
+		<if test="patrolTask.patrolCode !=null and patrolTask.patrolCode !=''">
+			AND (
+				( pk.patrol_name LIKE "%"#{patrolTask.patrolCode}"%" )
+				OR
+				(pk.patrol_code LIKE "%"#{patrolTask.patrolCode}"%")
+			)
+		</if>
+		<if test="patrolTask.patrolName !=null or patrolTask.patrolName!=''">
 			AND (
 				( pk.patrol_name LIKE "%"#{patrolTask.patrolName}"%" )
 				OR
-				(pk.patrol_code LIKE "%"#{patrolTask.patrolCode}"%")
+				(pk.patrol_code LIKE "%"#{patrolTask.patrolName}"%")
 			)
 		</if>
 		<if test="patrolTask.bizTypeId!=null and patrolTask.bizTypeId!=''">
@@ -84,6 +91,12 @@
 		</if>
 		<if test="patrolTask.eventTypeId != null">
 			AND pk.event_type_id=#{patrolTask.eventTypeId}
+		</if>
+		<if test="patrolTask.crtUserId != null and patrolTask.crtUserId != ''">
+			and pk.crt_user_id in (${patrolTask.crtUserId})
+		</if>
+		<if test="patrolTask.areaGridId !=null">
+			and pk.area_grid_id = #{patrolTask.areaGridId}
 		</if>
 		ORDER BY
 		pk.crt_time DESC
@@ -133,5 +146,88 @@
                 and pt.crt_time &gt;=#{queryData.startTime} and pt.crt_time &lt;= #{queryData.endTime}
             </if>
 		</where>
+	</select>
+
+	<!-- 巡查任务记录关联专项巡查表 -->
+	<select id="selectPatrolTaskListByRole" resultType="java.util.Map">
+		SELECT
+		pk.id,
+		pk.patrol_code as patrolCode,
+		pk.patrol_name as patrolName,
+		pk.crt_user_name as crtUserName,
+		pk.crt_time as crtTime,
+		pk.source_type as sourceType,
+		se.spe_name as speName,
+		ag.grid_name as gridName,
+		pk.status
+		FROM
+		patrol_task AS pk
+		LEFT JOIN
+		special_event AS se
+		ON pk.source_task_id = se.id
+		LEFT JOIN
+		area_grid AS ag
+		ON ag.id = pk.area_grid_id
+		WHERE
+		1=1
+		<if
+				test="patrolTask.sourceType !=null and patrolTask.sourceType!=''">
+			AND pk.source_type = #{patrolTask.sourceType}
+		</if>
+		<if test="speName !=null and speName!=''">
+			AND se.spe_name LIKE "%"#{speName}"%"
+		</if>
+		<!-- 巡查事项名称或者编码查询 -->
+		<if test="patrolTask.patrolCode !=null and patrolTask.patrolCode !=''">
+			AND (
+			( pk.patrol_name LIKE "%"#{patrolTask.patrolCode}"%" )
+			OR
+			(pk.patrol_code LIKE "%"#{patrolTask.patrolCode}"%")
+			)
+		</if>
+		<if test="patrolTask.patrolName !=null or patrolTask.patrolName!=''">
+			AND (
+			( pk.patrol_name LIKE "%"#{patrolTask.patrolName}"%" )
+			OR
+			(pk.patrol_code LIKE "%"#{patrolTask.patrolName}"%")
+			)
+		</if>
+		<if test="patrolTask.bizTypeId!=null and patrolTask.bizTypeId!=''">
+			AND pk.biz_type_id=#{patrolTask.bizTypeId}
+		</if>
+		<if test="patrolTask.status !=null and patrolTask.status!=''">
+			AND pk.status=#{patrolTask.status}
+		</if>
+		<if test="startTime !=null or endTime != null">
+			AND (
+			#{startTime} <![CDATA[ <= ]]>
+			pk.crt_time
+			and pk.crt_time <![CDATA[ <= ]]>
+			#{endTime}
+			)
+		</if>
+		<if test="patrolTask.eventTypeId != null">
+			AND pk.event_type_id=#{patrolTask.eventTypeId}
+		</if>
+		and
+		(
+			pk.crt_user_id=#{patrolTask.crtUserId}
+			<if test="gridIdList != null and gridIdList.size() > 0">
+				or
+				pk.area_grid_id in (
+				<foreach collection="gridIdList" item="item" separator=",">
+					#{item}
+				</foreach>
+				)
+			</if>
+		)
+		<if test="patrolTask.crtUserId != null and patrolTask.crtUserId != ''">
+			and pk.crt_user_id in (${patrolTask.crtUserId})
+		</if>
+		<if test="patrolTask.areaGridId !=null">
+			and pk.area_grid_id = #{areaGridId}
+		</if>
+		ORDER BY
+		pk.crt_time DESC
 	</select>
 </mapper>

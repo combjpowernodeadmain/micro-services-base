@@ -109,7 +109,9 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
         @RequestParam(required = false) @ApiParam(name="事件类别") Integer eventTypeId,
         @RequestParam(defaultValue = "") @ApiParam(name = "查询记录状态") String status,
         @RequestParam(defaultValue = "") @ApiParam(name = "开始时间") String startTime,
-        @RequestParam(defaultValue = "") @ApiParam(name = "结束时间") String endTime) {
+        @RequestParam(defaultValue = "") @ApiParam(name = "结束时间") String endTime,
+        @RequestParam(required = false) @ApiParam(name = "网格") Integer areaGridId,
+        @RequestParam(defaultValue = "") @ApiParam(name = "上报人") String crtUserName) {
 
         Date _startTime = null;
         Date _endTimeTmp = null;
@@ -126,6 +128,8 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
         patrolTask.setEventTypeId(eventTypeId);
         patrolTask.setStatus(status);
         patrolTask.setPatrolCode(patrolCode.trim());
+        patrolTask.setCrtUserName(crtUserName);
+        patrolTask.setAreaGridId(areaGridId);
 
         return patrolTaskBiz.selectPatrolTaskList(patrolTask, speName, _startTime, _endTimeTmp, page, limit);
     }
@@ -148,5 +152,41 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
         @RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
         @RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page) {
         return patrolTaskService.listSpecial(page, limit);
+    }
+
+    @RequestMapping(value = "/role/list", method = RequestMethod.GET)
+    @ResponseBody
+    @ApiOperation("按网格员角色分页列表")
+    public TableResultResponse<Map<String, Object>> listByRole(
+        @RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
+        @RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
+        @RequestParam(defaultValue = "") @ApiParam(name = "专项任务名称") String speName,
+        @RequestParam(defaultValue = "") @ApiParam(name = "巡查来源类型") String sourceType,
+        @RequestParam(defaultValue = "") @ApiParam(name = "巡查记录名称") String patrolName,
+        @RequestParam(defaultValue = "") @ApiParam(name = "巡查记录编码") String patrolCode,
+        @RequestParam(defaultValue = "") @ApiParam(name = "业务条线") String bizTypeId,
+        @RequestParam(required = false) @ApiParam(name = "事件类别") Integer eventTypeId,
+        @RequestParam(defaultValue = "") @ApiParam(name = "查询记录状态") String status,
+        @RequestParam(defaultValue = "") @ApiParam(name = "开始时间") String startTime,
+        @RequestParam(defaultValue = "") @ApiParam(name = "结束时间") String endTime
+        ) {
+
+        Date _startTime = null;
+        Date _endTimeTmp = null;
+        if (StringUtils.isNoneBlank(startTime) && StringUtils.isNoneBlank(endTime)) {
+            _startTime = DateUtil.dateFromStrToDate(startTime, "yyyy-MM-dd HH:mm:ss");
+            _endTimeTmp = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
+            _endTimeTmp = DateUtils.addDays(_endTimeTmp, 1);
+        }
+
+        PatrolTask patrolTask = new PatrolTask();
+        patrolTask.setSourceType(sourceType);
+        patrolTask.setPatrolName(patrolName.trim());
+        patrolTask.setBizTypeId(bizTypeId);
+        patrolTask.setEventTypeId(eventTypeId);
+        patrolTask.setStatus(status);
+        patrolTask.setPatrolCode(patrolCode.trim());
+
+        return patrolTaskBiz.selectPatrolTaskListByRole(patrolTask, speName, _startTime, _endTimeTmp, page, limit);
     }
 }
