@@ -237,4 +237,19 @@
             and u.name like #{userName}
         </if>
     </select>
+    <!-- 通过角色id和部门id，获取用户列表 -->
+    <select id="selectByGroupIdAndDeptId" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            bu.`name`,
+            bu.mobile_phone mobilePhone
+        FROM
+            base_user bu
+        INNER JOIN base_group_leader bgl ON bgl.user_id = bu.id
+        INNER JOIN base_depart_user bdu ON bdu.user_id = bu.id
+        WHERE
+            bu.is_deleted = '0'
+        AND bu.is_disabled = '0'
+        AND bgl.group_id = #{groupId}
+        AND bdu.depart_id = #{deptId}
+    </select>
 </mapper>
