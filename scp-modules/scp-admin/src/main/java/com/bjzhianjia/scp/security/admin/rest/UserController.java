@@ -303,4 +303,32 @@ public class UserController extends BaseController<UserBiz, User, String> {
 	public List<JSONObject> getLeaderOrMemberByGroupCode(@RequestParam("groupCode") String groupCode) {
 		return baseBiz.selectLeaderOrMemberByGroupCode(groupCode);
 	}
+
+	/**
+	 * 通过角色id和部门id，获取用户列表
+	 *
+	 * @param groupId 角色id
+	 * @param deptId  部门id
+	 * @return
+	 */
+	@ApiOperation("通过角色id和部门id，获取用户列表")
+	@GetMapping("/groupId/{groupId}/deptId/{deptId}")
+	public ObjectRestResponse<List<JSONObject>> getUsersByGroupIdAndDeptId(@PathVariable("groupId") @ApiParam("角色id") String groupId,
+																		   @PathVariable("deptId") @ApiParam("部门id") String deptId) {
+		ObjectRestResponse restResponse = new ObjectRestResponse<>();
+		List<JSONObject> data = null;
+		// 查询参数非空项
+		if (StringUtils.isBlank(groupId) || StringUtils.isBlank(deptId)) {
+			restResponse.setData(new ArrayList<>());
+			return restResponse;
+		}
+		data = this.baseBiz.getUsersByGroupIdAndDeptId(groupId, deptId);
+		if (com.bjzhianjia.scp.security.common.util.BeanUtils.isNotEmpty(data)) {
+			restResponse.setData(data);
+			return restResponse;
+		} else {
+			restResponse.setData(new ArrayList<>());
+			return restResponse;
+		}
+	}
 }

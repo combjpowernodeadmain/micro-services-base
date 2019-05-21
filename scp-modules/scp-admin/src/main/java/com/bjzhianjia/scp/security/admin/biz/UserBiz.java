@@ -595,4 +595,25 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
         List<User> list = this.selectByExample(example);
         return new TableResultResponse<User>(result.getTotal(), list);
     }
+
+    /**
+     * 通过角色id和部门id，获取用户列表
+     *
+     * @param groupId 角色id
+     * @param deptId  部门id
+     * @return
+     */
+    public List<JSONObject> getUsersByGroupIdAndDeptId(String groupId, String deptId) {
+        List<JSONObject> resultData = null;
+        // 查询参数非空项
+        if (StringUtils.isBlank(groupId) || StringUtils.isBlank(deptId)) {
+            return new ArrayList<>();
+        }
+        resultData = this.mapper.selectByGroupIdAndDeptId(groupId, deptId);
+        if (BeanUtils.isNotEmpty(resultData)) {
+            return resultData;
+        } else {
+            return new ArrayList<>();
+        }
+    }
 }
