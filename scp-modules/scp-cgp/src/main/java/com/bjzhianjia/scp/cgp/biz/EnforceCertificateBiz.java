@@ -119,6 +119,7 @@ public class EnforceCertificateBiz extends BusinessBiz<EnforceCertificateMapper,
             criteria.andLike("certCode", "%" + enforceCertificate.getCertCode() + "%");
         }
         if (StringUtils.isNotBlank(deptId)) {
+            boolean isFastDead=true;
             JSONArray feignDepartUsers = adminFeign.getFeignDepartUsers(deptId, null);
             List<String> userIdList = new ArrayList<>();
             if (BeanUtil.isNotEmpty(feignDepartUsers)) {
@@ -126,8 +127,14 @@ public class EnforceCertificateBiz extends BusinessBiz<EnforceCertificateMapper,
                     JSONObject jsonObject = feignDepartUsers.getJSONObject(i);
                     userIdList.add(jsonObject.getString("id"));
                 }
+                if(BeanUtil.isNotEmpty(userIdList)){
+                    criteria.andIn("usrId", userIdList);
+                    isFastDead=false;
+                }
             }
-            criteria.andIn("usrId", userIdList);
+            if(isFastDead){
+                return new TableResultResponse<>(0, new ArrayList<>());
+            }
         }
 
         example.setOrderByClause("id desc");

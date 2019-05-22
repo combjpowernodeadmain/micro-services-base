@@ -69,6 +69,11 @@
 		inner join (
 			SELECT grid_id id,grid_member gridMember FROM area_grid_member
 			WHERE is_deleted='0'
+			<if test="areaGridMember.gridMember != null and areaGridMember.gridMember !=''">
+				AND grid_member IN (
+				${areaGridMember.gridMember}
+				)
+			</if>
 			GROUP BY grid_id,grid_member
 		) member on member.id=ag.id
 	</select>

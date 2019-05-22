@@ -44,4 +44,6 @@ public interface AreaGridMapper extends CommonMapper<AreaGrid> {
      * }
      */
     Map<String,String> selectParentNameById(@Param("gridId") String gridId);
+
+    List<AreaGrid> gridLevelWithoutMapInfo(@Param("areaGrid") AreaGrid areaGrid);
 }

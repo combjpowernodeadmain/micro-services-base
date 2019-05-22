@@ -303,4 +303,13 @@ public class AreaGridController extends BaseController<AreaGridBiz, AreaGrid, In
     public List<AreaGridTree> getTreeGridLevel(@RequestParam(value = "gridLevel") String gridLevel) {
         return this.baseBiz.getAreaGridLevelTrees(gridLevel);
     }
+
+    @RequestMapping(value = "/list/gridLevel/WithoutMapInfo", method = RequestMethod.GET)
+    @ApiOperation("分页获取网格列表")
+    public List<AreaGrid> gridLevelWithoutMapInfo(
+        @RequestParam(value = "gridLevel", defaultValue = "") String gridLevel) {
+        AreaGrid areaGrid = new AreaGrid();
+        areaGrid.setGridLevel(gridLevel);
+        return this.baseBiz.gridLevelWithoutMapInfo(areaGrid);
+    }
 }

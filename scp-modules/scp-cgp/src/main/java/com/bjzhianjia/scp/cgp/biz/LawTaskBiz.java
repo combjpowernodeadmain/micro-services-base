@@ -524,10 +524,21 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
             specifyUserJObjList.stream().map(o -> o.getString("deptCode")).distinct()
                 .collect(Collectors.toList());
         // 在配置文件中,被配置为中队的部门code
-        List<String> deptCodeInProfile =
-            Arrays.asList(StringUtils.split(environment.getProperty("zhongdui.deptcode"), ","));
+//        List<String> deptCodeInProfile =
+//            Arrays.asList(StringUtils.split(environment.getProperty("zhongdui.deptcode"), ","));
+
+        List<String> deptCodeInProfile =new ArrayList<>();
+        // 获取需要参与双的部门CODE
+        Map<String, String> randomLawTaskDeptCodeDict = dictFeign.getByCode(environment.getProperty("randomLawTask.dept"));
+        if(BeanUtil.isNotEmpty(randomLawTaskDeptCodeDict)){
+            Set<String> codeSet = randomLawTaskDeptCodeDict.keySet();
+            for(String code:codeSet){
+                deptCodeInProfile.add(code.split("_")[4]);
+            }
+        }
 
         Map<String, List<EnforceCertificate>> zhDeptCodeEnforcerMap = new HashMap<>();
+        List<EnforceCertificate> allEnforceCertificateList=new ArrayList<>();
         deptCodeSet.forEach(deptCode -> {
             List<EnforceCertificate> zh = new ArrayList<>();
 
@@ -539,7 +550,8 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
                         EnforceCertificate enforceTmp =
                                 enforcerMap.get(specifyUserJObj.getString("userId"));
                         enforceTmp.setDepartId(specifyUserJObj.getString("deptId"));
-                        zh.add(enforceTmp);
+//                        zh.add(enforceTmp);
+                        allEnforceCertificateList.add(enforceTmp);
                     }
                 }
             });
@@ -549,10 +561,13 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
         });
 
         List<List<EnforceCertificate>> result = new ArrayList<>();
+        _devideEnfoecerToDeptAssist(peopleNumber, allEnforceCertificateList, result);
 
-        for (Map.Entry<String, List<EnforceCertificate>> e : zhDeptCodeEnforcerMap.entrySet()) {
-            _devideEnfoecerToDeptAssist(peopleNumber, e.getValue(), result);
-        }
+        // zhDeptCodeEnforcerMap存储的是--部门code:该部门下执法人员
+        // zhDeptCodeEnforcerMap.values不按部门分配的执法人员
+//        for (Map.Entry<String, List<EnforceCertificate>> e : zhDeptCodeEnforcerMap.entrySet()) {
+//            _devideEnfoecerToDeptAssist(peopleNumber, e.getValue(), result);
+//        }
         return result;
     }
 

@@ -1,5 +1,6 @@
 package com.bjzhianjia.scp.cgp.rest;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -64,10 +65,15 @@ public class EnforceCertificateController extends BaseController<EnforceCertific
     				,@RequestParam(defaultValue = "") String certCode
     				,@RequestParam(defaultValue = "") String holderName
     				,@RequestParam(defaultValue = "") String deptId
+    				,@RequestParam(defaultValue = "") String gridMemberName
     				) {
 	    
 		EnforceCertificate enforceCertificate = new EnforceCertificate();
 		enforceCertificate.setCertCode(certCode);
+
+		if (StringUtils.isNotBlank(gridMemberName) && StringUtils.isBlank(holderName)) {
+			holderName = gridMemberName;
+		}
 		enforceCertificate.setHolderName(holderName);
 	    return enforceCertificateService.getList(page, limit, enforceCertificate,deptId);
 	    

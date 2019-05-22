@@ -522,6 +522,34 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
      */
     public TableResultResponse<JSONObject> getListExcludeRole(AreaGridMember areaGridMember,
         Integer page, Integer limit) {
+        boolean isFastDead = false;
+
+        if (StringUtils.isNotBlank(areaGridMember.getGridMember())) {
+            JSONArray usersByName = adminFeign.getUsersByName(areaGridMember.getGridMember());
+            if (BeanUtil.isNotEmpty(usersByName)) {
+                List<String> userIdList = new ArrayList<>();
+                for (int i = 0; i < usersByName.size(); i++) {
+                    JSONObject userJObj = usersByName.getJSONObject(i);
+                    String userId;
+                    if (StringUtils.isNotBlank(userId = userJObj.getString("id"))) {
+                        userIdList.add(userId);
+                    }
+                }
+                if (BeanUtil.isNotEmpty(userIdList)) {
+                    String join = StringUtils.join(userIdList, ",");
+                    areaGridMember.setGridMember("'" + join.replaceAll(",", "','") + "'");
+                } else {
+                    isFastDead = true;
+                }
+            } else {
+                isFastDead = true;
+            }
+        }
+
+        if(isFastDead){
+            return new TableResultResponse<>(0, new ArrayList<>());
+        }
+
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<AreaGridMember> list = this.mapper.getListExcludeRole(areaGridMember);
         if (BeanUtil.isNotEmpty(list)) {

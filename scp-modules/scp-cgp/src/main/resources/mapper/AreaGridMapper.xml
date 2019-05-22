@@ -79,4 +79,13 @@
 		AND ag.is_deleted = '0'
 		AND ag.is_disabled = '0'
 	</select>
+
+	<select id="gridLevelWithoutMapInfo" resultMap="areaGridMap">
+		SELECT ag01.id,IFNULL(CONCAT(ag01.grid_name,'(',ag02.grid_name,')'),ag01.grid_name) grid_name FROM
+		area_grid ag01
+		LEFT JOIN area_grid ag02 ON ag01.grid_parent=ag02.id
+		WHERE ag01.is_deleted='0'
+		AND ag01.is_disabled='0'
+		AND ag01.grid_level=#{areaGrid.gridLevel}
+	</select>
 </mapper>

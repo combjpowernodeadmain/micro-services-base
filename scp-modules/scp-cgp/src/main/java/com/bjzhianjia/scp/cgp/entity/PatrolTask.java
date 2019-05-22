@@ -134,6 +134,10 @@ public class PatrolTask implements Serializable {
 	@JSONField(format="yyyy-MM-dd HH:mm:ss")
 	private Date updTime;
 
+	// 其它说明
+	@Column(name = "remark")
+	private String remark;
+
 	/**
 	 * 设置：
 	 */
@@ -474,5 +478,13 @@ public class PatrolTask implements Serializable {
 
 	public void setUpdTime(Date updTime) {
 		this.updTime = updTime;
+	}
+
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
 	}
 }

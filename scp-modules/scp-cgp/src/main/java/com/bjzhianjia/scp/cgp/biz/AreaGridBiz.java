@@ -19,7 +19,6 @@ import com.bjzhianjia.scp.security.common.util.TreeUtil;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -117,7 +116,8 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
             "gridRange",
             "mgrDept",
             "isDeleted",
-            "isDisabled"
+            "isDisabled",
+            "mapInfo"
         );
         Example.Criteria criteria = example.createCriteria();
 
@@ -341,7 +341,8 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
      * @return
      */
     public TableResultResponse<JSONObject> getByAreaGridP(String gridLevelKey){
-        return _gridLevelAssist(gridLevelKey,false);
+        TableResultResponse<JSONObject> fakeResult = _gridLevelAssist(gridLevelKey, false);
+        return fakeResult;
     }
 
     /**
@@ -615,4 +616,14 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         return this.mapper.selectParentNameById(gridId);
     }
 
+    /**
+     * 按网格等级获取列表，结果集中不包含坐标信息
+     * @param areaGrid
+     * @return
+     */
+    public List<AreaGrid> gridLevelWithoutMapInfo(AreaGrid areaGrid) {
+        List<AreaGrid> areaGridList = this.mapper.gridLevelWithoutMapInfo(areaGrid);
+
+        return BeanUtils.isEmpty(areaGridList)?new ArrayList<>():areaGridList;
+    }
 }
