@@ -99,9 +99,9 @@ public class InspectItemsBiz extends BusinessBiz<InspectItemsMapper,InspectItems
 	    if(StringUtils.isNotBlank(inspectItems.getCode())){
 	    	criteria.andEqualTo("code", inspectItems.getCode());
 	    }
-	    if(StringUtils.isNotBlank(inspectItems.getName())){
-	    	criteria.andEqualTo("name", inspectItems.getName());
-	    }
+		if (StringUtils.isNotBlank(inspectItems.getName())) {
+			criteria.andLike("name", "%" + inspectItems.getName() + "%");
+		}
 	    if(StringUtils.isNotBlank(inspectItems.getBizType())){
 	    	criteria.andEqualTo("bizType", inspectItems.getBizType());
 	    }
