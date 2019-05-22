@@ -221,12 +221,6 @@
 				)
 			</if>
 		)
-		<if test="patrolTask.crtUserId != null and patrolTask.crtUserId != ''">
-			and pk.crt_user_id in (${patrolTask.crtUserId})
-		</if>
-		<if test="patrolTask.areaGridId !=null">
-			and pk.area_grid_id = #{areaGridId}
-		</if>
 		ORDER BY
 		pk.crt_time DESC
 	</select>
