@@ -891,7 +891,7 @@ public class CaseInfoService {
 
             //  设置deadLine结束时间为所选日期最后一刻
             if(BeanUtil.isNotEmpty(caseInfo.getDeadLine())){
-                caseInfo.setDeadLine(DateUtil.getDayEndTime(caseInfo.getDeadLine()));
+                caseInfo.setDeadLine(DateUtil.getDayEndTimeUpToSecond(caseInfo.getDeadLine()));
             }
 
            // 获取流程走向，以判断流程是否结束

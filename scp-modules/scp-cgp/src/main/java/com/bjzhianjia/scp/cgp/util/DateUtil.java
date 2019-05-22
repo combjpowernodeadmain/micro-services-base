@@ -284,4 +284,20 @@ public class DateUtil {
 		calendar.set(Calendar.MILLISECOND, 999);
 		return new Timestamp(calendar.getTimeInMillis());
 	}
+
+	/**
+	 * 获取某个日期的结束时间
+	 *
+	 * @param d
+	 * @return
+	 */
+	public static Date getDayEndTimeUpToSecond(Date d) {
+		Calendar calendar = Calendar.getInstance();
+		if (null != d){
+			calendar.setTime(d);
+		}
+		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 23, 59, 59);
+		calendar.set(Calendar.MILLISECOND, 0);
+		return new Timestamp(calendar.getTimeInMillis());
+	}
 }
