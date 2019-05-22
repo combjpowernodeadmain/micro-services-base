@@ -116,7 +116,8 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
             "gridRange",
             "mgrDept",
             "isDeleted",
-            "isDisabled"
+            "isDisabled",
+            "mapInfo"
         );
         Example.Criteria criteria = example.createCriteria();
 

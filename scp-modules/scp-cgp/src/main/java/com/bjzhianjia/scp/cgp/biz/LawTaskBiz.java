@@ -524,10 +524,21 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
             specifyUserJObjList.stream().map(o -> o.getString("deptCode")).distinct()
                 .collect(Collectors.toList());
         // 在配置文件中,被配置为中队的部门code
-        List<String> deptCodeInProfile =
-            Arrays.asList(StringUtils.split(environment.getProperty("zhongdui.deptcode"), ","));
+//        List<String> deptCodeInProfile =
+//            Arrays.asList(StringUtils.split(environment.getProperty("zhongdui.deptcode"), ","));
+
+        List<String> deptCodeInProfile =new ArrayList<>();
+        // 获取需要参与双的部门CODE
+        Map<String, String> randomLawTaskDeptCodeDict = dictFeign.getByCode(environment.getProperty("randomLawTask.dept"));
+        if(BeanUtil.isNotEmpty(randomLawTaskDeptCodeDict)){
+            Set<String> codeSet = randomLawTaskDeptCodeDict.keySet();
+            for(String code:codeSet){
+                deptCodeInProfile.add(code.split("_")[4]);
+            }
+        }
 
         Map<String, List<EnforceCertificate>> zhDeptCodeEnforcerMap = new HashMap<>();
+        System.out.println(deptCodeSet);
         deptCodeSet.forEach(deptCode -> {
             List<EnforceCertificate> zh = new ArrayList<>();
 
