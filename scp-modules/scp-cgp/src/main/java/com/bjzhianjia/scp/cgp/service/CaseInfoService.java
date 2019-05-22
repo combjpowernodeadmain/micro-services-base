@@ -1286,7 +1286,13 @@ public class CaseInfoService {
         }
 
         if(flag) {
-            result.setMessage("当前网格没有相应网格员，操作失败！");
+            // 默认网格员
+            String role = "人员";
+            if(StringUtils.isNotBlank(gridRole)){
+                Map<String,String> roles = dictFeign.getByCode(gridRole);
+                role = roles.get(gridRole);
+            }
+            result.setMessage("当前网格没有相应" + role + "，操作失败！");
             result.setIsSuccess(false);
         }
         return flag;
