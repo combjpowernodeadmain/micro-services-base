@@ -347,6 +347,7 @@ public class PatrolTaskService {
 		result.put("crtTime", patrolTask.getCrtTime());	//上报时间
 		result.put("id",patrolTask.getId());
 		result.put("sourceType", patrolTask.getSourceType());
+		result.put("remark", patrolTask.getRemark());
 		
 		//判断任务来源类型
 		if(Constances.PartolTaskStatus.ROOT_BIZ_PATROLTYPE_SPECIAL.equals(patrolTask.getSourceType())) {//专项任务
