@@ -1,15 +1,6 @@
 package com.bjzhianjia.scp.cgp.biz;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.bjzhianjia.scp.cgp.entity.MessageCenter;
@@ -529,11 +520,11 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
 
         List<String> deptCodeInProfile =new ArrayList<>();
         // 获取需要参与双的部门CODE
+//        Map<String, String> randomLawTaskDeptCodeDict = dictFeign.getDictValues(environment.getProperty("randomLawTask.dept"));
         Map<String, String> randomLawTaskDeptCodeDict = dictFeign.getByCode(environment.getProperty("randomLawTask.dept"));
         if(BeanUtil.isNotEmpty(randomLawTaskDeptCodeDict)){
-            Set<String> codeSet = randomLawTaskDeptCodeDict.keySet();
-            for(String code:codeSet){
-                deptCodeInProfile.add(code.split("_")[4]);
+            for(Map.Entry<String,String> e:randomLawTaskDeptCodeDict.entrySet()){
+                deptCodeInProfile.add(e.getValue());
             }
         }
 

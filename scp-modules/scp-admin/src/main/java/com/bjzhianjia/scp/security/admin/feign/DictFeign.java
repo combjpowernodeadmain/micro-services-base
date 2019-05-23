@@ -32,4 +32,16 @@ public interface DictFeign {
      */
     @RequestMapping(value = "/dictValue/feign/code/{code}", method = RequestMethod.GET)
     public Map<String, String> getByCode(@PathVariable("code") String code) ;
+
+    /**
+     * 按code进行查询<br/>
+     * 查询语句为code in ('code1','code1','code1','code1')
+     *
+     * @param codeList
+     *            查询 条件,字符串表示的code集合，多个code之间用逗号隔开<br/>
+     *            如："c1,c2,c3,c4"
+     * @return "${code}":"${label_default}"健值对
+     */
+    @RequestMapping(value = "/dictValue/feign/code/in/{codes}", method = RequestMethod.GET)
+    Map<String, String> getByCodeIn(@PathVariable("codes") String codeList);
 }
