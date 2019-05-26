@@ -575,8 +575,13 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
 
         // 获取网格名称
         Map<String, String> grid = areaGridBiz.getParentNameById(gridId);
-        String gridName = grid.get("gridName") + "（" + grid.get("parentGridName") + "）";
-
+        String gridName;
+        // 判断是否存在父级网格
+        if (StringUtils.isNotBlank(grid.get("parentGridName"))) {
+            gridName = grid.get("gridName") + "（" + grid.get("parentGridName") + "）";
+        } else {
+            gridName = grid.get("gridName");
+        }
         // 获取网格成员列表
         Example example = new Example(AreaGridMember.class).selectProperties("gridMember");
         Criteria criteria = example.createCriteria();
