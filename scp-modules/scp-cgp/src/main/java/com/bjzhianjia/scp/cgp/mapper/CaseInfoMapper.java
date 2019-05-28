@@ -5,6 +5,7 @@ import com.bjzhianjia.scp.cgp.entity.CaseInfo;
 import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -139,4 +140,11 @@ public interface CaseInfoMapper extends CommonMapper<CaseInfo> {
     List<JSONObject> statisticsByGridLevel(@Param("queryData") List<JSONObject> queryData,
         @Param("caseInfo") CaseInfo caseInfo, @Param("startTime") String startTime,
         @Param("endTime") String endTime);
+
+    List<JSONObject> gongdaiInMemberStatistics(
+        @Param("startTime")Date startTime,
+        @Param("endTime")Date endTime,
+        @Param("userId")String userId,
+        @Param("exeStatus")String exeStatus
+    );
 }

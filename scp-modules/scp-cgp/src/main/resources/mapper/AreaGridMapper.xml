@@ -32,7 +32,7 @@
 
 	<!-- 网格全部定位 -->
     <select id="allPotition" resultMap="areaGridMap">
-        select id,grid_name,map_info from area_grid
+        select id,grid_name,map_info,grid_level from area_grid
         <where>
             is_deleted='0'
             <if test="areaGrid.gridLevel!=null and areaGrid.gridLevel != ''">

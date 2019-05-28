@@ -77,4 +77,115 @@
 			GROUP BY grid_id,grid_member
 		) member on member.id=ag.id
 	</select>
+
+	<select id="memAssessment" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT DISTINCT(agm01.`grid_member`) gridMember,
+		IFNULL(ccounttmp.ccount,'0') ccount,
+		IFNULL(prtimes02tmp.timecounts,'0') timecounts,
+		IFNULL(pkcounttmp.pkcount,'0') pkcount,
+		IFNULL(execounttmp.execount,'0') unfinishedExecount,
+		IFNULL(execount02.execount,'0') finishedExecount,
+		IFNULL(backcount01tmp.backcount01,0)+IFNULL(backcount02tmp.execount,0) backcount,
+		IFNULL(secondDiffTmp.secondDiff,0) secondDiff
+		FROM area_grid_member agm01
+		LEFT JOIN (
+		# 某人在某月的巡查次数
+		SELECT prcounter.`crt_user_id` crtUserId,
+		COUNT(prcounter.`crt_user_id`) ccount
+		FROM patrol_record prcounter
+		WHERE patrol_status='1'
+		AND prcounter.`start_time` BETWEEN #{monthStart} AND #{monthEnd}
+		GROUP BY prcounter.crt_user_id
+		) ccounttmp ON agm01.`grid_member`=ccounttmp.crtUserId
+		LEFT JOIN (
+		# 某人在某月的巡查天数
+		SELECT prtimes02.crtUserId,COUNT(prtimes02.timescounttmp) timecounts
+		FROM (
+		SELECT prtimes.crt_user_id crtUserId,DAY(prtimes.`start_time`) timescounttmp
+		FROM patrol_record prtimes
+		WHERE prtimes.`start_time` BETWEEN #{monthStart} AND #{monthEnd}
+		GROUP BY crtUserId,timescounttmp
+		) prtimes02
+		GROUP BY prtimes02.crtUserId
+		) prtimes02tmp ON prtimes02tmp.crtUserId=agm01.`grid_member`
+		LEFT JOIN (
+		# 上报数
+		SELECT pk01.`crt_user_id`,COUNT(pk01.`crt_user_id`) pkcount
+		FROM patrol_task pk01
+		WHERE pk01.`crt_time` BETWEEN #{monthStart} AND #{monthEnd}
+		GROUP BY pk01.`crt_user_id`
+		) pkcounttmp ON pkcounttmp.crt_user_id=agm01.`grid_member`
+		LEFT JOIN(
+		# 接收数
+		SELECT ei01.`exe_person`,COUNT(ei01.`exe_person`) execount
+		FROM execute_info ei01
+		INNER JOIN case_info ci01 ON ci01.`id`=ei01.`case_id`
+		WHERE ci01.`crt_time` BETWEEN #{monthStart} AND #{monthEnd}
+		GROUP BY ei01.`exe_person`
+		) execounttmp ON execounttmp.exe_person=agm01.`grid_member`
+		LEFT JOIN (
+		# 完成数
+		SELECT ei01.`exe_person`,COUNT(ei01.`exe_person`) execount
+		FROM execute_info ei01
+		INNER JOIN case_info ci01 ON ci01.`id`=ei01.`case_id`
+		WHERE ci01.`crt_time` BETWEEN #{monthStart} AND #{monthEnd}
+		AND ci01.`is_finished`='1'
+		GROUP BY ei01.`exe_person`
+		) execount02 ON execount02.exe_person = agm01.`grid_member`
+		LEFT JOIN (
+		# 退回数01
+		SELECT COUNT(pk.`crt_user_id`) backcount01,pk.`crt_user_id`
+		FROM `patrol_task` pk
+		LEFT JOIN case_info ci ON (ci.`source_code`=pk.`id` AND ci.`source_type`='root_biz_eventType_check')
+		WHERE ci.`is_finished`='2'
+		AND ci.`crt_time` BETWEEN #{monthStart} AND #{monthEnd}
+		GROUP BY pk.`crt_user_id`
+		)backcount01tmp ON backcount01tmp.crt_user_id=agm01.`grid_member`
+		LEFT JOIN (
+		SELECT ei01.`exe_person`,COUNT(ei01.`exe_person`) execount
+		FROM execute_info ei01
+		INNER JOIN case_info ci01 ON ci01.`id`=ei01.`case_id`
+		WHERE ci01.`crt_time` BETWEEN #{monthStart} AND #{monthEnd}
+		AND ci01.`is_finished`='2'
+		AND ci01.`id` NOT IN (
+		# 自己处理的但不是自己上报的
+		SELECT ci.`id`
+		FROM `patrol_task` pk
+		LEFT JOIN case_info ci ON (ci.`source_code`=pk.`id` AND ci.`source_type`='root_biz_eventType_check')
+		WHERE ci.`is_finished`='2'
+		AND ci.`crt_time` BETWEEN #{monthStart} AND #{monthEnd}
+		)
+		GROUP BY ei01.`exe_person`
+		)backcount02tmp ON backcount02tmp.exe_person=agm01.`grid_member`
+		LEFT JOIN (
+		SELECT tmp.crt_user_id,SUM(secondDiff) secondDiff
+		FROM (
+		SELECT pr.crt_user_id,TIMESTAMPDIFF(SECOND,pr.`start_time`,pr.`end_time`) secondDiff
+		FROM patrol_record pr
+		WHERE pr.`start_time` BETWEEN #{monthStart} AND #{monthEnd}
+		) tmp
+		GROUP BY tmp.crt_user_id
+		)secondDiffTmp ON secondDiffTmp.crt_user_id= agm01.`grid_member`
+		<where>
+			agm01.`is_deleted`='0'
+			<if test="gridIdS != null and gridIdS.size() >0">
+				and agm01.`grid_id` IN (
+				<foreach collection="gridIdS" item="item" separator=",">
+					#{item}
+				</foreach>
+				)
+			</if>
+			<if test="gridMembers != null and gridMembers.size>0">
+				AND agm01.`grid_member` IN (
+				<foreach collection="gridMembers" item="item" separator=",">
+					#{item}
+				</foreach>
+				)
+			</if>
+			<if test="gridRole != null and gridRole != ''">
+				AND agm01.`grid_role` = #{gridRole}
+			</if>
+		</where>
+		ORDER BY agm01.`grid_member`
+	</select>
 </mapper>

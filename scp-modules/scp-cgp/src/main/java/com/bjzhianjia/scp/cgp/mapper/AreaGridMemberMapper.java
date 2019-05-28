@@ -1,11 +1,13 @@
 package com.bjzhianjia.scp.cgp.mapper;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.AreaGridMember;
 import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 // @Tenant
 /**
@@ -48,4 +50,12 @@ public interface AreaGridMemberMapper extends CommonMapper<AreaGridMember> {
     List<String> distinctGridMember();
 
     List<AreaGridMember> getListExcludeRole(@Param("areaGridMember") AreaGridMember areaGridMember);
+
+    List<JSONObject> memAssessment(
+        @Param("monthStart") Date monthStart,
+        @Param("monthEnd") Date monthEnd,
+        @Param("gridIdS")Set<Integer> gridIds,
+        @Param("gridMembers") Set<String> gridMembers,
+        @Param("gridRole") String gridRole
+    );
 }

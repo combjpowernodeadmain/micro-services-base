@@ -933,7 +933,7 @@
 	</select>
 
 	<select id="selectByProcKeyAndCTaskCodeAndBizId" resultType="com.alibaba.fastjson.JSONObject">
-		SELECT task.PROC_KEY procKey,task.PROC_BIZID procBizId
+		SELECT task.PROC_KEY procKey,task.PROC_BIZID procBizId,task.PROC_CTASKNAME procCTaskName
 		FROM scp_wf_proc_task task
 		WHERE task.PROC_KEY=#{objs.procKey}
 		AND task.PROC_CTASKCODE IN (

@@ -581,4 +581,109 @@ SELECT
 		<!-- 关联网格表，获取父级网格名称 -->
 		LEFT JOIN area_grid parentAg ON parentAg.id=ag.grid_parent
 	</select>
+
+	<select id="gongdaiInMemberStatistics" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT superCaseInfo.id,superCaseInfo.`case_title` caseTitle,superCaseInfo.`source_type` sourceType,superCaseInfo.`is_finished` isFinished,superCaseInfo.`event_type_list` eventTypeList,
+		ei.`finish_time` exeTime,superCaseInfo.`finish_time` finishTime
+		FROM
+		case_info superCaseInfo
+		LEFT JOIN execute_info ei ON ei.`case_id`=superCaseInfo.`id`
+		<where>
+			<choose>
+				<when test="exeStatus == 'jieshou'">
+					superCaseInfo.id IN (
+					# 接收数
+					SELECT ei01.`case_id` ei01CaseId
+					FROM execute_info ei01
+					INNER JOIN case_info ci01 ON ci01.`id`=ei01.`case_id`
+					WHERE ci01.`crt_time` BETWEEN #{startTime} AND #{endTime}
+					AND ei01.`exe_person`=#{userId}
+					)
+				</when>
+				<when test="exeStatus == 'shangbao'">
+					OR
+					(
+					superCaseInfo.`source_code` IN (
+					# 上报数
+					SELECT pk01.`id` pkId
+					FROM patrol_task pk01
+					WHERE pk01.`crt_time` BETWEEN #{startTime} AND #{endTime}
+					AND pk01.`crt_user_id`=#{userId}
+					)
+					AND superCaseInfo.`source_type`='root_biz_eventType_check'
+					)
+				</when>
+				<when test="exeStatus == 'banjie'">
+					OR (
+					superCaseInfo.id IN (
+					# 完成数
+					SELECT ei01.`case_id` ei01CaseId
+					FROM execute_info ei01
+					INNER JOIN case_info ci01 ON ci01.`id`=ei01.`case_id`
+					WHERE ci01.`crt_time` BETWEEN #{startTime} AND #{endTime}
+					AND ei01.`exe_person`=#{userId}
+					AND ci01.`is_finished`='1'
+					)
+					)
+				</when>
+				<when test="exeStatus == 'tuihui'">
+					OR (
+					superCaseInfo.`id` IN (
+					# 退回数
+					SELECT ei01.`case_id` ei01CaseId
+					FROM execute_info ei01
+					INNER JOIN case_info ci01 ON ci01.`id`=ei01.`case_id`
+					WHERE ci01.`crt_time` BETWEEN #{startTime} AND #{endTime}
+					AND ei01.`exe_person`=#{userId}
+					AND ci01.`is_finished`='2'
+					)
+					)
+				</when>
+				<otherwise>
+					superCaseInfo.id IN (
+					# 接收数
+					SELECT ei01.`case_id` ei01CaseId
+					FROM execute_info ei01
+					INNER JOIN case_info ci01 ON ci01.`id`=ei01.`case_id`
+					WHERE ci01.`crt_time` BETWEEN #{startTime} AND #{endTime}
+					AND ei01.`exe_person`=#{userId}
+					)
+					OR
+					(
+					superCaseInfo.`source_code` IN (
+					# 上报数
+					SELECT pk01.`id` pkId
+					FROM patrol_task pk01
+					WHERE pk01.`crt_time` BETWEEN #{startTime} AND #{endTime}
+					AND pk01.`crt_user_id`=#{userId}
+					)
+					AND superCaseInfo.`source_type`='root_biz_eventType_check'
+					)
+					OR (
+					superCaseInfo.id IN (
+					# 完成数
+					SELECT ei01.`case_id` ei01CaseId
+					FROM execute_info ei01
+					INNER JOIN case_info ci01 ON ci01.`id`=ei01.`case_id`
+					WHERE ci01.`crt_time` BETWEEN #{startTime} AND #{endTime}
+					AND ei01.`exe_person`=#{userId}
+					AND ci01.`is_finished`='1'
+					)
+					)
+					OR (
+					superCaseInfo.`id` IN (
+					# 退回数
+					SELECT ei01.`case_id` ei01CaseId
+					FROM execute_info ei01
+					INNER JOIN case_info ci01 ON ci01.`id`=ei01.`case_id`
+					WHERE ci01.`crt_time` BETWEEN #{startTime} AND #{endTime}
+					AND ei01.`exe_person`=#{userId}
+					AND ci01.`is_finished`='2'
+					)
+					)
+				</otherwise>
+			</choose>
+		</where>
+		ORDER BY superCaseInfo.id DESC
+	</select>
 </mapper>
