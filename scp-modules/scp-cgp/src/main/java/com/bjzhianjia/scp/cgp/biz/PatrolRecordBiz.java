@@ -315,15 +315,17 @@ public class PatrolRecordBiz extends BusinessBiz<PatrolRecordMapper, PatrolRecor
     public ObjectRestResponse<PatrolRecord> getLastestPatrolRecord() {
         ObjectRestResponse<PatrolRecord> restResponse=new ObjectRestResponse<>();
 
-        PatrolRecord patrolRecord=new PatrolRecord();
-        patrolRecord.setCrtUserId(BaseContextHandler.getUserID());
+        Example example=new Example(PatrolRecord.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("crtUserId",BaseContextHandler.getUserID());
 
+        example.setOrderByClause("id desc");
         PageHelper.startPage(1, 1);
-        List<PatrolRecord> select = this.mapper.select(patrolRecord);
+        List<PatrolRecord> patrolRecords = this.selectByExample(example);
 
-        if(BeanUtil.isNotEmpty(select)){
+        if(BeanUtil.isNotEmpty(patrolRecords)){
             restResponse.setStatus(200);
-            restResponse.setData(select.get(0));
+            restResponse.setData(patrolRecords.get(0));
         }
         return restResponse;
     }
