@@ -43,4 +43,14 @@ public class CLEConcernedCompanyBiz extends BusinessBiz<CLEConcernedCompanyMappe
 
         return null;
     }
+
+    public List<CLEConcernedCompany> getList(CLEConcernedCompany company) {
+        Example example=new Example(CLEConcernedCompany.class);
+        Example.Criteria criteria = example.createCriteria();
+        if(BeanUtil.isNotEmpty(company.getRegulaObjectId())){
+            criteria.andEqualTo("regulaObjectId",company.getRegulaObjectId());
+        }
+
+        return this.selectByExample(example);
+    }
 }
