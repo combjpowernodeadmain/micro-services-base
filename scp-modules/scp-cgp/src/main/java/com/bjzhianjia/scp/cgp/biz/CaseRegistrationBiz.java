@@ -2426,7 +2426,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         Integer limit =
             BeanUtil.isEmpty(queryData.getInteger("limit")) ? 10 : queryData.getInteger("limit");
 
-        TableResultResponse<CaseRegistration> list = this.getList(queryCaseRegistration, page, limit);
+        TableResultResponse<CaseRegistration> list = this.getList(queryCaseRegistration,null, page, limit);
 
         List<JSONObject> result=new ArrayList<>();
         long total =0L;
