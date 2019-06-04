@@ -551,7 +551,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      * @param limit
      * @return
      */
-    public TableResultResponse<CaseRegistration> getList(CaseRegistration caseRegistration, int page, int limit) {
+    public TableResultResponse<CaseRegistration> getList(CaseRegistration caseRegistration,String regulaobjectId, int page, int limit) {
         Example example = new Example(CaseRegistration.class);
         Criteria criteria = example.createCriteria();
 
@@ -572,6 +572,25 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             criteria.andLike("caseName", caseRegistration.getCaseName());
         }
 
+        // 按监管对象查询
+        if(BeanUtils.isNotEmpty(regulaobjectId)){
+            CLEConcernedCompany company=new CLEConcernedCompany();
+            company.setRegulaObjectId(Integer.valueOf(regulaobjectId));
+            List<CLEConcernedCompany> companyList = cLEConcernedCompanyBiz.getList(company);
+            boolean flag=true;
+            if(BeanUtil.isNotEmpty(companyList)){
+                Set<Integer> collect = companyList.stream().map(CLEConcernedCompany::getId).collect(Collectors.toSet());
+                if(BeanUtil.isNotEmpty(collect)){
+                    criteria.andIn("concernedId",collect);
+                    criteria.andEqualTo("concernedType", "root_biz_concernedT_org");
+                    flag=false;
+                }
+            }
+
+            if(flag){
+                return new TableResultResponse<>(0,new ArrayList<>());
+            }
+        }
         example.setOrderByClause("crt_time desc");
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<CaseRegistration> rows = this.selectByExample(example);

@@ -110,13 +110,14 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
     public TableResultResponse<CaseRegistration> getList(
         @RequestParam(value = "gridId", defaultValue = "") @ApiParam("网格ID") Integer gridId,
         @RequestParam(value = "exeStatus", defaultValue = "") @ApiParam("案件状态") String exeStatus,
+        @RequestParam(value = "regulaObjectId", defaultValue = "") @ApiParam("监管对象ID") String regulaObjectId,
         @RequestParam(value = "page", defaultValue = "1") @ApiParam("当前页") Integer page,
         @RequestParam(value = "limit", defaultValue = "10") @ApiParam("页容量") Integer limit) {
         CaseRegistration caseRegistration = new CaseRegistration();
         caseRegistration.setGirdId(gridId);
         caseRegistration.setExeStatus(exeStatus);
 
-        return this.baseBiz.getList(caseRegistration, page, limit);
+        return this.baseBiz.getList(caseRegistration,regulaObjectId, page, limit);
     }
 
     /**
