@@ -37,7 +37,7 @@ pipeline {
             steps {
                 sshPublisher(publishers: [
                     sshPublisherDesc(
-                        configName: 'XinqiaoIntranetServer',
+                        configName: 'SifaIntranetServer',
                         transfers: [
                             sshTransfer(
                                 excludes: '',
@@ -67,7 +67,7 @@ pipeline {
                 sshPublisher(publishers: [
 
                     sshPublisherDesc(
-                        configName: 'XinqiaoIntranetServer',
+                        configName: 'SifaIntranetServer',
                         transfers: [
                             sshTransfer(
                                 excludes: '',
@@ -88,7 +88,7 @@ pipeline {
                         verbose: false
                     ),
                     sshPublisherDesc(
-                        configName: 'XinqiaoIntranetServer',
+                        configName: 'SifaIntranetServer',
                         transfers: [
                             sshTransfer(
                                 excludes: '',
@@ -109,7 +109,7 @@ pipeline {
                         verbose: false
                     ),
                     sshPublisherDesc(
-                        configName: 'XinqiaoIntranetServer',
+                        configName: 'SifaIntranetServer',
                         transfers: [
                             sshTransfer(
                                 excludes: '',
@@ -138,7 +138,7 @@ pipeline {
                 sh 'echo Deploy to Xiashu'
                 sshPublisher(publishers: [
                     sshPublisherDesc(
-                        configName: 'XinqiaoIntranetServer',
+                        configName: 'SifaIntranetServer',
                         transfers: [
 
                             sshTransfer(excludes: '',
@@ -191,7 +191,7 @@ pipeline {
             steps {
                 sshPublisher(publishers: [
                     sshPublisherDesc(
-                        configName: 'XinqiaoIntranetServer',
+                        configName: 'SifaIntranetServer',
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
