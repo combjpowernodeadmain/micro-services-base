@@ -3091,4 +3091,93 @@ public class CaseInfoService {
 
         return new TableResultResponse<>(tableResult.getData().getTotal(), jObjList);
     }
+
+
+    public TableResultResponse<JSONObject> gongdaiInMemberStatistics(String month, String userId, String exeStatus,
+        Integer page, Integer limit){
+        TableResultResponse<JSONObject> result =
+            this.caseInfoBiz.gongdaiInMemberStatistics(month, userId, exeStatus, page, limit);
+
+        if(BeanUtil.isEmpty(result.getData().getRows())){
+            return new TableResultResponse<>(0, new ArrayList<>());
+        }
+        // 来源类型
+        Set<String> rootBizIdSet=new HashSet<>();
+        Set<String> eventTypeIdStrSet=new HashSet<>();
+        Set<String> procBizId=new HashSet<>();
+        for (JSONObject caseInfo : result.getData().getRows()) {
+            rootBizIdSet.add(caseInfo.getString("sourceType"));
+            eventTypeIdStrSet.add(String.valueOf(caseInfo.getInteger("eventTypeList")));
+            procBizId.add(caseInfo.getString("id"));
+        }
+
+        /*
+         * 查询业务条线，查询事件来源，查询事件级别
+         */
+        Map<String, String> rootBizList = null;
+        if (rootBizIdSet != null && !rootBizIdSet.isEmpty()) {
+            rootBizList = dictFeign.getByCodeIn(String.join(",", rootBizIdSet));
+        }
+        if(BeanUtil.isEmpty(rootBizList)){
+            rootBizList=new HashMap<>();
+        }
+
+        // 查询事件类别
+        Map<String, String> eventType_ID_NAME_Map = new HashMap<>();
+        if (eventTypeIdStrSet != null && !eventTypeIdStrSet.isEmpty()) {
+            List<EventType> eventTypeList;
+            eventTypeList = eventTypeMapper.selectByIds(String.join(",", eventTypeIdStrSet));
+            List<String> eventTypeNameList = new ArrayList<>();
+            for (EventType eventType : eventTypeList) {
+                if (StringUtils.isNotBlank(eventType.getTypeName())) {
+                    eventTypeNameList.add(eventType.getTypeName());
+                }
+                eventType_ID_NAME_Map.put(String.valueOf(eventType.getId()), eventType.getTypeName());
+            }
+        }
+
+        if(BeanUtil.isEmpty(procBizId)){
+            procBizId.add("-1");
+        }
+//        JSONObject objs=new JSONObject();
+//        objs.put("procKey", "comprehensiveManage");
+//        objs.put("procBizId", procBizId);
+//        List<JSONObject> wfJObjList = wfMonitorService.selectByProcKeyAndCTaskCodeAndBizId(objs);
+//        Map<String, String> procBizIdCTaskNameMap;
+//        if (BeanUtil.isNotEmpty(wfJObjList)) {
+//            procBizIdCTaskNameMap = wfJObjList.stream()
+//                .collect(Collectors.toMap(obj -> obj.getString("procBizId"), obj -> obj.getString("procCTaskName")));
+//        } else {
+//            procBizIdCTaskNameMap = new HashMap<>();
+//        }
+
+        for (JSONObject caseInfo : result.getData().getRows()) {
+            caseInfo.put("sourceTypeName", rootBizList.get(caseInfo.getString("sourceType")) == null ?
+                "" :
+                rootBizList.get(caseInfo.getString("sourceType")));
+            caseInfo.put("eventTypeListName",
+                eventType_ID_NAME_Map.get(caseInfo.getString("eventTypeList"))
+                 == null ? "" : eventType_ID_NAME_Map.get(caseInfo.getString("eventTypeList")));
+//            caseInfo.put("caseInfoStatusName",procBizIdCTaskNameMap.get(caseInfo.getString("id")));
+
+//            if (CaseInfo.FINISHED_STATE_FINISH.equals(caseInfo.getString("isFinished"))) {
+//                caseInfo.put("caseInfoStatusName", "已办结");
+//            }
+//
+//            if (CaseInfo.FINISHED_STATE_STOP.equals(caseInfo.getString("isFinished"))) {
+//                caseInfo.put("caseInfoStatusName", procBizIdCTaskNameMap.get(caseInfo.getString("id") + "(已终止)"));
+//            }
+//
+//            if("1".equals(caseInfo.getString("isDuplicate"))){
+//                CaseInfo dupCaseInfo = caseInfoBiz.selectById(caseInfo.getString("duplicateWith"));
+//                if (BeanUtil.isNotEmpty(dupCaseInfo)) {
+//                    caseInfo.put("caseInfoStatusName", "重复事件(" + dupCaseInfo.getCaseCode() + ")");
+//                } else {
+//                    caseInfo.put("caseInfoStatusName", "重复事件");
+//                }
+//            }
+        }
+
+        return result;
+    }
 }

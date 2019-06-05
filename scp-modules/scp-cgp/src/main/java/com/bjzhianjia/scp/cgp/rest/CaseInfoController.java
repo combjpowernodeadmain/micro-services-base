@@ -620,4 +620,16 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         TableResultResponse<JSONObject> userToDoTasks = caserInfoService.getUserToDoTasksOfFocusOn(page,limit);
         return userToDoTasks;
     }
+
+    @GetMapping("/gongdaiInMemberStatistics")
+    @ApiOperation("获取网格员考核工单办理列表")
+    public TableResultResponse<JSONObject> gongdaiInMemberStatistics(
+        @RequestParam(value = "month",defaultValue = "") @ApiParam("月份,yyyy-MM-dd") String month,
+        @RequestParam(value = "userId",defaultValue = "") @ApiParam("用户ID") String userId,
+        @RequestParam(value = "exeStatus",defaultValue = "") @ApiParam("处理状态") String exeStatus,
+        @RequestParam(value = "page",defaultValue = "1") Integer page,
+        @RequestParam(value = "limit",defaultValue = "10") @ApiParam("月份,yyyy-MM-dd") Integer limit
+    ){
+        return this.caserInfoService.gongdaiInMemberStatistics(month,userId,exeStatus,page,limit);
+    }
 }

@@ -1,21 +1,5 @@
 package com.bjzhianjia.scp.cgp.biz;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-
-import com.bjzhianjia.scp.security.common.util.BeanUtils;
-import com.bjzhianjia.scp.security.common.util.BooleanUtil;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -27,15 +11,26 @@ import com.bjzhianjia.scp.cgp.mapper.AreaGridMapper;
 import com.bjzhianjia.scp.cgp.mapper.AreaGridMemberMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.CommonUtil;
+import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.common.util.BeanUtils;
+import com.bjzhianjia.scp.security.common.util.BooleanUtil;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
+
+import java.lang.reflect.InvocationTargetException;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * 
@@ -631,4 +626,144 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
         return  new TableResultResponse<>(pageObj.getEndRow(), resultData);
     }
 
+    /**
+     * 网格员考核统计
+     * @return
+     */
+    public TableResultResponse<JSONObject> memAssessment(String month, Integer gridId, String gridMember,
+        String gridRole, Integer page, Integer limit) {
+        TableResultResponse<JSONObject> result = new TableResultResponse<>();
+
+        Date monthStart;
+        Date monthEnd;
+
+        boolean isFastDead = false;
+
+        Date sourceDate;
+        if (StringUtils.isEmpty(month)) {
+            // 默认查询当月
+            sourceDate = new Date();
+        } else {
+            sourceDate = DateUtil.dateFromStrToDate(month, "yyyy-MM");
+        }
+
+        monthStart = DateUtil.getDayStartTime(DateUtil.theFirstDayOfMonth(sourceDate));
+        monthEnd = DateUtil.getDayStartTime(DateUtil.theFirstDayOfMonth(DateUtil.theDayOfMonthPlus(sourceDate, 1)));
+
+        // 是否按网格查询
+        Set<Integer> gridIdCollect = null;
+        if (BeanUtil.isNotEmpty(gridId)) {
+            List<AreaGrid> areaGridList = areaGridBiz.getAreaGridBindChileren(gridId);
+            gridIdCollect = areaGridList.stream().map(AreaGrid::getId).collect(Collectors.toSet());
+            if (BeanUtil.isEmpty(gridIdCollect)) {
+                isFastDead = true;
+            }
+        }
+
+        // 是否按姓名查询
+        Set<String> userIdList = null;
+        JSONArray usersByName;
+        Map<String, String> memIdNameMap = new HashMap<>();
+        boolean hasLoadMem = false;
+        if (StringUtils.isNotBlank(gridMember)) {
+            userIdList = new HashSet<>();
+            usersByName = adminFeign.getUsersByName(gridMember);
+            hasLoadMem = true;
+            if (BeanUtil.isNotEmpty(usersByName)) {
+                for (int i = 0; i < usersByName.size(); i++) {
+                    JSONObject userJObj = usersByName.getJSONObject(i);
+                    userIdList.add(userJObj.getString("id"));
+                    memIdNameMap.put(userJObj.getString("id"), userJObj.getString("name"));
+                }
+                if (BeanUtil.isEmpty(userIdList)) {
+                    isFastDead = true;
+                }
+            } else {
+                isFastDead = true;
+            }
+        }
+
+        if (isFastDead) {
+            // 快速死亡
+            result.getData().setTotal(0);
+            result.getData().setRows(new ArrayList<>());
+            return result;
+        }
+
+        Page<Object> pageInfo = PageHelper.startPage(page, limit);
+        List<JSONObject> jsonObjects =
+            this.mapper.memAssessment(monthStart, monthEnd, gridIdCollect, userIdList, gridRole);
+
+        if (BeanUtil.isNotEmpty(jsonObjects)) {
+            List<AreaGridMember> allMem = this.getByMap(new HashMap<>());
+            if (BeanUtil.isEmpty(allMem)) {
+                allMem = new ArrayList<>();
+            }
+            // 用于统计某一网格员属于几个网格
+            Map<String, Set<Integer>> userIdGirdIdListMap = new HashMap<>();
+            for (AreaGridMember mem : allMem) {
+                Set<Integer> integers = userIdGirdIdListMap.get(mem.getGridMember());
+                if (BeanUtil.isEmpty(integers)) {
+                    integers = new HashSet<>();
+                }
+                integers.add(mem.getGridId());
+                userIdGirdIdListMap.put(mem.getGridMember(), integers);
+            }
+
+            // 收集所以网格基本信息
+            List<AreaGrid> allAreaGridWithBasic = this.areaGridBiz.getAllAreaGridWithBasic();
+            Map<Integer, String> gridIdNameMap =
+                allAreaGridWithBasic.stream().collect(Collectors.toMap(AreaGrid::getId, AreaGrid::getGridName));
+
+            for (AreaGrid tmp : allAreaGridWithBasic) {
+                if (tmp.getGridParent() != -1) {
+                    gridIdNameMap
+                        .put(tmp.getId(), "(" + gridIdNameMap.get(tmp.getGridParent()) + ")" + tmp.getGridName());
+                }
+            }
+
+            if (!hasLoadMem) {
+                // 如果按网格员名称查询，则在之前就已经从admin服务摘取过人员，无法再进行查询
+                List<String> gridMemberCollect =
+                    jsonObjects.stream().map(o -> o.getString("gridMember")).distinct().collect(Collectors.toList());
+                if (BeanUtil.isNotEmpty(gridMemberCollect)) {
+                    Map<String, String> usersByUserIds =
+                        adminFeign.getUsersByUserIds(StringUtils.join(gridMemberCollect, ","));
+                    if (BeanUtil.isNotEmpty(usersByUserIds)) {
+                        for (Map.Entry<String, String> e : usersByUserIds.entrySet()) {
+                            JSONObject jsonObject = JSONObject.parseObject(e.getValue());
+                            memIdNameMap.put(e.getKey(), jsonObject.getString("name"));
+                        }
+                    }
+                }
+            }
+
+            DecimalFormat format = new DecimalFormat("0.00");
+            // 整合信息
+            for (JSONObject objTmp : jsonObjects) {
+                Set<Integer> gridIdSet = userIdGirdIdListMap.get(objTmp.getString("gridMember"));
+                if (BeanUtil.isNotEmpty(gridIdSet)) {
+                    Set<String> gridNameSet = new HashSet<>();
+                    for (Integer gridIdTmp : gridIdSet) {
+                        String gridTm;
+                        if (BeanUtil.isNotEmpty(gridTm = gridIdNameMap.get(gridIdTmp))) {
+                            gridNameSet.add(gridTm);
+                        }
+                    }
+                    objTmp.put("gridName", StringUtils.join(gridNameSet, ",\n"));
+                } else {
+                    objTmp.put("gridName", "");
+                }
+
+                Integer secondDiff = objTmp.getInteger("secondDiff");
+
+                objTmp.put("hourDiff", format.format(secondDiff * 1.0 / 3600));
+                objTmp.put("userName", memIdNameMap.get(objTmp.getString("gridMember")));
+            }
+        }
+
+        result.getData().setTotal(pageInfo.getTotal());
+        result.getData().setRows(jsonObjects);
+        return result;
+    }
 }

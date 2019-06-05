@@ -1243,4 +1243,37 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
 
         return new TableResultResponse<>(pageInfo.getTotal(), list);
     }
+
+    /**
+     * 查询员工考核里工单的信息
+     * @param month
+     * @param userId
+     * @param exeStatus
+     * @param page
+     * @param limit
+     * @return
+     */
+    public TableResultResponse<JSONObject> gongdaiInMemberStatistics(String month, String userId, String exeStatus,
+        Integer page, Integer limit) {
+        Date startTime;
+        Date endTime;
+
+        // 查询起止时间为某月第一天凌晨到次月第一天凌晨
+        if (StringUtils.isBlank(month)) {
+            startTime = DateUtil.getDayStartTime(DateUtil.theFirstDayOfMonth(new Date()));
+            endTime = DateUtil.getDayStartTime(DateUtil.theFirstDayOfMonth(DateUtil.theDayOfMonthPlus(new Date(), 1)));
+        } else {
+            startTime =
+                DateUtil.getDayStartTime(DateUtil.theFirstDayOfMonth(DateUtil.dateFromStrToDate(month, "yyyy-MM")));
+
+            endTime = DateUtil.getDayStartTime(DateUtil
+                .theFirstDayOfMonth(DateUtil.theDayOfMonthPlus(DateUtil.dateFromStrToDate(month, "yyyy-MM"), 1)));
+        }
+
+
+        Page<Object> pageInfo = PageHelper.startPage(page, limit);
+        List<JSONObject> jsonObjects = this.mapper.gongdaiInMemberStatistics(startTime, endTime, userId, exeStatus);
+
+        return new TableResultResponse<>(pageInfo.getTotal(), jsonObjects);
+    }
 }

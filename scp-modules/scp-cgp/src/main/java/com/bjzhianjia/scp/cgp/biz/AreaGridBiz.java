@@ -626,4 +626,46 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
 
         return BeanUtils.isEmpty(areaGridList)?new ArrayList<>():areaGridList;
     }
+
+    /**
+     * 按ID获取网格及子网格
+     * @param gridId
+     */
+    public List<AreaGrid> getAreaGridBindChileren(Integer gridId) {
+        AreaGrid areaGrid = this.selectById(gridId);
+        Set<String> gridSet=new HashSet<>();
+
+        if(BeanUtil.isNotEmpty(areaGrid)){
+            Example example =
+                new Example(AreaGrid.class).selectProperties("id", "gridName", "gridLevel",
+                    "gridParent");
+            example.createCriteria().andEqualTo("isDeleted", "0");
+            List<AreaGrid> areaGrids = this.selectByExample(example);
+            this._bindChildren(areaGrids, areaGrid, gridSet);
+
+            Map<Integer, AreaGrid> collect =
+                areaGrids.stream().collect(Collectors.toMap(AreaGrid::getId, areagrid -> areagrid));
+
+            List<AreaGrid> result=new ArrayList<>();
+            for(String gridStr:gridSet){
+                result.add(collect.get(Integer.valueOf(gridStr)));
+            }
+
+            return result;
+        }else{
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * 查询所有网格的基本信息
+     *
+     * @return
+     */
+    public List<AreaGrid> getAllAreaGridWithBasic() {
+        Example example = new Example(AreaGrid.class).selectProperties("id", "gridName", "gridLevel", "gridParent");
+        example.createCriteria().andEqualTo("isDeleted", "0");
+        List<AreaGrid> areaGrids = this.selectByExample(example);
+        return areaGrids == null ? new ArrayList<>() : areaGrids;
+    }
 }

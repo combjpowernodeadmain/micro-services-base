@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * AreaGridMemberController 类描述.
@@ -121,5 +122,27 @@ public class AreaGridMemberController extends BaseController<AreaGridMemberBiz, 
             @RequestParam(value = "page", defaultValue = "1") @ApiParam("页码") Integer page,
             @RequestParam(value = "limit", defaultValue = "20") @ApiParam("页容量") Integer limit) {
         return this.baseBiz.getByGridIdAndGridRole(gridId, gridRole, page, limit);
+    }
+
+    @GetMapping("/assessment")
+    public TableResultResponse<JSONObject> memAssessment(
+        @RequestParam(value = "month", defaultValue = "") @ApiParam("月度,yyyy-MM") String month,
+        @RequestParam(value = "gridId", required = false) @ApiParam("网格ID") Integer gridId,
+        @RequestParam(value = "gridMember", defaultValue = "") @ApiParam("姓名") String gridMember,
+        @RequestParam(value = "gridRole", defaultValue = "") @ApiParam("人员角色") String gridRole,
+        @RequestParam(value = "page", defaultValue = "1") Integer page,
+        @RequestParam(value = "limit", defaultValue = "10") Integer limit) {
+        /*
+                "timecounts": "巡查时间",
+                "finishedExecount": "办结数",
+                "unfinishedExecount": "接收数",
+                "pkcount": "上报数",
+                "backcount": 退回数,
+                "gridName": "(下蜀村)网格4,\n(下蜀村)网格5,\n(下蜀村)网格1,\n(下蜀村)网格2,\n(下蜀村)网格3,\n(蜀居)网格3",
+                "gridMember": "f4769cabc5fa43edb37f4d69018a1048",
+                "ccount": "巡查次数",
+                "userName": "邓鹏宇"
+         */
+        return this.baseBiz.memAssessment(month, gridId, gridMember, gridRole, page, limit);
     }
 }

@@ -300,4 +300,30 @@ public class DateUtil {
 		calendar.set(Calendar.MILLISECOND, 0);
 		return new Timestamp(calendar.getTimeInMillis());
 	}
+
+	/**
+	 * 获取date所在月和最后一天
+	 *
+	 * @param date
+	 * @return
+	 */
+	public static Date theFirstDayOfMonth(Date date) {
+		DateTime dateTime = new DateTime(date.getTime());// date
+		DateTime theFirstDay = dateTime.withDayOfMonth(1);
+
+		return new Date(theFirstDay.getMillis());
+	}
+
+	/**
+	 * 获取下个月的时间，
+	 * 日期与时间与源时间相同
+	 * @param sourceDate
+	 * @param plus
+	 * @return
+	 */
+	public static Date theDayOfMonthPlus(Date sourceDate,int plus){
+		DateTime dateTime=new DateTime(sourceDate.getTime());
+		DateTime nextMonth = dateTime.plusMonths(1);
+		return new Date(nextMonth.getMillis());
+	}
 }

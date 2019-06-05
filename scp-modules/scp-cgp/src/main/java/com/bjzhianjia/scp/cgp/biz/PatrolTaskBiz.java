@@ -186,7 +186,7 @@ public class PatrolTaskBiz extends BusinessBiz<PatrolTaskMapper, PatrolTask> {
         patrolTask.setCrtUserId(BaseContextHandler.getUserID());
         Page<Object> result = PageHelper.startPage(page, limit);
         List<Map<String, Object>> patrolTaskList =
-            patrolTaskMapper.selectPatrolTaskListByRole(patrolTask, speName, startTime, endTime, gridIdListOfMem);
+            patrolTaskMapper.selectPatrolTaskListByRole(patrolTask, speName, startTime, endTime, null);
 
         if (BeanUtil.isEmpty(patrolTaskList)) {
             return new TableResultResponse<>(0, new ArrayList<>());
