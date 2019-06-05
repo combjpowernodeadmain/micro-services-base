@@ -41,7 +41,7 @@ pipeline {
                         transfers: [
                             sshTransfer(
                                 excludes: '',
-                                execCommand: 'cd /data/scp && sudo ./stop-scp.sh',
+                                execCommand: 'cd /data/xiashu && sudo ./stop-scp.sh',
                                 execTimeout: 120000,
                                 flatten: false,
                                 makeEmptyDirs: false,
@@ -71,7 +71,7 @@ pipeline {
                         transfers: [
                             sshTransfer(
                                 excludes: '',
-                                execCommand: 'mv /data/scp/4_admin/scp-admin.jar /data/scp/4_admin/scp-admin.${BUILD_ID}.jar',
+                                execCommand: 'mv /data/xiashu/4_admin/scp-admin.jar /data/xiashu/4_admin/scp-admin.${BUILD_ID}.jar',
                                 execTimeout: 120000,
                                 flatten: false,
                                 makeEmptyDirs: false,
@@ -92,7 +92,7 @@ pipeline {
                         transfers: [
                             sshTransfer(
                                 excludes: '',
-                                execCommand: 'mv /data/scp/5_gate/scp-gate.jar /data/scp/5_gate/scp-gate.${BUILD_ID}.jar',
+                                execCommand: 'mv /data/xiashu/5_gate/scp-gate.jar /data/xiashu/5_gate/scp-gate.${BUILD_ID}.jar',
                                 execTimeout: 120000,
                                 flatten: false,
                                 makeEmptyDirs: false,
@@ -113,7 +113,7 @@ pipeline {
                         transfers: [
                             sshTransfer(
                                 excludes: '',
-                                execCommand: 'mv /data/scp/6_cgp/scp-cgp.jar /data/scp/6_cgp/scp-cgp.${BUILD_ID}.jar',
+                                execCommand: 'mv /data/xiashu/6_cgp/scp-cgp.jar /data/xiashu/6_cgp/scp-cgp.${BUILD_ID}.jar',
                                 execTimeout: 120000,
                                 flatten: false,
                                 makeEmptyDirs: false,
@@ -195,7 +195,7 @@ pipeline {
                         transfers: [
                             sshTransfer(
                                 excludes: '', 
-                                execCommand: 'cd /data/scp/ && sudo ./start-scp.sh', 
+                                execCommand: 'cd /data/xiashu/ && sudo ./start-scp.sh', 
                                 execTimeout: 480000, 
                                 flatten: false, 
                                 makeEmptyDirs: false, 
