@@ -176,23 +176,23 @@ public class AffairCacheBiz extends BusinessBiz<AffairCacheMapper, AffairCache> 
         //办事人
         String clerkName = param.getString("PersonName");
 
+        // 事务编号
         if (StringUtil.isNotBlank(affairCode)) {
-            criteria.andEqualTo("affairCode", affairCode);
+            criteria.andLike("affairCode", "%"+affairCode+"%");
         }
+        // 事项名称
         if (StringUtil.isNotBlank(affairName)) {
             criteria.andLike("affairName", "%"+affairName+"%");
         }
+        // 办事人(单位)
         if (StringUtil.isNotBlank(clerkName)) {
             criteria.andLike("clerkName", "%" + clerkName + "%");
         }
+        // 受理时间范围内的数据
         if (StringUtil.isNotBlank(startTime) && StringUtil.isNotBlank(endTime)) {
-            criteria.andCondition("'" + startTime + "'< accept_time and accept_time < '" + endTime + "'");
-        } else {
-            startTime = DateUtil.dateFromDateToStr(DateUtil.getBeginDayOfWeek(), DateUtil.DATE_FORMAT_DF);
-            endTime = DateUtil.dateFromDateToStr(DateUtil.getEndDayOfWeek(), DateUtil.DATE_FORMAT_DF);
-            criteria.andCondition("'" + startTime + "'< accept_time and accept_time < '" + endTime + "'");
+            criteria.andCondition("'" + startTime + "'<= accept_time and accept_time <= '" + endTime + "'");
         }
-
+        example.setOrderByClause(" accept_time desc ");
         Page<Object> result = PageHelper.startPage(param.getInteger("page"), param.getInteger("limit"));
         List<AffairCache> list = this.mapper.selectByExample(example);
         if (BeanUtil.isNotEmpty(list)) {

@@ -78,12 +78,12 @@ public class AffairController {
             @RequestParam(value = "limit", defaultValue = "10") @ApiParam(value = "页容量") Integer limit) {
         //封装请求参数
         JSONObject params = new JSONObject();
-        params.put("CurrAffairCode", currAffairCode);
-        params.put("AffairName", affairName);
+        params.put("CurrAffairCode", currAffairCode.trim());
+        params.put("AffairName", affairName.trim());
         params.put("BeginDate", beginDate);
         params.put("EndDate", endDate);
         params.put("ClassifyId", classifyId);
-        params.put("PersonName", personName);
+        params.put("PersonName", personName.trim());
         params.put("CardNum", cardNum);
         try {
             //缓存第三方接口数据
