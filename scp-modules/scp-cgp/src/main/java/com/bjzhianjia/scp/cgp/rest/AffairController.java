@@ -89,7 +89,6 @@ public class AffairController {
             //缓存第三方接口数据
             affairCacheBiz.insertSelective();
         } catch (Exception e) {
-            e.printStackTrace();
         }
         //页码和页容量
         params.put("page", page);

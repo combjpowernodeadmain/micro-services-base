@@ -16,6 +16,7 @@ import com.bjzhianjia.scp.cgp.vo.SpecialEventVo;
 import com.bjzhianjia.scp.merge.core.MergeCore;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.common.util.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -313,24 +314,18 @@ public class SpecialEventService {
 	 * @return
 	 */
 	public SpecialEventVo getOne(Integer id) {
-		SpecialEvent one = specialEventBiz.selectById(id);
-		List<SpecialEvent> rows = new ArrayList<>();
-		
-		try {
-			mergeCore.mergeResult(SpecialEvent.class, rows);
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			e.printStackTrace();
-		}
-		
-		rows.add(one);
-		List<SpecialEventVo> result = _queryAssist(rows);
-		return result.get(0);
+        SpecialEventVo result = new SpecialEventVo();
+        SpecialEvent one = specialEventBiz.selectById(id);
+        List<SpecialEvent> rows = new ArrayList<>();
+        rows.add(one);
+        List<SpecialEventVo> resultList = _queryAssist(rows);
+        if (BeanUtils.isNotEmpty(resultList)) {
+            result = resultList.get(0);
+            // 设置状态字段数据
+            Map<String, String> dict = dictFeign.getByCode(result.getSpeStatus());
+            result.setSpeStatusName(dict.get(result.getSpeStatus()));
+        }
+        return result;
 	}
 
 	/**
