@@ -20,6 +20,7 @@ import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -66,32 +67,36 @@ public class AffairCacheBiz extends BusinessBiz<AffairCacheMapper, AffairCache> 
         Integer count = this.mapper.selectCountByExample(example);
 
         if (count != null) {
-            Date starTime = null;
-            String endTime = DateUtil.dateFromDateToStr(new Date(), DateUtil.DEFAULT_DATE_FORMAT);
-            //TODO 系统第一次对接接口时调用，数据量太大需要优化
-            //当前系统没有数据时,默认去拉取第三方全部数据
-            if (count == 0) {
-                starTime = DateUtil.getMonthFullDay(2000, 1);
-                params.put("BeginDate", DateUtil.dateFromDateToStr(starTime, DateUtil.DEFAULT_DATE_FORMAT));
-                params.put("EndDate", endTime);
-                //结果集
-                log.info("---------第三方接口缓存数据初始化开始---------");
-                response = HttpUtil.post(url, params);
-                this.addTempData(response);
-                log.info("---------第三方接口缓存数据初始化结束---------");
-            }
-            //当前系统已有缓存数据时,获取缓存表中 “ 受理时间 ” 为最新的时间点。
-            if (count > 0) {
-                AffairCache affairCache = this.mapper.selectNewAcceptTime();
-                if (affairCache != null) {
-                    //最新的受理时间点
-                    starTime = DateUtil.addSecond(affairCache.getAcceptTime(), 1);
+            try {
+                Date starTime = null;
+                String endTime = DateUtil.dateFromDateToStr(new Date(), DateUtil.DEFAULT_DATE_FORMAT);
+                //TODO 系统第一次对接接口时调用，数据量太大需要优化
+                //当前系统没有数据时,默认去拉取第三方全部数据
+                if (count == 0) {
+                    starTime = DateUtil.getMonthFullDay(2000, 1);
                     params.put("BeginDate", DateUtil.dateFromDateToStr(starTime, DateUtil.DEFAULT_DATE_FORMAT));
                     params.put("EndDate", endTime);
                     //结果集
+                    log.info("---------第三方接口缓存数据初始化开始---------");
                     response = HttpUtil.post(url, params);
                     this.addTempData(response);
+                    log.info("---------第三方接口缓存数据初始化结束---------");
                 }
+                //当前系统已有缓存数据时,获取缓存表中 “ 受理时间 ” 为最新的时间点。
+                if (count > 0) {
+                    AffairCache affairCache = this.mapper.selectNewAcceptTime();
+                    if (affairCache != null) {
+                        //最新的受理时间点
+                        starTime = DateUtil.addSecond(affairCache.getAcceptTime(), 1);
+                        params.put("BeginDate", DateUtil.dateFromDateToStr(starTime, DateUtil.DEFAULT_DATE_FORMAT));
+                        params.put("EndDate", endTime);
+                        //结果集
+                        response = HttpUtil.post(url, params);
+                        this.addTempData(response);
+                    }
+                }
+            } catch (IOException e) {
+                log.info("双向推动连接超时：url地址" + url);
             }
         }
     }
@@ -178,11 +183,11 @@ public class AffairCacheBiz extends BusinessBiz<AffairCacheMapper, AffairCache> 
 
         // 事务编号
         if (StringUtil.isNotBlank(affairCode)) {
-            criteria.andLike("affairCode", "%"+affairCode+"%");
+            criteria.andLike("affairCode", "%" + affairCode + "%");
         }
         // 事项名称
         if (StringUtil.isNotBlank(affairName)) {
-            criteria.andLike("affairName", "%"+affairName+"%");
+            criteria.andLike("affairName", "%" + affairName + "%");
         }
         // 办事人(单位)
         if (StringUtil.isNotBlank(clerkName)) {

@@ -99,15 +99,15 @@ public class PatrolTaskBiz extends BusinessBiz<PatrolTaskMapper, PatrolTask> {
         
         //获取数据字典：立案单状态值、来源类型
         Map<String, String> dictData = dictFeign.getByCodeIn(String.join(",", codes));
-        Object sourceType = null;
+        Object sourceTypeName = null;
         Object status = null;
         if(list != null && list.size() > 0) {
             for(Map<String,Object> map: list) {
                 if(BeanUtil.isNotEmpty(map)) {
-                    sourceType =  dictData.get(map.get("sourceType"));
+                    sourceTypeName =  dictData.get(map.get("sourceType"));
                     status =  dictData.get(map.get("status"));
                 }
-                map.put("sourceType", sourceType);
+                map.put("sourceTypeName", sourceTypeName);
                 map.put("status", status);
             }
         }
@@ -125,8 +125,10 @@ public class PatrolTaskBiz extends BusinessBiz<PatrolTaskMapper, PatrolTask> {
         if(list != null && list.size() > 0 ) {
             for(Map<String , Object> map : list) {
                 if(BeanUtil.isNotEmpty(map)) {
-                    set.add(String.valueOf(map.get("sourceType"))); //来源类型
-                    set.add(String.valueOf(map.get("status"))); //立案单状态
+                    // 来源类型
+                    set.add(String.valueOf(map.get("sourceType")));
+                    // 立案单状态
+                    set.add(String.valueOf(map.get("status")));
                 }
             }
             return set;

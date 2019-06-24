@@ -40,6 +40,7 @@
 		pk.crt_user_name as crtUserName,
 		pk.crt_time as crtTime,
 		pk.source_type as sourceType,
+		pk.source_task_id as sourceTaskId,
 		se.spe_name as speName,
 		ag.grid_name as gridName,
 		pk.status
