@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bjzhianjia.scp.cgp.mapper.PartyOrgMapper">
+
+    <resultMap type="com.bjzhianjia.scp.cgp.entity.PartyOrg" id="partyOrgMap">
+        <result property="id" column="id"/>
+        <result property="parentOrgId" column="parent_org_id"/>
+        <result property="orgCode" column="org_code"/>
+        <result property="orgFullName" column="org_full_name"/>
+        <result property="orgShortName" column="org_short_name"/>
+        <result property="orgType" column="org_type"/>
+        <result property="orgBuildDate" column="org_build_date"/>
+        <result property="orgLeader" column="org_leader"/>
+        <result property="orgMemberCount" column="org_member_count"/>
+        <result property="contactsUser" column="contacts_user"/>
+        <result property="mobilePhone" column="mobile_phone"/>
+        <result property="address" column="address"/>
+        <result property="mapInfo" column="map_info"/>
+        <result property="isDeleted" column="is_deleted"/>
+        <result property="crtUserName" column="crt_user_name"/>
+        <result property="crtUserId" column="crt_user_id"/>
+        <result property="crtTime" column="crt_time"/>
+        <result property="updUserName" column="upd_user_name"/>
+        <result property="updUserId" column="upd_user_id"/>
+        <result property="updTime" column="upd_time"/>
+        <result property="departId" column="depart_id"/>
+    </resultMap>
+    <!-- 获取未删除的全部数据 -->
+    <select id="selectPartyOrgAll" resultMap="partyOrgMap">
+        SELECT
+            id,
+            org_short_name,
+            parent_org_id
+        FROM
+            party_org
+        WHERE
+            is_deleted = '0'
+    </select>
+</mapper>
