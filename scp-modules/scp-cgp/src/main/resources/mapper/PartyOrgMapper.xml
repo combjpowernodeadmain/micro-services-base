@@ -17,6 +17,7 @@
         <result property="mobilePhone" column="mobile_phone"/>
         <result property="address" column="address"/>
         <result property="mapInfo" column="map_info"/>
+        <result property="orderSort" column="order_sort"/>
         <result property="isDeleted" column="is_deleted"/>
         <result property="crtUserName" column="crt_user_name"/>
         <result property="crtUserId" column="crt_user_id"/>
@@ -36,5 +37,44 @@
             party_org
         WHERE
             is_deleted = '0'
+        ORDER BY
+            order_sort DESC
+    </select>
+    <!-- 获取最新排序编号 -->
+    <select id="selectMaxOrderById" resultType="java.lang.String">
+        SELECT
+            order_sort
+        FROM
+            party_org
+        WHERE
+            parent_org_id = #{parentOrgId}
+        ORDER BY
+            order_sort DESC
+        LIMIT 1
+    </select>
+    <!-- 获取党组织详情 -->
+    <select id="selectBaseInfoById" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT
+            po.id,
+            po.parent_org_id parentOrgId,
+            pop.org_short_name parentShortName,
+            po.org_code orgCode,
+            po.org_full_name orgFullName,
+            po.org_short_name orgShortName,
+            po.org_type orgType,
+            po.org_build_date orgBuildDate,
+            po.org_leader orgLeader,
+            po.org_member_count orgMemberCount,
+            po.contacts_user contactsUser,
+            po.mobile_phone mobilePhone,
+            po.address,
+            po.map_info mapInfo,
+            po.order_sort orderSort
+        FROM
+            party_org po
+        LEFT JOIN party_org pop ON pop.id = po.parent_org_id
+        WHERE
+            po.is_deleted = '0'
+        AND po.id = #{partyOrgId}
     </select>
 </mapper>

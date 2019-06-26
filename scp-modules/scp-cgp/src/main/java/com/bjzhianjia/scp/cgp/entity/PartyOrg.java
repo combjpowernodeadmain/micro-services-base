@@ -68,6 +68,10 @@ public class PartyOrg implements Serializable {
     @Column(name = "map_info")
     private String mapInfo;
 
+    //编码排序
+    @Column(name = "order_sort")
+    private String orderSort;
+
     //是否删除(0否|1是）
     @Column(name = "is_deleted")
     private String isDeleted;
@@ -393,5 +397,19 @@ public class PartyOrg implements Serializable {
      */
     public String getDepartId() {
         return departId;
+    }
+
+    /**
+     * 获取：编码排序
+     */
+    public String getOrderSort() {
+        return orderSort;
+    }
+
+    /**
+     * 设置：编码排序
+     */
+    public void setOrderSort(String orderSort) {
+        this.orderSort = orderSort;
     }
 }
