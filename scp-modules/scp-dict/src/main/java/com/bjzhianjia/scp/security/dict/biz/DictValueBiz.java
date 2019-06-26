@@ -3,6 +3,7 @@ package com.bjzhianjia.scp.security.dict.biz;
 
 import com.alibaba.fastjson.JSON;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
+import com.bjzhianjia.scp.security.common.util.BeanUtils;
 import com.bjzhianjia.scp.security.common.util.UUIDUtils;
 import com.bjzhianjia.scp.security.dict.entity.DictType;
 import com.bjzhianjia.scp.security.dict.entity.DictValue;
@@ -19,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -216,4 +218,34 @@ public class DictValueBiz extends BusinessBiz<DictValueMapper, DictValue> {
     public void delete(DictValue entity) {
     	dictValueMapper.updateByPrimaryKeySelective(entity);
     }
+
+    /**
+	 * 通过DictType的code获取DictValue列表
+	 *
+	 * @param typeCodes DictType的code
+	 *                  数据格式：code1,code2.code3....
+	 * @return 数据格式
+	 * code : labelDefault
+	 */
+	public Map<String, String> getListByTypeCode(String typeCodes) {
+		Map<String, String> result = new HashMap<>();
+		if (StringUtils.isBlank(typeCodes)) {
+			return result;
+		}
+		try {
+			// 字符转集合
+			String[] codes = typeCodes.split(",");
+			List<String> codeList = Arrays.asList(codes);
+			System.out.println(codeList.toString());
+			// 获取列表
+			List<DictValue> data = this.mapper.selectListByTypeCode(codeList);
+			if (BeanUtils.isNotEmpty(data)) {
+				for (DictValue value : data) {
+					result.put(value.getCode(), value.getLabelDefault());
+				}
+			}
+		} catch (RuntimeException e) {
+		}
+		return result;
+	}
 }

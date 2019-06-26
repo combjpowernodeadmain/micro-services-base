@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import com.bjzhianjia.scp.security.common.util.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -285,6 +286,19 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
         List<DictValue> dictValues = this.baseBiz.selectByExample(example);
         return dictValues;
     }
-  
+	/**
+	 * 通过DictType的code获取DictValue列表
+	 *
+	 * @param typeCodes DictType的code
+	 *                  数据格式：code1,code2.code3....
+	 * @return
+	 */
+	@IgnoreClientToken
+	@IgnoreUserToken
+	@GetMapping("/typeCodes")
+	public Map<String,String> getListByTypeCode(
+			@RequestParam(value = "typeCodes",defaultValue = "") @ApiParam("数据字典类型codes") String typeCodes){
+		return this.baseBiz.getListByTypeCode(typeCodes);
+	}
     
 }

@@ -30,4 +30,20 @@
         <result property="tenantId" column="tenant_id"/>
     </resultMap>
 
+    <!-- 通过DictType的code获取DictValue列表 -->
+    <select id="selectListByTypeCode" resultMap="dictValueMap">
+        SELECT
+        dv.`code`,
+        dv.label_default
+        FROM
+        dict_value dv
+        LEFT JOIN dict_type dt ON dv.type_id = dt.id
+        WHERE
+        dt.is_deleted = '0'
+        AND dv.is_deleted = '0'
+        AND dt.`code` IN
+        <foreach collection="typeCodes" item="typeCode" open="(" close=")" separator=",">
+            #{typeCode}
+        </foreach>
+    </select>
 </mapper>
