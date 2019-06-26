@@ -1,6 +1,5 @@
 package com.bjzhianjia.scp.cgp.biz;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.Constances;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
@@ -9,7 +8,6 @@ import com.bjzhianjia.scp.cgp.vo.PartyOrgTree;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.util.BeanUtils;
 import com.bjzhianjia.scp.security.common.util.BooleanUtil;
-import com.bjzhianjia.scp.security.common.util.EntityUtils;
 import com.bjzhianjia.scp.security.common.util.TreeUtil;
 import com.bjzhianjia.scp.security.common.util.UUIDUtils;
 import com.github.pagehelper.Page;
@@ -191,7 +189,7 @@ public class PartyOrgBiz extends BusinessBiz<PartyOrgMapper, PartyOrg> {
         Example.Criteria criteria = example.createCriteria();
         // 党组织简称
         if (StringUtils.isNotBlank(partyOrg.getOrgShortName())) {
-            criteria.andLike("partyOrg", partyOrg.getOrgShortName().trim());
+            criteria.andLike("orgShortName", "%" + partyOrg.getOrgShortName().trim() + "%");
         }
         criteria.andEqualTo("isDeleted", BooleanUtil.BOOLEAN_FALSE);
         example.setOrderByClause("order_sort ASC");
