@@ -3,6 +3,7 @@ package com.bjzhianjia.scp.cgp.feign;
 import java.util.Map;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -91,4 +92,15 @@ public interface DictFeign {
      */
     @RequestMapping(value = "/dictValue/feign/code/in/{codes}", method = RequestMethod.GET)
     public Map<String, String> getByCodeIn(@PathVariable("codes") String codeList);
+
+
+    /**
+     * 通过DictType的code获取DictValue列表
+     *
+     * @param typeCodes DictType的code
+     *                  数据格式：code1,code2.code3....
+     * @return
+     */
+    @GetMapping("/dictValue/typeCodes")
+    Map<String,String> getListByTypeCode(@RequestParam(value = "typeCodes", defaultValue = "")  String typeCodes);
 }

@@ -87,6 +87,11 @@ public class Constances {
      * 网格等级
      */
     public static final String ROOT_BIZ_GRID_LEVEL = "root_biz_grid_level";
+
+	/**
+	 * 党组织类型
+	 */
+	public static final String  ROOT_BIZ_PARTY = "root_biz_party";
     
 	/**
 	 * 专项管理处理状态
