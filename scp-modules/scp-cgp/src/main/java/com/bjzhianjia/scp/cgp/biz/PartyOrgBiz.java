@@ -79,13 +79,16 @@ public class PartyOrgBiz extends BusinessBiz<PartyOrgMapper, PartyOrg> {
         // 自动设置排序编码
         PartyOrg parentPartyOrg = this.mapper.selectByPrimaryKey(entity.getParentOrgId());
         if (parentPartyOrg != null) {
+            String orderSort = this.mapper.selectMaxOrderById(parentPartyOrg.getId());
+            // 不存在同级编码，则采用父级编码
+            if(StringUtils.isBlank(orderSort)){
+                orderSort = parentPartyOrg.getOrderSort();
+            }
             // 判断是否二级部门
             if (root.equals(parentPartyOrg.getOrgCode())) {
                 // 二级部门
-                String orderSort = this.mapper.selectMaxOrderById(parentPartyOrg.getId());
                 entity.setOrderSort(CommonUtil.addOne(orderSort, 100));
             } else {
-                String orderSort = this.mapper.selectMaxOrderById(parentPartyOrg.getId());
                 entity.setOrderSort(CommonUtil.addOne(orderSort, 1));
             }
         }
