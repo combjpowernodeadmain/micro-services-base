@@ -208,6 +208,7 @@ public class PartyOrgBiz extends BusinessBiz<PartyOrgMapper, PartyOrg> {
                 data.put("id", obj.getId());
                 data.put("orgShortName", obj.getOrgShortName());
                 data.put("orgTypeName", dictData.get(obj.getOrgType()));
+                data.put("mapInfo", obj.getMapInfo());
                 resultData.add(data);
             }
             return new TableResultResponse<>(pageHelper.getTotal(), resultData);
