@@ -62,7 +62,11 @@ public class LawEnforcePath implements Serializable {
     @Column(name = "tanent_id")
     private String tanentId;
 
-    // 该点是否可用
+    /**
+     * 该点是否要展示
+     * 1:在网格范围内的
+     * 0:不在网格范围内
+     */
     @Column(name = "is_enable")
     private String isEnable;
 
