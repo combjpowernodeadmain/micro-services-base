@@ -195,6 +195,7 @@ public class PartyOrgBiz extends BusinessBiz<PartyOrgMapper, PartyOrg> {
             criteria.andLike("orgShortName", "%" + partyOrg.getOrgShortName().trim() + "%");
         }
         criteria.andEqualTo("isDeleted", BooleanUtil.BOOLEAN_FALSE);
+        criteria.andNotEqualTo("parentOrgId", "-1");
         example.setOrderByClause("order_sort ASC");
         Page pageHelper = PageHelper.startPage(page, limit);
         List<PartyOrg> partyOrgList = this.mapper.selectByExample(example);
