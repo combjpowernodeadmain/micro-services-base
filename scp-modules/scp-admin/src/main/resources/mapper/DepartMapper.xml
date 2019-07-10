@@ -39,8 +39,9 @@
       where bdu.depart_id = #{departId}
         and u.is_deleted = '0'
         and u.is_disabled = '0'
-       <if test="userName!=null">
-        and u.name like #{userName}
+       <if test="userName!=null and userName != ''">
+           <bind name="name" value="'%'+userName+'%'"/>
+        and u.name like #{name}
        </if>
     </select>
 

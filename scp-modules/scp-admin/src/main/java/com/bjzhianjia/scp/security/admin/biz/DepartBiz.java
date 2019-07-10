@@ -50,7 +50,7 @@ public class DepartBiz extends BusinessBiz<DepartMapper,Depart> {
 
     @MergeResult(resultParser = TableResultParser.class)
     public TableResultResponse<User> getDepartUsers(String departId,String userName) {
-        List<User> users = this.mapper.selectDepartUsers(departId,userName);
+        List<User> users = this.mapper.selectDepartUsers(departId,userName.trim());
         try {
             mergeCore.mergeResult(User.class, users);
         } catch (Exception ex) {

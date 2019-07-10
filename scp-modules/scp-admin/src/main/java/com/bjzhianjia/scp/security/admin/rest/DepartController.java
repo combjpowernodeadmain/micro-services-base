@@ -67,7 +67,9 @@ public class DepartController extends BaseController<DepartBiz, Depart, String> 
 
     @ApiOperation("获取部门关联用户")
     @RequestMapping(value = "user", method = RequestMethod.GET)
-    public TableResultResponse<User> getDepartUsers(String departId, String userName) {
+    public TableResultResponse<User> getDepartUsers(
+            @RequestParam(value = "departId",defaultValue = "") @ApiParam("部门id") String departId,
+            @RequestParam(value = "userName",defaultValue = "") @ApiParam("用户名称") String userName) {
         return this.baseBiz.getDepartUsers(departId, userName);
     }
 
