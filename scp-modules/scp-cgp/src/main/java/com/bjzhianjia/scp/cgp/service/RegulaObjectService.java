@@ -607,15 +607,19 @@ public class RegulaObjectService {
 
         // 企业类型
         JSONObject typeCodeJObject = new JSONObject();
-        typeCodeJObject.put("code", typeCodeId);
-        typeCodeJObject.put("labelDefault", map.get(typeCodeId));
-        enterpriseInfo.setTypeCode(typeCodeJObject.toJSONString());
+        if (typeCodeId != null) {
+            typeCodeJObject.put("code", typeCodeId);
+            typeCodeJObject.put("labelDefault", map.get(typeCodeId));
+            enterpriseInfo.setTypeCode(typeCodeJObject.toJSONString());
+        }
 
         // 证件类型
         JSONObject certificateJObj = new JSONObject();
-        certificateJObj.put("code", certificateTypeId);
-        certificateJObj.put("labelDefault", map.get(certificateTypeId));
-        enterpriseInfo.setCertificateType(certificateJObj.toJSONString());
+        if (certificateTypeId != null) {
+            certificateJObj.put("code", certificateTypeId);
+            certificateJObj.put("labelDefault", map.get(certificateTypeId));
+            enterpriseInfo.setCertificateType(certificateJObj.toJSONString());
+        }
 
         String regulaObjectJStr = JSON.toJSONString(regulaObject);
         String enterpriseInfoJStr = JSON.toJSONString(enterpriseInfo);
