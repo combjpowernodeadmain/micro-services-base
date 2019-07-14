@@ -1,8 +1,8 @@
 logging:
     level:
     #  多数据源事务，打印日志太多，所以设置级别为 ERROR
-     com.atomikos: ERROR
-     com.bjzhianjia.scp.cgp: DEBUG
+    # com.atomikos: INFO
+     com.bjzhianjia.scp.cgp: INFO
     # com.bjzhianjia.scp.security.wf.base: DEBUG
     # tk.mybatis: DEBUG      
 server:
