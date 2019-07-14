@@ -141,7 +141,7 @@ public class LawEnforcePathBiz extends BusinessBiz<LawEnforcePathMapper, LawEnfo
 
         criteria.andCondition(sql.toString());
         // 只获取可展示的点
-        criteria.andEqualTo("isEnable", BooleanUtil.BOOLEAN_TRUE);
+//        criteria.andEqualTo("isEnable", BooleanUtil.BOOLEAN_TRUE);
         list = lawEnforcePathMapper.selectByExample(example);
 
         return list != null ? list : new ArrayList<>();

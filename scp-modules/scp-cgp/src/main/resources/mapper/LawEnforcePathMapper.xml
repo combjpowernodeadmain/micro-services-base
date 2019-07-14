@@ -20,7 +20,7 @@
 		SELECT * FROM law_enforce_path WHERE id IN (
 		SELECT MAX(id) FROM law_enforce_path le
 		WHERE crt_user_id IN (${userIds})
-        AND is_enable='1'
+        <!-- AND is_enable='1' -->
 		GROUP BY `crt_user_id`
 		)
 	</select>
