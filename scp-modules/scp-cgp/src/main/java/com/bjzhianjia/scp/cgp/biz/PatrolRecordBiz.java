@@ -295,7 +295,7 @@ public class PatrolRecordBiz extends BusinessBiz<PatrolRecordMapper, PatrolRecor
         //2->
         JSONArray byUserIdAndDate = lawEnforcePathBiz.getByUserIdAndDate(recordInDB.getCrtUserId(),
             DateUtil.dateFromDateToStr(recordInDB.getStartTime(), DateUtil.DEFAULT_DATE_FORMAT),
-            DateUtil.dateFromDateToStr(new Date(), DateUtil.DEFAULT_DATE_FORMAT));
+            DateUtil.dateFromDateToStr(recordInDB.getEndTime(), DateUtil.DEFAULT_DATE_FORMAT));
 
         List<JSONObject> mapInfoList = new ArrayList<>();
         if (BeanUtil.isNotEmpty(byUserIdAndDate)) {
