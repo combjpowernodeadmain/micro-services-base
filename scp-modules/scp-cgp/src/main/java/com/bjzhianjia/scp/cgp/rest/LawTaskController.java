@@ -159,7 +159,8 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
         @RequestParam(defaultValue = "") @ApiParam("任务要求") String info,
         @RequestParam(defaultValue = "") @ApiParam("业务条线") String bizTypeCode,
         @RequestParam(defaultValue = "") @ApiParam("事件类别ids") String eventTypeId,
-        @RequestParam(defaultValue = "") @ApiParam("执法任务名称") String lawTitle) {
+        @RequestParam(defaultValue = "") @ApiParam("执法任务名称") String lawTitle,
+        @RequestParam(value = "randomNum",defaultValue = "1")@ApiParam("随机数量") Integer randomNum) {
 
         ObjectRestResponse<List<JSONObject>> result = new ObjectRestResponse<>();
 
@@ -185,7 +186,7 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
 
         try {
             Result<List<JSONObject>>  _result = lawTaskBiz.randomLawTask(objType, griIds, peopleNumber, regulaObjNumber, _startTime,
-                _endTimeTmp, info, bizTypeCode, eventTypeId,lawTitle);
+                _endTimeTmp, info, bizTypeCode, eventTypeId,lawTitle,randomNum);
             //错误反馈
             if(!_result.getIsSuccess()) {
                 result.setStatus(400);

@@ -357,7 +357,7 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
      * @throws Exception
      */
     public Result<List<JSONObject>> randomLawTask(String objType, String griIds, int peopleNumber, int regulaObjNumber,
-        Date startTime, Date endTime, String info, String bizTypeCode, String eventTypeId, String lawTitle)
+        Date startTime, Date endTime, String info, String bizTypeCode, String eventTypeId, String lawTitle,Integer randomNum)
         throws Exception {
 
         Result<List<JSONObject>> result = new Result<>();
@@ -394,6 +394,7 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
         JSONArray executePerson = null;
         JSONObject patrolObject = null;
         List<JSONObject> resultForReturn=new ArrayList<>();
+        int i = 0;
         do{
             int eIndex = ran.nextInt(devideEnforceToDept.size());
             int rIndex = ran.nextInt(_regulaObjects.size());
@@ -445,7 +446,8 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
             if(devideEnforceToDept.size()<=0 || _regulaObjects.size()<=0){
                 isLoop=false;
             }
-        }while(isLoop);
+            i++;
+        }while(isLoop && i < randomNum);
 
         _randomLawTestGetUserPic(resultForReturn);
 
