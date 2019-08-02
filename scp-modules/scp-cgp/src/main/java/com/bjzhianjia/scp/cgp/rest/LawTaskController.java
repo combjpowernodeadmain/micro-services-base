@@ -148,7 +148,7 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
     }
 
     @RequestMapping(value = "randomLawTask", method = RequestMethod.GET)
-    @ApiOperation("双随机分配执法任务")
+    @ApiOperation("分配执法任务")
     public ObjectRestResponse<List<JSONObject>> randomLawTask(
         @RequestParam(defaultValue = "2") @ApiParam("每组队员数 ") Integer peopleNumber,
         @RequestParam(defaultValue = "2") @ApiParam("巡查对象数") Integer regulaObjNumber,
