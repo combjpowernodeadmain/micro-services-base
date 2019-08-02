@@ -370,13 +370,13 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
             return result;
         }
 
-        List<List<EnforceCertificate>> devideEnforceToDept = devideEnfoecerToDept(fakeUserList, peopleNumber);
+        // List<List<EnforceCertificate>> devideEnforceToDept = devideEnfoecerToDept(fakeUserList, peopleNumber);
 
-        if(BeanUtil.isEmpty(devideEnforceToDept)){
+        /* if(BeanUtil.isEmpty(devideEnforceToDept)){
             result.setIsSuccess(false);
             result.setMessage("执法人员数量不足，无法执行任务分配。");
             return result;
-        }
+        }*/
 
         // 监管对象列表
         List<RegulaObject> regulaObjects = regulaObjectBiz.selectByTypeAndGri(objType, griIds);
@@ -386,7 +386,8 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
             return result;
         }
 
-        List<JSONObject> _regulaObjects = this.getRegulaObject(regulaObjNumber, regulaObjects);
+        List<JSONObject> _regulaObjects = this.getRegulaObject(regulaObjNumber, regulaObjects); // 監管對象組數
+        List<JSONArray> _userList = this.getUserList(peopleNumber, fakeUserList); // 人員組數
 
         Random ran=new Random();
 
@@ -396,16 +397,12 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
         List<JSONObject> resultForReturn=new ArrayList<>();
         int i = 0;
         do{
-            int eIndex = ran.nextInt(devideEnforceToDept.size());
+            int eIndex = ran.nextInt(_userList.size());
             int rIndex = ran.nextInt(_regulaObjects.size());
 
-            List<EnforceCertificate> enforceCertificates = devideEnforceToDept.get(eIndex);
+            // List<EnforceCertificate> enforceCertificates = devideEnforceToDept.get(eIndex);
             patrolObject = _regulaObjects.get(rIndex);
-
-            List<JSONArray> _userList = this.getUserList(peopleNumber, enforceCertificates);
-
-            executePerson = _userList.get(0);
-
+            executePerson = _userList.get(eIndex);
 
             // 将生成的执法人与监管对象组合返回到前端
             List<String> userNameList = new ArrayList<>();
@@ -440,14 +437,21 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
             lawTask.setLawTitle(lawTitle);
             this.createLawTask(lawTask);
 
-            devideEnforceToDept.remove(eIndex);
+            // devideEnforceToDept.remove(eIndex);
             _regulaObjects.remove(rIndex);
+            _userList.remove(eIndex);
 
-            if(devideEnforceToDept.size()<=0 || _regulaObjects.size()<=0){
+            if(_regulaObjects.size() <= 0){ // 監管對象數據組數
+                isLoop=false;
+            }
+            if(_userList.size() <= 0){ // 監管對象數據組數
                 isLoop=false;
             }
             i++;
-        }while(isLoop && i < randomNum);
+            if(i >= randomNum) {
+                isLoop = false;
+            }
+        }while(isLoop);
 
         _randomLawTestGetUserPic(resultForReturn);
 
