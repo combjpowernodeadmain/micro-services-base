@@ -475,13 +475,16 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
     /**
      * 执法片区网格事件统计
      *
+     * @String gridLevel 网格等级
      * @return
      */
     @ApiOperation("执法片区网格事件统计")
     @RequestMapping(value = "/statis/grid/zfpq", method = RequestMethod.GET)
     @ResponseBody
-    public List<JSONObject> getGridZFPQ(){
-        return this.baseBiz.getGridZFPQ();
+    public List<JSONObject> getGridZFPQ(
+            @RequestParam(value = "gridLevel",defaultValue = "") @ApiParam("网格等级-数据在字典") String gridLevel,
+            @RequestParam(value = "limlt",defaultValue = "10") @ApiParam("显示多少条数据") Integer limlt){
+        return this.baseBiz.getGridZFPQ(gridLevel,limlt);
     }
     
     @GetMapping("/heatMap")

@@ -891,15 +891,25 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         objs.put(Constants.WfRequestDataTypeAttr.PROC_VARIABLEDATA,variableData);
         return objs;
     }
+
     /**
      * 执法片区事件统计
+     *
+     * @param gridLevel 网格等级
+     * @param limlt     保留多少条数据
      * @return
      */
-    public List<JSONObject> getGridZFPQ(){
-        List<JSONObject> gridZFPQListTodo = this.mapper.getGridZFPQ("0");
-        List<JSONObject> gridZFPQListFinish = this.mapper.getGridZFPQ("1");
+    public List<JSONObject> getGridZFPQ(String gridLevel, Integer limlt) {
+        // 判断是否存在网格等级，没有则采用默认配置文件中的属性
+        if (StringUtils.isBlank(gridLevel)) {
+            gridLevel = environment.getProperty("statisticsCenter.areaGrid.gridLevel");
+        }
 
-        List<AreaGrid> areaGridList=areaGridBiz.getByGridLevel(environment.getProperty("areaGrid.gridLevel.zrwg.zfpq"));
+        List<JSONObject> gridZFPQListFinish = this.mapper.getGridZFPQ("1", gridLevel);
+        List<JSONObject> gridZFPQListTodo = this.mapper.getGridZFPQ("0", gridLevel);
+
+
+        List<AreaGrid> areaGridList = areaGridBiz.getByGridLevel(gridLevel);
 
         List<JSONObject> resultJObjList = new ArrayList<>();
         if (BeanUtil.isNotEmpty(areaGridList)) {
@@ -921,25 +931,42 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
                 JSONObject resultJobj = new JSONObject();
 
                 JSONObject jsonObjectTodo =
-                    zfpqIdJObjMapTodo.get(areaGridTmp.getId()) == null ? new JSONObject()
-                        : zfpqIdJObjMapTodo.get(areaGridTmp.getId());
+                        zfpqIdJObjMapTodo.get(areaGridTmp.getId()) == null ? new JSONObject()
+                                : zfpqIdJObjMapTodo.get(areaGridTmp.getId());
                 JSONObject jsonObjectFinish =
-                    zfpqIdJObjMapFinish.get(areaGridTmp.getId()) == null ? new JSONObject()
-                        : zfpqIdJObjMapFinish.get(areaGridTmp.getId());
+                        zfpqIdJObjMapFinish.get(areaGridTmp.getId()) == null ? new JSONObject()
+                                : zfpqIdJObjMapFinish.get(areaGridTmp.getId());
 
                 resultJobj.put("grid", areaGridTmp.getId());
                 resultJobj.put("stateTodo", jsonObjectTodo.getInteger("ccount") == null ? 0
-                    : jsonObjectTodo.getInteger("ccount"));
+                        : jsonObjectTodo.getInteger("ccount"));
                 resultJobj.put("stateFinish", jsonObjectFinish.getInteger("ccount") == null ? 0
-                    : jsonObjectFinish.getInteger("ccount"));
+                        : jsonObjectFinish.getInteger("ccount"));
                 resultJobj.put("gridLevel", areaGridTmp.getGridLevel());
                 resultJobj.put("gridName", areaGridTmp.getGridName());
                 resultJobj.put("gridCode", areaGridTmp.getGridCode());
 
                 resultJObjList.add(resultJobj);
             }
+            if (BeanUtil.isNotEmpty(resultJObjList)) {
+                // 办结量从大到小排序
+                resultJObjList.sort(new Comparator<JSONObject>() {
+                    @Override
+                    public int compare(JSONObject o1, JSONObject o2) {
+                        return o2.getInteger("stateFinish") - o1.getInteger("stateFinish");
+                    }
+                });
+                // 保留指定条数，多余剔除
+                if (resultJObjList.size() > limlt) {
+                    List<JSONObject> temp = new ArrayList<>();
+                    for (int i = 0; i < limlt; i++) {
+                        temp.add(resultJObjList.get(i));
+                    }
+                    // 缓存中数据替换结果集
+                    resultJObjList = temp;
+                }
+            }
         }
-
         return resultJObjList;
     }
 

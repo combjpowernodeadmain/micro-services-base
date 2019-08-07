@@ -111,9 +111,12 @@ public interface CaseInfoMapper extends CommonMapper<CaseInfo> {
 
     /**
      * 查询执法片区任务量
+     *
+     * @param isFinish  是否完成(0|1)
+     * @param gridLevel 网格等级字典编码
      * @return
      */
-    List<JSONObject> getGridZFPQ(@Param("isFinish")String isFinish);
+    List<JSONObject> getGridZFPQ(@Param("isFinish") String isFinish, @Param("gridLevel") String gridLevel);
 
     /**
      * 事件势力学图
