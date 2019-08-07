@@ -360,19 +360,19 @@ SELECT
 		SELECT COUNT(*) ccount,zfqpName,zfqpLevel,zfqp FROM (
 		SELECT
 		CASE
-		WHEN gridParent='-1' THEN gridId
-		WHEN gridGrandParent='-1' THEN gridParent
-		WHEN gridGrandGrandParent='-1' THEN gridGrandParent
+		WHEN gridLevel=#{gridLevel} THEN gridId
+		WHEN parentGridLevel=#{gridLevel} THEN gridParent
+		WHEN grandParentGridLevel=#{gridLevel} THEN gridGrandParent
 		END zfqp,
 		CASE
-		WHEN gridParent='-1' THEN gridLevel
-		WHEN gridGrandParent='-1' THEN parentGridLevel
-		WHEN gridGrandGrandParent='-1' THEN grandParentGridLevel
+		WHEN gridLevel=#{gridLevel} THEN gridLevel
+		WHEN parentGridLevel=#{gridLevel} THEN parentGridLevel
+		WHEN grandParentGridLevel=#{gridLevel} THEN grandParentGridLevel
 		END zfqpLevel,
 		CASE
-		WHEN gridParent='-1' THEN gridName
-		WHEN gridGrandParent='-1' THEN gridParentName
-		WHEN gridGrandGrandParent='-1' THEN gridGrandParentName
+		WHEN gridLevel=#{gridLevel} THEN gridName
+		WHEN parentGridLevel=#{gridLevel} THEN gridParentName
+		WHEN grandParentGridLevel=#{gridLevel} THEN gridGrandParentName
 		END zfqpName
 		FROM(
             <!-- 整合网格父父父网格 -->
@@ -394,13 +394,15 @@ SELECT
             ) grandParentTmp
             LEFT JOIN area_grid ag3 ON ag3.id=grandParentTmp.gridGrandParent
 		) grandGrandParentTmp ON grandGrandParentTmp.gridId=ci.`grid`
-		WHERE grid IS NOT NULL
-		AND ci.is_deleted='0'
+		WHERE
+			ci.is_deleted='0'
         <if test="isFinish != null and isFinish != ''">
             AND ci.is_finished=#{isFinish}
         </if>
 		) result
 		)countResult
+		WHERE
+			zfqp IS NOT NULL
 		GROUP BY zfqp,zfqpName,zfqpLevel
 	</select>
 
