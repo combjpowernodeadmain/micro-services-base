@@ -279,15 +279,18 @@ public class LawEnforcePathBiz extends BusinessBiz<LawEnforcePathMapper, LawEnfo
 
             Point point = new Point(json.getDouble("lng"), json.getDouble("lat"));
             for (AreaGrid grid : areaGridList) {
-                array = JSONArray.parseArray(grid.getMapInfo());
-                List<Point> listPoint = array.toJavaList(Point.class);
-                if (listPoint == null) {
-                    continue;
-                }
-                if (SpatialRelationUtil.isPolygonContainsPoint(listPoint, point)) {
-                    // flag==true,说明他在自己的某网格内，只要找到这样的网格，就退出循环
-                    flag = true;
-                    break;
+                String[] mapInfos = grid.getMapInfo().split("-");
+                for (String mapInfo : mapInfos) {
+                    array = JSONArray.parseArray(mapInfo);
+                    List<Point> listPoint = array.toJavaList(Point.class);
+                    if (listPoint == null) {
+                        continue;
+                    }
+                    if (SpatialRelationUtil.isPolygonContainsPoint(listPoint, point)) {
+                        // flag==true,说明他在自己的某网格内，只要找到这样的网格，就退出循环
+                        flag = true;
+                        break;
+                    }
                 }
             }
         } else {

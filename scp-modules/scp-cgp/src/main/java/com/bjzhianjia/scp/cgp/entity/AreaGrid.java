@@ -115,6 +115,26 @@ public class AreaGrid implements Serializable {
 	@Column(name = "tenant_id")
 	private String tenantId;
 
+	//网格排序
+	@Column(name = "grid_sort")
+	private Integer gridSort;
+
+	/**
+	 * 获取：网格排序
+	 * @return
+	 */
+	public Integer getGridSort() {
+		return gridSort;
+	}
+
+	/**
+	 * 设置：网格排序
+	 * @param gridSort
+	 */
+	public void setGridSort(Integer gridSort) {
+		this.gridSort = gridSort;
+	}
+
 	/**
 	 * 设置：
 	 */
