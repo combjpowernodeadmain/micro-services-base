@@ -149,7 +149,7 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
 
     @RequestMapping(value = "randomLawTask", method = RequestMethod.GET)
     @ApiOperation("分配执法任务")
-    public ObjectRestResponse<List<JSONObject>> randomLawTask(
+    public ObjectRestResponse<JSONObject> randomLawTask(
         @RequestParam(defaultValue = "2") @ApiParam("每组队员数 ") Integer peopleNumber,
         @RequestParam(defaultValue = "2") @ApiParam("巡查对象数") Integer regulaObjNumber,
         @RequestParam(defaultValue = "") @ApiParam("网格ids") String griIds,
@@ -162,7 +162,7 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
         @RequestParam(defaultValue = "") @ApiParam("执法任务名称") String lawTitle,
         @RequestParam(value = "randomNum",defaultValue = "1")@ApiParam("随机数量") Integer randomNum) {
 
-        ObjectRestResponse<List<JSONObject>> result = new ObjectRestResponse<>();
+        ObjectRestResponse<JSONObject> result = new ObjectRestResponse<>();
 
         if(StringUtils.isBlank(startTime)||StringUtils.isBlank(endTime)){
             result.setStatus(400);
@@ -185,15 +185,15 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
         }
 
         try {
-            Result<List<JSONObject>>  _result = lawTaskBiz.randomLawTask(objType, griIds, peopleNumber, regulaObjNumber, _startTime,
+            Result<JSONObject>  _result = lawTaskBiz.randomLawTask(objType, griIds, peopleNumber, regulaObjNumber, _startTime,
                 _endTimeTmp, info, bizTypeCode, eventTypeId,lawTitle,randomNum);
-            //错误反馈
+            // 错误反馈
             if(!_result.getIsSuccess()) {
                 result.setStatus(400);
                 result.setMessage(_result.getMessage());
             }
 
-            List<JSONObject> data = _result.getData();
+            JSONObject data = _result.getData();
             result.setData(data);
         } catch (Exception e) {
             result.setStatus(400);
