@@ -1128,12 +1128,21 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
      * @return
      */
     public TableResultResponse<JSONObject> statisticsByGridLevel(CaseInfo caseInfo, String gridLevel, String startTime, String endTime, Integer page, Integer limit){
-        if (BeanUtils.isEmpty(gridLevel)) {
+        Map<Integer, Set<String>> gridIdBindChildrenMap = new HashMap<Integer, Set<String>>();
+        if (BeanUtils.isEmpty(gridLevel)) {//空的加上默认的执法村等级
             gridLevel = environment.getProperty("areaGrid.gridLevel.zrwg.zfpq");
+            gridIdBindChildrenMap = areaGridBiz.getByLevelBindChildren(gridLevel);
+        }else if(gridLevel.contains(",")){//多个的分割
+            String[] split = gridLevel.split(",");
+            for (int i = 0; i < split.length; i++) {
+                Map<Integer, Set<String>>  gridIdBindChildrenMapa = areaGridBiz.getByLevelBindChildren(split[i]);
+                gridIdBindChildrenMap.putAll(gridIdBindChildrenMapa);
+            }
+        }else{//传一个过来正常处理
+            gridIdBindChildrenMap = areaGridBiz.getByLevelBindChildren(gridLevel);
         }
-
         // 查询与gridLevel对应的网格ID,返回结果如：(Map){"2","2,3,4,5"},{"10","12,13,14,15"}
-        Map<Integer, Set<String>> gridIdBindChildrenMap = areaGridBiz.getByLevelBindChildren(gridLevel);
+      //  Map<Integer, Set<String>> gridIdBindChildrenMap = areaGridBiz.getByLevelBindChildren(gridLevel);
         /*
          * 处理查询的网格数据，整理后格式如：(List)
          * [
