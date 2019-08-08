@@ -61,9 +61,9 @@ public class CommandCenterHotlineService {
      * @return
      */
     public TableResultResponse<JSONObject> getList(CommandCenterHotline commandCenterHotline,
-                                                   int page, int limit, String startTime, String endTime) {
+                                                   int page, int limit, String startTime, String endTime,String sortColumn) {
         TableResultResponse<CommandCenterHotline> restResult =
-            commandCenterHotlineBiz.getList(commandCenterHotline, page, limit, startTime, endTime);
+            commandCenterHotlineBiz.getList(commandCenterHotline, page, limit, startTime, endTime,sortColumn);
 
         List<CommandCenterHotline> hotLineList = restResult.getData().getRows();
         if (BeanUtil.isEmpty(hotLineList)) {

@@ -822,7 +822,6 @@
 		task.PROC_TASK_ASSIGNEE
 		) procTaskAssignee,  <!-- 流程任务处理人 -->
 		task.PROC_LICENSOR procLicensor,
-		task.PROC_SELFDATA1 procSelfdata1,
 		task.PROC_TASK_COMMITTER procTaskCommitter,
 		FROM_UNIXTIME(task.PROC_TASK_COMMITTIME, '%Y-%m-%d %H:%i:%s') procTaskCommittime,  <!-- 流程提交时间 -->
 		FROM_UNIXTIME(task.PROC_TASK_ASSIGNTIME, '%Y-%m-%d %H:%i:%s') procTaskAssigntime,  <!-- 流程受理时间 -->

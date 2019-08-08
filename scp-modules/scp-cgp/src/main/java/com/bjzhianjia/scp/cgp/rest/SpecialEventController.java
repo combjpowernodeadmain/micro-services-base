@@ -75,6 +75,7 @@ public class SpecialEventController extends BaseController<SpecialEventBiz, Spec
 	public TableResultResponse<SpecialEventVo> list(
 			@RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
 			@RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page,
+			@RequestParam(defaultValue = "") @ApiParam(name = "排序方式") String sortColumn,
 			@RequestParam(defaultValue = "") @ApiParam(name = "当专项编号")String speCode, @RequestParam(defaultValue = "") String speName,
 			@RequestParam(defaultValue = "") @ApiParam(name = "发布人")String publisher, @RequestParam(defaultValue = "") String speStatus,
 			@RequestParam(defaultValue = "") @ApiParam(name = "涉及业务条线")String bizType) {
@@ -84,7 +85,7 @@ public class SpecialEventController extends BaseController<SpecialEventBiz, Spec
 		vo.setPublisher(publisher);
 		vo.setSpeStatus(speStatus);
 		vo.setBizList(bizType);
-
+		vo.setSortColumn(sortColumn);
 		return specialEventService.getList(vo, page, limit);
 	}
 	

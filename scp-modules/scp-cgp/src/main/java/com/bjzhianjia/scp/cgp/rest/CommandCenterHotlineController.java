@@ -76,6 +76,7 @@ public class CommandCenterHotlineController
         @RequestParam(defaultValue = "") @ApiParam(name = "诉求人") String appealPerson,
         @RequestParam(defaultValue = "") @ApiParam(name = "热线事件分类") String bizType,
         @RequestParam(defaultValue = "") @ApiParam(name = "处理状态") String exeStatus,
+        @RequestParam(defaultValue = "") @ApiParam(name = "排序方式") String sortColumn,
         @RequestParam(required = false) @ApiParam("查询开始时间") String startTime,
         @RequestParam(required = false) @ApiParam("查询结束时间") String endTime) {
 
@@ -87,7 +88,7 @@ public class CommandCenterHotlineController
         commandCenterHotline.setHotlnCode(hotlnCode.trim());
 
         return commandCenterHotlineServoce.getList(commandCenterHotline, page, limit, startTime,
-            endTime);
+            endTime,sortColumn);
     }
     
     @GetMapping("/one/{id}")

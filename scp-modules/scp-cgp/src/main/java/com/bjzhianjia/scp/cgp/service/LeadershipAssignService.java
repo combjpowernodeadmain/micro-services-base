@@ -247,9 +247,9 @@ public class LeadershipAssignService {
 	 * @return
 	 */
 	public TableResultResponse<LeadershipAssignVo> getList(LeadershipAssign leadershipAssign, int page, int limit,
-			String startTime, String endTime) {
+			String startTime, String endTime,String sortColumn) {
 		TableResultResponse<LeadershipAssign> tableResult = leadershipAssignBiz.getList(leadershipAssign, page, limit,
-				startTime, endTime);
+				startTime, endTime,sortColumn);
 
 		List<LeadershipAssign> rows = tableResult.getData().getRows();
 

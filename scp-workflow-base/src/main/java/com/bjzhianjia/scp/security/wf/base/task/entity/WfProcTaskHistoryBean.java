@@ -20,8 +20,6 @@ public class WfProcTaskHistoryBean implements Serializable{
     private String procTaskApprStatus;
     private String procTaskApprOpinion;
 
-    private String procSelfdata1;
-
     public String getProcInstId() {
         return procInstId;
     }
@@ -117,13 +115,4 @@ public class WfProcTaskHistoryBean implements Serializable{
     public void setProcTaskApprOpinion(String procTaskApprOpinion) {
         this.procTaskApprOpinion = procTaskApprOpinion;
     }
-
-    public String getProcSelfdata1() {
-        return procSelfdata1;
-    }
-
-    public void setProcSelfdata1(String procSelfdata1) {
-        this.procSelfdata1 = procSelfdata1;
-    }
-
 }

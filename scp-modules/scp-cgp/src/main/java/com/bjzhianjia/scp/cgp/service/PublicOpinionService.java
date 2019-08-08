@@ -276,9 +276,9 @@ public class PublicOpinionService {
 	 * @return
 	 */
 	public TableResultResponse<PublicOpinionVo> getList(PublicOpinion publicOpinion, int page, int limit,
-			String startTime, String endTime) {
+			String startTime, String endTime,String sortColumn) {
 		TableResultResponse<PublicOpinion> tableResult = publicOpinionBiz.getList(publicOpinion, page, limit, startTime,
-				endTime);
+				endTime,sortColumn);
 		List<PublicOpinion> rows = tableResult.getData().getRows();
 
 		List<PublicOpinionVo> voList = queryAssist(rows);
