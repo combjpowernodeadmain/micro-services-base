@@ -526,16 +526,18 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
             return new HashMap<>();
         }
 
-        Example example =
-            new Example(AreaGrid.class).selectProperties("id", "gridName", "gridLevel",
-                "gridParent");
+        Example example =new Example(AreaGrid.class).selectProperties("id", "gridName", "gridLevel", "gridParent");
         example.createCriteria().andEqualTo("isDeleted", "0");
+        if(gridLevel.contains(",")){
+        List<String> _gridLevel = Arrays.asList(gridLevel.split(","));
+            example.createCriteria().andIn("gridLevel",_gridLevel);
+        }
         List<AreaGrid> areaGrids = this.selectByExample(example);
 
         Map<Integer, Set<String>> gridIdBindChildrenMap = new HashMap<>();
         if (BeanUtil.isNotEmpty(areaGrids)) {
             for (AreaGrid areaGridTmp : areaGrids) {
-                if (gridLevel.equals(areaGridTmp.getGridLevel())) {
+                if (gridLevel.contains(areaGridTmp.getGridLevel())) {
                     Set<String> gridIdSetBindChildrenInMap = new HashSet<>();
                     _bindChildren(areaGrids, areaGridTmp, gridIdSetBindChildrenInMap);
                     gridIdBindChildrenMap.put(areaGridTmp.getId(), gridIdSetBindChildrenInMap);
@@ -545,6 +547,8 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
 
         return gridIdBindChildrenMap;
     }
+
+
 
     private void _bindChildren(List<AreaGrid> areaGrids, AreaGrid areaGrid,Set<String> gridIdSetBindChildrenInMap) {
         gridIdSetBindChildrenInMap.add(String.valueOf(areaGrid.getId()));// 先把自己放到结果集内
