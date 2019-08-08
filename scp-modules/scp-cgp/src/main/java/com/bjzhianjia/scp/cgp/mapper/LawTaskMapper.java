@@ -24,13 +24,17 @@ public interface LawTaskMapper extends CommonMapper<LawTask> {
 	 * @param regulaObjectName 巡查对象名称
 	 * @param state            任务状态
 	 * @param startTime        开始日期
+	 * @param lawTaskCode       执法任务编号
+	 *@param lawTitle        执法任务名称
 	 * @param endTime          结束日期
 	 */
 	public List<Map<String,Object>> selectLawTaskList(@Param("userName") String userName,
 			@Param("regulaObjectName") String regulaObjectName,
 			@Param("state") String state,
 			@Param("startTime") Date startTime,
-			@Param("endTime") Date endTime);
+			@Param("endTime") Date endTime,
+			@Param("lawTaskCode") String  lawTaskCode,
+			@Param("lawTitle") String lawTitle);
 	
 	/**
 	 *  处理中的 执法任务翻页查询

@@ -217,10 +217,10 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
      * @return
      */
     public TableResultResponse<Map<String, Object>> getLawTaskList(String userName, String regulaObjectName,
-        String state, Date startTime, Date endTime, int page, int limit) {
+        String state, Date startTime, Date endTime, int page, int limit,String lawTaskCode,String lawTitle) {
         Page<Object> result = PageHelper.startPage(page, limit);
         List<Map<String, Object>> list =
-            lawTaskMapper.selectLawTaskList(userName, regulaObjectName, state, startTime, endTime);
+            lawTaskMapper.selectLawTaskList(userName, regulaObjectName, state, startTime, endTime,lawTaskCode,lawTitle);
         if (list == null) {
             return new TableResultResponse<Map<String, Object>>(0, null);
         }
@@ -840,13 +840,12 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
      * @return
      */
     public TableResultResponse<Map<String, Object>> getLawTaskToDoList(String userName, String regulaObjectName,
-        Date startTime, Date endTime, int page, int limit) {
+        Date startTime, Date endTime, int page, int limit,String lawTaskCode,String lawTitle) {
 
         Page<Object> result = PageHelper.startPage(page, limit);
         // 可发起案件的执法任务状态为进行中的执法任务
         List<Map<String, Object>> list =
-            lawTaskMapper.selectLawTaskList(userName, regulaObjectName, propertiesConfig.getLawTasksDoing(), startTime,
-                endTime);
+            lawTaskMapper.selectLawTaskList(userName, regulaObjectName, propertiesConfig.getLawTasksDoing(), startTime, endTime,lawTaskCode,lawTitle);
         if (list == null) {
             return new TableResultResponse<Map<String, Object>>(0, null);
         }
@@ -874,15 +873,9 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
     
     /**
      * 执法任务翻页查询
-     * 
-     * @param userName
-     *            执法者姓名
-     * @param regulaObjectName
-     *            巡查对象名称
-     * @param startTime
-     *            开始日期
-     * @param endTime
-     *            结束日期
+     *
+     *  @param queryJObj
+     *          检索数据项
      * @param page
      *            页码
      * @param limit
@@ -899,11 +892,14 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
         Date startTime = queryJObj.getDate("startTime");
         Date endTime = queryJObj.getDate("endTime");
         String state = queryJObj.getString("state");
+        String lawTaskCode=queryJObj.getString("lawTaskCode");
+        String lawTitle=queryJObj.getString("lawTitle");
+
 
         Page<Object> result = PageHelper.startPage(page, limit);
         List<Map<String, Object>> list =
             lawTaskMapper.selectLawTaskList(userName, regulaObjectName, state, startTime,
-                endTime);
+                endTime,lawTaskCode,lawTitle);
         if (list == null) {
             return new TableResultResponse<Map<String, Object>>(0, null);
         }
