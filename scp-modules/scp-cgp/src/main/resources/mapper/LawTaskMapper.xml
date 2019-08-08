@@ -47,6 +47,12 @@
 		<if test="regulaObjectName != null and regulaObjectName != ''">
 			AND lpo.regula_object_name LIKE "%"#{regulaObjectName}"%"
 		</if>
+		<if test="lawTaskCode != null and lawTaskCode != ''">
+			AND lk.law_task_code LIKE "%"#{lawTaskCode}"%"
+		</if>
+		<if test="lawTitle != null and lawTitle != ''">
+			AND lk.law_title LIKE "%"#{lawTitle}"%"
+		</if>
 		<if test="state != null and state != ''">
 			AND lk.state = #{state}
 		</if>
