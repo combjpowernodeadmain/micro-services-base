@@ -701,7 +701,7 @@ SELECT
 		FROM case_info ci
 		LEFT JOIN execute_info ei ON ei.case_id = ci.id
 		WHERE 1 = 1
-		<if test="exeStatus != null and exeStatus != ''">
+		<if test="exeStatus != null ">
 			<!--未发现问题的工单-->
 			<if test="exeStatus == 'weifaxianwenti'">
 				and ci.source_code IN (
@@ -785,13 +785,13 @@ SELECT
 					</if>
 					)
 			</if>
+            <if test="exeStatus == ''">
+                and ci.crt_user_id = #{userId}
+            </if>
 		</if>
 		<![CDATA[
 			and #{startTime} <= ci.crt_time and ci.crt_time <= #{endTime}
 		]]>
-		<if test="exeStatus == null and userId != null and userId != ''">
-			and ci.crt_user_id = #{userId}
-		</if>
 		and ci.is_deleted = '0'
 		ORDER BY  ci.crt_time desc
 	</select>
