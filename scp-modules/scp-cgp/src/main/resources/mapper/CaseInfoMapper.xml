@@ -52,7 +52,7 @@
 		<result property="updUserId" column="upd_user_id" />
 		<result property="updUserName" column="upd_user_name" />
 		<result property="tenantId" column="tenant_id" />
-		<result property="deptId" column="dept_id" />
+		<result property="deptId" column="depart_id" />
 	</resultMap>
 
 	<!-- 拼接不为空的事件参数 -->

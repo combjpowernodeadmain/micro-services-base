@@ -240,7 +240,7 @@ public class CaseInfo implements Serializable {
     private String tenantId;
 	
 	    //部门ID
-    @Column(name = "dept_id")
+    @Column(name = "depart_id")
     private String deptId;
     
   //该案件是否重复
