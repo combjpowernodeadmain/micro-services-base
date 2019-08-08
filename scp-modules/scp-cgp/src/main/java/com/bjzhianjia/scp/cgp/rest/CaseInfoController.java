@@ -47,12 +47,12 @@ import lombok.extern.slf4j.Slf4j;
  *
  *
  * <pre>
- * Modification History: 
- * Date             Author      Version         Description 
+ * Modification History:
+ * Date             Author      Version         Description
  * ------------------------------------------------------------------
  * 2018年9月9日          chenshuai      1.0            ADD
  * </pre>
- * 
+ *
  *
  * @version 1.0
  * @author chenshuai
@@ -131,7 +131,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
 
     /**
      * 查询用户待办流程任务列表
-     * 
+     *
      * @param objs
      * @param request
      * @return
@@ -148,7 +148,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
 
     /**
      * 查询用户待办流程任务列表
-     * 
+     *
      * @param objs
      * @param request
      * @return
@@ -165,7 +165,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
 
     /**
      * 查询流程任务列表
-     * 
+     *
      * @param objs
      * @param request
      * @return
@@ -207,7 +207,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
 
     /**
      * 通过流程任务ID终止当前流程任务，终止的流程可在我的流程中查询到
-     * 
+     *
      * @param objs
      * @param request
      * @return
@@ -225,7 +225,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
 
     /**
      * 事件处理状态统计
-     * 
+     *
      * @return
      */
     @ApiOperation("事件处理状态统计")
@@ -263,7 +263,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
 
     /**
      * 事件来源分布统计
-     * 
+     *
      * @return
      */
     @ApiOperation("事件来源分布统计")
@@ -298,7 +298,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
 
     /**
      * 事件量趋势统计
-     * 
+     *
      * @return
      */
     @ApiOperation("事件量趋势统计")
@@ -313,13 +313,13 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime,
         @RequestParam(defaultValue = "") @ApiParam("事件来源类型") String sourceType
         ) {
-        
+
         CaseInfo caseInfo = new CaseInfo();
         caseInfo.setBizList(bizList);
         caseInfo.setEventTypeList(eventTypeList);
         caseInfo.setCaseLevel(caseLevel);
         caseInfo.setSourceType(sourceType);
-        
+
         Calendar calendar =  Calendar.getInstance();
         String _startTime = startTime;
         String _endTime = endTime;
@@ -335,19 +335,19 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         //默认结束日期增加1天
         if (StringUtils.isNotBlank(startTime) || StringUtils.isNotBlank(endTime)) {
             calendar.setTime(DateUtil.dateFromStrToDate(startTime, DateUtil.DEFAULT_DATE_FORMAT));
-            calendar.add(Calendar.DATE, 1); 
+            calendar.add(Calendar.DATE, 1);
         }
-      
+
         ObjectRestResponse<List<Map<String,Object>>> result = new ObjectRestResponse<>();
-        
+
         List<Map<String,Object>>  data = caseInfoBiz.getStatisCaseInfo(caseInfo, _startTime, _endTime,gridIds);
         result.setData(data);
-        
+
         return result;
     }
     /**
      *  业务条线分布
-     * 
+     *
      * @return
      */
     @ApiOperation("业务条线分布")
@@ -359,7 +359,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         @RequestParam(defaultValue = "") @ApiParam("事件级别") String caseLevel,
         @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
         @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime) {
-        
+
         ObjectRestResponse<JSONArray> result = new ObjectRestResponse<>();
 
         CaseInfo caseInfo = new CaseInfo();
@@ -379,11 +379,11 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         }
         return result;
     }
-    
+
 
     /**
      * 网格事件统计
-     * 
+     *
      * @return
      */
     @ApiOperation("网格事件统计")
@@ -406,7 +406,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         caseInfo.setCaseLevel(caseLevel);
         caseInfo.setSourceType(sourceType);
         caseInfo.setCaseLevel(caseLevel);
-        
+
         if (StringUtils.isNotBlank(endTime)) {
             Date _end = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
             _end = DateUtils.addDays(_end, 1);
@@ -414,7 +414,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         }
         return caseInfoBiz.statisticsByGridLevel(caseInfo, gridLevel, startTime, endTime, page,limit);
     }
-    
+
     @RequestMapping(value = "/list/sourceType", method = RequestMethod.GET)
     @ApiOperation("分页获取对象")
     public TableResultResponse<CaseInfo> sourceType(
@@ -425,7 +425,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
 
         return restResult;
     }
-    
+
     @GetMapping("/list/patrol")
     @ApiOperation("查询类型为专项管理的事件")
     public TableResultResponse<JSONObject> patrolCaseInfo(
@@ -433,11 +433,11 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         ){
         return this.baseBiz.patrolCaseInfo(patrolId);
     }
-    
+
     @RequestMapping(value="/instance/{id}",method=RequestMethod.GET)
     @ApiOperation("按ID查询案件详情，只涉及案件信息")
     public ObjectRestResponse<JSONObject> caseInfoInstance(@PathVariable(value="id") @ApiParam("待查询对象ID") String id){
-        
+
         return this.caserInfoService.caseInfoInstance(id);
     }
 
@@ -475,15 +475,18 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
     /**
      * 执法片区网格事件统计
      *
+     * @String gridLevel 网格等级
      * @return
      */
     @ApiOperation("执法片区网格事件统计")
     @RequestMapping(value = "/statis/grid/zfpq", method = RequestMethod.GET)
     @ResponseBody
-    public List<JSONObject> getGridZFPQ(){
-        return this.baseBiz.getGridZFPQ();
+    public List<JSONObject> getGridZFPQ(
+            @RequestParam(value = "gridLevel",defaultValue = "") @ApiParam("网格等级-数据在字典") String gridLevel,
+            @RequestParam(value = "limlt",defaultValue = "10") @ApiParam("显示多少条数据") Integer limlt){
+        return this.baseBiz.getGridZFPQ(gridLevel,limlt);
     }
-    
+
     @GetMapping("/heatMap")
     @ApiOperation("事件热力学统计")
     public TableResultResponse<JSONObject> caseHeatMap(
@@ -502,7 +505,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
 
     /**
      * 不分页查询事件列表
-     * 
+     *
      * @param sourceType
      * @param isFinished
      * @return

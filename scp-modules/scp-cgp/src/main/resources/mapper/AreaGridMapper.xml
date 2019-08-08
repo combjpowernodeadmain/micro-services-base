@@ -28,6 +28,7 @@
 		<result property="updUserId" column="upd_user_id" />
 		<result property="updTime" column="upd_time" />
 		<result property="tenantId" column="tenant_id" />
+		<result property="gridSort" column="grid_sort" />
 	</resultMap>
 
 	<!-- 网格全部定位 -->

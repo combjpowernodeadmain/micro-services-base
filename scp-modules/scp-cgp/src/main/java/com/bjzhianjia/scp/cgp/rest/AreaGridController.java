@@ -183,7 +183,7 @@ public class AreaGridController extends BaseController<AreaGridBiz, AreaGrid, In
                 gridIdNameMap.get(o.getGridParent()) == null ? o.getGridName()
                     : o.getGridName() + "(" + gridIdNameMap.get(o.getGridParent()) + ")";
             trees.add(new AreaGridTree(o.getId(), o.getGridParent(), o.getGridName(),
-                o.getGridCode(), gridWithParent));
+                o.getGridCode(), gridWithParent, o.getGridLevel()));
         });
 
         return TreeUtil.bulid(trees, -1, null);

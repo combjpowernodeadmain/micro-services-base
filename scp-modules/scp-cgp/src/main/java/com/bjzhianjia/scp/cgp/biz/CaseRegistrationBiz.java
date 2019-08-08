@@ -1071,9 +1071,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         String isSupervise = queryData.getString("isSupervise");
         String isUrge = queryData.getString("isUrge");
         String isOverTime = queryData.getString("isOverTime");
-        String exeStatus = queryData.getString("procCtaskname");// 1:已结案2:已终止
-        String caseSourceType = queryData.getString("caseSourceType");// 来源类型
-        // String caseSource = queryData.getString("caseSource");// 来源id
+        // 1:已结案2:已终止
+        String exeStatus = queryData.getString("procCtaskname");
+        // 来源类型
+        String caseSourceType = queryData.getString("caseSourceType");
+        // 来源id
+        String caseSource = queryData.getString("caseSource");
         String isDeleted = queryData.getString("isDeleted");
 
         Example example = new Example(CaseRegistration.class);
@@ -1096,12 +1099,6 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         }
         if (StringUtils.isNotBlank(caseRegistration.getEventType())) {
             criteria.andLike("eventType", "%" + caseRegistration.getEventType() + "%");
-        }
-        if (StringUtils.isNotBlank(caseRegistration.getCaseSourceType())) {
-            criteria.andEqualTo("caseSourceType", caseRegistration.getCaseSourceType());
-        }
-        if (StringUtils.isNotBlank(caseRegistration.getCaseSource())) {
-            criteria.andEqualTo("caseSource", caseRegistration.getCaseSource());
         }
         if (!(StringUtils.isBlank(startQueryTime) || StringUtils.isBlank(endQueryTime))) {
             Date start = DateUtil.dateFromStrToDate(startQueryTime, "yyyy-MM-dd HH:mm:ss");
@@ -1137,11 +1134,14 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
                 criteria.andEqualTo("exeStatus", exeStatus);
             }
         }
-        // 处理状态
+        // 案件来源方式
         if (StringUtils.isNotBlank(caseSourceType)) {
             criteria.andEqualTo("caseSourceType", caseSourceType);
         }
-
+        // 案件来源id
+        if (StringUtils.isNotBlank(caseSource)) {
+            criteria.andEqualTo("caseSource", caseSource);
+        }
         example.setOrderByClause("crt_time desc");
 
         Page<Object> pageInfo = PageHelper.startPage(page, limit);

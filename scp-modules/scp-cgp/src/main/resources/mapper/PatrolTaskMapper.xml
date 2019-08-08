@@ -99,8 +99,11 @@
 		<if test="patrolTask.areaGridId !=null">
 			and pk.area_grid_id = #{patrolTask.areaGridId}
 		</if>
-		ORDER BY
-		pk.crt_time DESC
+
+		<if test="sortColumn !=null and sortColumn!=''">
+			ORDER BY #{sortColumn}
+		</if>
+
 	</select>
 	
 	<!-- 获取regulaObjIdList集合中所包含的监管对象被巡查的次数 -->

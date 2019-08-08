@@ -11,6 +11,7 @@ import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
+import com.bjzhianjia.scp.security.common.util.BeanUtils;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang3.StringUtils;
@@ -89,7 +90,7 @@ public class PublicOpinionBiz extends BusinessBiz<PublicOpinionMapper, PublicOpi
      * @return
      */
     public TableResultResponse<PublicOpinion> getList(PublicOpinion publicOpinion, int page, int limit,
-        String startTime, String endTime) {
+        String startTime, String endTime,String sortColumn) {
         Example example = new Example(PublicOpinion.class);
         Criteria criteria = example.createCriteria();
 
@@ -121,10 +122,54 @@ public class PublicOpinionBiz extends BusinessBiz<PublicOpinionMapper, PublicOpi
             criteria.andBetween("publishTime", _startTime, _endDate);
         }
 
-        example.setOrderByClause("id desc");
+        this.setSortColumn(example,sortColumn);
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<PublicOpinion> result = this.selectByExample(example);
         return new TableResultResponse<PublicOpinion>(pageInfo.getTotal(), result);
+    }
+    /**
+     * 设置排序字段
+     * <p>
+     * 此方法直接接受前端的参数进行sql拼接，修改此方法需注意sql注入
+     * </p>
+     *
+     * @param example   查询对象
+     * @param sortColumn 查询条件
+     */
+    private void setSortColumn(Example example,String sortColumn) {
+        // 判断是否有排序条件
+        if (BeanUtils.isNotEmpty(sortColumn)) {
+            String[] columns = sortColumn.split(":");
+            // 排序字段的解析长度
+            int len = 2;
+            if (len == columns.length) {
+                String orderColumn = null;
+                // 获取sql拼接字段
+                switch (columns[0]) {
+                    // ID
+                    case "id":
+                        orderColumn = "id ";
+                        break;
+                    // 舆情事项编号
+                    case "opinCode":
+                        orderColumn = "opin_code ";
+                        break;
+                    // 发布时间
+                    case "publishTime":
+                        orderColumn = "publish_time ";
+                        break;
+                    default:
+                        break;
+                }
+                // 获取排序规则
+                String sort = "desc";
+                if (!sort.equals(columns[1])) {
+                    sort = "asc";
+                }
+                // 设置排序字段和规则
+                example.setOrderByClause(orderColumn + sort);
+            }
+        }
     }
 
     /**

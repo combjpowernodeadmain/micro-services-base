@@ -104,6 +104,7 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         Example example = new Example(AreaGrid.class).selectProperties(
             "id",
             "gridCode",
+            "gridSort",
             "gridName",
             "gridLevel",
             "gridParent",
@@ -121,6 +122,7 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         Example.Criteria criteria = example.createCriteria();
 
         criteria.andEqualTo("isDeleted", "0");
+        example.setOrderByClause("grid_sort desc");
 
         if (StringUtils.isNotBlank(areaGrid.getGridName())) {
             criteria.andLike("gridName", "%" + areaGrid.getGridName() + "%");
@@ -239,20 +241,24 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
                 if(StringUtils.isBlank(areaGrid.getMapInfo())) {
                     continue;
                 }
-                JSONArray array = null;
-                try {
-                    // 当网格没有配坐标时，解析JSONArray将会发生错误
-                    array = JSONArray.parseArray(areaGrid.getMapInfo());
-                } catch (Exception e) {
-                    array=new JSONArray();
-                }
-                List<Point> listPoint = array.toJavaList(Point.class);
-                if(listPoint == null) {
-                    continue;
-                }
-                if(SpatialRelationUtil.isPolygonContainsPoint(listPoint, point)) {
-                    result = areaGrid;
-                    break;
+                //解析mapInfo数据
+                String[] mapInfos = areaGrid.getMapInfo().split("-");
+                for (String mapInfo : mapInfos) {
+                    JSONArray array = null;
+                    try {
+                        // 当网格没有配坐标时，解析JSONArray将会发生错误
+                        array = JSONArray.parseArray(mapInfo);
+                    } catch (Exception e) {
+                        array = new JSONArray();
+                    }
+                    List<Point> listPoint = array.toJavaList(Point.class);
+                    if (listPoint == null) {
+                        continue;
+                    }
+                    if (SpatialRelationUtil.isPolygonContainsPoint(listPoint, point)) {
+                        result = areaGrid;
+                        break;
+                    }
                 }
             }
         }
@@ -280,18 +286,22 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
                 if(StringUtils.isBlank(areaGrid.getMapInfo())) {
                     continue;
                 }
-                JSONArray array = JSONArray.parseArray(areaGrid.getMapInfo());
-                List<Point> listPoint = array.toJavaList(Point.class);
-                if(listPoint == null) {
-                    continue;
-                }
-                if(SpatialRelationUtil.isPolygonContainsPoint(listPoint, point)) {
-                    result = areaGrid;
-                    break;
-                }
-                if(SpatialRelationUtil.isPointInPolygonBoundary(listPoint, point)) {
-                    result = areaGrid;
-                    break;
+                //解析mapInfo数据格式
+                String[] mapInfos = areaGrid.getMapInfo().split("-");
+                for (String mapInfo : mapInfos) {
+                    JSONArray array = JSONArray.parseArray(mapInfo);
+                    List<Point> listPoint = array.toJavaList(Point.class);
+                    if(listPoint == null) {
+                        continue;
+                    }
+                    if(SpatialRelationUtil.isPolygonContainsPoint(listPoint, point)) {
+                        result = areaGrid;
+                        break;
+                    }
+                    if(SpatialRelationUtil.isPointInPolygonBoundary(listPoint, point)) {
+                        result = areaGrid;
+                        break;
+                    }
                 }
             }
         }
@@ -515,16 +525,18 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
             return new HashMap<>();
         }
 
-        Example example =
-            new Example(AreaGrid.class).selectProperties("id", "gridName", "gridLevel",
-                "gridParent");
+        Example example =new Example(AreaGrid.class).selectProperties("id", "gridName", "gridLevel", "gridParent");
         example.createCriteria().andEqualTo("isDeleted", "0");
+        if(gridLevel.contains(",")){
+        List<String> _gridLevel = Arrays.asList(gridLevel.split(","));
+            example.createCriteria().andIn("gridLevel",_gridLevel);
+        }
         List<AreaGrid> areaGrids = this.selectByExample(example);
 
         Map<Integer, Set<String>> gridIdBindChildrenMap = new HashMap<>();
         if (BeanUtil.isNotEmpty(areaGrids)) {
             for (AreaGrid areaGridTmp : areaGrids) {
-                if (gridLevel.equals(areaGridTmp.getGridLevel())) {
+                if (gridLevel.contains(areaGridTmp.getGridLevel())) {
                     Set<String> gridIdSetBindChildrenInMap = new HashSet<>();
                     _bindChildren(areaGrids, areaGridTmp, gridIdSetBindChildrenInMap);
                     gridIdBindChildrenMap.put(areaGridTmp.getId(), gridIdSetBindChildrenInMap);
@@ -534,6 +546,8 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
 
         return gridIdBindChildrenMap;
     }
+
+
 
     private void _bindChildren(List<AreaGrid> areaGrids, AreaGrid areaGrid,Set<String> gridIdSetBindChildrenInMap) {
         gridIdSetBindChildrenInMap.add(String.valueOf(areaGrid.getId()));// 先把自己放到结果集内

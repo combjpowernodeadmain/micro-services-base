@@ -32,7 +32,8 @@ public interface PatrolTaskMapper extends CommonMapper<PatrolTask> {
 	public List<Map<String,Object>> selectPatrolTaskList(@Param("patrolTask")PatrolTask patrolTask,
 			@Param("speName")String speName,
 			@Param("startTime")Date startTime,
-			@Param("endTime")Date endTime);
+			@Param("endTime")Date endTime,
+			@Param("sortColumn")String  sortColumn);
 	
 	/**
 	 * 获取regulaObjIdList集合中所包含的监管对象被巡查的次数

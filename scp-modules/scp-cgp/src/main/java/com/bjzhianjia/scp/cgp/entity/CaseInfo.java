@@ -804,7 +804,7 @@ public class CaseInfo implements Serializable {
 	/**
 	 * 设置：部门ID
 	 */
-	public void setDepartId(String deptId) {
+	public void setDepartId(String departId) {
 		this.departId = departId;
 	}
 	/**

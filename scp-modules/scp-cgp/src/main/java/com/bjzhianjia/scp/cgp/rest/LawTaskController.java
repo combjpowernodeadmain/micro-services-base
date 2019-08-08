@@ -111,6 +111,8 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
         @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
         @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime,
         @RequestParam(defaultValue = "") @ApiParam("任务状态") String state,
+        @RequestParam(defaultValue = "") @ApiParam("执法任务编号") String lawTaskCode,
+        @RequestParam(defaultValue = "") @ApiParam("执法任务名称") String lawTitle,
         @RequestParam(defaultValue = "") @ApiParam("巡查对象") String regulaObjectName,
         @RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
         @RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page) {
@@ -124,10 +126,7 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
             _endTimeTmp = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
             _endTimeTmp = DateUtils.addDays(_endTimeTmp, 1);
         }
-
-        result =
-            lawTaskBiz.getLawTaskList(userName, regulaObjectName, state, _startTime, _endTimeTmp,
-                page, limit);
+        result = lawTaskBiz.getLawTaskList(userName, regulaObjectName, state, _startTime, _endTimeTmp, page, limit,lawTaskCode,lawTitle);
         return result;
     }
 
@@ -149,7 +148,7 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
 
     @RequestMapping(value = "randomLawTask", method = RequestMethod.GET)
     @ApiOperation("分配执法任务")
-    public ObjectRestResponse<List<JSONObject>> randomLawTask(
+    public ObjectRestResponse<JSONObject> randomLawTask(
         @RequestParam(defaultValue = "2") @ApiParam("每组队员数 ") Integer peopleNumber,
         @RequestParam(defaultValue = "2") @ApiParam("巡查对象数") Integer regulaObjNumber,
         @RequestParam(defaultValue = "") @ApiParam("网格ids") String griIds,
@@ -162,7 +161,7 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
         @RequestParam(defaultValue = "") @ApiParam("执法任务名称") String lawTitle,
         @RequestParam(value = "randomNum",defaultValue = "1")@ApiParam("随机数量") Integer randomNum) {
 
-        ObjectRestResponse<List<JSONObject>> result = new ObjectRestResponse<>();
+        ObjectRestResponse<JSONObject> result = new ObjectRestResponse<>();
 
         if(StringUtils.isBlank(startTime)||StringUtils.isBlank(endTime)){
             result.setStatus(400);
@@ -185,15 +184,15 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
         }
 
         try {
-            Result<List<JSONObject>>  _result = lawTaskBiz.randomLawTask(objType, griIds, peopleNumber, regulaObjNumber, _startTime,
+            Result<JSONObject>  _result = lawTaskBiz.randomLawTask(objType, griIds, peopleNumber, regulaObjNumber, _startTime,
                 _endTimeTmp, info, bizTypeCode, eventTypeId,lawTitle,randomNum);
-            //错误反馈
+            // 错误反馈
             if(!_result.getIsSuccess()) {
                 result.setStatus(400);
                 result.setMessage(_result.getMessage());
             }
 
-            List<JSONObject> data = _result.getData();
+            JSONObject data = _result.getData();
             result.setData(data);
         } catch (Exception e) {
             result.setStatus(400);
@@ -231,6 +230,8 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
         @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
         @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime,
         @RequestParam(defaultValue = "") @ApiParam("任务状态") String state,
+        @RequestParam(defaultValue = "") @ApiParam("执法任务编号") String lawTaskCode,
+        @RequestParam(defaultValue = "") @ApiParam("执法任务名称") String lawTitle,
         @RequestParam(defaultValue = "") @ApiParam("巡查对象") String regulaObjectName,
         @RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
         @RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page) {
@@ -246,7 +247,7 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
         }
 
         result =
-            lawTaskBiz.getLawTaskToDoList(userName, regulaObjectName, _startTime, _endTimeTmp, page, limit);
+            lawTaskBiz.getLawTaskToDoList(userName, regulaObjectName, _startTime, _endTimeTmp, page, limit,lawTaskCode,lawTitle);
         return result;
     }
     
@@ -257,6 +258,8 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
         @RequestParam(defaultValue = "") @ApiParam("开始日期") String startTime,
         @RequestParam(defaultValue = "") @ApiParam("结束日期") String endTime,
         @RequestParam(defaultValue = "") @ApiParam("任务状态") String state,
+        @RequestParam(defaultValue = "") @ApiParam("执法任务编号") String lawTaskCode,
+        @RequestParam(defaultValue = "") @ApiParam("执法任务名称") String lawTitle,
         @RequestParam(defaultValue = "") @ApiParam("巡查对象") String regulaObjectName,
         @RequestParam(defaultValue = "10") @ApiParam(name = "页容量") int limit,
         @RequestParam(defaultValue = "1") @ApiParam(name = "当前页") int page) {
@@ -277,8 +280,9 @@ public class LawTaskController extends BaseController<LawTaskBiz, LawTask, Integ
         queryJObj.put("endTime", _endTimeTmp);
         queryJObj.put("state", state);
         queryJObj.put("regulaObjectName", regulaObjectName);
-        result =
-            lawTaskBiz.listSimple(queryJObj, page, limit);
+        queryJObj.put("lawTaskCode", lawTaskCode);
+        queryJObj.put("lawTitle", lawTitle);
+        result = lawTaskBiz.listSimple(queryJObj, page, limit);
         return result;
     }
 

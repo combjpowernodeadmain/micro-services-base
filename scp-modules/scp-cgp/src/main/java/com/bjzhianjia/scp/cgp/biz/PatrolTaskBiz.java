@@ -9,6 +9,7 @@ import com.bjzhianjia.scp.cgp.entity.AreaGridMember;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.mapper.AreaGridMemberMapper;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
+import com.bjzhianjia.scp.security.common.util.BeanUtils;
 import com.bjzhianjia.scp.security.common.util.BooleanUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +66,7 @@ public class PatrolTaskBiz extends BusinessBiz<PatrolTaskMapper, PatrolTask> {
      * @return
      */
     public TableResultResponse<Map<String, Object>> selectPatrolTaskList(PatrolTask patrolTask, String speName,
-            Date startTime, Date endTime, int page, int limit) {
+            Date startTime, Date endTime, int page, int limit,String sortColumn) {
         // 判断是否有需求按上报人查询
         List<String> userIdList = new ArrayList<>();
         boolean isSelectByUserName=false;
@@ -90,7 +91,8 @@ public class PatrolTaskBiz extends BusinessBiz<PatrolTaskMapper, PatrolTask> {
         }
 
         Page<Object> result = PageHelper.startPage(page, limit);
-        List<Map<String, Object>> list = patrolTaskMapper.selectPatrolTaskList(patrolTask, speName, startTime, endTime);
+        sortColumn=setSortColumn(sortColumn);
+        List<Map<String, Object>> list = patrolTaskMapper.selectPatrolTaskList(patrolTask, speName, startTime, endTime,sortColumn);
         Set<String> codes = this.getCodes(list);
         
         if(codes == null) {
@@ -113,7 +115,52 @@ public class PatrolTaskBiz extends BusinessBiz<PatrolTaskMapper, PatrolTask> {
         }
         return new TableResultResponse<Map<String, Object>>(result.getTotal(), list);
     }
-    
+    /**
+     * 设置排序字段
+     * <p>
+     * 此方法直接接受前端的参数进行sql拼接，修改此方法需注意sql注入
+     * </p>
+     *
+     *
+     * @param sortColumn 查询条件
+     */
+    private String setSortColumn(String sortColumn) {
+
+            String[] columns = sortColumn.split(":");
+            // 排序字段的解析长度
+            int len = 2;
+            if (len == columns.length) {
+                String orderColumn = null;
+                // 获取sql拼接字段
+                switch (columns[0]) {
+                    // ID
+                    case "id":
+                        orderColumn = "id ";
+                        break;
+                    // 网格ID
+                    case "areaGridId":
+                        orderColumn = "area_grid_id ";
+                        break;
+                    // 发生时间
+                    case "crtTime":
+                        orderColumn = "crt_time ";
+                        break;
+                    default:
+                        break;
+                }
+                // 获取排序规则
+                String sort = "desc";
+                if (!sort.equals(columns[1])) {
+                    sort = "asc";
+                }
+                // 设置排序字段和规则
+                return orderColumn + sort;
+            }else{
+                return "";
+            }
+   }
+
+
     
     /**
      *  获取数字字典codes

@@ -227,7 +227,7 @@ public class PartyOrgBiz extends BusinessBiz<PartyOrgMapper, PartyOrg> {
      * @return
      */
     public List<PartyOrg> getPartyOrgAllPosition() {
-        Example example = new Example(PartyOrg.class).selectProperties("mapInfo");
+        Example example = new Example(PartyOrg.class).selectProperties("id","mapInfo");
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("isDeleted", BooleanUtil.BOOLEAN_FALSE);
         // 排除根目录

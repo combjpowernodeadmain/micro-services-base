@@ -111,6 +111,7 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
         @RequestParam(defaultValue = "") @ApiParam(name = "开始时间") String startTime,
         @RequestParam(defaultValue = "") @ApiParam(name = "结束时间") String endTime,
         @RequestParam(required = false) @ApiParam(name = "网格") Integer areaGridId,
+        @RequestParam(defaultValue = "") @ApiParam(name = "排序方式") String sortColumn,
         @RequestParam(defaultValue = "") @ApiParam(name = "上报人") String crtUserName) {
 
         Date _startTime = null;
@@ -131,7 +132,7 @@ public class PatrolTaskController extends BaseController<PatrolTaskBiz, PatrolTa
         patrolTask.setCrtUserName(crtUserName);
         patrolTask.setAreaGridId(areaGridId);
 
-        return patrolTaskBiz.selectPatrolTaskList(patrolTask, speName, _startTime, _endTimeTmp, page, limit);
+        return patrolTaskBiz.selectPatrolTaskList(patrolTask, speName, _startTime, _endTimeTmp, page, limit,sortColumn);
     }
 
     @RequestMapping(value = "/get/{id}", method = RequestMethod.GET)

@@ -280,9 +280,9 @@ public class MayorHotlineService {
 	 * @return
 	 */
 	public TableResultResponse<MayorHotlineVo> getList(MayorHotline mayorHotline, int page, int limit, String startTime,
-			String endTime) {
+			String endTime,String sortColumn) {
 		TableResultResponse<MayorHotline> tableResult = mayorHotlineBiz.getList(mayorHotline, page, limit, startTime,
-				endTime);
+				endTime,sortColumn);
 		List<MayorHotline> rows = tableResult.getData().getRows();
 
 		List<MayorHotlineVo> voList = queryAssist(rows);
