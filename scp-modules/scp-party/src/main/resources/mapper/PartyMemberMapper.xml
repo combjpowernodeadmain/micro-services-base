@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bjzhianjia.scp.party.mapper.PartyMemberMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.bjzhianjia.scp.party.entity.PartyMember" id="partyMemberMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="identityNum" column="identity_num"/>
+        <result property="sex" column="sex"/>
+        <result property="birthday" column="birthday"/>
+        <result property="nation" column="nation"/>
+        <result property="origin" column="origin"/>
+        <result property="maritalStatus" column="marital_status"/>
+        <result property="partyJoinDate" column="party_join_date"/>
+        <result property="preJoinOrg" column="pre_join_org"/>
+        <result property="partyFullDate" column="party_full_date"/>
+        <result property="partyFullOrg" column="party_full_org"/>
+        <result property="ftEduId" column="ft_edu_id"/>
+        <result property="ftDegreeId" column="ft_degree_id"/>
+        <result property="ftSchool" column="ft_school"/>
+        <result property="ftSpeciality" column="ft_speciality"/>
+        <result property="ptEduId" column="pt_edu_id"/>
+        <result property="ptDegreeId" column="pt_degree_id"/>
+        <result property="ptSchool" column="pt_school"/>
+        <result property="ptSpeciality" column="pt_speciality"/>
+        <result property="workPlace" column="work_place"/>
+        <result property="workPost" column="work_post"/>
+        <result property="workUnit" column="work_unit"/>
+        <result property="originRegister" column="origin_register"/>
+        <result property="addr" column="addr"/>
+        <result property="partyDuty" column="party_duty"/>
+        <result property="partySponsor" column="party_sponsor"/>
+        <result property="partyFee" column="party_fee"/>
+        <result property="crtUserId" column="crt_user_id"/>
+        <result property="crtUserName" column="crt_user_name"/>
+        <result property="crtTime" column="crt_time"/>
+        <result property="updUserId" column="upd_user_id"/>
+        <result property="updUserName" column="upd_user_name"/>
+        <result property="updTime" column="upd_time"/>
+        <result property="departId" column="depart_id"/>
+        <result property="tenantId" column="tenant_id"/>
+        <result property="isDeleted" column="is_deleted"/>
+    </resultMap>
+
+</mapper>
