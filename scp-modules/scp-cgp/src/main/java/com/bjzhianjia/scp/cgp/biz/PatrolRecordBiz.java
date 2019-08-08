@@ -10,6 +10,7 @@ import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.DateTime;
@@ -26,6 +27,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 巡查记录表，用于记录某一次巡查信息
@@ -328,5 +330,76 @@ public class PatrolRecordBiz extends BusinessBiz<PatrolRecordMapper, PatrolRecor
             restResponse.setData(patrolRecords.get(0));
         }
         return restResponse;
+    }
+
+
+
+    /**
+     * 个人/多人 某个时间段的巡查总时长
+     *
+     * @param patrolRecord
+     * @param addition
+     * @param userIds
+     * @return
+     */
+    public Map<String,String> totalPatrolTimeLength(PatrolRecord patrolRecord, JSONObject addition, List<String> userIds){
+        Map<String,String> map = new HashedMap<>();
+        Example example = new Example(patrolRecord.getClass());
+        Example.Criteria criteria = example.createCriteria();
+
+        if (StringUtils.isNotEmpty(patrolRecord.getCrtUserId())) {
+            criteria.andEqualTo("crtUserId", patrolRecord.getCrtUserId());
+        }
+        if(BeanUtil.isNotEmpty(userIds)) {
+            criteria.andIn("crtUserId",userIds);
+        }
+        String  queryStartTimeStr;
+        String  queryEndTimeStr;
+        if (StringUtils.isNotBlank(addition.getString("month"))) {
+            queryStartTimeStr = DateUtil.dateFromDateToStr(
+                    DateUtil.getDayStartTime(DateUtil.theFirstDayOfMonth(DateUtil.dateFromStrToDate(addition.getString("month"), "yyyy-MM"))),
+                    DateUtil.DEFAULT_DATE_FORMAT);
+            queryEndTimeStr = DateUtil.dateFromDateToStr(DateUtil.getDayStartTime(
+                    DateUtil.theFirstDayOfMonth(DateUtil.theDayOfMonthPlus(DateUtil.dateFromStrToDate(addition.getString("month"), "yyyy-MM"), 1)
+                    )), DateUtil.DEFAULT_DATE_FORMAT);
+            criteria.andBetween("startTime", queryStartTimeStr, queryEndTimeStr);
+        }
+
+        List<PatrolRecord> patrolRecords = this.selectByExample(example);
+        DecimalFormat format = new DecimalFormat("0.00");
+        //根据不同的userId进行时间总和计算
+        /*long totalLengthTimes;
+        if(BeanUtil.isNotEmpty(patrolRecord.getCrtUserId())){
+            //单个人的时长计算
+            totalLengthTimes = 0;
+            for (PatrolRecord record : patrolRecords) {
+                if(BeanUtil.isNotEmpty(record.getEndTime())){
+                    long lengthTimes = record.getEndTime().getTime() - record.getStartTime().getTime();
+                    totalLengthTimes += lengthTimes;
+                }
+            }
+            String lengthHours = format.format(totalLengthTimes * 1.0 / DateUtils.MILLIS_PER_HOUR);
+            map.put(patrolRecord.getCrtUserId(),lengthHours);
+        }*/
+        //多人查询
+        if(BeanUtil.isNotEmpty(userIds)){
+            for (String userId : userIds) {
+                long totalLengthTimesUser = 0;
+                for (PatrolRecord record : patrolRecords) {
+                    if(userId.equals(record.getCrtUserId()) && BeanUtil.isNotEmpty(record.getEndTime())){
+                        long lengthTimes = record.getEndTime().getTime() - record.getStartTime().getTime();
+                        totalLengthTimesUser += lengthTimes;
+                    }
+                }
+                System.out.println(totalLengthTimesUser);
+                if(totalLengthTimesUser == 0) {
+                    map.put(userId,"0.00");
+                }else{
+                    String lengthHours = format.format(totalLengthTimesUser * 1.0 / DateUtils.MILLIS_PER_HOUR);
+                    map.put(userId,lengthHours);
+                }
+            }
+        }
+        return map;
     }
 }

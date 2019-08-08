@@ -632,4 +632,23 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
     ){
         return this.caserInfoService.gongdaiInMemberStatistics(month,userId,exeStatus,page,limit);
     }
+
+    @GetMapping("/assessmentList")
+    @ApiOperation("网格考核，处理状态,工单列表")
+    public TableResultResponse<JSONObject> assessmentList(
+            @RequestParam(value = "month",defaultValue = "") @ApiParam("月份,yyyy-MM-dd") String month,
+            @RequestParam(value = "exeStatus",defaultValue = "") @ApiParam("处理状态") String exeStatus,
+            @RequestParam(value = "userId",defaultValue = "") @ApiParam("用户ID") String userId,
+            @RequestParam(value = "page",defaultValue = "1") Integer page,
+            @RequestParam(value = "limit",defaultValue = "10") @ApiParam("每页显示记录条数") Integer limit
+    ){
+        /*  ci.case_title caseTitle,  事件名称
+		    ci.source_type sourceType, 来源类型
+		    ci.is_finished isFinished, 事件状态
+		    ci.event_type_list eventTypeList, 事件类别
+		    ei.finish_time exeTime, 处理时间
+		    ci.finish_time  finishTime 完成时间
+		*/
+        return this.baseBiz.assessmentList(month,exeStatus,userId,page,limit);
+    }
 }

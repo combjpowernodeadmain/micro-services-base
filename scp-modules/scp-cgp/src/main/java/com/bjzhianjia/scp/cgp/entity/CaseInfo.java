@@ -240,8 +240,8 @@ public class CaseInfo implements Serializable {
     private String tenantId;
 	
 	    //部门ID
-    @Column(name = "dept_id")
-    private String deptId;
+    @Column(name = "depart_id")
+    private String departId;
     
   //该案件是否重复
     @Column(name="is_duplicate")
@@ -804,14 +804,14 @@ public class CaseInfo implements Serializable {
 	/**
 	 * 设置：部门ID
 	 */
-	public void setDeptId(String deptId) {
-		this.deptId = deptId;
+	public void setDepartId(String deptId) {
+		this.departId = departId;
 	}
 	/**
 	 * 获取：部门ID
 	 */
-	public String getDeptId() {
-		return deptId;
+	public String getDepartId() {
+		return departId;
 	}
 	public Date getOccurTime() {
 		return occurTime;
