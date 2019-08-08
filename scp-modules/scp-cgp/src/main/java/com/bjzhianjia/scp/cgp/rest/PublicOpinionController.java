@@ -191,6 +191,7 @@ public class PublicOpinionController extends BaseController<PublicOpinionBiz, Pu
 			@RequestParam(defaultValue = "") @ApiParam(name = "舆情等级") String opinLevel,
 			@RequestParam(defaultValue = "") @ApiParam(name = "来源类型") String opinType,
 			@RequestParam(defaultValue = "") @ApiParam(name = "处理状态") String exeStatus,
+			@RequestParam(defaultValue = "") @ApiParam(name = "排序方式") String sortColumn,
 			@RequestParam(defaultValue = "") @ApiParam(name = "按时间查询(起始时间)") String startTime,
 			@RequestParam(defaultValue = "") @ApiParam(name = "按时间查询 (终止时间)") String endTime) {
 		PublicOpinion publicOpinion = new PublicOpinion();
@@ -200,8 +201,7 @@ public class PublicOpinionController extends BaseController<PublicOpinionBiz, Pu
 		publicOpinion.setExeStatus(exeStatus);
 		publicOpinion.setOpinTitle(opinTitle.trim());
 
-		TableResultResponse<PublicOpinionVo> list = publicOpinionService.getList(publicOpinion, page, limit, startTime,
-				endTime);
+		TableResultResponse<PublicOpinionVo> list = publicOpinionService.getList(publicOpinion, page, limit, startTime, endTime,sortColumn);
 		return list;
 	}
 

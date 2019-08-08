@@ -183,6 +183,7 @@ public class LeadershipAssignController extends BaseController<LeadershipAssignB
         @RequestParam(defaultValue = "") @ApiParam(name = "交界事项标题") String taskTitle,
         @RequestParam(defaultValue = "") @ApiParam(name = "地点") String taskAddr,
         @RequestParam(defaultValue = "") @ApiParam(name = "处理状态") String exeStatus,
+        @RequestParam(defaultValue = "") @ApiParam(name = "排序方式") String sortColumn,
         @RequestParam(defaultValue = "") @ApiParam(name = "按时间查询(起始时间)") String startTime,
         @RequestParam(defaultValue = "") @ApiParam(name = "按时间查询 (终止时间)") String endTime) {
         LeadershipAssign leadershipAssign = new LeadershipAssign();
@@ -192,7 +193,7 @@ public class LeadershipAssignController extends BaseController<LeadershipAssignB
         leadershipAssign.setExeStatus(exeStatus);
 
         TableResultResponse<LeadershipAssignVo> list =
-            leadershipAssignService.getList(leadershipAssign, page, limit, startTime, endTime);
+            leadershipAssignService.getList(leadershipAssign, page, limit, startTime, endTime,sortColumn);
         return list;
     }
 

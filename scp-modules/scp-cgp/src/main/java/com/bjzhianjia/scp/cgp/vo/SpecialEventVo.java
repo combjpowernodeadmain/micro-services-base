@@ -12,9 +12,17 @@ public class SpecialEventVo extends SpecialEvent {
     private String eventTypeName;
     private String speStatusId;
     private String regObjTypeName;
+    private String sortColumn;
     // 专项状态
     private String speStatusName;
 
+    public String getSortColumn() {
+        return sortColumn;
+    }
+
+    public void setSortColumn(String sortColumn) {
+        this.sortColumn = sortColumn;
+    }
     public String getBizListName() {
         return bizListName;
     }
