@@ -1937,6 +1937,29 @@ public class CaseInfoService {
         requiredJObj.put("executedDeptName", executedDeptName);
         requiredJObj.put("requirements", caseInfo.getRequirements());
         requiredJObj.put("executedDeptCode", executedDeptCode);
+        // 没有执行部门，则执行网格策略
+        if (StringUtils.isBlank(caseInfo.getExecuteDept())) {
+            // 数据格式：1_root_biz_grid_role_wgz
+            String procSelfdata1 = null;
+            // 获取工作流中自定义权限（网格角色和网格id）
+            WfProcTaskHistoryBean wfProcTaskHistoryBean;
+            // 倒叙的目的，获取最新的权限
+            for (int i = procHistoryList.size(); i > 0; i--) {
+                wfProcTaskHistoryBean = procHistoryList.get(i);
+                // 获取到最新权限，则结束循环
+                if (StringUtils.isNotBlank(wfProcTaskHistoryBean.getProcSelfdata1())) {
+                    procSelfdata1 = wfProcTaskHistoryBean.getProcSelfdata1();
+                    break;
+                }
+            }
+            // 解析权限数据
+            if (StringUtils.isNotBlank(procSelfdata1)) {
+                // 网格角色
+                requiredJObj.put("gridRole", procSelfdata1.substring(procSelfdata1.indexOf("_") + 1, procSelfdata1.length()));
+                // 网格id
+                requiredJObj.put("procSelfPermissionData1", procSelfdata1.substring(0, procSelfdata1.indexOf("_")));
+            }
+        }
         /*
          * =================事项要求===========结束==========
          */
