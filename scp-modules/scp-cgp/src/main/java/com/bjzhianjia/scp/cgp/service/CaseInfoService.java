@@ -1944,7 +1944,7 @@ public class CaseInfoService {
             // 获取工作流中自定义权限（网格角色和网格id）
             WfProcTaskHistoryBean wfProcTaskHistoryBean;
             // 倒叙的目的，获取最新的权限
-            for (int i = procHistoryList.size(); i > 0; i--) {
+            for (int i = procHistoryList.size() - 1; i >= 0; i--) {
                 wfProcTaskHistoryBean = procHistoryList.get(i);
                 // 获取到最新权限，则结束循环
                 if (StringUtils.isNotBlank(wfProcTaskHistoryBean.getProcSelfdata1())) {
