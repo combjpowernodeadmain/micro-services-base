@@ -129,9 +129,13 @@ public class MayorHotlineBiz extends BusinessBiz<MayorHotlineMapper, MayorHotlin
             criteria.andEqualTo("hotlnSource", mayorHotline.getHotlnSource());
         }
 
-            this.setSortColumn(example,sortColumn);
-
-
+        // 判断是否存在排序字段
+        if (StringUtils.isNotBlank(sortColumn)) {
+            this.setSortColumn(example, sortColumn);
+        } else {
+            // 默认id降序
+            example.setOrderByClause(" id desc");
+        }
 
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<MayorHotline> result = this.mapper.selectByExample(example);

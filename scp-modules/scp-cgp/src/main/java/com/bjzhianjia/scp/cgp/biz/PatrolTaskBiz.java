@@ -91,12 +91,19 @@ public class PatrolTaskBiz extends BusinessBiz<PatrolTaskMapper, PatrolTask> {
         }
 
         Page<Object> result = PageHelper.startPage(page, limit);
-        sortColumn=setSortColumn(sortColumn);
+
+        // 判断是否存在排序字段
+        if (StringUtils.isNotBlank(sortColumn)) {
+            sortColumn = this.setSortColumn(sortColumn);
+        } else {
+            // 默认id降序
+            sortColumn = " pk.crt_time DESC";
+        }
         List<Map<String, Object>> list = patrolTaskMapper.selectPatrolTaskList(patrolTask, speName, startTime, endTime,sortColumn);
         Set<String> codes = this.getCodes(list);
         
         if(codes == null) {
-            return new TableResultResponse<Map<String, Object>>(0, null);
+            return new TableResultResponse<>(0, null);
         }
         
         //获取数据字典：立案单状态值、来源类型
@@ -113,7 +120,7 @@ public class PatrolTaskBiz extends BusinessBiz<PatrolTaskMapper, PatrolTask> {
                 map.put("status", status);
             }
         }
-        return new TableResultResponse<Map<String, Object>>(result.getTotal(), list);
+        return new TableResultResponse<>(result.getTotal(), list);
     }
     /**
      * 设置排序字段
@@ -135,15 +142,15 @@ public class PatrolTaskBiz extends BusinessBiz<PatrolTaskMapper, PatrolTask> {
                 switch (columns[0]) {
                     // ID
                     case "id":
-                        orderColumn = "id ";
+                        orderColumn = " pk.id ";
                         break;
                     // 网格ID
                     case "areaGridId":
-                        orderColumn = "area_grid_id ";
+                        orderColumn = " pk.area_grid_id ";
                         break;
                     // 发生时间
                     case "crtTime":
-                        orderColumn = "crt_time ";
+                        orderColumn = " pk.crt_time ";
                         break;
                     default:
                         break;

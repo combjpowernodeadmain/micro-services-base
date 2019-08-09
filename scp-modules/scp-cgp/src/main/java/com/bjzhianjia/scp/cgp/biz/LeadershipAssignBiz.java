@@ -95,8 +95,14 @@ public class LeadershipAssignBiz extends BusinessBiz<LeadershipAssignMapper, Lea
             criteria.andBetween("taskTime", _startTime, _endTime);
         }
 
+        // 判断是否存在排序字段
+        if (StringUtils.isNotBlank(sortColumn)) {
+            this.setSortColumn(example, sortColumn);
+        } else {
+            // 默认id降序
+            example.setOrderByClause(" id desc");
+        }
 
-        this.setSortColumn(example,sortColumn);
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<LeadershipAssign> result = this.selectByExample(example);
         return new TableResultResponse<>(pageInfo.getTotal(), result);

@@ -93,15 +93,18 @@ public class SpecialEventBiz extends BusinessBiz<SpecialEventMapper, SpecialEven
 		if (StringUtils.isNotBlank(vo.getBizList())) {
 			criteria.andLike("bizList", "%"+vo.getBizList()+"%");
 		}
+
+		// 判断是否存在排序字段
 		if (StringUtils.isNotBlank(vo.getSortColumn())) {
 			this.setSortColumn(example,vo.getSortColumn());
+		} else {
+			// 默认id降序
+			example.setOrderByClause(" id desc");
 		}
 
 		Page<Object> pageInfo = PageHelper.startPage(page, limit);
-
 		List<SpecialEvent> result = this.mapper.selectByExample(example);
-
-		return new TableResultResponse<SpecialEvent>(pageInfo.getTotal(), result);
+		return new TableResultResponse<>(pageInfo.getTotal(), result);
 	}
 	/**
 	 * 设置排序字段

@@ -122,10 +122,17 @@ public class PublicOpinionBiz extends BusinessBiz<PublicOpinionMapper, PublicOpi
             criteria.andBetween("publishTime", _startTime, _endDate);
         }
 
-        this.setSortColumn(example,sortColumn);
+        // 判断是否存在排序字段
+        if (StringUtils.isNotBlank(sortColumn)) {
+            this.setSortColumn(example, sortColumn);
+        } else {
+            // 默认id降序
+            example.setOrderByClause(" id desc");
+        }
+
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<PublicOpinion> result = this.selectByExample(example);
-        return new TableResultResponse<PublicOpinion>(pageInfo.getTotal(), result);
+        return new TableResultResponse<>(pageInfo.getTotal(), result);
     }
     /**
      * 设置排序字段

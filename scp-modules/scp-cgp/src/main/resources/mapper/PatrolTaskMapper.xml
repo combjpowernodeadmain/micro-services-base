@@ -101,7 +101,7 @@
 		</if>
 
 		<if test="sortColumn !=null and sortColumn!=''">
-			ORDER BY #{sortColumn}
+			ORDER BY ${sortColumn}
 		</if>
 
 	</select>
