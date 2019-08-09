@@ -183,6 +183,7 @@ public class CaseInfoService {
     @Autowired
     private MessageCenterBiz messageCenterBiz;
 
+
     /**
      * 更新单个对象
      *
@@ -3206,5 +3207,9 @@ public class CaseInfoService {
         }
 
         return result;
+    }
+
+    public List<JSONObject> getBizId(Date startTime, Date endTime, String userId){
+       return  wfProcTaskBiz.swpByuserIds(startTime,endTime,userId);
     }
 }

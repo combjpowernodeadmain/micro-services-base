@@ -1,7 +1,9 @@
 package com.bjzhianjia.scp.security.wf.base.task.mapper;
 
+import java.util.Date;
 import java.util.List;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -83,4 +85,8 @@ public interface WfProcTaskBeanMapper {
 	 */
 	List<WfProcTaskHistoryBean> selectApprovedHistory(@Param("procInstId") String procInstId,
 			@Param("procTenantId") String procTenantId);
+
+	List<JSONObject> swpByuserIds(@Param("startTime")Date startTime,
+								  @Param("endTime")Date endTime,
+								  @Param("userId")String userId);
 }

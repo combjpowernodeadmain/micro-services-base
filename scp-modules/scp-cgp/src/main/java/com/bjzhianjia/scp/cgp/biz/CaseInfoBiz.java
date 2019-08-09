@@ -6,6 +6,7 @@ import com.bjzhianjia.scp.cgp.entity.*;
 import com.bjzhianjia.scp.cgp.feign.DictFeign;
 import com.bjzhianjia.scp.cgp.mapper.AreaGridMapper;
 import com.bjzhianjia.scp.cgp.mapper.CaseInfoMapper;
+import com.bjzhianjia.scp.cgp.service.CaseInfoService;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import com.bjzhianjia.scp.cgp.util.DateUtil;
 import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
@@ -89,6 +90,11 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
 
     @Autowired
     private  EventTypeBiz eventTypeBiz;
+
+    @Autowired
+    private CaseInfoService caseInfoService;
+
+
 
     /**
      * 查询未删除的总数
@@ -1342,7 +1348,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
 
         if ("".equals(exeStatus)) {
             List<JSONObject> caseInfoId = this.mapper.caseInfoByUserIds(startTime, endTime, userId);
-            List<JSONObject> swpBizId = this.mapper.swpByuserIds(startTime, endTime, userId);
+            List<JSONObject> swpBizId = caseInfoService.getBizId(startTime, endTime, userId);
             if(caseInfoId.size() != 0){
                 for (int i = 0; i < caseInfoId.size(); i++) {
                     caseInfoIds.add(caseInfoId.get(i).getString("cId"));

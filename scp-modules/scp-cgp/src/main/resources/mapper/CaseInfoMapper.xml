@@ -809,15 +809,5 @@ SELECT
 		</if>
 		and ci.crt_time between #{startTime} and #{endTime}
 	</select>
-	<select id="swpByuserIds" resultType="com.alibaba.fastjson.JSONObject">
-		select DISTINCT(task.PROC_BIZID) bizId
-		from scp_workflow.scp_wf_proc_task task
-		where
-		1 = 1
-		<if test="userId != null and userId != ''">
-			and task.PROC_TASK_ASSIGNEE = #{userId}
-		</if>
-		and FROM_UNIXTIME(task.PROC_TASK_COMMITTIME,'%Y-%m-%d %H:%i:%s') between #{startTime} and #{endTime}
-	</select>
 
 </mapper>

@@ -12,10 +12,7 @@
  */
 package com.bjzhianjia.scp.security.wf.base.task.biz;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.alibaba.fastjson.JSONArray;
 import org.activiti.engine.ActivitiException;
@@ -3763,6 +3760,8 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		return wfProcTaskBeanMapper.selectApprovedHistory(procInstId, procTenantId);
 	}
 
+
+
 	class ProcTaskData {
 		String procInstanceId;
 		String procTaskId;
@@ -3846,4 +3845,9 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	public List<JSONObject> selectByInstAndTaskCode(JSONObject queryData){
 		return  wfprocpropsMapper.selectByInstAndTaskCode(queryData);
 	}
+
+	public List<JSONObject> swpByuserIds(Date startTime,Date endTime,String userId){
+		return wfProcTaskBeanMapper.swpByuserIds(startTime,endTime,userId);
+	}
+
 }
