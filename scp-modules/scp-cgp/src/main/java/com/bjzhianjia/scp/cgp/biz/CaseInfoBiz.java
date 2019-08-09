@@ -1360,26 +1360,21 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
                     .theFirstDayOfMonth(DateUtil.theDayOfMonthPlus(DateUtil.dateFromStrToDate(month, "yyyy-MM"), 1)));
         }
         //工单默认页总数据caseId
-        List<String> caseInfoIds = new ArrayList<>();
+        Set<String> caseInfoIds = new HashSet<>();
 
-        if ("".equals(exeStatus)) {
+        if (StringUtils.isBlank(exeStatus)) {
             List<JSONObject> caseInfoId = this.mapper.caseInfoByUserIds(startTime, endTime, userId);
             List<JSONObject> swpBizId = caseInfoService.getBizId(startTime, endTime, userId);
-            if(caseInfoId.size() != 0){
+            if (BeanUtil.isNotEmpty(caseInfoId)) {
                 for (int i = 0; i < caseInfoId.size(); i++) {
                     caseInfoIds.add(caseInfoId.get(i).getString("caseId"));
                 }
             }
-            if(swpBizId.size() != 0){
+            if (BeanUtil.isNotEmpty(swpBizId)) {
                 for (int i = 0; i < swpBizId.size(); i++) {
                     caseInfoIds.add(swpBizId.get(i).getString("bizId"));
                 }
             }
-            if(caseInfoIds.size() == 0){
-                caseInfoIds = null;
-            }
-        }else{
-            caseInfoIds = null;
         }
 
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
