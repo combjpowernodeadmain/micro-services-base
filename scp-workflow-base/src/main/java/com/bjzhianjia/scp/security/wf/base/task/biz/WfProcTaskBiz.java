@@ -3764,8 +3764,6 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		return wfProcTaskBeanMapper.selectApprovedHistory(procInstId, procTenantId);
 	}
 
-
-
 	class ProcTaskData {
 		String procInstanceId;
 		String procTaskId;
