@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.common.util.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -300,5 +301,11 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 			@RequestParam(value = "typeCodes",defaultValue = "") @ApiParam("数据字典类型codes") String typeCodes){
 		return this.baseBiz.getListByTypeCode(typeCodes);
 	}
-    
+
+	@ApiOperation("通过字典code模糊匹配")
+	@RequestMapping(value = "/code/{code}",method = RequestMethod.GET)
+	@ResponseBody
+	public List<JSONObject> getCodeAndDefault(@PathVariable(value="code") @ApiParam("类型code") String code){
+		return this.baseBiz.getCodeAndDefault(code);
+	}
 }

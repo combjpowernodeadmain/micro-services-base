@@ -2,13 +2,16 @@
 package com.bjzhianjia.scp.security.dict.biz;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.util.BeanUtils;
+import com.bjzhianjia.scp.security.common.util.BooleanUtil;
 import com.bjzhianjia.scp.security.common.util.UUIDUtils;
 import com.bjzhianjia.scp.security.dict.entity.DictType;
 import com.bjzhianjia.scp.security.dict.entity.DictValue;
 import com.bjzhianjia.scp.security.dict.mapper.DictValueMapper;
 
+import com.fasterxml.jackson.databind.util.BeanUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.env.Environment;
 import tk.mybatis.mapper.entity.Example;
@@ -248,4 +251,30 @@ public class DictValueBiz extends BusinessBiz<DictValueMapper, DictValue> {
 		}
 		return result;
 	}
+
+	/**
+	 * code  default
+	 * @param code
+	 * @return
+	 */
+	public List<JSONObject> getCodeAndDefault(String code){
+		List<JSONObject> list = new ArrayList<>();
+
+		Example example = new Example(DictValue.class);
+		Criteria criteria = example.createCriteria();
+		criteria.andLike("code","%"+code+"%");
+		criteria.andEqualTo("isDeleted", BooleanUtil.BOOLEAN_FALSE);
+		List<DictValue> dictValues = selectByExample(example);
+		if(BeanUtils.isEmpty(dictValues)){
+			return new ArrayList<>();
+		}
+		for (DictValue dictValue : dictValues) {
+			JSONObject jsonObject = new JSONObject();
+			jsonObject.put("code",dictValue.getCode());
+			jsonObject.put("labelDefault",dictValue.getLabelDefault());
+			list.add(jsonObject);
+		}
+		return list;
+	}
+
 }
