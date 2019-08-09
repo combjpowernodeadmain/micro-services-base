@@ -3850,6 +3850,13 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 		return  wfprocpropsMapper.selectByInstAndTaskCode(queryData);
 	}
 
+	/**
+	 * 获取bizid
+	 * @param startTime
+	 * @param endTime
+	 * @param userId
+	 * @return
+	 */
 	public List<JSONObject> swpByuserIds(Date startTime,Date endTime,String userId){
 		return wfProcTaskBeanMapper.swpByuserIds(startTime,endTime,userId);
 	}
