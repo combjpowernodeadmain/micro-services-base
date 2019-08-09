@@ -4,11 +4,11 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.config.PropertiesConfig;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
+import com.bjzhianjia.scp.cgp.entity.PatrolRecord;
 import com.bjzhianjia.scp.cgp.entity.Point;
+import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.mapper.AreaGridMapper;
-import com.bjzhianjia.scp.cgp.util.BeanUtil;
-import com.bjzhianjia.scp.cgp.util.PropertiesProxy;
-import com.bjzhianjia.scp.cgp.util.SpatialRelationUtil;
+import com.bjzhianjia.scp.cgp.util.*;
 import com.bjzhianjia.scp.cgp.vo.AreaGridTree;
 import com.bjzhianjia.scp.cgp.vo.AreaGridVo;
 import com.bjzhianjia.scp.merge.core.MergeCore;
@@ -26,13 +26,7 @@ import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -66,6 +60,11 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
     
     @Autowired
     private PropertiesProxy propertiesProxy;
+
+    @Autowired
+    private AdminFeign adminFeign;
+    @Autowired
+    private  PatrolRecordBiz patrolRecordBiz;
 
     /**
      * 按条件查询未被删除的网格
@@ -682,4 +681,139 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         List<AreaGrid> areaGrids = this.selectByExample(example);
         return areaGrids == null ? new ArrayList<>() : areaGrids;
     }
+
+    /**
+     * 网格员考核
+     *
+     * @param month
+     * @param gridId
+     * @param gridMember
+     * @param gridRole
+     * @param page
+     * @param limit
+     * @return
+     */
+    public TableResultResponse<JSONObject> getAssessment(String month, Integer gridId, String gridMember,
+                                                         String gridRole, Integer page, Integer limit) {
+        TableResultResponse<JSONObject> result = new TableResultResponse<>();
+
+        Date monthStart;
+        Date monthEnd;
+        //当前月
+        Date monthDate;
+        //默认当月数据
+        if (StringUtils.isEmpty(month)) {
+            monthDate = new Date();
+        } else {
+            //指定月份
+            monthDate = DateUtil.dateFromStrToDate(month, "yyyy-MM");
+        }
+        monthStart = DateUtil.getDayStartTime(DateUtil.theFirstDayOfMonth(monthDate));
+        monthEnd = DateUtil.getDayStartTime(DateUtil.theFirstDayOfMonth(DateUtil.theDayOfMonthPlus(monthDate, 1)));
+        //巡查时长所需参数
+        JSONObject addition = new JSONObject();
+        addition.put("month", month);
+        PatrolRecord patrolRecord = new PatrolRecord();
+        Map<String, String> longTime = null;
+        //按照网格查询
+        Set<Integer> gridIdCollect = null;
+        if (BeanUtils.isNotEmpty(gridId)) {
+            //子网格ID集合
+            List<AreaGrid> areaGridBindChileren = getAreaGridBindChileren(gridId);
+            if(BeanUtil.isNotEmpty(areaGridBindChileren)){
+                gridIdCollect = areaGridBindChileren.stream().map(AreaGrid::getId).collect(Collectors.toSet());
+            }
+        }
+        //按照姓名查询
+        List<String> userList = new ArrayList<>();
+        String ids = null;
+        //base_user表
+        Map<String, String> memIdNameMap = new HashMap<>();
+        //是否进行人员姓名的查询 默认true 查询人员姓名
+        boolean flag = true;
+        if (StringUtils.isNotBlank(gridMember)) {
+            JSONArray usersByName = adminFeign.getUsersByName(gridMember);
+            if (BeanUtil.isNotEmpty(usersByName)) {
+                for (int i = 0; i < usersByName.size(); i++) {
+                    userList.add(usersByName.getJSONObject(i).getString("id"));
+                }
+                ids = StringUtils.join(userList, ",");
+                flag = false;
+            } else {
+                return new TableResultResponse<>();
+            }
+        }
+        //考核列表
+        Page<Object> pageInfo = PageHelper.startPage(page, limit);
+        List<JSONObject> jsonObjects =
+                this.mapper.getAssessment(monthStart, monthEnd, gridIdCollect, ids , gridRole);
+
+        //按照人员姓名查询的情况下，不再从基础服务获取网格人员姓名
+        if (flag) {
+            //获取ID集合
+            userList = jsonObjects.stream().map(o -> o.getString("grid_member")).distinct().collect(Collectors.toList());
+        }
+        //获取巡查总时长
+        longTime = patrolRecordBiz.totalPatrolTimeLength(patrolRecord, addition, userList);
+        if (BeanUtils.isNotEmpty(userList)) {
+            Map<String, String> usersByUserIds = adminFeign.getUsersByUserIds(StringUtils.join(userList, ","));
+            if (BeanUtils.isNotEmpty(usersByUserIds)) {
+                for (Map.Entry<String, String> e : usersByUserIds.entrySet()) {
+                    JSONObject jsonObject = JSONObject.parseObject(e.getValue());
+                    //人员姓名
+                    memIdNameMap.put(e.getKey(), jsonObject.getString("name"));
+                }
+            }
+        }
+        //整合数据
+        for (JSONObject objTmp : jsonObjects) {
+            //人员姓名并整合数据
+            objTmp.put("userName", memIdNameMap.get(objTmp.getString("grid_member")));
+            //查询网格名称并整合数据
+            List<JSONObject> grid = getGridsByMemberId(objTmp.getString("grid_member"));
+            List<String> gridNameCollect =
+                    grid.stream().map(o -> o.getString("grid_name")).distinct().collect(Collectors.toList());
+            String join = StringUtils.join(gridNameCollect, ",");
+            objTmp.put("gridName", join);
+            //上报效率
+            if (objTmp.getInteger("reportsTotal") == 0) {
+                objTmp.put("reportEfficiency", "0%");
+            } else {
+                String reportEfficiency = PercentUtil.accuracy((double) objTmp.getInteger("yReported")-(double) objTmp.getInteger("findTermination"), (double) objTmp.getInteger("yReported"), 2);
+                objTmp.put("reportEfficiency", reportEfficiency);
+            }
+            //事件处理总量
+            Integer eventTotal = objTmp.getInteger("processingWorkOrder") + objTmp.getInteger("getThouth") + objTmp.getInteger("reportsBack");
+            objTmp.put("eventTotal", eventTotal);
+            //任务办理率
+            double total = (double)objTmp.getInteger("processingWorkOrder") + (double)objTmp.getInteger("getThouth");
+            double prc = (double)objTmp.getInteger("processingWorkOrder") + (double)objTmp.getInteger("getThouth") - (double)objTmp.getInteger("reportsBack");
+            if (total == 0) {
+                objTmp.put("taskEfficiency", "0%");
+            } else {
+                String taskEfficiency = PercentUtil.accuracy(prc, total, 2);
+                objTmp.put("taskEfficiency", taskEfficiency);
+            }
+            //巡查时长
+            objTmp.put("patrolTimeLength", longTime.get(objTmp.getString("grid_member")));
+        }
+        result.getData().setTotal(pageInfo.getTotal());
+        result.getData().setRows(jsonObjects);
+        return result;
+    }
+
+    /**
+     * 根据人员id 获取其所在的所有网格
+     *
+     * @param memberId
+     * @return
+     */
+    public List<JSONObject> getGridsByMemberId(String memberId){
+        List<JSONObject> gridsByMemberId = this.mapper.getGridsByMemberId(memberId);
+        if(BeanUtils.isNotEmpty(gridsByMemberId)){
+            return  gridsByMemberId;
+        }
+        return new ArrayList<>();
+    }
+
 }

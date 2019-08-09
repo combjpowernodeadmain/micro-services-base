@@ -16,6 +16,7 @@ import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 import com.bjzhianjia.scp.security.common.util.BeanUtils;
 import com.bjzhianjia.scp.security.common.util.BooleanUtil;
+import com.bjzhianjia.scp.security.wf.base.utils.StringUtil;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.log4j.Log4j;
 import org.apache.commons.lang.StringUtils;
@@ -120,26 +121,16 @@ public class LawEnforcePathBiz extends BusinessBiz<LawEnforcePathMapper, LawEnfo
         }
         Criteria criteria = example.createCriteria();
         criteria.andEqualTo("crtUserId", userId);
+//重新设置时间范围
+        if(StringUtil.isEmpty(endTime)){
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(DateUtil.dateFromStrToDate(startTime));
+            //半小时后的时间
+            cal.add(Calendar.MINUTE, 30);
+            endTime = DateUtil.dateFromDateToStr(cal.getTime(), "yyyy-MM-dd HH:mm:ss");
+        }
+        criteria.andBetween("crtTime",startTime,endTime);
 
-        // 查询的结束日期向后推一天
-        Date endTimeT =
-            DateUtil
-                .theDayOfTommorrow(DateUtil.dateFromStrToDate(endTime, DateUtil.DATE_FORMAT_DF));
-
-        // 结束日期往前推4天，最大查询4天的轨迹记录
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(endTimeT);
-        calendar.set(Calendar.DATE, calendar.get(Calendar.DATE) - 4);
-        Date maxStartTime = calendar.getTime();
-        String maxEndTime = DateUtil.dateFromDateToStr(maxStartTime, "yyyy-MM-dd HH:mm:ss");
-
-        StringBuilder sql = new StringBuilder();
-        sql.append("(('").append(startTime).append("'").append("<=crt_time  and '").append(maxEndTime)
-            .append("'<=crt_time)");
-        sql.append(" and crt_time<=").append("'")
-            .append(DateUtil.dateFromDateToStr(endTimeT, DateUtil.DATE_FORMAT_DF)).append("')");
-
-        criteria.andCondition(sql.toString());
         // 只获取可展示的点
 //        criteria.andEqualTo("isEnable", BooleanUtil.BOOLEAN_TRUE);
         list = lawEnforcePathMapper.selectByExample(example);

@@ -138,6 +138,25 @@ public class PatrolTask implements Serializable {
 	@Column(name = "remark")
 	private String remark;
 
+	//是否有问题
+	@Column(name = "is_problem")
+	private String isProblem;
+
+
+	/**
+	 * 获取：
+	 */
+	public String getIsProblem() {
+		return isProblem;
+	}
+
+	/**
+	 * 设置：
+	 */
+	public void setIsProblem(String isProblem) {
+		this.isProblem = isProblem;
+	}
+
 	/**
 	 * 设置：
 	 */
