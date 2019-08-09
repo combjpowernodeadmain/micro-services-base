@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.AreaGridMember;
+import com.bjzhianjia.scp.cgp.entity.SpecialEvent;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.mapper.AreaGridMemberMapper;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
@@ -284,5 +285,20 @@ public class PatrolTaskBiz extends BusinessBiz<PatrolTaskMapper, PatrolTask> {
         areaGridMember.setGridMember(BaseContextHandler.getUserID());
         memList=areaGridMemberMapper.select(areaGridMember);
         return BeanUtil.isEmpty(memList)?new ArrayList<>():memList;
+    }
+
+    /**
+     * 通过专项任务id，查询巡查记录集
+     *
+     * @param sourceTaskId 专项任务id
+     * @param sourceType   巡查上报数据字典
+     * @return
+     */
+    public List<PatrolTask> getByTaskId(Integer sourceTaskId, String sourceType) {
+        Example example = new Example(PatrolTask.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("sourceTaskId", sourceTaskId);
+        criteria.andEqualTo("sourceType", sourceType);
+        return this.mapper.selectByExample(example);
     }
 }

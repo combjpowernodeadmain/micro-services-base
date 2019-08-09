@@ -289,9 +289,12 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         String isSupervise = queryData.getString("isSupervise");
         String isUrge = queryData.getString("isUrge");
         String isOverTime = queryData.getString("isOverTime");
-        String isFinished = queryData.getString("procCtaskname");// 1:已结案2:已终止
-        String sourceType = queryData.getString("sourceType");// 来源类型
-        String sourceCode = queryData.getString("sourceCode");// 来源id
+        // 1:已结案2:已终止
+        String isFinished = queryData.getString("procCtaskname");
+        // 来源类型
+        String sourceType = queryData.getString("sourceType");
+        // 来源id
+        String sourceCode = queryData.getString("sourceCode");
         String isDeleted = queryData.getString("isDeleted");
         boolean caesRegIng = queryData.getBooleanValue("caesRegIng");
         boolean processing = queryData.getBooleanValue("processing");
@@ -328,10 +331,6 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         // 事件相关事件类别
         if (StringUtils.isNotBlank(caseInfo.getEventTypeList())) {
             criteria.andLike("eventTypeList", "%" + caseInfo.getEventTypeList() + "%");
-        }
-        // 事件来源
-        if (StringUtils.isNotBlank(caseInfo.getSourceType())) {
-            criteria.andEqualTo("sourceType", caseInfo.getSourceType());
         }
         // 事发起止时间
         if (!(StringUtils.isBlank(startQueryTime) || StringUtils.isBlank(endQueryTime))) {
@@ -380,11 +379,30 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
                 criteria.andEqualTo("isFinished", CaseInfo.FINISHED_STATE_TODO);
             }
         }
-
-        if (StringUtils.isNotBlank(sourceType) && StringUtils.isNotBlank(sourceCode)
-            && Constances.BizEventType.ROOT_BIZ_EVENTTYPE_CHECK.equals(sourceType)) {
+        /**
+         * sourceCode专项任务id，caseinfo表中的sourceCode存放的是巡查记录id
+         */
+        String taskSourceType = queryData.getString("taskSourceType");
+        // 通过专项任务id查询
+        if (StringUtils.isNotBlank(sourceCode) && Constances.PartolTaskStatus.ROOT_BIZ_PATROLTYPE_SPECIAL.equals(taskSourceType)) {
+            // 通过专项任务id，获取巡查记录ids
+            List<PatrolTask> specialEventList = patrolTaskBiz.getByTaskId(Integer.valueOf(sourceCode), taskSourceType);
+            // 判断是否存在巡查记录
+            if (BeanUtil.isNotEmpty(specialEventList)) {
+                // 巡查任务记录ids
+                Set<Integer> specialEventIds =
+                        specialEventList.stream().map(PatrolTask::getId).collect(Collectors.toSet());
+                if (BeanUtil.isNotEmpty(specialEventIds)) {
+                    criteria.andIn("sourceCode", specialEventIds);
+                }
+            } else {
+                // 不存巡查记录，则返回空集合
+                criteria.andEqualTo("sourceCode", "-1");
+            }
+        }
+        // 事件来源
+        if (StringUtils.isNotBlank(sourceType)) {
             criteria.andEqualTo("sourceType", sourceType);
-            criteria.andEqualTo("sourceCode", sourceCode);
         }
 
         // 查询事件中正在进行案件办理的部分
