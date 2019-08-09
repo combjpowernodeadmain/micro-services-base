@@ -688,4 +688,112 @@ SELECT
 		</where>
 		ORDER BY superCaseInfo.id DESC
 	</select>
+
+	<select id="assessmentList" resultType="com.alibaba.fastjson.JSONObject">
+		select
+		ci.id,
+		ci.case_title caseTitle,
+		ci.source_type sourceType,
+		ci.is_finished isFinished,
+		ci.event_type_list eventTypeList,
+		ci.upd_time exeTime,
+		ci.finish_time  finishTime
+		FROM case_info ci
+		LEFT JOIN execute_info ei ON ei.case_id = ci.id
+		WHERE 1 = 1
+		<if test="exeStatus != null ">
+			<!--未发现问题的工单-->
+			<if test="exeStatus == 'weifaxianwenti'">
+				and ci.source_code IN (
+				SELECT DISTINCT(pt.id)
+				from patrol_task pt
+				where pt.is_problem = '0'
+				<if test="userId != null and userId != ''">
+					and   pt.crt_user_id = #{userId}
+				</if>
+				<![CDATA[
+					and #{startTime} <= pt.crt_time and pt.crt_time <= #{endTime}
+				]]>
+				)
+			</if>
+			<!--发现问题的工单   -->
+			<if test="exeStatus == 'faxianwenti'">
+				and ci.source_code IN (
+				SELECT
+				DISTINCT(pt.id)
+				from patrol_task pt
+				where pt.is_problem = '1'
+				<if test="userId != null and userId != ''">
+					and    pt.crt_user_id = #{userId}
+				</if>
+				<![CDATA[
+					and #{startTime} <= pt.crt_time and pt.crt_time <= #{endTime}
+				]]>
+				)
+			</if>
+			<!--终止的工单-->
+			<if test="exeStatus == 'zhongzhi'">
+				and ci.source_code IN (
+				SELECT
+				DISTINCT(pt.id)
+				from patrol_task pt
+				left join  case_info ci2 on pt.crt_user_id = ci2.crt_user_id
+				where pt.status = 'root_biz_partolTaskT_stop'
+				<if test="userId != null and userId != ''">
+					and pt.crt_user_id = #{userId}
+				</if>
+				<![CDATA[
+					and #{startTime} <= pt.crt_time and pt.crt_time <= #{endTime}
+				]]>
+				)
+			</if>
+			<!--巡查直接处理的工单-->
+			<if test="exeStatus == 'zhijiechuli'">
+				and ci.id IN (
+				SELECT
+				DISTINCT(ci2.id)
+				from case_info ci2
+				where
+				ci2.crt_time = ci2.upd_time  and ci2.is_finished = '1'
+				<if test="userId != null and userId != ''">
+					and  ci2.crt_user_id = #{userId}
+				</if>
+				<![CDATA[
+					and #{startTime} <= ci.crt_time and ci.crt_time <= #{endTime}
+				]]>
+				)
+			</if>
+			<!--交办处理-->
+			<if test="exeStatus == 'jiaobanchuli'">
+				and ci.id in (
+					select task.PROC_BIZID
+					from scp_workflow.scp_wf_proc_task task
+					where  FROM_UNIXTIME(task.PROC_TASK_COMMITTIME,'%Y-%m-%d %H:%i:%s')between #{startTime} and #{endTime} and task.PROC_CTASKCODE = 'processing' and task.PROC_PTASKCODE = 'gridMemberNode'
+					<if test="userId != null and userId != ''">
+					and task.PROC_TASK_ASSIGNEE = #{userId}
+			  		</if>
+					)
+			</if>
+			<!--已退回-->
+			<if test="exeStatus == 'tuihui'">
+				and ci.id IN (
+					select task.PROC_BIZID
+					from scp_workflow.scp_wf_proc_task task
+					where FROM_UNIXTIME(task.PROC_TASK_COMMITTIME,'%Y-%m-%d %H:%i:%s') between #{startTime} and #{endTime} and task.PROC_CTASKCODE = 'processing' and task.PROC_PTASKCODE = 'toFinish'
+					<if test="userId != null and userId != ''">
+					and task.PROC_TASK_ASSIGNEE = #{userId}
+					</if>
+					)
+			</if>
+            <if test="exeStatus == ''">
+                and ci.crt_user_id = #{userId}
+            </if>
+		</if>
+		<![CDATA[
+			and #{startTime} <= ci.crt_time and ci.crt_time <= #{endTime}
+		]]>
+		and ci.is_deleted = '0'
+		ORDER BY  ci.crt_time desc
+	</select>
+
 </mapper>

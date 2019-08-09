@@ -89,4 +89,115 @@
 		AND ag01.is_disabled='0'
 		AND ag01.grid_level=#{areaGrid.gridLevel}
 	</select>
+
+	<!--网格人员考核展示列表-->
+	<select id="getAssessment" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT DISTINCT (agm.grid_member),
+		<!--巡查次数-->
+		IFNULL(prec.idcount, '0') numberPatrols,
+		<!--未发现问题上报数-->
+		IFNULL(pta1.countId, '0') nReported,
+		<!--发现问题上报数-->
+		IFNULL(pta2.countId, '0') yReported,
+		<!--上报总数-->
+		IFNULL(pta3.countId, '0') reportsTotal,
+		<!--发现问题终止数-->
+		IFNULL(cin.countId, '0') findTermination,
+		<!--工单直接处理量-->
+		IFNULL(cin1.countId, '0') processingWorkOrder,
+		<!--工单处理中交办部门办结的处理量-->
+		IFNULL(jiaoban.countId, '0') getThouth,
+		<!--工单退回数-->
+		IFNULL(swpt.countId, '0') reportsBack
+		FROM	area_grid_member agm
+		LEFT JOIN	(
+		<!--巡查的次数-->
+		SELECT pr.crt_user_id ,count(pr.crt_user_id) idcount
+		FROM patrol_record pr
+		WHERE pr.patrol_status = '1'
+		AND pr.start_time between #{monthStart} AND #{monthEnd}
+		GROUP BY pr.crt_user_id
+		) prec ON prec.crt_user_id = agm.grid_member
+		<!--未发现问题上报数-->
+		LEFT JOIN (
+		SELECT pt.crt_user_id ,count(pt.crt_user_id) countId
+		from patrol_task pt
+		where pt.is_problem = '0'
+		AND pt.crt_time between #{monthStart} AND #{monthEnd}
+		GROUP BY pt.crt_user_id
+		) pta1 ON pta1.crt_user_id = agm.grid_member
+		<!--发现问题上报数-->
+		LEFT JOIN (
+		SELECT pt.crt_user_id ,count(pt.crt_user_id) countId
+		from patrol_task pt
+		where pt.is_problem = '1'
+		AND pt.crt_time between #{monthStart} AND #{monthEnd}
+		GROUP BY pt.crt_user_id
+		) pta2 ON pta2.crt_user_id = agm.grid_member
+		<!--发现问题终止数-->
+		LEFT JOIN (
+		SELECT pt.crt_user_id ,count(pt.crt_user_id) countId
+		FROM patrol_task pt
+		WHERE pt.crt_time between #{monthStart} AND #{monthEnd}
+		AND pt.status = 'root_biz_partolTaskT_stop'
+		GROUP BY pt.crt_user_id
+		) cin ON cin.crt_user_id = agm.grid_member
+		<!--上报总数-->
+		LEFT JOIN (
+		SELECT pt.crt_user_id ,count(pt.crt_user_id) countId
+		from patrol_task pt
+		WHERE
+		pt.crt_time between #{monthStart} AND #{monthEnd}
+		GROUP BY pt.crt_user_id
+		) pta3 ON pta3.crt_user_id = agm.grid_member
+		<!--直接处理-->
+		LEFT JOIN (
+		select ci.crt_user_id ,count(ci.crt_user_id) countId
+		from case_info ci
+		WHERE ci.crt_time = ci.upd_time and ci.is_finished = '1'
+		AND ci.crt_time between #{monthStart} AND #{monthEnd}
+		GROUP BY ci.crt_user_id
+		) cin1 ON cin1.crt_user_id = agm.grid_member
+		<!--交办处理-->
+		<!-- PROC_CTASKCODE = 'processing' and PROC_PTASKCODE = 'gridMemberNode'  签收人 -->
+		LEFT JOIN(
+		    SELECT task.PROC_TASK_ASSIGNEE userId,COUNT(task.PROC_TASK_ASSIGNEE) countId
+		    FROM scp_workflow.scp_wf_proc_task task
+		    where  FROM_UNIXTIME(task.PROC_TASK_COMMITTIME,'%Y-%m-%d %H:%i:%s') between #{monthStart} and #{monthEnd} and task.PROC_PTASKCODE = 'gridMemberNode' and task.PROC_CTASKCODE = 'processing'
+		GROUP BY task.PROC_TASK_ASSIGNEE
+		) jiaoban on jiaoban.userId = agm.grid_member
+		<!--工单退回-->
+		<!-- 时间范围 PROC_TASK_COMMITTIME  工作流办结 -> 部门处理   PROC_CTASKCODE = 'processing' and PROC_PTASKCODE = 'toFinish' -->
+        LEFT JOIN (
+            select task.PROC_TASK_ASSIGNEE userId,count(task.PROC_TASK_ASSIGNEE) countid
+            from scp_workflow.scp_wf_proc_task task
+            where  FROM_UNIXTIME(task.PROC_TASK_COMMITTIME,'%Y-%m-%d %H:%i:%s') between #{monthStart} and #{monthEnd} and task.PROC_CTASKCODE = 'processing' and PROC_PTASKCODE = 'toFinish'
+            group by task.PROC_TASK_ASSIGNEE
+        ) swpt on swpt.userId = agm.grid_member
+		<where>
+            agm.is_deleted = '0'
+			<if test="memberIds != null and memberIds != ''">
+				AND  agm.grid_member IN (#{memberIds})
+			</if>
+			<if test="gridIds != null and gridIds.size() >0">
+				and agm.grid_id IN (
+				<foreach collection="gridIds" item="item" separator=",">
+					#{item}
+				</foreach>
+				)
+			</if>
+			<if test="gridRole != null and gridRole != ''" >
+				AND  agm.grid_role = #{gridRole}
+			</if>
+		</where>
+	</select>
+
+	<select id="getGridsByMemberId" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT
+		ag.grid_name
+		FROM
+		(select agm.grid_id  grids FROM area_grid_member agm WHERE agm.grid_member = #{memberId}) gridIds , area_grid ag
+		WHERE
+		ag.id in (gridIds.grids)
+	</select>
 </mapper>

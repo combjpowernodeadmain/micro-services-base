@@ -312,4 +312,30 @@ public class AreaGridController extends BaseController<AreaGridBiz, AreaGrid, In
         areaGrid.setGridLevel(gridLevel);
         return this.baseBiz.gridLevelWithoutMapInfo(areaGrid);
     }
+
+    @GetMapping("/assessment")
+    public TableResultResponse<JSONObject> memAssessment(
+            @RequestParam(value = "month", defaultValue = "") @ApiParam("月度,yyyy-MM") String month,
+            @RequestParam(value = "gridId", required = false) @ApiParam("行政村ID") Integer gridId,
+            @RequestParam(value = "gridMember", defaultValue = "") @ApiParam("姓名") String gridMember,
+            @RequestParam(value = "gridRole", defaultValue = "") @ApiParam("人员角色") String gridRole,
+            @RequestParam(value = "page", defaultValue = "1") Integer page,
+            @RequestParam(value = "limit", defaultValue = "10") Integer limit) {
+
+        return this.baseBiz.getAssessment(month, gridId, gridMember, gridRole, page, limit);
+    }
+
+
+    @GetMapping("/gridChileren")
+    public List<AreaGrid> getAreaGridBindChileren(
+            @RequestParam(value = "gridId", defaultValue = "") @ApiParam("网格id") Integer gridId){
+        List<AreaGrid> areaGridBindChileren = this.baseBiz.getAreaGridBindChileren(gridId);
+        for (int i = 0; i < areaGridBindChileren.size(); i++) {
+            if(areaGridBindChileren.get(i).getId().equals(gridId)){
+                areaGridBindChileren.remove(i);
+            }
+        }
+        return areaGridBindChileren;
+    }
+
 }

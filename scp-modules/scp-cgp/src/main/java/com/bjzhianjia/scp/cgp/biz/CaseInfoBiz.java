@@ -20,6 +20,7 @@ import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.monitor.service.impl.WfMonitorServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.DateTime;
@@ -85,6 +86,9 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
 
     @Autowired
     private CaseRegistrationBiz caseRegistrationBiz;
+
+    @Autowired
+    private  EventTypeBiz eventTypeBiz;
 
     /**
      * 查询未删除的总数
@@ -160,6 +164,9 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         }
         if (StringUtils.isNotBlank(caseInfo.getRegulaObjList())) {
             criteria.andIn("regulaObjList", Arrays.asList(caseInfo.getRegulaObjList().split(",")));
+        }
+        if(StringUtils.isNotBlank(caseInfo.getCrtUserId())){
+            criteria.andEqualTo("crtUserId", caseInfo.getCrtUserId());
         }
         if(StringUtils.isNotBlank(caseInfo.getCaseTitle())) {
             criteria.andLike("caseTitle", "%" + caseInfo.getCaseTitle() + "%");
@@ -1303,4 +1310,68 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
 
         return new TableResultResponse<>(pageInfo.getTotal(), jsonObjects);
     }
+
+    /**
+     * 网格员考核工单列表
+     *
+     * @param month
+     * @param exeStatus
+     * @param userId
+     * @param page
+     * @param limit
+     * @return
+     */
+    public TableResultResponse<JSONObject> assessmentList(String month,String exeStatus,String userId,Integer page,Integer limit){
+        TableResultResponse<JSONObject> tableResultResponse = new TableResultResponse<>();
+        //处理时间 -- 开始时间为本月开始时间  --结束时间为次月开始时间
+        Date startTime;
+        Date endTime;
+
+        if (StringUtils.isBlank(month)) {
+            startTime = DateUtil.getDayStartTime(DateUtil.theFirstDayOfMonth(new Date()));
+            endTime = DateUtil.getDayStartTime(DateUtil.theFirstDayOfMonth(DateUtil.theDayOfMonthPlus(new Date(), 1)));
+        } else {
+            startTime =
+                    DateUtil.getDayStartTime(DateUtil.theFirstDayOfMonth(DateUtil.dateFromStrToDate(month, "yyyy-MM")));
+
+            endTime = DateUtil.getDayStartTime(DateUtil
+                    .theFirstDayOfMonth(DateUtil.theDayOfMonthPlus(DateUtil.dateFromStrToDate(month, "yyyy-MM"), 1)));
+        }
+
+        Page<Object> pageInfo = PageHelper.startPage(page, limit);
+        List<JSONObject> jsonObjects = this.mapper.assessmentList(startTime, endTime, userId, exeStatus);
+
+        //整合数据
+        List<JSONObject> jsonObjects1 = queList(jsonObjects);
+        return new TableResultResponse<>(pageInfo.getTotal(), jsonObjects1);
+    }
+
+    public List<JSONObject> queList(List<JSONObject> list){
+        List<String> collect =
+                list.stream().map(o -> o.getString("sourceType")).distinct().collect(Collectors.toList());
+        Map<String, String> byCode = dictFeign.getByCodeIn(StringUtils.join(collect, ","));
+        List<String> collect1 =
+                list.stream().map(o -> o.getString("eventTypeList")).distinct().collect(Collectors.toList());
+        //去除为null的值
+        for (int i = 0; i < collect1.size(); i++) {
+            if(StringUtils.isBlank(collect1.get(i))){
+                collect1.remove(i);
+            }
+        }
+        List<EventType> byEventTypeIds = eventTypeBiz.getByEventTypeIds(StringUtils.join(collect1, ","));
+        Map<String,String> map = new HashedMap<>();
+        for (EventType byEventTypeId : byEventTypeIds) {
+            map.put(byEventTypeId.getId().toString(),byEventTypeId.getTypeName());
+        }
+        if(BeanUtil.isNotEmpty(list)){
+            for (JSONObject jsonObject : list) {
+                //来源类型
+                jsonObject.put("sourceType",byCode.get(jsonObject.getString("sourceType")));
+                //事件类别
+                jsonObject.put("eventTypeList",map.get(jsonObject.get("eventTypeList")));
+            }
+        }
+        return  list;
+    }
+
 }

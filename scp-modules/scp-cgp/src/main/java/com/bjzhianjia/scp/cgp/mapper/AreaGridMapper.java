@@ -1,11 +1,14 @@
 package com.bjzhianjia.scp.cgp.mapper;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.security.common.mapper.CommonMapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -46,4 +49,30 @@ public interface AreaGridMapper extends CommonMapper<AreaGrid> {
     Map<String,String> selectParentNameById(@Param("gridId") String gridId);
 
     List<AreaGrid> gridLevelWithoutMapInfo(@Param("areaGrid") AreaGrid areaGrid);
+
+    /**
+     * 网格人员考核展示列表
+     *
+     * @param monthStart
+     * @param monthEnd
+     * @param gridIds
+     * @param memberIds
+     * @param gridRole
+     * @return
+     */
+    List<JSONObject> getAssessment(
+            @Param("monthStart") Date monthStart,
+            @Param("monthEnd") Date monthEnd,
+            @Param("gridIds") Set<Integer> gridIds,
+            @Param("memberIds") String memberIds,
+            @Param("gridRole") String gridRole
+    );
+
+    /**
+     * 人员——网格对应 一对多
+     *
+     * @param memberId
+     * @return
+     */
+    List<JSONObject> getGridsByMemberId(@Param("memberId") String memberId);
 }
