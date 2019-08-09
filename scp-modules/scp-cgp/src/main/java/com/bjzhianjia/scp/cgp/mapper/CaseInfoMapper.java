@@ -154,5 +154,14 @@ public interface CaseInfoMapper extends CommonMapper<CaseInfo> {
     List<JSONObject> assessmentList( @Param("startTime")Date startTime,
                                      @Param("endTime")Date endTime,
                                      @Param("userId")String userId,
-                                     @Param("exeStatus")String exeStatus);
+                                     @Param("exeStatus")String exeStatus,
+                                     @Param("caseIds")List<String> caseIds);
+
+    List<JSONObject> swpByuserIds(@Param("startTime")Date startTime,
+                              @Param("endTime")Date endTime,
+                              @Param("userId")String userId);
+
+    List<JSONObject> caseInfoByUserIds(@Param("startTime")Date startTime,
+                                   @Param("endTime")Date endTime,
+                                   @Param("userId")String userId);
 }

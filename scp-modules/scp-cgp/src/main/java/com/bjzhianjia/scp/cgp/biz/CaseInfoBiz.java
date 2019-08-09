@@ -1337,9 +1337,28 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             endTime = DateUtil.getDayStartTime(DateUtil
                     .theFirstDayOfMonth(DateUtil.theDayOfMonthPlus(DateUtil.dateFromStrToDate(month, "yyyy-MM"), 1)));
         }
+        //工单默认页总数据caseId
+        List<String> caseInfoIds = new ArrayList<>();
+
+        if ("".equals(exeStatus)) {
+            List<JSONObject> caseInfoId = this.mapper.caseInfoByUserIds(startTime, endTime, userId);
+            List<JSONObject> swpBizId = this.mapper.swpByuserIds(startTime, endTime, userId);
+            if(caseInfoId.size() != 0){
+                for (int i = 0; i < caseInfoId.size(); i++) {
+                    caseInfoIds.add(caseInfoId.get(i).getString("cId"));
+                }
+            }
+            if(swpBizId.size() != 0){
+                for (int i = 0; i < swpBizId.size(); i++) {
+                    caseInfoIds.add(swpBizId.get(i).getString("bizId"));
+                }
+            }
+        }else{
+            caseInfoIds = null;
+        }
 
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
-        List<JSONObject> jsonObjects = this.mapper.assessmentList(startTime, endTime, userId, exeStatus);
+        List<JSONObject> jsonObjects = this.mapper.assessmentList(startTime, endTime, userId, exeStatus,caseInfoIds);
 
         //整合数据
         List<JSONObject> jsonObjects1 = queList(jsonObjects);

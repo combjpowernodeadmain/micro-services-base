@@ -699,9 +699,15 @@ SELECT
 		ci.upd_time exeTime,
 		ci.finish_time  finishTime
 		FROM case_info ci
-		LEFT JOIN execute_info ei ON ei.case_id = ci.id
 		WHERE 1 = 1
-		<if test="exeStatus != null ">
+		<if test="caseIds != null">
+			and ci.id in
+			<foreach collection="caseIds" item="caseIds" open="(" separator="," close=")">
+				 #{caseIds}
+			</foreach>
+
+		</if>
+		<if test="exeStatus != null and exeStatus != ''">
 			<!--未发现问题的工单-->
 			<if test="exeStatus == 'weifaxianwenti'">
 				and ci.source_code IN (
@@ -785,15 +791,33 @@ SELECT
 					</if>
 					)
 			</if>
-            <if test="exeStatus == ''">
-                and ci.crt_user_id = #{userId}
-            </if>
 		</if>
 		<![CDATA[
 			and #{startTime} <= ci.crt_time and ci.crt_time <= #{endTime}
 		]]>
 		and ci.is_deleted = '0'
 		ORDER BY  ci.crt_time desc
+	</select>
+
+	<select id="caseInfoByUserIds" resultType="com.alibaba.fastjson.JSONObject">
+		select DISTINCT(ci.id) cId
+		from  case_info ci
+		where
+		1 = 1
+		<if test="userId != null and userId != ''">
+			and ci.crt_user_id =  #{userId}
+		</if>
+		and ci.crt_time between #{startTime} and #{endTime}
+	</select>
+	<select id="swpByuserIds" resultType="com.alibaba.fastjson.JSONObject">
+		select DISTINCT(task.PROC_BIZID) bizId
+		from scp_workflow.scp_wf_proc_task task
+		where
+		1 = 1
+		<if test="userId != null and userId != ''">
+			and task.PROC_TASK_ASSIGNEE = #{userId}
+		</if>
+		and FROM_UNIXTIME(task.PROC_TASK_COMMITTIME,'%Y-%m-%d %H:%i:%s') between #{startTime} and #{endTime}
 	</select>
 
 </mapper>
