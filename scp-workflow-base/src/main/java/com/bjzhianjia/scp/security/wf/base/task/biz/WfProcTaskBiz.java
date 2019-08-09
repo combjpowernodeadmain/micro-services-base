@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Date;
 
 import com.alibaba.fastjson.JSONArray;
 import org.activiti.engine.ActivitiException;
@@ -3846,4 +3847,16 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	public List<JSONObject> selectByInstAndTaskCode(JSONObject queryData){
 		return  wfprocpropsMapper.selectByInstAndTaskCode(queryData);
 	}
+
+	/**
+	 * 获取bizid
+	 * @param startTime
+	 * @param endTime
+	 * @param userId
+	 * @return
+	 */
+	public List<JSONObject> swpByuserIds(Date startTime,Date endTime,String userId){
+		return wfProcTaskBeanMapper.swpByuserIds(startTime,endTime,userId);
+	}
+
 }

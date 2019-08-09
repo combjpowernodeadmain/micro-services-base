@@ -300,5 +300,4 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 			@RequestParam(value = "typeCodes",defaultValue = "") @ApiParam("数据字典类型codes") String typeCodes){
 		return this.baseBiz.getListByTypeCode(typeCodes);
 	}
-    
 }
