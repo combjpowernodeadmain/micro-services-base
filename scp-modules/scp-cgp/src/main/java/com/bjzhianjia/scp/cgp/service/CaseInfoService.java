@@ -1947,7 +1947,9 @@ public class CaseInfoService {
             for (int i = procHistoryList.size() - 1; i >= 0; i--) {
                 wfProcTaskHistoryBean = procHistoryList.get(i);
                 // 获取到最新权限，则结束循环
-                if (StringUtils.isNotBlank(wfProcTaskHistoryBean.getProcSelfdata1())) {
+                // 判断是否开启权限验证
+                if (StringUtils.isNotBlank(wfProcTaskHistoryBean.getProcSelfdata1()) &&
+                        "1".equals(wfProcTaskHistoryBean.getProcSelfpermission1())) {
                     procSelfdata1 = wfProcTaskHistoryBean.getProcSelfdata1();
                     break;
                 }
