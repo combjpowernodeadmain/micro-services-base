@@ -2,16 +2,13 @@
 package com.bjzhianjia.scp.security.dict.biz;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.util.BeanUtils;
-import com.bjzhianjia.scp.security.common.util.BooleanUtil;
 import com.bjzhianjia.scp.security.common.util.UUIDUtils;
 import com.bjzhianjia.scp.security.dict.entity.DictType;
 import com.bjzhianjia.scp.security.dict.entity.DictValue;
 import com.bjzhianjia.scp.security.dict.mapper.DictValueMapper;
 
-import com.fasterxml.jackson.databind.util.BeanUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.env.Environment;
 import tk.mybatis.mapper.entity.Example;
@@ -251,5 +248,4 @@ public class DictValueBiz extends BusinessBiz<DictValueMapper, DictValue> {
 		}
 		return result;
 	}
-
 }
