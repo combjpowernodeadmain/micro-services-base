@@ -795,7 +795,7 @@ SELECT
 		<![CDATA[
 			and #{startTime} <= ci.crt_time and ci.crt_time <= #{endTime}
 		]]>
-		<if test="exeStatus == '' and userId != null and userId != ''">
+		<if test="exeStatus == '' and caseIds == null">
 			ci.id = #{userId}
 		</if>
 		and ci.is_deleted = '0'
