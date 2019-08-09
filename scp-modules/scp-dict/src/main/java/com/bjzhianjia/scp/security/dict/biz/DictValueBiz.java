@@ -252,29 +252,4 @@ public class DictValueBiz extends BusinessBiz<DictValueMapper, DictValue> {
 		return result;
 	}
 
-	/**
-	 * code  default
-	 * @param code
-	 * @return
-	 */
-	public List<JSONObject> getCodeAndDefault(String code){
-		List<JSONObject> list = new ArrayList<>();
-
-		Example example = new Example(DictValue.class);
-		Criteria criteria = example.createCriteria();
-		criteria.andLike("code","%"+code+"%");
-		criteria.andEqualTo("isDeleted", BooleanUtil.BOOLEAN_FALSE);
-		List<DictValue> dictValues = selectByExample(example);
-		if(BeanUtils.isEmpty(dictValues)){
-			return new ArrayList<>();
-		}
-		for (DictValue dictValue : dictValues) {
-			JSONObject jsonObject = new JSONObject();
-			jsonObject.put("code",dictValue.getCode());
-			jsonObject.put("labelDefault",dictValue.getLabelDefault());
-			list.add(jsonObject);
-		}
-		return list;
-	}
-
 }

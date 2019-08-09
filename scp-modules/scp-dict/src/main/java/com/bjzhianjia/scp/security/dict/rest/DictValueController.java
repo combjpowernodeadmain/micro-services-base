@@ -301,11 +301,4 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 			@RequestParam(value = "typeCodes",defaultValue = "") @ApiParam("数据字典类型codes") String typeCodes){
 		return this.baseBiz.getListByTypeCode(typeCodes);
 	}
-
-	@ApiOperation("通过字典code模糊匹配")
-	@RequestMapping(value = "/code/{code}",method = RequestMethod.GET)
-	@ResponseBody
-	public List<JSONObject> getCodeAndDefault(@PathVariable(value="code") @ApiParam("类型code") String code){
-		return this.baseBiz.getCodeAndDefault(code);
-	}
 }
