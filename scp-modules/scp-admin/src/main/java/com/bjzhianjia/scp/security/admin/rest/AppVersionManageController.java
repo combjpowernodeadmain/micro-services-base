@@ -1,6 +1,8 @@
 package com.bjzhianjia.scp.security.admin.rest;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.JSONSerializer;
 import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreClientToken;
 import com.bjzhianjia.scp.security.auth.client.annotation.IgnoreUserToken;
 import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
@@ -20,6 +22,7 @@ import com.bjzhianjia.scp.security.auth.client.annotation.CheckUserToken;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -67,6 +70,18 @@ public class AppVersionManageController extends BaseController<AppVersionManageB
         appVersionManage.setOsVersion(osVersion);
         return this.baseBiz.getLastestVsrsion(appVersionManage);
     }
+
+    @GetMapping("/instance/downLoadUrl")
+    @ApiOperation("获取下载路径")
+    @IgnoreUserToken
+    @IgnoreClientToken
+    public ObjectRestResponse< List<JSONObject>> getDownloadUrl(){
+        ObjectRestResponse< List<JSONObject>> result = new ObjectRestResponse< List<JSONObject>>();
+        List<JSONObject> data= this.baseBiz.getDownloadUrl();
+        result.setData(data);
+        return result;
+    }
+
 
     @GetMapping("/list")
     @ApiOperation("分页获取记录")

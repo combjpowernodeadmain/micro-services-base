@@ -26,4 +26,21 @@
         <result property="tenantId" column="tenant_id"/>
     </resultMap>
 
+
+
+    <select id="getDownloadUrl" resultType="com.alibaba.fastjson.JSONObject">
+SELECT
+download_url,
+os_type
+FROM
+ app_version_manage
+ WHERE
+ id IN (
+ SELECT
+ max( id )
+ FROM
+ app_version_manage
+ GROUP BY os_type )
+</select>
 </mapper>
+

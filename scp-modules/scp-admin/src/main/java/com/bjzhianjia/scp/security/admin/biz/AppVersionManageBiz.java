@@ -31,6 +31,8 @@ public class AppVersionManageBiz extends BusinessBiz<AppVersionManageMapper, App
     @Autowired
     private DictFeign dictFeign;
 
+    @Autowired
+    private  AppVersionManageMapper appVersionManageMapper;
     /**
      * 添加记录
      *
@@ -135,6 +137,17 @@ public class AppVersionManageBiz extends BusinessBiz<AppVersionManageMapper, App
         return new ObjectRestResponse<AppVersionManage>().data(appVersionManage);
     }
 
+    /**
+     * 获取最新版本
+     *
+     * @return
+     */
+    public List<JSONObject>  getDownloadUrl( ) {
+
+        List<JSONObject> appVersionManages = appVersionManageMapper.getDownloadUrl();
+
+        return  appVersionManages;
+    }
     /**
      * 分页查询记录
      * @param appVersionManage
