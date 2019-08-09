@@ -94,8 +94,6 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
     @Autowired
     private CaseInfoService caseInfoService;
 
-
-
     /**
      * 查询未删除的总数
      * 
@@ -1351,7 +1349,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             List<JSONObject> swpBizId = caseInfoService.getBizId(startTime, endTime, userId);
             if(caseInfoId.size() != 0){
                 for (int i = 0; i < caseInfoId.size(); i++) {
-                    caseInfoIds.add(caseInfoId.get(i).getString("cId"));
+                    caseInfoIds.add(caseInfoId.get(i).getString("caseId"));
                 }
             }
             if(swpBizId.size() != 0){

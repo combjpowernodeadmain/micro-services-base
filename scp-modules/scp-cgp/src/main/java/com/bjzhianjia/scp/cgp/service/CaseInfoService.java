@@ -183,7 +183,6 @@ public class CaseInfoService {
     @Autowired
     private MessageCenterBiz messageCenterBiz;
 
-
     /**
      * 更新单个对象
      *
