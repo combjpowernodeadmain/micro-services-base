@@ -707,6 +707,9 @@ SELECT
 			</foreach>
 
 		</if>
+		<if test="caseIds == null">
+			ci.id = #{userId}
+		</if>
 		<if test="exeStatus != null and exeStatus != ''">
 			<!--未发现问题的工单-->
 			<if test="exeStatus == 'weifaxianwenti'">
@@ -795,9 +798,7 @@ SELECT
 		<![CDATA[
 			and #{startTime} <= ci.crt_time and ci.crt_time <= #{endTime}
 		]]>
-		<if test="exeStatus == '' and caseIds == null">
-			ci.id = #{userId}
-		</if>
+
 		and ci.is_deleted = '0'
 		ORDER BY  ci.crt_time desc
 	</select>
