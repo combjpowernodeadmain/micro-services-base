@@ -120,7 +120,7 @@ public class PersonalCenterController {
     @ResponseBody
     public ObjectRestResponse<Integer> getByUserCount() {
         ObjectRestResponse<Integer> result = new ObjectRestResponse<>();
-        String auth = "AG:OAUTH:auth:*";
+        String auth = "AG:OAUTH:uname_to_access:*";
         Set<String> key = redisTemplate.keys(auth);
         result.setData(key == null ? 0 : key.size());
         return result;

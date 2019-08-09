@@ -66,7 +66,7 @@ public class PersonalCenterBiz {
     }
 
     private int countOnLine() {
-        String auth = "AG:OAUTH:auth:*";
+        String auth = "AG:OAUTH:uname_to_access:*";
         Set<String> key = redisTemplate.keys(auth);
         return key == null ? 0 : key.size();
     }
