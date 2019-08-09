@@ -126,18 +126,18 @@ public class AffairController {
 
         //初始化结果集
         JSONObject response;
+        String url = environment.getProperty("common.external.url");
         try {
-            String url = environment.getProperty("common.external.url");
             url += "/XXKAffairInfo/GetAffairInfoBYCurrAffairCode?currAffairCode=" + affairCode;
             response = HttpUtil.post(url, new JSONObject());
             return response;
         } catch (Exception e) {
             e.printStackTrace();
+            response = new JSONObject();
+            response.put("status", 400);
+            response.put("url", url);
+            response.put("message", e.getMessage());
         }
-        response = new JSONObject();
-        response.put("Result", false);
-        response.put("Msg", "系统内部错误，请联系管理员！");
-        response.put("Data", null);
         return response;
     }
 
