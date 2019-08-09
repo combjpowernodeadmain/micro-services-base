@@ -1357,6 +1357,9 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
                     caseInfoIds.add(swpBizId.get(i).getString("bizId"));
                 }
             }
+            if(caseInfoIds.size() == 0){
+                caseInfoIds = null;
+            }
         }else{
             caseInfoIds = null;
         }
