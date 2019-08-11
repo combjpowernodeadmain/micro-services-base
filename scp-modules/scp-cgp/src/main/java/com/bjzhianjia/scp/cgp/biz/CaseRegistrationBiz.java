@@ -956,7 +956,12 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
             if (wfProcBackBean != null) {
                 procCtaskname = wfProcBackBean.getProcCtaskname();
                 if (CaseRegistration.EXESTATUS_STATE_FINISH.equals(caseRegistration.getExeStatus())) {
-                    procCtaskname = "已结案(" + procCtaskname + ")";
+                    // 判断是否“未发现问题”，并且已经结案，则案件状态为“已结案（现场办结）”
+                    if (CaseRegistration.ROOT_BIZ_CASEDEALTYPE_WFXWT.equals(caseRegistration.getDealType())) {
+                        procCtaskname = "已结案(现场办结)";
+                    } else {
+                        procCtaskname = "已结案(" + procCtaskname + ")";
+                    }
                 }
 
                 if (CaseRegistration.EXESTATUS_STATE_STOP.equals(caseRegistration.getExeStatus())) {
