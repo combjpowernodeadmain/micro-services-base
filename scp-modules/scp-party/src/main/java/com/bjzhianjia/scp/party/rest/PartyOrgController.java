@@ -33,7 +33,7 @@ public class PartyOrgController extends BaseController<PartyOrgBiz, PartyOrg, In
 
         List<PartyOrgTree> trees = new ArrayList<>();
         all.forEach(o -> {
-            PartyOrgTree partyOrgTree = new PartyOrgTree(o.getId(), o.getParentId(), o.getOrgFullName(), o.getOrgShortName(), o.getMapInfo());
+            PartyOrgTree partyOrgTree = new PartyOrgTree(o.getId(), o.getParentId(), o.getOrgFullName(), o.getOrgShortName(), o.getMapInfo(),o.getMobilePhone(),o.getContactsUser(),o.getAddress());
             trees.add(partyOrgTree);
         });
 

@@ -242,4 +242,18 @@ public class MechanismsPracticesBiz extends BusinessBiz<MechanismsPracticesMappe
         return MechanismsPracticeses;
     }
 
+    public ObjectRestResponse<List<MechanismsPractices>> getMechanismsPracticesByOrgId(Integer orgid){
+        Example example = new Example(MechanismsPractices.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("partyOrgId",orgid);
+        criteria.andEqualTo("isDeleted",BooleanUtil.BOOLEAN_FALSE);
+        List<MechanismsPractices> mechanismsPractices = this.selectByExample(example);
+        if(BeanUtils.isEmpty(mechanismsPractices)){
+            return new ObjectRestResponse<>();
+        }
+        ObjectRestResponse<List<MechanismsPractices>> objectRestResponse = new ObjectRestResponse<>();
+        objectRestResponse.setData(mechanismsPractices);
+        return objectRestResponse;
+    }
+
 }

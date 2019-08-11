@@ -41,7 +41,7 @@
     <!--获取指定党组织下活动列表-->
     <select id="getBrandByBrandId" resultType="com.alibaba.fastjson.JSONObject">
         SELECT
-        pbs.story_title storyTitle, bsf.file_url fileUrl
+        pbs.story_title storyTitle, bsf.file_url fileUrl,pbs.story_state_code storyStateCode,bsf.file_name fileName,pbs.story_content storyContent,pbs.story_date storyDate
         FROM
         party_brand_story pbs
         LEFT JOIN
@@ -49,7 +49,6 @@
         WHERE
         pbs.brand_id = #{id}
         AND bsf.file_url != '[]'
-        AND pbs.story_state_code != #{isNotState}
         AND pbs.is_deleted = #{isdel}
         ORDER BY
         story_date  DESC

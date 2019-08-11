@@ -106,4 +106,13 @@ public class MechanismsPracticesController extends BaseController<MechanismsPrac
     public List<MechanismsPractices> accurateByName(@RequestParam(value = "branchTitle") @ApiParam("品牌名称") String branchTitle) {
         return this.baseBiz.accurateByName(branchTitle);
     }
+
+    @GetMapping("/instance/orgId/{orgId}")
+    @ApiOperation("根据党组织id查询机制做法对象")
+    public ObjectRestResponse<List<MechanismsPractices>> getMechanismsPracticesByOrgId(
+            @PathVariable(value = "orgId") @ApiParam("待查询对象ID") Integer orgId
+    ) {
+        return this.baseBiz.getMechanismsPracticesByOrgId(orgId);
+    }
+
 }

@@ -120,6 +120,57 @@ public class PartyOrg implements Serializable {
     @Column(name = "org_secretary")
     private String orgSecretary;
 
+    @Column(name = "contacts_user")
+    private String contactsUser;
+
+    @Column(name = "mobile_phone")
+    private String mobilePhone;
+
+    @Column(name = "address")
+    private String address;
+
+    /**
+     * 获取：党组织联系人
+     */
+    public String getContactsUser() {
+        return contactsUser;
+    }
+
+    /**
+     * 设置：党组织联系人
+     */
+    public void setContactsUser(String contactsUser) {
+        this.contactsUser = contactsUser;
+    }
+
+    /**
+     * 设置：党组织联系方式
+     */
+    public String getMobilePhone() {
+        return mobilePhone;
+    }
+
+    /**
+     * 获取：党组织联系方式
+     */
+    public void setMobilePhone(String mobilePhone) {
+        this.mobilePhone = mobilePhone;
+    }
+
+    /**
+     * 获取：党组织地址
+     */
+    public String getAddress() {
+        return address;
+    }
+
+    /**
+     * 设置：党组织地址
+     */
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
     /**
      * 设置：党组织书记
      */

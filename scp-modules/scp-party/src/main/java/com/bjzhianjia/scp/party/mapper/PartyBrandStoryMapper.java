@@ -31,11 +31,10 @@ public interface PartyBrandStoryMapper extends CommonMapper<PartyBrandStory> {
      * 对应党组织名称以及照片地址
      *
      * @param id
-     * @param isNotState
      * @param isdel
      * @return
      */
-    public List<JSONObject> getBrandByBrandId(@Param(value = "id") Integer id, @Param(value = "isNotState") String isNotState, @Param(value = "isdel") String isdel);
+    public List<JSONObject> getBrandByBrandId(@Param(value = "id") Integer id, @Param(value = "isdel") String isdel);
 
     /**
      * 党建活动当天记录数

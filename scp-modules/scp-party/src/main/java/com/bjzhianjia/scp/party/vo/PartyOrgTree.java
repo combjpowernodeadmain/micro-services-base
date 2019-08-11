@@ -13,13 +13,19 @@ public class PartyOrgTree extends TreeNodeVO<PartyOrgTree> {
     private String orgFullName;
     private String orgShortName;
     private String mapInfo;
+    private String contactsUser;
+    private String mobilePhone;
+    private String address;
 
-    public PartyOrgTree(Integer id, Integer parentId, String orgFullName, String orgShortName, String mapInfo) {
+    public PartyOrgTree(Integer id, Integer parentId, String orgFullName, String orgShortName, String mapInfo, String contactsUser, String mobilePhone, String address) {
         this.id = id;
         this.parentId = parentId;
         this.orgFullName = orgFullName;
         this.orgShortName = orgShortName;
         this.mapInfo = mapInfo;
+        this.contactsUser = contactsUser;
+        this.mobilePhone = mobilePhone;
+        this.address = address;
     }
 
     @Override
@@ -62,5 +68,29 @@ public class PartyOrgTree extends TreeNodeVO<PartyOrgTree> {
 
     public void setMapInfo(String mapInfo) {
         this.mapInfo = mapInfo;
+    }
+
+    public String getContactsUser() {
+        return contactsUser;
+    }
+
+    public void setContactsUser(String contactsUser) {
+        this.contactsUser = contactsUser;
+    }
+
+    public String getMobilePhone() {
+        return mobilePhone;
+    }
+
+    public void setMobilePhone(String mobilePhone) {
+        this.mobilePhone = mobilePhone;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 }

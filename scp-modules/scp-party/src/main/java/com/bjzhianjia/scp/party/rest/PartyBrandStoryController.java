@@ -129,7 +129,7 @@ public class PartyBrandStoryController extends BaseController<PartyBrandStoryBiz
             @PathVariable("id") @ApiParam(value = "党组织id") Integer id,
             @RequestParam(value = "page", defaultValue = "1") @ApiParam("当前页") Integer page,
             @RequestParam(value = "limit", defaultValue = "4") @ApiParam("页容量") Integer limit,
-            @RequestParam(value = "isNotState", defaultValue = "root_biz_brandStory_yc") @ApiParam("查询状态") String isNotState
+            @RequestParam(value = "isNotState", defaultValue = "") @ApiParam("查询状态") String isNotState
     ) {
         return this.baseBiz.getPartyBranchFileById(page, limit, id, isNotState);
     }

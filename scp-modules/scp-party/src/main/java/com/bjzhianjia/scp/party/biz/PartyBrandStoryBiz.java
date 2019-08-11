@@ -271,7 +271,7 @@ public class PartyBrandStoryBiz extends BusinessBiz<PartyBrandStoryMapper, Party
         //未被删除
         String isdel = BooleanUtil.BOOLEAN_FALSE;
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
-        List<JSONObject> listJsonObj = partyBrandStoryMapper.getBrandByBrandId(id, isNotState, isdel);
+        List<JSONObject> listJsonObj = partyBrandStoryMapper.getBrandByBrandId(id,isdel);
 
         //判断数据非空
         if (BeanUtils.isNotEmpty(listJsonObj)) {
@@ -284,6 +284,9 @@ public class PartyBrandStoryBiz extends BusinessBiz<PartyBrandStoryMapper, Party
                 String stortTitle = jsonObject.getString("storyTitle");
                 json.put("title", stortTitle);
                 json.put("fileUrl", o);
+                json.put("fileName",jsonObject.getString("fileName"));
+                json.put("storyContent",jsonObject.getString("storyContent"));
+                json.put("storyDate",jsonObject.getString("storyDate"));
                 list.add(json);
             }
             return list;

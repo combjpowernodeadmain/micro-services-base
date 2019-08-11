@@ -149,5 +149,21 @@ public class DateTools {
 		Long currTime=System.currentTimeMillis()/1000;
 		return Integer.parseInt(currTime + "");
 	}
-	
+
+	/**
+	 * 取字符串时间   yyyy-MM-dd
+	 *
+	 * @return
+	 */
+	public static Date dateFromStrToDate(String dateStr) {
+		try {
+			return ymdDf1.parse(dateStr);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+
 }
