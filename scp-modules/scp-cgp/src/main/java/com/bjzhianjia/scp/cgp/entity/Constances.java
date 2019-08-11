@@ -417,4 +417,14 @@ public class Constances {
 	     */
 	    public static final String ROOT_BIZ_CREDTYPE_OFFICER = "root_biz_credType_officer";
 	}
+
+	/**
+	 * 统计中心配置
+	 */
+	public static class StatisticsCenter{
+		/**
+		 * 事件来源统计天数
+		 */
+		public static final String ROOT_BIZ_STATISTICS_CENTER_EVENTSOURCE = "root_biz_statistics_center_eventSource";
+	}
 }

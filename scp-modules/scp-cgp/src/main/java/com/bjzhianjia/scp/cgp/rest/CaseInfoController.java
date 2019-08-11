@@ -282,11 +282,6 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         caseInfo.setBizList(bizList);
         caseInfo.setEventTypeList(eventTypeList);
         caseInfo.setCaseLevel(caseLevel);
-        if (StringUtils.isNotBlank(endTime)) {
-            Date _end = DateUtil.dateFromStrToDate(endTime, "yyyy-MM-dd HH:mm:ss");
-            _end = DateUtils.addDays(_end, 1);
-            endTime = DateUtil.dateFromDateToStr(_end, "yyyy-MM-dd HH:mm:ss");
-        }
         JSONArray data = caseInfoBiz.getStatisEventSource(caseInfo, startTime, endTime,gridIds);
         if (data != null) {
             result.setData(data);

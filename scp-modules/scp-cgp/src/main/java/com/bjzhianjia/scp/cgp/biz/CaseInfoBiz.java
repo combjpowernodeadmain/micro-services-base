@@ -19,6 +19,7 @@ import com.bjzhianjia.scp.security.common.util.BooleanUtil;
 import com.bjzhianjia.scp.security.wf.base.constant.Constants;
 import com.bjzhianjia.scp.security.wf.base.exception.BizException;
 import com.bjzhianjia.scp.security.wf.base.monitor.service.impl.WfMonitorServiceImpl;
+import com.bjzhianjia.scp.security.wf.base.utils.StringUtil;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.apache.commons.collections4.map.HashedMap;
@@ -571,6 +572,23 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
      */
     public JSONArray getStatisEventSource(CaseInfo caseInfo, String startTime, String endTime, String gridIds) {
         JSONArray result = new JSONArray();
+        // 限制时间范围
+        Map<String, String> eventSourceDate = dictFeign.getByCode(Constances.StatisticsCenter.ROOT_BIZ_STATISTICS_CENTER_EVENTSOURCE);
+        if (StringUtils.isBlank(startTime) || StringUtils.isBlank(endTime)) {
+            // 开始天数，默认往前推30天
+            Integer day = 30;
+            if (BeanUtil.isNotEmpty(eventSourceDate)) {
+                String dayData = eventSourceDate.get(Constances.StatisticsCenter.ROOT_BIZ_STATISTICS_CENTER_EVENTSOURCE);
+                if(StringUtil.isNotBlank(dayData)){
+                    day = Integer.valueOf(dayData);
+                }
+            }
+            // 开始日期,往前推day天
+            Date startDate = DateUtil.theDayOfPlus(new Date(), -day);
+            startTime = DateUtil.dateFromDateToStr(startDate, DateUtil.DATE_FORMAT_DF);
+            // 结束日期
+            endTime = DateUtil.dateFromDateToStr(new Date(), DateUtil.DEFAULT_DATE_FORMAT);
+        }
 
         List<Map<String, Object>> eventSourceList =
             this.mapper.getStatisEventSource(caseInfo, startTime, endTime, gridIds);
