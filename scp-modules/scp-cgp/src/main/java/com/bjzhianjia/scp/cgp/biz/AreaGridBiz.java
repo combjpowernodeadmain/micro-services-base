@@ -816,4 +816,39 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         return new ArrayList<>();
     }
 
+    /**
+     * 通过网格id，获取网格所属id，无下限
+     * TODO 优化所有网格集，考虑缓存
+     *
+     * @param gridId 网格id
+     * @return ids
+     */
+    public Set<Integer> getByAreaGridId(Integer gridId) {
+        List<AreaGrid> areaGridList = this.getAllAreaGridWithBasic();
+        Set<Integer> ids = new HashSet<>();
+        for (AreaGrid areaGrid : areaGridList) {
+            if (areaGrid.getId().equals(gridId)) {
+                ids.add(areaGrid.getId());
+                this.getAreaSon(areaGrid.getId(), ids, areaGridList);
+            }
+        }
+        return ids;
+    }
+
+    /**
+     * 获取网格id的子集
+     *
+     * @param areaId       网格id
+     * @param ids          id集合
+     * @param areaGridList 网格集合
+     */
+    private void getAreaSon(Integer areaId, Set<Integer> ids, List<AreaGrid> areaGridList) {
+        for (AreaGrid areaGrid : areaGridList) {
+            if (areaId.equals(areaGrid.getGridParent())) {
+                ids.add(areaGrid.getId());
+                this.getAreaSon(areaGrid.getId(), ids, areaGridList);
+            }
+        }
+    }
+
 }
