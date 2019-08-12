@@ -179,7 +179,7 @@
 			<if test="memberIds != null and memberIds != ''">
 				AND  agm.grid_member IN (#{memberIds})
 			</if>
-			<if test="gridIds != null and gridIds.size() >0">
+			<if test="gridIds != null and gridIds.size > 0">
 				and agm.grid_id IN (
 				<foreach collection="gridIds" item="item" separator=",">
 					#{item}
