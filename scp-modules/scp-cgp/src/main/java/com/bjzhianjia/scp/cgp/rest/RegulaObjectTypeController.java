@@ -173,13 +173,20 @@ public class RegulaObjectTypeController
         return result;
     }
 
+    /**
+     * 获取监管对象类型树
+     *
+     * @param griId 网格id
+     * @return
+     */
     @ApiOperation("获取监管对象类型树")
     @RequestMapping(value = "/tree", method = RequestMethod.GET)
-    public List<RegulaObjTypeTree> getTree() {
+    public List<RegulaObjTypeTree> getTree(
+            @RequestParam(value = "griId",defaultValue = "0") @ApiParam("网格id") Integer griId) {
         List<RegulaObjectType> all = regulaObjectTypeBiz.getValidateList();
 
         List<Map<String, String>> regulaObjCountByTypeMap =
-            regulaObjectBiz.selectRegulaObjCountByType();
+            regulaObjectBiz.selectRegulaObjCountByType(griId);
 
         Map<Object, Object> mapTmp = new HashMap<>();
         if (regulaObjCountByTypeMap != null) {

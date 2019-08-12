@@ -25,8 +25,14 @@ public interface RegulaObjectMapper extends CommonMapper<RegulaObject> {
 	 */
 	public void deleteByIds(@Param("ids") Integer[] ids, @Param("updUserId") String updUserId,
 			@Param("updUserName") String updUserName, @Param("updTime") Date updTime);
-	
-	public List<Map<String, String>> selectRegulaObjCountByType();
+
+	/**
+	 * 通过网格ids，统计监管对象类型
+	 *
+	 * @param gridIds 网格ids
+	 * @return
+	 */
+	List<Map<String, String>> selectRegulaObjCountByType(@Param("gridIds") Set<Integer> gridIds);
 	/**
 	 *   监管对象列表  
 	 * @return

@@ -1,6 +1,7 @@
 package com.bjzhianjia.scp.cgp.biz;
 
 import com.alibaba.fastjson.JSONObject;
+import com.bjzhianjia.scp.cgp.entity.AreaGrid;
 import com.bjzhianjia.scp.cgp.entity.RegTypeRelation;
 import com.bjzhianjia.scp.cgp.entity.RegulaObject;
 import com.bjzhianjia.scp.cgp.entity.RegulaObjectType;
@@ -62,6 +63,9 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
 
     @Autowired
     private RegTypeRelationBiz regTypeRelationBiz;
+
+    @Autowired
+    private AreaGridBiz areaGridBiz;
 
     /**
      * 查询id最大的那条记录
@@ -127,7 +131,11 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
         if (objTypeIdList != null && !objTypeIdList.isEmpty()) {
             criteria.andIn("objType", objTypeIdList);
         }
-
+        // 通过当前网格id，获取自己和子集id
+        if (regulaObject.getGriId() != null) {
+            Set<Integer> areaGridIds = areaGridBiz.getByAreaGridId(regulaObject.getGriId());
+            criteria.andIn("griId", areaGridIds);
+        }
         example.setOrderByClause("crt_time desc");
 
         Page<Object> result = PageHelper.startPage(page, limit);
@@ -203,8 +211,20 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
     }
 
     public List<Map<String, String>> selectRegulaObjCountByType() {
-        return this.mapper.selectRegulaObjCountByType();
+        return this.mapper.selectRegulaObjCountByType(null);
     }
+    /**
+     * 通过网格，统计监管对象类型
+     *
+     * @param gridId 网格id
+     * @return
+     */
+    public List<Map<String, String>> selectRegulaObjCountByType(Integer gridId) {
+        // 通过当前网格id，获取自己和子集id
+        Set<Integer> areaGridIds = areaGridBiz.getByAreaGridId(gridId);
+        return this.mapper.selectRegulaObjCountByType(areaGridIds);
+    }
+
 
     /**
      * 监管对象列表
