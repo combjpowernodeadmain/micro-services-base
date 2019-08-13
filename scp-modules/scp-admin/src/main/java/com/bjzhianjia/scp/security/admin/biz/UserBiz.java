@@ -163,6 +163,8 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
             }
             //可能存在多个部门，所以删除之前旧部门（可以通过部门id和用户id确认一条数据）
             departMapper.deleteDepartUser(user.getDepartId(), entity.getId());
+            //删除后判断是否存在修改后部门ID 人员ID 相同的记录，避免重复
+            departMapper.deleteDepartUser(entity.getDepartId(), entity.getId());
             //新增修改后的部门关系
             departMapper.insertDepartUser(UUIDUtils.generateUuid(), entity.getDepartId(), entity.getId(),BaseContextHandler.getTenantID());
         }
