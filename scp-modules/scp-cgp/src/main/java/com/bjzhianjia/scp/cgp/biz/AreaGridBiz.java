@@ -16,6 +16,7 @@ import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.bjzhianjia.scp.security.common.util.BeanUtils;
 import com.bjzhianjia.scp.security.common.util.TreeUtil;
+import com.bjzhianjia.scp.security.wf.base.utils.StringUtil;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -693,7 +694,7 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
      * @param limit
      * @return
      */
-    public TableResultResponse<JSONObject> getAssessment(String month, Integer gridId, String gridMember,
+    public TableResultResponse<JSONObject> getAssessment(String month, Integer gridId, String gridMember,String isPartyMember,
                                                          String gridRole, Integer page, Integer limit) {
         TableResultResponse<JSONObject> result = new TableResultResponse<>();
 
@@ -726,18 +727,16 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         }
         //按照姓名查询
         List<String> userList = new ArrayList<>();
-        String ids = null;
         //base_user表
         Map<String, String> memIdNameMap = new HashMap<>();
         //是否进行人员姓名的查询 默认true 查询人员姓名
         boolean flag = true;
-        if (StringUtils.isNotBlank(gridMember)) {
-            JSONArray usersByName = adminFeign.getUsersByName(gridMember);
+        if (StringUtils.isNotBlank(gridMember) || StringUtils.isNotBlank(isPartyMember)) {
+            JSONArray usersByName = adminFeign.getByNameAndParty(gridMember,isPartyMember);
             if (BeanUtil.isNotEmpty(usersByName)) {
                 for (int i = 0; i < usersByName.size(); i++) {
                     userList.add(usersByName.getJSONObject(i).getString("id"));
                 }
-                ids = StringUtils.join(userList, ",");
                 flag = false;
             } else {
                 return new TableResultResponse<>();
@@ -746,7 +745,7 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         //考核列表
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
         List<JSONObject> jsonObjects =
-                this.mapper.getAssessment(monthStart, monthEnd, gridIdCollect, ids , gridRole);
+                this.mapper.getAssessment(monthStart, monthEnd, gridIdCollect, userList , gridRole);
 
         //按照人员姓名查询的情况下，不再从基础服务获取网格人员姓名
         if (flag) {

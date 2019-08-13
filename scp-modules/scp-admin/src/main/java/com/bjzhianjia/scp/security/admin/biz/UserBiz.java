@@ -284,14 +284,22 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
     /**
      * 按人名进行模糊查询
      * @author 尚
-     * @param name
+     * @param name 用户名字
+     * @param isPartyMember 是否党员
      * @return
      */
-    public List<User> getUsersByFakeName(String name){
+    public List<User> getUsersByFakeName(String name,String isPartyMember){
         Example example=new Example(User.class);
         Example.Criteria criteria=example.createCriteria();
-        criteria.andLike("name", "%"+name+"%");
+        // 是否党员
+        if(BeanUtils.isNotEmpty(name)) {
+            criteria.andLike("name", "%" + name + "%");
+        }
         criteria.andEqualTo("isDeleted", BooleanUtil.BOOLEAN_FALSE);
+        // 是否党员
+        if(BeanUtils.isNotEmpty(isPartyMember)){
+            criteria.andEqualTo("attr4", isPartyMember);
+        }
         List<User> userList = mapper.selectByExample(example);
         if(userList == null) {
             userList = new ArrayList<>();

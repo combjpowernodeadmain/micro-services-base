@@ -64,7 +64,7 @@ public interface AreaGridMapper extends CommonMapper<AreaGrid> {
             @Param("monthStart") Date monthStart,
             @Param("monthEnd") Date monthEnd,
             @Param("gridIds") Set<Integer> gridIds,
-            @Param("memberIds") String memberIds,
+            @Param("memberIds") List<String> memberIds,
             @Param("gridRole") String gridRole
     );
 

@@ -6,6 +6,7 @@ import com.bjzhianjia.scp.cgp.entity.EnforceCertificate;
 import com.bjzhianjia.scp.cgp.feign.AdminFeign;
 import com.bjzhianjia.scp.cgp.mapper.EnforceCertificateMapper;
 import com.bjzhianjia.scp.cgp.util.BeanUtil;
+import com.bjzhianjia.scp.cgp.util.CommonUtil;
 import com.bjzhianjia.scp.core.context.BaseContextHandler;
 import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
@@ -206,8 +207,13 @@ public class EnforceCertificateBiz extends BusinessBiz<EnforceCertificateMapper,
         List<String> userIdList = this.mapper.distinctUsrId();
 
         Map<String, JSONObject> lawMap = new HashMap<>();
+        Map<String, String> userMap = null;
         if (userIdList != null && userIdList.size() > 0) {
             lawMap = lawEnforcePathBiz.getByUserIds(String.join(",", userIdList));
+            userMap = adminFeign.getUser(String.join(",", userIdList));
+            if (BeanUtil.isEmpty(userMap)) {
+                userMap = new HashMap<>();
+            }
         }
 
         // usrId={"telPhone":"17600334757","id":"9aa5ffd9b2584f87a54ff73e4c279b59"}
@@ -217,6 +223,7 @@ public class EnforceCertificateBiz extends BusinessBiz<EnforceCertificateMapper,
             JSONObject usrIdJObjOut = new JSONObject();
             JSONObject usrIdJObjIn = new JSONObject();
             usrIdJObjIn.put("id", usrId);
+            usrIdJObjOut.put("isPartyMember", CommonUtil.getValueFromJObjStr(userMap.get(usrId), "attr4"));
             usrIdJObjOut.put("usrId", usrIdJObjIn.toJSONString());
             resultJArray.add(usrIdJObjOut);
         }

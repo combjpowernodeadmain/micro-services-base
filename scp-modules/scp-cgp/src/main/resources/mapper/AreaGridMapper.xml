@@ -176,8 +176,11 @@
         ) swpt on swpt.userId = agm.grid_member
 		<where>
             agm.is_deleted = '0'
-			<if test="memberIds != null and memberIds != ''">
-				AND  agm.grid_member IN (#{memberIds})
+			<if test="memberIds != null and memberIds.size() > 0">
+				AND  agm.grid_member IN
+				<foreach collection="memberIds" item="memberId" open="(" separator="," close=")">
+					#{memberId}
+				</foreach>
 			</if>
 			<if test="gridIds != null and gridIds.size() >0">
 				and agm.grid_id IN (

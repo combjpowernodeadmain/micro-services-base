@@ -493,6 +493,7 @@ public class AreaGridService {
 
                 List<String> memberTmpList = new ArrayList<>();
                 List<String> memberNameTmpList = new ArrayList<>();
+                List<String> isPartyMemberList = new ArrayList<>();
                 for (String gridMeber : list) {
                     memberTmpList.add(gridMeber);
                     String userJStr = userMap.get(gridMeber);
@@ -504,10 +505,13 @@ public class AreaGridService {
                          */
                         JSONObject userJObj = JSONObject.parseObject(userJStr);
                         memberNameTmpList.add(userJObj.getString("name"));
+                        // 是否党员
+                        isPartyMemberList.add(userJObj.getString("attr4"));
                     }
                 }
                 memberJObject.put("gridMember", String.join(",", memberTmpList));
                 memberJObject.put("gridMemberName", String.join(",", memberNameTmpList));
+                memberJObject.put("isPartyMember", String.join(",", isPartyMemberList));
                 memberJArray.add(memberJObject);
             }
             gridMember = memberJArray.toJSONString();

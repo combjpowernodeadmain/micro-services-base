@@ -319,10 +319,11 @@ public class AreaGridController extends BaseController<AreaGridBiz, AreaGrid, In
             @RequestParam(value = "gridId", required = false) @ApiParam("行政村ID") Integer gridId,
             @RequestParam(value = "gridMember", defaultValue = "") @ApiParam("姓名") String gridMember,
             @RequestParam(value = "gridRole", defaultValue = "") @ApiParam("人员角色") String gridRole,
+            @RequestParam(value = "isPartyMember", defaultValue = "") @ApiParam("是否党员") String isPartyMember,
             @RequestParam(value = "page", defaultValue = "1") Integer page,
             @RequestParam(value = "limit", defaultValue = "10") Integer limit) {
 
-        return this.baseBiz.getAssessment(month, gridId, gridMember, gridRole, page, limit);
+        return this.baseBiz.getAssessment(month, gridId, gridMember,isPartyMember, gridRole, page, limit);
     }
 
 

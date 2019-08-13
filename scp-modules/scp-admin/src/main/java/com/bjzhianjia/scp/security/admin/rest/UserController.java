@@ -203,7 +203,19 @@ public class UserController extends BaseController<UserBiz, User, String> {
 	public JSONArray getUsersByName(@RequestParam(value = "name") String name) {
 		return userService.getUsersByName(name);
 	}
-	
+
+	/**
+	 * 通过用户名称和是否党员查询用户列表
+	 *
+	 * @param name 用户名称
+	 * @param isPartyMember 是否党员
+	 * @return
+	 */
+	@RequestMapping(value = "/getByNameAndParty", method = RequestMethod.GET)
+	public JSONArray getByNameAndParty(@RequestParam(value = "name") String name,
+									@RequestParam(value = "isPartyMember") String isPartyMember) {
+		return userService.getByNameAndParty(name, isPartyMember);
+	}
 	/**
 	 * 根据人名进行模糊查询，翻页
      * @param name

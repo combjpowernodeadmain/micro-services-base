@@ -162,11 +162,15 @@ public class EnforceCertificateService {
             JSONArray userDetail = adminFeign.getUserDetail(jsonObject.getJSONObject("usrId").getString("id"));
             List<String> deptNameList = new ArrayList<>();
             if (BeanUtil.isNotEmpty(userDetail)) {
+                JSONObject deptJObj;
                 for (int j = 0; j < userDetail.size(); j++) {
-                    JSONObject deptJObj = userDetail.getJSONObject(j);
+                    deptJObj = userDetail.getJSONObject(j);
                     deptNameList.add(deptJObj.getString("deptName") == null ? ""
                         : deptJObj.getString("deptName"));
                 }
+                // 是否党员
+                deptJObj = userDetail.getJSONObject(0);
+                jsonObject.put("isPartyMember", deptJObj.getString("attr4"));
             }
             jsonObject.put("deptName", String.join(",", deptNameList));
         }

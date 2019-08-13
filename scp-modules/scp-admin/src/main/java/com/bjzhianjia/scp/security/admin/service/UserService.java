@@ -31,11 +31,21 @@ public class UserService {
 	private DictFeign dictFeign;
 
 	public JSONArray getUsersByName(String name) {
-	    List<User> rows = userBiz.getUsersByFakeName(name);
+	    List<User> rows = userBiz.getUsersByFakeName(name,null);
 		List<JSONObject> jsonObjects = JSON.parseArray(JSON.toJSONString(rows), JSONObject.class);
 		JSONArray jsonArray = bindPositionToUser(jsonObjects);
 		if(jsonArray == null) {
 		    jsonArray = new JSONArray();
+		}
+		return jsonArray;
+	}
+
+	public JSONArray getByNameAndParty(String name, String isPartyMember) {
+		List<User> rows = userBiz.getUsersByFakeName(name, isPartyMember);
+		List<JSONObject> jsonObjects = JSON.parseArray(JSON.toJSONString(rows), JSONObject.class);
+		JSONArray jsonArray = bindPositionToUser(jsonObjects);
+		if (jsonArray == null) {
+			jsonArray = new JSONArray();
 		}
 		return jsonArray;
 	}

@@ -94,7 +94,7 @@
   
   <!-- 获取用户详情，包括部门及岗位 -->
   <select id="getUserDetail" resultType="java.util.Map">
-	SELECT bu.`name` userName,bu.`id` userId,bu.`sex`,bu.`mobile_phone` mobilePhone,
+	SELECT bu.`name` userName,bu.`id` userId,bu.attr4,bu.`sex`,bu.`mobile_phone` mobilePhone,
 	bd.`name` deptName,bd.`id` deptId,bd.`code` deptCode,
 	bp.`name` positionName,bp.`id` positionId,
 	bg.`name` groupName,bg.`id` groupId

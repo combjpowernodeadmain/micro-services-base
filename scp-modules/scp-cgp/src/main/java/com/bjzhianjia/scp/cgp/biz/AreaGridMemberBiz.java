@@ -274,6 +274,9 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
                     CommonUtil.getValueFromJObjStr(userMap.get(tmpJObj.getString("gridMember")), "name"));
                 tmpJObj.put("gridMemberPhone",
                     CommonUtil.getValueFromJObjStr(userMap.get(tmpJObj.getString("gridMember")), "mobilePhone"));
+                // 是否党员
+                tmpJObj.put("isPartyMember",
+                        CommonUtil.getValueFromJObjStr(userMap.get(tmpJObj.getString("gridMember")), "attr4"));
             }
         }
 
@@ -465,8 +468,13 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
 
         // 聚和网格员定位
         Map<String, JSONObject> memMap = new HashMap<>();
+        Map<String, String> userMap = null;
         if (gridMemIdList != null && !gridMemIdList.isEmpty()) {
             memMap = lawEnforcePathBiz.getByUserIds(String.join(",", gridMemIdList));
+            userMap = adminFeign.getUser(String.join(",", gridMemIdList));
+            if (BeanUtil.isEmpty(userMap)) {
+                userMap = new HashMap<>();
+            }
         }
 
         List<JSONObject> jListResult = new ArrayList<>();
@@ -478,6 +486,7 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
             for (String gridMember : gridMemIdList) {
                 JSONObject tmpJObj = new JSONObject();
                 tmpJObj.put("gridMember", gridMember);
+                tmpJObj.put("isPartyMember", CommonUtil.getValueFromJObjStr(userMap.get(gridMember), "attr4"));
                 tmpJObj.put("mapInfo", memMap.get(gridMember));
                 jListResult.add(tmpJObj);
             }

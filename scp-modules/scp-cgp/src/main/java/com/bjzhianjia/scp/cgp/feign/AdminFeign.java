@@ -155,4 +155,15 @@ public interface AdminFeign {
 	@ApiOperation("根据人名进行模糊查询")
 	@RequestMapping(value = "/user/getByName", method = RequestMethod.GET)
 	JSONArray getUsersByName(@RequestParam(value = "name") String name);
+
+	/**
+	 * 通过用户名称和是否党员查询用户列表
+	 *
+	 * @param name 用户名称
+	 * @param isPartyMember 是否党员
+	 * @return
+	 */
+	@RequestMapping(value = "/user/getByNameAndParty", method = RequestMethod.GET)
+	JSONArray getByNameAndParty(@RequestParam(value = "name") String name,
+								@RequestParam(value = "isPartyMember") String isPartyMember);
 }
