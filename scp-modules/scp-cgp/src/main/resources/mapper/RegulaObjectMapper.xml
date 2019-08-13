@@ -60,6 +60,7 @@
 			regula_object
 		WHERE
 			is_deleted = '0'
+			and is_disabled = '0'
 			<!-- 网格ids -->
 			<if test="gridIds != null and gridIds.size()>0">
 				AND gri_id IN
