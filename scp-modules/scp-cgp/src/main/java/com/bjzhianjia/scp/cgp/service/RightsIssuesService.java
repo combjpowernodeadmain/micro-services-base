@@ -63,20 +63,22 @@ public class RightsIssuesService {
 		if(BeanUtil.isEmpty(list)) {
 		    return new TableResultResponse<RightsIssuesVo>(0, new ArrayList<RightsIssuesVo>());
 		}
-		
-		try {
-			mergeCore.mergeResult(RightsIssues.class, list);
-		} catch(Exception ex) {
-			log.error("merge data exception", ex);
-		}
-		
 		List<RightsIssuesVo> voList = queryAssist(list);
 		
 		return new TableResultResponse<>(tableResult.getData().getTotal(), voList);
 	}
 	
 	private List<RightsIssuesVo> queryAssist(List<RightsIssues> list) {
+
 	    List<RightsIssuesVo> voList = BeanUtil.copyBeanList_New(list, RightsIssuesVo.class);
+		voList.stream().forEach(rightsIssuesVo ->{
+			rightsIssuesVo.setBizTypeCode(rightsIssuesVo.getBizType());
+		});
+		try {
+			mergeCore.mergeResult(RightsIssues.class, list);
+		} catch(Exception ex) {
+			log.error("merge data exception", ex);
+		}
 	    List<String> eventTypeIdList = voList.stream().map(o->String.valueOf(o.getType())).distinct().collect(Collectors.toList());
 	    if(BeanUtil.isNotEmpty(eventTypeIdList)) {
 	        List<EventType> eventTypeList = eventTypeMapper.selectByIds(String.join(",", eventTypeIdList));

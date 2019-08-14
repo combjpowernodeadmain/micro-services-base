@@ -24,8 +24,14 @@ public class RightsIssuesVo extends RightsIssues {
      * RightsIssuesVo.java description
      */
     private static final long serialVersionUID = -7938532139721588200L;
-
-    private String eventTypeName;// 事件类别名称
+    /**
+     * 事件类别名称
+     */
+    private String eventTypeName;
+    /**
+     * 业务条线数据字典code
+     */
+    private String bizTypeCode;
 
     public String getEventTypeName() {
         return eventTypeName;
@@ -33,5 +39,13 @@ public class RightsIssuesVo extends RightsIssues {
 
     public void setEventTypeName(String eventTypeName) {
         this.eventTypeName = eventTypeName;
+    }
+
+    public String getBizTypeCode() {
+        return bizTypeCode;
+    }
+
+    public void setBizTypeCode(String bizTypeCode) {
+        this.bizTypeCode = bizTypeCode;
     }
 }
