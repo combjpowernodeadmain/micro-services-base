@@ -75,7 +75,7 @@ public class RightsIssuesService {
 			rightsIssuesVo.setBizTypeCode(rightsIssuesVo.getBizType());
 		});
 		try {
-			mergeCore.mergeResult(RightsIssues.class, list);
+			mergeCore.mergeResult(RightsIssues.class, voList);
 		} catch(Exception ex) {
 			log.error("merge data exception", ex);
 		}
