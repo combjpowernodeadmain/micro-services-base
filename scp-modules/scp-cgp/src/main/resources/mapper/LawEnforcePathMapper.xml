@@ -24,4 +24,16 @@
 		GROUP BY `crt_user_id`
 		)
 	</select>
+
+    <select id="getListExcludeRole" resultMap="lawEnforcePathMap">
+        SELECT * FROM law_enforce_path WHERE id IN (
+        SELECT MAX(id) FROM law_enforce_path le
+        WHERE crt_user_id IN (
+        <foreach collection="userIdSet" item="item" separator=",">
+            #{item}
+        </foreach>
+        )
+        GROUP BY `crt_user_id`
+        )
+    </select>
 </mapper>

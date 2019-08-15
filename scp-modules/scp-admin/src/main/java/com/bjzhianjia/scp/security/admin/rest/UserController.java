@@ -343,4 +343,14 @@ public class UserController extends BaseController<UserBiz, User, String> {
 			return restResponse;
 		}
 	}
+	@ApiOperation("按组岗位CODE集合获取用户")
+	@RequestMapping(value = "/list/positionCode", method = RequestMethod.GET)
+	@ResponseBody
+	public TableResultResponse<JSONObject> selectUserByPositionCode(@RequestParam("code") String code,
+																	@RequestParam(value = "page",defaultValue = "1") Integer page,
+																	@RequestParam(value = "limit",defaultValue = "10") Integer limit,
+																	@RequestParam(value = "name",defaultValue = "") String name
+	) {
+		return baseBiz.selectUserByPositionCode(code,page,limit,name);
+	}
 }

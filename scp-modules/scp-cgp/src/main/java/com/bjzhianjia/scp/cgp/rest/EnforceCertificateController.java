@@ -184,4 +184,15 @@ public class EnforceCertificateController extends BaseController<EnforceCertific
 		TableResultResponse<JSONObject> tableResult = this.baseBiz.allPosition();
 		return tableResult;
 	}
+
+	@RequestMapping(value = "/fuzhu/list", method = RequestMethod.GET)
+	@ResponseBody
+	@ApiOperation("终端查询分页列表")
+	public TableResultResponse<JSONObject> getFuZhuList(@RequestParam(defaultValue = "10") int limit
+			,@RequestParam(defaultValue = "1") int page
+			,@RequestParam(value = "name", defaultValue = "") String name
+	) {
+		return enforceCertificateService.fuzhuList(page, limit,name);
+
+	}
 }

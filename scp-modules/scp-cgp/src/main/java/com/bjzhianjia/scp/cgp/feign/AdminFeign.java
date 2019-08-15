@@ -17,6 +17,7 @@ import com.bjzhianjia.scp.security.common.msg.ObjectRestResponse;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * 管理服务
@@ -166,4 +167,13 @@ public interface AdminFeign {
 	@RequestMapping(value = "/user/getByNameAndParty", method = RequestMethod.GET)
 	JSONArray getByNameAndParty(@RequestParam(value = "name") String name,
 								@RequestParam(value = "isPartyMember") String isPartyMember);
+
+	@ApiOperation("按组岗位CODE集合获取用户")
+	@RequestMapping(value = "/user/list/positionCode", method = RequestMethod.GET)
+	@ResponseBody
+	JSONObject selectUserByPositionCode(@RequestParam("code") String code,
+										@RequestParam(value = "page",defaultValue = "1") Integer page,
+										@RequestParam(value = "limit",defaultValue = "10") Integer limit,
+										@RequestParam(value = "name",defaultValue = "") String name
+	);
 }

@@ -125,4 +125,21 @@
 			and bu.`id`=#{userId}
 		</where>
 	</select>
+
+	<!-- 按岗位CODE获取该岗位下的人员 -->
+	<select id="selectUserByPositionCode" resultType="com.alibaba.fastjson.JSONObject">
+		SELECT u.username,u.name,u.id,u.`depart_id` departId,bd.`name` departName FROM base_user u INNER JOIN
+		base_position_user
+		bpu
+		ON bpu.user_id = u.id
+		LEFT JOIN base_depart bd ON bd.`id`=u.`depart_id`
+		WHERE bpu.position_id =
+		(
+		SELECT id FROM base_position WHERE base_position.code=#{code}
+		)
+		<if test="name != null and name != ''">
+			<bind name="pattern" value="'%'+name+'%'"/>
+			AND u.name LIKE #{pattern}
+		</if>
+	</select>
 </mapper>

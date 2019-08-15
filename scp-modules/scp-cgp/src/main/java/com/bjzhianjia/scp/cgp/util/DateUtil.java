@@ -326,4 +326,15 @@ public class DateUtil {
 		DateTime nextMonth = dateTime.plusMonths(1);
 		return new Date(nextMonth.getMillis());
 	}
+
+	/**
+	 * 返回sourceDate加上hours后的时间
+	 * @param sourceDate can not be null
+	 * @param hours
+	 * @return
+	 */
+	public static Date theHourOfPlus(Date sourceDate,int hours){
+		DateTime dateTime=new DateTime(sourceDate.getTime());
+		return new Date(dateTime.plusHours(hours).getMillis());
+	}
 }

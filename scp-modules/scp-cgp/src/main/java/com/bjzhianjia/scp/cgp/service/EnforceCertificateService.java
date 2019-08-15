@@ -1,13 +1,20 @@
 package com.bjzhianjia.scp.cgp.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.bjzhianjia.scp.cgp.entity.LawEnforcePath;
+import com.bjzhianjia.scp.cgp.mapper.LawEnforcePathMapper;
+import com.bjzhianjia.scp.cgp.util.DateUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
@@ -62,6 +69,12 @@ public class EnforceCertificateService {
 
     @Autowired
     private LawEnforcePathBiz lawEnforcePathBiz;
+
+    @Autowired
+    private Environment environment;
+
+    @Autowired
+    private LawEnforcePathMapper lawEnforcePathMapper;
 
     /**
      * 分页查询
@@ -372,5 +385,115 @@ public class EnforceCertificateService {
         restResult.setStatus(200);
         restResult.setData(jsonObject);
         return restResult;
+    }
+
+    /**
+     * 查询辅助执行队员
+     *
+     * @param page
+     * @param limit
+     * @return
+     */
+    public TableResultResponse<JSONObject> fuzhuList(int page, int limit,String name) {
+        TableResultResponse<JSONObject> restResponse = new TableResultResponse<>();
+
+        /*
+         * 0-> 获取辅助人员岗位ID
+         * 1-> 获取辅助人员
+         * 2-> 获取轨迹
+         * 3-> 有轨迹的排在前面
+         */
+
+        JSONObject feignUserResult =
+                adminFeign.selectUserByPositionCode(environment.getProperty("fuzhuPositionCode"), 1, Integer.MAX_VALUE,name);
+        List<JSONObject> list = new ArrayList<>();
+        if (BeanUtil.isNotEmpty(feignUserResult)) {
+            JSONArray userJArray = feignUserResult.getJSONObject("data").getJSONArray("rows");
+            restResponse.getData().setTotal(feignUserResult.getJSONObject("data").getInteger("total"));
+
+            // 2->
+            // 收集人员ID
+            Set<String> userIdSet = new HashSet<>();
+            for (int i = 0; i < userJArray.size(); i++) {
+                JSONObject userJObj = userJArray.getJSONObject(i);
+                userIdSet.add(userJObj.getString("id"));
+            }
+            // ***************************************
+            // 处理查询轨迹的时间处理
+            // ***************************************
+
+            List<LawEnforcePath> listExcludeRole = null;
+            List<EnforceCertificate> enforceByUserIds=null;
+            if (BeanUtil.isNotEmpty(userIdSet)) {
+                listExcludeRole = lawEnforcePathMapper.getListExcludeRole(userIdSet, null);
+                List<String> userIdList = new ArrayList<>(userIdSet);
+                enforceByUserIds = enforceCertificateBiz.getEnforceByUserIds(userIdList);
+            }
+            Map<String, LawEnforcePath> userIdLawPathMap = new HashMap<>();
+            if (BeanUtil.isNotEmpty(listExcludeRole)) {
+                userIdLawPathMap = listExcludeRole.stream()
+                        .collect(Collectors.toMap(LawEnforcePath::getCrtUserId, instance -> instance));
+            }
+            Map<String, EnforceCertificate> enforcerIdInstanceMap =new HashMap<>();
+            if(BeanUtil.isNotEmpty(enforceByUserIds)){
+                enforcerIdInstanceMap = enforceByUserIds.stream()
+                        .collect(Collectors.toMap(EnforceCertificate::getUsrId, instance -> instance));
+            }
+
+            // 查询执法证类型字典
+            Map<String, String> dictValueMap = dictFeign.getByCode("root_biz_zfzType");
+            if(BeanUtil.isEmpty(dictValueMap)){
+                dictValueMap=new HashMap<>();
+            }
+
+            for (int i = 0; i < userJArray.size(); i++) {
+                JSONObject userJObj = userJArray.getJSONObject(i);
+
+                JSONObject mapInfoJObj = new JSONObject();
+                LawEnforcePath lawEnforcePath = userIdLawPathMap.get(userJObj.getString("id"));
+                EnforceCertificate enforcer = enforcerIdInstanceMap.get(userJObj.getString("id"));
+                if (BeanUtil.isNotEmpty(lawEnforcePath)) {
+                    String mapInfoBuilder =
+                            "{\"lng\":\"" + lawEnforcePath.getLng() + "\",\"lat\":\"" + lawEnforcePath.getLat() + "\"}";
+                    mapInfoJObj.put("mapInfo", mapInfoBuilder);
+                    mapInfoJObj.put("time", lawEnforcePath.getCrtTime());
+                } else {
+                    mapInfoJObj = null;
+                }
+
+                if (BeanUtil.isNotEmpty(enforcer)) {
+                    userJObj.put("certType", dictValueMap.get(enforcer.getCertType()));
+                } else {
+                    userJObj.put("certType", null);
+                }
+
+                userJObj.put("mapInfo", mapInfoJObj);
+                list.add(userJObj);
+            }
+        }
+
+        // 3-> 有轨迹的排在前面
+        list.sort((o1, o2) -> {
+            if (BeanUtil.isEmpty(o1.getJSONObject("mapInfo")) && BeanUtil.isEmpty(o2.getJSONObject("mapInfo"))) {
+                return 0;
+            } else if (BeanUtil.isEmpty(o1.getJSONObject("mapInfo")) && BeanUtil
+                    .isNotEmpty(o2.getJSONObject("mapInfo"))) {
+                return 1;
+            } else if (BeanUtil.isNotEmpty(o1.getJSONObject("mapInfo")) && BeanUtil
+                    .isEmpty(o2.getJSONObject("mapInfo"))) {
+                return -1;
+            } else {
+                return o1.getJSONObject("mapInfo").toJSONString().compareTo(o2.getJSONObject("mapInfo").toJSONString());
+            }
+        });
+
+        // 分页
+        List<JSONObject> result = new ArrayList<>();
+        for (int i = (page - 1) * limit; i < Math.min(page * limit, list.size()); i++) {
+            result.add(list.get(i));
+        }
+
+        restResponse.getData().setRows(result);
+        return restResponse;
     }
 }

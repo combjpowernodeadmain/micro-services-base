@@ -2,6 +2,7 @@ package com.bjzhianjia.scp.security.admin.mapper;
 
 import java.util.List;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.ibatis.annotations.Param;
 
 import com.bjzhianjia.scp.security.admin.entity.Depart;
@@ -104,5 +105,12 @@ public interface PositionMapper extends CommonMapper<Position> {
      * @return
      */
     List<PositionVo> selectPositionByUserId(@Param("userId")String userId);
+
+    /**
+     *@param code
+     * @param name
+     * @return
+     */
+    List<JSONObject> selectUserByPositionCode(@Param("code")String code, @Param("name")String name);
 
 }

@@ -626,4 +626,23 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
             return new ArrayList<>();
         }
     }
+    /**
+     *按组岗位CODE集合获取用户
+     *@param code
+     * @param page
+     * @param limit
+     * @param name
+     * @return
+     */
+    public TableResultResponse<JSONObject> selectUserByPositionCode(String code,int page,int limit,String name) {
+        TableResultResponse<JSONObject> result=new TableResultResponse<>();
+        Page<Object> pageInfo = PageHelper.startPage(page, limit);
+        List<JSONObject> users = positionMapper.selectUserByPositionCode(code,name);
+        if(null == users){
+            users=new ArrayList<>();
+        }
+        result.getData().setTotal(pageInfo.getTotal());
+        result.getData().setRows(users);
+        return result;
+    }
 }
