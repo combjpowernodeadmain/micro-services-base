@@ -49,7 +49,7 @@
 		</if>
 
 		<if test="lawTaskCodeOrLawTitle != null and lawTaskCodeOrLawTitle != ''">
-			AND  lk.law_task_code like "%"#{lawTaskCodeOrLawTitle}"%" or lk.lawTaskCodeOrLawTitle like "%"#{lawTaskCodeOrLawTitle}"%"
+			AND  lk.law_task_code like "%"#{lawTaskCodeOrLawTitle}"%" or lk.law_title like "%"#{lawTaskCodeOrLawTitle}"%"
 		</if>
 		<if test="state != null and state != ''">
 			AND lk.state = #{state}
