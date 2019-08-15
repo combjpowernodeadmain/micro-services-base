@@ -217,10 +217,10 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
      * @return
      */
     public TableResultResponse<Map<String, Object>> getLawTaskList(String userName, String regulaObjectName,
-        String state, Date startTime, Date endTime, int page, int limit,String lawTaskCode,String lawTitle) {
+        String state, Date startTime, Date endTime, int page, int limit,String lawTaskCodeOrLawTitle) {
         Page<Object> result = PageHelper.startPage(page, limit);
         List<Map<String, Object>> list =
-            lawTaskMapper.selectLawTaskList(userName, regulaObjectName, state, startTime, endTime,lawTaskCode,lawTitle);
+            lawTaskMapper.selectLawTaskList(userName, regulaObjectName, state, startTime, endTime,lawTaskCodeOrLawTitle);
         if (list == null) {
             return new TableResultResponse<Map<String, Object>>(0, null);
         }
@@ -840,12 +840,12 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
      * @return
      */
     public TableResultResponse<Map<String, Object>> getLawTaskToDoList(String userName, String regulaObjectName,
-        Date startTime, Date endTime, int page, int limit,String lawTaskCode,String lawTitle) {
+        Date startTime, Date endTime, int page, int limit,String lawTaskCodeOrLawTitle) {
 
         Page<Object> result = PageHelper.startPage(page, limit);
         // 可发起案件的执法任务状态为进行中的执法任务
         List<Map<String, Object>> list =
-            lawTaskMapper.selectLawTaskList(userName, regulaObjectName, propertiesConfig.getLawTasksDoing(), startTime, endTime,lawTaskCode,lawTitle);
+            lawTaskMapper.selectLawTaskList(userName, regulaObjectName, propertiesConfig.getLawTasksDoing(), startTime, endTime,lawTaskCodeOrLawTitle);
         if (list == null) {
             return new TableResultResponse<Map<String, Object>>(0, null);
         }
@@ -892,14 +892,14 @@ public class LawTaskBiz extends BusinessBiz<LawTaskMapper, LawTask> {
         Date startTime = queryJObj.getDate("startTime");
         Date endTime = queryJObj.getDate("endTime");
         String state = queryJObj.getString("state");
-        String lawTaskCode=queryJObj.getString("lawTaskCode");
-        String lawTitle=queryJObj.getString("lawTitle");
+        String lawTaskCodeOrLawTitle=queryJObj.getString("lawTaskCodeOrLawTitle");
+
 
 
         Page<Object> result = PageHelper.startPage(page, limit);
         List<Map<String, Object>> list =
             lawTaskMapper.selectLawTaskList(userName, regulaObjectName, state, startTime,
-                endTime,lawTaskCode,lawTitle);
+                endTime,lawTaskCodeOrLawTitle);
         if (list == null) {
             return new TableResultResponse<Map<String, Object>>(0, null);
         }
