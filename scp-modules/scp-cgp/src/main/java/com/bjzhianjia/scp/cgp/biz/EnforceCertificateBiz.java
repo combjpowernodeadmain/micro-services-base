@@ -15,6 +15,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.entity.Example.Criteria;
@@ -22,8 +23,10 @@ import tk.mybatis.mapper.entity.Example.Criteria;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 执法证管理
@@ -43,6 +46,9 @@ public class EnforceCertificateBiz extends BusinessBiz<EnforceCertificateMapper,
 
     @Autowired
     private LawEnforcePathBiz lawEnforcePathBiz;
+
+    @Value("${fuzhuPositionCode}")
+    private String fuzhuPositionCode;
 
     /**
      * 根据证件编号获取
@@ -258,5 +264,39 @@ public class EnforceCertificateBiz extends BusinessBiz<EnforceCertificateMapper,
         criteria.andIn("usrId", userId);
         List<EnforceCertificate> result = this.mapper.selectByExample(example);
         return BeanUtils.isEmpty(result) ? new ArrayList<>() : result;
+    }
+
+    /**
+     * 辅助执法队员全部定位
+     *
+     * @return
+     */
+    public TableResultResponse<JSONObject> assistPotition() {
+        // 辅助执法队员集
+        JSONObject feignUserResult = adminFeign.selectUserByPositionCode(fuzhuPositionCode, 1, Integer.MAX_VALUE, null);
+        JSONArray userJArray = new JSONArray();
+        if (BeanUtil.isNotEmpty(feignUserResult)) {
+            userJArray = feignUserResult.getJSONObject("data").getJSONArray("rows");
+        }
+        // 结果集
+        List<JSONObject> resultJObjList = new ArrayList<>();
+        if (BeanUtil.isNotEmpty(userJArray)) {
+            // 辅助执法队员坐标集
+            Set<String> userIds = new HashSet<>();
+            for (int i = 0, len = userJArray.size(); i < len; i++) {
+                userIds.add(userJArray.getJSONObject(i).getString("id"));
+            }
+            Map<String, JSONObject> lawMap = lawEnforcePathBiz.getByUserIds(String.join(",", userIds));
+            if (BeanUtil.isEmpty(lawMap)) {
+                lawMap = new HashMap<>();
+            }
+            // 封装坐标数据
+            for (int i = 0; i < userJArray.size(); i++) {
+                JSONObject jsonObject = userJArray.getJSONObject(i);
+                jsonObject.put("mapInfo", lawMap.get(jsonObject.getString("id")));
+                resultJObjList.add(jsonObject);
+            }
+        }
+        return new TableResultResponse<>(resultJObjList.size(), resultJObjList);
     }
 }

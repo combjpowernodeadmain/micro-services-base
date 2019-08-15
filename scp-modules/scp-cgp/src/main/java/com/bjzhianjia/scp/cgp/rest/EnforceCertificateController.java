@@ -185,14 +185,32 @@ public class EnforceCertificateController extends BaseController<EnforceCertific
 		return tableResult;
 	}
 
+	/**
+	 * 辅助执法人员列表
+	 *
+	 * @param limit
+	 * @param page
+	 * @param name 用户名称
+	 * @return
+	 */
 	@RequestMapping(value = "/fuzhu/list", method = RequestMethod.GET)
-	@ResponseBody
-	@ApiOperation("终端查询分页列表")
-	public TableResultResponse<JSONObject> getFuZhuList(@RequestParam(defaultValue = "10") int limit
-			,@RequestParam(defaultValue = "1") int page
-			,@RequestParam(value = "name", defaultValue = "") String name
-	) {
-		return enforceCertificateService.fuzhuList(page, limit,name);
+	@ApiOperation("辅助执法人员列表")
+	public TableResultResponse<JSONObject> getFuZhuList(
+			@RequestParam(value = "limit", defaultValue = "10") Integer limit,
+			@RequestParam(value = "page", defaultValue = "1") Integer page,
+			@RequestParam(value = "name", defaultValue = "") String name) {
+		return enforceCertificateService.fuzhuList(page, limit, name);
+	}
 
+	/**
+	 * 辅助执法人员全部定位
+	 *
+	 * @return
+	 */
+	@GetMapping("/assist/potition")
+	@ApiOperation("辅助执法人员全部定位")
+	public TableResultResponse<JSONObject> assistPotition() {
+		TableResultResponse<JSONObject> tableResult = this.baseBiz.assistPotition();
+		return tableResult;
 	}
 }
