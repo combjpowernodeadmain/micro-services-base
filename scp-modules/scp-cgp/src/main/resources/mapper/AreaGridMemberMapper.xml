@@ -76,6 +76,13 @@
 			${areaGridMember.gridMember}
 			)
 		</if>
+		<if test="gridRoleSet.size() != 0">
+			and grid_role in (
+			<foreach collection="gridRoleSet" item="item" separator=",">
+				#{item}
+			</foreach>
+			)
+		</if>
 		GROUP BY
 		grid_member
 		ORDER BY

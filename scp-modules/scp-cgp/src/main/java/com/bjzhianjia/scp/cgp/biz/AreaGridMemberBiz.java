@@ -525,7 +525,15 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
      * @return
      */
     public TableResultResponse<JSONObject> getListExcludeRole(AreaGridMember areaGridMember,
-        Integer page, Integer limit) {
+        Integer page, Integer limit,String gridRole) {
+        Set<String> gridRoleSet = new HashSet<>();
+        if(StringUtils.isNotBlank(gridRole)){
+            String[] roles = gridRole.split(",");
+            for (int i = 0; i < roles.length; i++) {
+                gridRoleSet.add(roles[i]);
+            }
+        }
+
         boolean isFastDead = false;
 
         if (StringUtils.isNotBlank(areaGridMember.getGridMember())) {
@@ -555,7 +563,7 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
         }
 
         Page<Object> pageInfo = PageHelper.startPage(page, limit);
-        List<AreaGridMember> list = this.mapper.getListExcludeRole(areaGridMember);
+        List<AreaGridMember> list = this.mapper.getListExcludeRole(areaGridMember,gridRoleSet);
         if (BeanUtil.isNotEmpty(list)) {
             List<JSONObject> jsonObjects = queryAssist(list);
             return new TableResultResponse<>(pageInfo.getTotal(), jsonObjects);
