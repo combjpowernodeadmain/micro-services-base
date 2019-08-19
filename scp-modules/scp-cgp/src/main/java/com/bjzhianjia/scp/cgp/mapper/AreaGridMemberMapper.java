@@ -49,7 +49,8 @@ public interface AreaGridMemberMapper extends CommonMapper<AreaGridMember> {
 
     List<String> distinctGridMember();
 
-    List<AreaGridMember> getListExcludeRole(@Param("areaGridMember") AreaGridMember areaGridMember);
+    List<AreaGridMember> getListExcludeRole(@Param("areaGridMember") AreaGridMember areaGridMember,
+                                            @Param("gridRoleSet") Set<String> gridRoleSet);
 
     List<JSONObject> memAssessment(
         @Param("monthStart") Date monthStart,
