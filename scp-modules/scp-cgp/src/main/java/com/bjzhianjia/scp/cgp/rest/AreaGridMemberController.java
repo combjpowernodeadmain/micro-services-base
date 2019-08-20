@@ -98,11 +98,12 @@ public class AreaGridMemberController extends BaseController<AreaGridMemberBiz, 
     public TableResultResponse<JSONObject> getListExcludeRole(
         @RequestParam(value = "page", defaultValue = "1") Integer page,
         @RequestParam(value = "limit", defaultValue = "10") Integer limit,
-        @RequestParam(value = "gridMemberName",defaultValue = "")String gridMemberName) {
+        @RequestParam(value = "gridMemberName",defaultValue = "")String gridMemberName,
+        @RequestParam(value = "gridRole", defaultValue = "")String gridRole) {
 
         AreaGridMember areaGridMember = new AreaGridMember();
         areaGridMember.setGridMember(gridMemberName);
-        return this.baseBiz.getListExcludeRole(areaGridMember, page, limit);
+        return this.baseBiz.getListExcludeRole(areaGridMember, page, limit,gridRole);
     }
 
     /**
