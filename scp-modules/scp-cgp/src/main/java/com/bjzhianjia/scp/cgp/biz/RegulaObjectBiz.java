@@ -68,7 +68,7 @@ public class RegulaObjectBiz extends BusinessBiz<RegulaObjectMapper, RegulaObjec
     private AreaGridBiz areaGridBiz;
 
     /**
-     * 查询id最大的那条记录
+     * 查询id最大的那条记录patrolRecord/endPatrol
      * 
      * @author 尚
      * @return

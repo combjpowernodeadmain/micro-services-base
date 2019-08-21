@@ -18,7 +18,6 @@
         <module>scp-tool</module>
         <module>scp-workflow</module>
         <module>scp-cgp</module>
-        <module>scp-party</module>
     </modules>
 
 </project>
