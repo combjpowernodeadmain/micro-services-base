@@ -3211,4 +3211,14 @@ public class CaseInfoService {
     public List<JSONObject> getBizId(Date startTime, Date endTime, String userId){
        return  wfProcTaskBiz.swpByuserIds(startTime,endTime,userId);
     }
+
+    /**
+     * 根据流程实例关联的业务ID获取工作流数据
+     * @param bizId
+     * @return
+     */
+    public List<JSONObject> getTaskByBizId(Set<String> bizId){
+        return wfProcTaskBiz.getTaskByBizId(bizId);
+    }
+
 }

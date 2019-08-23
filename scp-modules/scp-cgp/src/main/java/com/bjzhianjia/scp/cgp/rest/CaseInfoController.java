@@ -507,7 +507,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
      */
     @GetMapping("/list/unpage")
     @ApiOperation("不分页查询事件列表")
-    public List<CaseInfo> getList(
+    public List<JSONObject> getList(
         @RequestParam(value = "sourceType", defaultValue = "") @ApiParam(value = "事件来源类型") String sourceType,
         @RequestParam(value = "specialEventId") @ApiParam(value = "事件来源类型") Integer specialEventId,
         @RequestParam(value = "isFinished", defaultValue = "") @ApiParam(value = "事件完成状态") String isFinished) {

@@ -2,6 +2,7 @@ package com.bjzhianjia.scp.security.wf.base.task.mapper;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import com.alibaba.fastjson.JSONObject;
 import org.apache.ibatis.annotations.Param;
@@ -89,4 +90,12 @@ public interface WfProcTaskBeanMapper {
 	List<JSONObject> swpByuserIds(@Param("startTime")Date startTime,
 								  @Param("endTime")Date endTime,
 								  @Param("userId")String userId);
+
+	/**
+	 *查询流程实例ID
+	 *
+	 * @param bizIds
+	 * @return
+	 */
+	List<JSONObject> selectTaskByBizId(@Param("bizIds") Set<String> bizIds);
 }

@@ -1039,7 +1039,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
      * @param queryCaseInfo
      * @param specialEventId
      */
-    public List<CaseInfo> getList(CaseInfo queryCaseInfo, Integer specialEventId) {
+    public List<JSONObject> getList(CaseInfo queryCaseInfo, Integer specialEventId) {
         // 查询与专项管理记录对应的巡查事项
         Map<String,Object> conditionMap=new HashMap<>();
         conditionMap.put("sourceType", environment.getProperty("patrolType.special"));
@@ -1068,11 +1068,30 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         }
 
         List<CaseInfo> caseInfoList = this.selectByExample(example);
-        if(BeanUtil.isNotEmpty(caseInfoList)){
-            return caseInfoList;
+        List<JSONObject> jList = new ArrayList<>();
+        Set<String> set = new HashSet<>();
+        if(BeanUtil.isEmpty(caseInfoList)){
+            return new ArrayList<>();
         }
-
-        return new ArrayList<>();
+        caseInfoList.forEach(item->{
+            set.add(item.getId().toString());
+        });
+        List<JSONObject> taskByBizId = caseInfoService.getTaskByBizId(set);
+        Map<String,String> map = new HashedMap<>();
+        if(BeanUtil.isNotEmpty(taskByBizId)){
+            for (JSONObject jsonObject : taskByBizId) {
+                map.put(jsonObject.getString("PROC_BIZID"),jsonObject.getString("PROC_INST_ID"));
+            }
+        }
+        for (CaseInfo caseInfo : caseInfoList) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("id",caseInfo.getId());
+            jsonObject.put("caseTitle",caseInfo.getCaseTitle());
+            jsonObject.put("mapInfo",caseInfo.getMapInfo());
+            jsonObject.put("procInstId",map.get(caseInfo.getId().toString()));
+            jList.add(jsonObject);
+        }
+        return jList;
     }
 
     /**
