@@ -72,7 +72,10 @@
 	  u.is_deleted='0'
       AND u.id = #{userid}
   </select>
-  
+  <!-- 根据用户id获取departIds -->
+  <select id="selectDepartIdsByUserId" resultType="java.lang.String">
+    SELECT depart_id departId FROM base_depart_user  WHERE user_id = #{userid}
+  </select>
   <!-- 根据用户username获取tenantId -->
   <select id="selectTenantIdByUserId" resultType="java.lang.String">
     select u.tenant_id from base_user u 

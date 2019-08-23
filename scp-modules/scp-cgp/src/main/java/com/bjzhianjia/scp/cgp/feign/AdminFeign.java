@@ -176,4 +176,12 @@ public interface AdminFeign {
 										@RequestParam(value = "limit",defaultValue = "10") Integer limit,
 										@RequestParam(value = "name",defaultValue = "") String name
 	);
+	/**
+	 * 根据userid查询部门IDs
+	 *
+	 * @param userId 用户id
+	 * @return
+	 */
+	@GetMapping("/{userId}/departs")
+	List<String> getDepartIdsByUserame(@PathVariable(value = "userId") String userId);
 }
