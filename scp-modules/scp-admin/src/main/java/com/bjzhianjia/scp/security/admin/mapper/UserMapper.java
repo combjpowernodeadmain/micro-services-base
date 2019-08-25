@@ -41,6 +41,14 @@ public interface UserMapper extends CommonMapper<User> {
      * @return
      */
     public String selectDepartIdByUserId(@Param("userid") String userid);
+
+    /**
+     * 根据userid获取用户部门IDs
+     *
+     * @param userid 用户id
+     * @return
+     */
+    List<String> selectDepartIdsByUserId(@Param("userid") String userid);
     
     /**
      * 根据userid获取用户租户ID

@@ -407,6 +407,19 @@ public class UserBiz extends BaseBiz<UserMapper, User> {
     }
 
     /**
+     * 根据userid查询部门IDs
+     *
+     * @param userid 用户id
+     * @return
+     */
+    public List<String> getDepartIdsByUserId(String userid) {
+        if (StringUtils.isBlank(userid)) {
+            return new ArrayList<>();
+        }
+        return mapper.selectDepartIdsByUserId(userid);
+    }
+
+    /**
      * 根据userid查询部门ID
      *
      * @param userid

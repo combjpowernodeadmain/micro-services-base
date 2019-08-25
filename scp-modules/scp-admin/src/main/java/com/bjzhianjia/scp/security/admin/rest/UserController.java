@@ -353,4 +353,15 @@ public class UserController extends BaseController<UserBiz, User, String> {
 	) {
 		return baseBiz.selectUserByPositionCode(code,page,limit,name);
 	}
+
+	/**
+	 * 根据userid查询部门IDs
+	 *
+	 * @param userId 用户id
+	 * @return
+	 */
+	@GetMapping("/{userId}/departs")
+	public List<String> getDepartIdsByUserame(@PathVariable(value = "userId") String userId) {
+		return this.baseBiz.getDepartIdsByUserId(userId);
+	}
 }

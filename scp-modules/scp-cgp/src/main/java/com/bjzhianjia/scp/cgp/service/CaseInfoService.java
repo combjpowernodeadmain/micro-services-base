@@ -2277,7 +2277,9 @@ public class CaseInfoService {
         JSONObject objs = this.initWorkflowQuery(bizData);
         objs.put("queryData", queryData);
         objs.getJSONObject("variableData").put("caseLevel", caseLevel);
-        objs.getJSONObject("authData").put("procDeptId", deptId);
+
+        List<String> deptIds = adminFeign.getDepartIdsByUserame(BaseContextHandler.getUserID());
+        objs.getJSONObject("authData").put("procDeptIds", deptIds);
 
         List<JSONObject> rows=new ArrayList<>();
         TableResultResponse<JSONObject> userToDoTasks = this.getUserToDoTasks(objs);

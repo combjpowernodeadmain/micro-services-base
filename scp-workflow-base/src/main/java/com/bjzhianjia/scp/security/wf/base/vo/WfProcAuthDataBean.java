@@ -115,6 +115,24 @@ public class WfProcAuthDataBean implements java.io.Serializable {
     public void setProcDeptId(String procTaskUser) {
         put(WfProcessAuthData.PROC_DEPATID, procTaskUser);
     }
+
+    /**
+     * 获取流程任务用户所属部门集
+     *
+     * @return
+     */
+    public List<String> getProcDeptIds() {
+        return (List<String>) authData.get(WfProcessAuthData.PROC_DEPATIDS);
+    }
+
+    /**
+     * 设置流程任务用户所属部门集
+     *
+     * @return
+     */
+    public void setProcDeptIds(List<String> procTaskUser) {
+        put(WfProcessAuthData.PROC_DEPATIDS, procTaskUser);
+    }
     
     public String getProcTaskRole() {
         return (String) authData.get(WfProcessAuthData.PROC_TASKROLE);
