@@ -17,7 +17,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Date;
+import java.util.Set;
 
+import ch.qos.logback.core.joran.util.beans.BeanUtil;
 import com.alibaba.fastjson.JSONArray;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.ActivitiObjectNotFoundException;
@@ -36,7 +38,9 @@ import org.activiti.engine.impl.pvm.process.TransitionImpl;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -3857,6 +3861,20 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	 */
 	public List<JSONObject> swpByuserIds(Date startTime,Date endTime,String userId){
 		return wfProcTaskBeanMapper.swpByuserIds(startTime,endTime,userId);
+	}
+
+	/**
+	 * 根据流程实例关联的业务ID获取工作流
+	 *
+	 * @param bizIds
+	 * @return
+	 */
+	public List<JSONObject> getTaskByBizId(Set<String> bizIds){
+		List<JSONObject> jsonObjects = wfProcTaskBeanMapper.selectTaskByBizId(bizIds);
+		if(jsonObjects == null){
+			return  new ArrayList<>();
+		}
+		return  jsonObjects;
 	}
 
 }
