@@ -1069,18 +1069,18 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
 
         List<CaseInfo> caseInfoList = this.selectByExample(example);
         List<JSONObject> jList = new ArrayList<>();
-        Set<String> set = new HashSet<>();
+        Set<String> caseIdSet = new HashSet<>();
         if(BeanUtil.isEmpty(caseInfoList)){
             return new ArrayList<>();
         }
         caseInfoList.forEach(item->{
-            set.add(item.getId().toString());
+            caseIdSet.add(item.getId().toString());
         });
-        List<JSONObject> taskByBizId = caseInfoService.getTaskByBizId(set);
-        Map<String,String> map = new HashedMap<>();
+        List<JSONObject> taskByBizId = caseInfoService.getTaskByBizId(caseIdSet);
+        Map<String,String> bizIdmap = new HashedMap<>();
         if(BeanUtil.isNotEmpty(taskByBizId)){
             for (JSONObject jsonObject : taskByBizId) {
-                map.put(jsonObject.getString("PROC_BIZID"),jsonObject.getString("PROC_INST_ID"));
+                bizIdmap.put(jsonObject.getString("PROC_BIZID"),jsonObject.getString("PROC_INST_ID"));
             }
         }
         for (CaseInfo caseInfo : caseInfoList) {
@@ -1088,7 +1088,7 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             jsonObject.put("id",caseInfo.getId());
             jsonObject.put("caseTitle",caseInfo.getCaseTitle());
             jsonObject.put("mapInfo",caseInfo.getMapInfo());
-            jsonObject.put("procInstId",map.get(caseInfo.getId().toString()));
+            jsonObject.put("procInstId",bizIdmap.get(caseInfo.getId().toString()));
             jList.add(jsonObject);
         }
         return jList;

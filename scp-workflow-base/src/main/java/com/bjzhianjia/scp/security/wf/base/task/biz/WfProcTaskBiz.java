@@ -3871,7 +3871,7 @@ public class WfProcTaskBiz extends AWfProcTaskBiz {
 	 */
 	public List<JSONObject> getTaskByBizId(Set<String> bizIds){
 		List<JSONObject> jsonObjects = wfProcTaskBeanMapper.selectTaskByBizId(bizIds);
-		if(jsonObjects.size() == 0){
+		if(jsonObjects == null){
 			return  new ArrayList<>();
 		}
 		return  jsonObjects;
