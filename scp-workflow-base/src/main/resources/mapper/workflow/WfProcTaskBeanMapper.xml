@@ -1408,9 +1408,8 @@
 		select DISTINCT(PROC_INST_ID),PROC_BIZID
 		from scp_wf_proc_task
 		where
-		PROC_PTASKCODE is not NULL
 		<if test="bizIds != null and bizIds.size != 0">
-		and PROC_BIZID in (
+		 PROC_BIZID in (
 			<foreach collection="bizIds" item="item" separator=",">
 				#{item}
 			</foreach>
