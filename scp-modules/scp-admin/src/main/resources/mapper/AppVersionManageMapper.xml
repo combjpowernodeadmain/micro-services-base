@@ -31,7 +31,7 @@
     <select id="getDownloadUrl" resultType="com.alibaba.fastjson.JSONObject">
 SELECT
 download_url,
-os_type
+os_type,os_version
 FROM
  app_version_manage
  WHERE
