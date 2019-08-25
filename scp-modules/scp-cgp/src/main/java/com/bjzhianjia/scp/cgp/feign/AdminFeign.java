@@ -182,6 +182,6 @@ public interface AdminFeign {
 	 * @param userId 用户id
 	 * @return
 	 */
-	@GetMapping("/{userId}/departs")
+	@GetMapping("/user/{userId}/departs")
 	List<String> getDepartIdsByUserame(@PathVariable(value = "userId") String userId);
 }
