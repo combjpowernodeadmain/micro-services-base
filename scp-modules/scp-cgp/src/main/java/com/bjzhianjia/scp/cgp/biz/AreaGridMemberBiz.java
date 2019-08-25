@@ -632,16 +632,16 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
         // 获取成员信息
         JSONObject obj = null;
         JSONObject user = null;
-        Set<JSONObject> set = new HashSet<>();
+        Set<JSONObject> userSet = new HashSet<>();
         for (int i = 0, size = users.size(); i < size; i++) {
             obj = users.getJSONObject(i);
             user = new JSONObject();
             user.put("gridName", gridName);
             user.put("userName", obj.getString("userName"));
             user.put("mobilePhone", obj.getString("mobilePhone"));
-            set.add(user);
+            userSet.add(user);
         }
-        set.forEach(item->{
+        userSet.forEach(item->{
             resultData.add(item);
         });
         return  new TableResultResponse<>(pageObj.getEndRow(), resultData);
