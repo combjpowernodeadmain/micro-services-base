@@ -98,13 +98,14 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
     @ApiOperation("分页获取对象")
     public TableResultResponse<JSONObject> page(
         @RequestParam(value = "gridId", required = false) @ApiParam("网格ID") Integer gridId,
+        @RequestParam(value = "isGridSon", defaultValue = "0") @ApiParam("网格ID，是否包含子集，默认不包含") Integer isGridSon,
         @RequestParam(value = "regulaObjList", required = false) @ApiParam("监管对象") String regulaObjList,
         @RequestParam(value = "page", defaultValue = "1") @ApiParam(name = "当前页") Integer page,
         @RequestParam(value = "limit", defaultValue = "10") @ApiParam(name = "页容量") Integer limit) {
         CaseInfo caseInfo = new CaseInfo();
         caseInfo.setGrid(gridId);
         caseInfo.setRegulaObjList(regulaObjList);
-        return caserInfoService.getList(caseInfo, page, limit, false);
+        return caserInfoService.getList(caseInfo, page, limit, false,isGridSon);
     }
 
     @RequestMapping(value = "/list/unFinish/{id}", method = RequestMethod.GET)
@@ -120,7 +121,7 @@ public class CaseInfoController extends BaseController<CaseInfoBiz, CaseInfo, In
         caseInfo.setCaseCode(caseCode);
         caseInfo.setCaseTitle(caseTitle);
 
-        return caserInfoService.getList(caseInfo, page, limit, true);
+        return caserInfoService.getList(caseInfo, page, limit, true,0);
     }
 
     @RequestMapping(value = "/get/{id}", method = RequestMethod.GET)

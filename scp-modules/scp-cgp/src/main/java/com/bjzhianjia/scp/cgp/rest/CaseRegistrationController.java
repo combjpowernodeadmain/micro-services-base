@@ -109,6 +109,7 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
     @ApiOperation("分页获取对象列表")
     public TableResultResponse<CaseRegistration> getList(
         @RequestParam(value = "gridId", defaultValue = "") @ApiParam("网格ID") Integer gridId,
+        @RequestParam(value = "isGridSon", defaultValue = "0") @ApiParam("网格ID，是否包含子集，默认不包含") Integer isGridSon,
         @RequestParam(value = "exeStatus", defaultValue = "") @ApiParam("案件状态") String exeStatus,
         @RequestParam(value = "regulaObjectId", defaultValue = "") @ApiParam("监管对象ID") String regulaObjectId,
         @RequestParam(value = "page", defaultValue = "1") @ApiParam("当前页") Integer page,
@@ -117,7 +118,7 @@ public class CaseRegistrationController extends BaseController<CaseRegistrationB
         caseRegistration.setGirdId(gridId);
         caseRegistration.setExeStatus(exeStatus);
 
-        return this.baseBiz.getList(caseRegistration,regulaObjectId, page, limit);
+        return this.baseBiz.getList(caseRegistration,regulaObjectId, page, limit,isGridSon);
     }
 
     /**

@@ -150,9 +150,10 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
      * @param caseInfo
      * @param page
      * @param limit
+     * @param isGridSon 网格ID，是否包含子集，(0默认不包含|1包含子集)
      * @return
      */
-    public TableResultResponse<JSONObject> getList(CaseInfo caseInfo, int page, int limit, boolean isNoFinish) {
+    public TableResultResponse<JSONObject> getList(CaseInfo caseInfo, int page, int limit, boolean isNoFinish,Integer isGridSon) {
         TableResultResponse<JSONObject> result=new TableResultResponse<>();
 
         Example example = new Example(CaseInfo.class);
@@ -165,7 +166,13 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         }
 
         if (caseInfo.getGrid() != null) {
-            criteria.andEqualTo("grid", caseInfo.getGrid());
+            // 是否包含子集，否则匹配当前网格和子网格集
+            if (0 == isGridSon) {
+                criteria.andEqualTo("grid", caseInfo.getGrid());
+            } else {
+                Set<Integer> gridIds = areaGridBiz.getByAreaGridId(caseInfo.getGrid());
+                criteria.andIn("grid", gridIds);
+            }
         }
         if (StringUtils.isNotBlank(caseInfo.getRegulaObjList())) {
             criteria.andIn("regulaObjList", Arrays.asList(caseInfo.getRegulaObjList().split(",")));

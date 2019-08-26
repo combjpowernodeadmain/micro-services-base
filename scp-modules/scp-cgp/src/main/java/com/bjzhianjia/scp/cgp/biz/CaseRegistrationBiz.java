@@ -549,15 +549,23 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
      * @param caseRegistration
      * @param page
      * @param limit
+     * @param isGridSon 网格ID，是否包含子集，(0默认不包含|1包含子集)
      * @return
      */
-    public TableResultResponse<CaseRegistration> getList(CaseRegistration caseRegistration,String regulaobjectId, int page, int limit) {
+    public TableResultResponse<CaseRegistration> getList(CaseRegistration caseRegistration,String regulaobjectId,
+                                                         int page, int limit,Integer isGridSon) {
         Example example = new Example(CaseRegistration.class);
         Criteria criteria = example.createCriteria();
 
         criteria.andEqualTo("isDeleted", "0");
         if (caseRegistration.getGirdId() != null) {
-            criteria.andEqualTo("girdId", caseRegistration.getGirdId());
+            // 是否包含子集，否则匹配当前网格和子网格集
+            if (0 == isGridSon) {
+                criteria.andEqualTo("girdId", caseRegistration.getGirdId());
+            } else {
+                Set<Integer> gridIds = areaGridBiz.getByAreaGridId(caseRegistration.getGirdId());
+                criteria.andIn("girdId", gridIds);
+            }
         }
         // 添加按案件状态查询的逻辑
         if (StringUtils.isNotBlank(caseRegistration.getExeStatus())) {
@@ -2431,7 +2439,7 @@ public class CaseRegistrationBiz extends BusinessBiz<CaseRegistrationMapper, Cas
         Integer limit =
             BeanUtil.isEmpty(queryData.getInteger("limit")) ? 10 : queryData.getInteger("limit");
 
-        TableResultResponse<CaseRegistration> list = this.getList(queryCaseRegistration,null, page, limit);
+        TableResultResponse<CaseRegistration> list = this.getList(queryCaseRegistration,null, page, limit,0);
 
         List<JSONObject> result=new ArrayList<>();
         long total =0L;

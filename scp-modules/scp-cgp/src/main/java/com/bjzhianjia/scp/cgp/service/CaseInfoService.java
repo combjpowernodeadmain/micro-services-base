@@ -208,10 +208,11 @@ public class CaseInfoService {
      * @param caseInfo
      * @param page
      * @param limit
+     * @param isGridSon 网格ID，是否包含子集，(0默认不包含|1包含子集)
      * @return
      */
-    public TableResultResponse<JSONObject> getList(CaseInfo caseInfo, int page, int limit, boolean isNoFinish) {
-        return caseInfoBiz.getList(caseInfo, page, limit, isNoFinish);
+    public TableResultResponse<JSONObject> getList(CaseInfo caseInfo, int page, int limit, boolean isNoFinish,Integer isGridSon) {
+        return caseInfoBiz.getList(caseInfo, page, limit, isNoFinish,isGridSon);
     }
 
     /**
