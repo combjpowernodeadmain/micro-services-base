@@ -533,7 +533,7 @@ public class AreaGridMemberBiz extends BusinessBiz<AreaGridMemberMapper, AreaGri
                 gridRoleSet.add(roles[i]);
             }
         }else{
-            //查询字典筛选出未禁用的角色
+            //查询字典筛选出显示的角色
             List<JSONObject> byAttr1 = dictFeign.getByAttr1(BooleanUtil.BOOLEAN_TRUE);
             byAttr1.forEach(item->{
                 gridRoleSet.add(item.getString("code"));
