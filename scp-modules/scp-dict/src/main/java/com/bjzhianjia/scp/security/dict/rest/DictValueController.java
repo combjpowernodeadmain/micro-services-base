@@ -1,15 +1,12 @@
 
 package com.bjzhianjia.scp.security.dict.rest;
 
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bjzhianjia.scp.security.common.util.BeanUtils;
+import com.bjzhianjia.scp.security.common.util.BooleanUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -300,4 +297,17 @@ public class DictValueController extends BaseController<DictValueBiz, DictValue,
 			@RequestParam(value = "typeCodes",defaultValue = "") @ApiParam("数据字典类型codes") String typeCodes){
 		return this.baseBiz.getListByTypeCode(typeCodes);
 	}
+
+	@IgnoreClientToken
+	@IgnoreUserToken
+	@RequestMapping(value = "/attr1/{attr1}", method = RequestMethod.GET)
+	public List<DictValue> getByAttr1(@PathVariable("attr1") String attr1) {
+		Example example = new Example(DictValue.class);
+		Criteria criteria = example.createCriteria();
+		criteria.andEqualTo("isDeleted", BooleanUtil.BOOLEAN_FALSE);
+		criteria.andEqualTo("attr1",attr1);
+		example.setOrderByClause("order_num");
+		return this.baseBiz.selectByExample(example);
+	}
+
 }
