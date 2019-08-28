@@ -123,7 +123,7 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
         Example.Criteria criteria = example.createCriteria();
 
         criteria.andEqualTo("isDeleted", "0");
-        example.setOrderByClause("grid_sort desc");
+        example.setOrderByClause("grid_sort asc");
 
         if (StringUtils.isNotBlank(areaGrid.getGridName())) {
             criteria.andLike("gridName", "%" + areaGrid.getGridName() + "%");
