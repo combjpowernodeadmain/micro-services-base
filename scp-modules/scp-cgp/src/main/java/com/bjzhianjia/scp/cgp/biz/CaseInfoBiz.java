@@ -341,7 +341,8 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
         if (!(StringUtils.isBlank(startQueryTime) || StringUtils.isBlank(endQueryTime))) {
             Date start = DateUtil.dateFromStrToDate(startQueryTime, "yyyy-MM-dd HH:mm:ss");
             Date end = DateUtils.addDays(DateUtil.dateFromStrToDate(endQueryTime, "yyyy-MM-dd HH:mm:ss"), 1);
-            criteria.andBetween("occurTime", start, end);
+          //业务中心-统计分析-事件统计-事件综合统计和统计中心数量不一致，改至统一字段。occurTime->crtTime
+            criteria.andBetween("crtTime", start, end);
         }
         // 事件级别
         if (StringUtils.isNotBlank(caseInfo.getCaseLevel())) {
