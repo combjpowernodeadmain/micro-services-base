@@ -1,7 +1,9 @@
 package com.bjzhianjia.scp.cgp.feign;
 
+import java.util.List;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -103,4 +105,9 @@ public interface DictFeign {
      */
     @GetMapping("/dictValue/typeCodes")
     Map<String,String> getListByTypeCode(@RequestParam(value = "typeCodes", defaultValue = "")  String typeCodes);
+
+
+    @GetMapping(value = "/dictValue/attr1/{attr1}")
+    List<JSONObject> getByAttr1(@PathVariable("attr1") String attr1);
+
 }
