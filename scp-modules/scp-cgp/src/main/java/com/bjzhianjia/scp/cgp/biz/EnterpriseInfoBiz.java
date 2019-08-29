@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.bjzhianjia.scp.cgp.util.BeanUtil;
 import org.springframework.stereotype.Service;
 
 import com.bjzhianjia.scp.cgp.entity.EnterpriseInfo;
@@ -38,5 +39,16 @@ public class EnterpriseInfoBiz extends BusinessBiz<EnterpriseInfoMapper,Enterpri
 		
 		List<EnterpriseInfo> result = this.mapper.selectByExample(example);
 		return result;
+	}
+
+	/**
+	 *注册资本 清空 为 null
+	 *
+	 * @param id
+	 */
+	public void updatCapitalIsNull(Integer id){
+		if(BeanUtil.isNotEmpty(id)){
+			this.mapper.updatCapitalIsNull(id);
+		}
 	}
 }

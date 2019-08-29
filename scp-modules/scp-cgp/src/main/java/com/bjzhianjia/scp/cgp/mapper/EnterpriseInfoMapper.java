@@ -24,4 +24,11 @@ public interface EnterpriseInfoMapper extends CommonMapper<EnterpriseInfo> {
 	 */
 	public void deleteByRegulaObjIds(@Param("regulaObjIds") Integer[] regulaObjIds, @Param("updUserId") String updUserId,
 			@Param("updUserName") String updUserName, @Param("updTime") Date updTime);
+
+	/**
+	 * 资金金额 默认为NULL
+	 *
+	 * @param id
+	 */
+	public void updatCapitalIsNull(@Param("id") Integer id);
 }
