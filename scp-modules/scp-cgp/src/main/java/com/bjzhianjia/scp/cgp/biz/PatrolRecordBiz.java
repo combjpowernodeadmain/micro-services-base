@@ -13,7 +13,6 @@ import com.github.pagehelper.PageHelper;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
-import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,10 +23,9 @@ import com.bjzhianjia.scp.security.common.biz.BusinessBiz;
 import tk.mybatis.mapper.entity.Example;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 巡查记录表，用于记录某一次巡查信息
@@ -391,7 +389,6 @@ public class PatrolRecordBiz extends BusinessBiz<PatrolRecordMapper, PatrolRecor
                         totalLengthTimesUser += lengthTimes;
                     }
                 }
-                System.out.println(totalLengthTimesUser);
                 if(totalLengthTimesUser == 0) {
                     map.put(userId,"0.00");
                 }else{
@@ -401,5 +398,70 @@ public class PatrolRecordBiz extends BusinessBiz<PatrolRecordMapper, PatrolRecor
             }
         }
         return map;
+    }
+
+    /**
+     * 夜间巡查时长 总时长
+     *      夜间寻常定义范围限制：  以巡查开始事件算起 18:00-6:00
+     *              时间格式 xx:xx:xx
+     *      以小时判定范围
+     * @author tg
+     * @param addition
+     * @param userIds
+     * @return
+     */
+    public Map<String,String> nightPatrolTimeLength(JSONObject addition, List<String> userIds){
+        Example example = new Example(PatrolRecord.class);
+        Example.Criteria criteria = example.createCriteria();
+        if(BeanUtil.isNotEmpty(userIds)){
+            criteria.andIn("crtUserId",userIds);
+        }else{
+            return new HashMap<>();
+        }
+        //根据月份筛选
+        String  queryStartTimeStr;
+        String  queryEndTimeStr;
+        if (StringUtils.isNotBlank(addition.getString("month"))) {
+            queryStartTimeStr = DateUtil.dateFromDateToStr(
+                    DateUtil.getDayStartTime(DateUtil.theFirstDayOfMonth(DateUtil.dateFromStrToDate(addition.getString("month"), "yyyy-MM"))),
+                    DateUtil.DEFAULT_DATE_FORMAT);
+            queryEndTimeStr = DateUtil.dateFromDateToStr(DateUtil.getDayStartTime(
+                    DateUtil.theFirstDayOfMonth(DateUtil.theDayOfMonthPlus(DateUtil.dateFromStrToDate(addition.getString("month"), "yyyy-MM"), 1)
+                    )), DateUtil.DEFAULT_DATE_FORMAT);
+            criteria.andBetween("startTime", queryStartTimeStr, queryEndTimeStr);
+        }
+        List<PatrolRecord> prList = this.selectByExample(example);
+
+        DecimalFormat format = new DecimalFormat("0.00");
+        /**
+         * 定义夜 巡查 界定 boolean  下午 18:00:00  到 凌晨 06:00:00 未夜间巡查
+         *          判断条件：   开始巡查时间在界定时间内  为   夜间巡查
+         */
+        //时间界定范围
+        int limitTimeStart = 18;
+        int limitTimeEnd = 6;
+        //计算总时长
+        Map<String,String> nightRecordMap = new HashedMap<>();
+        userIds.forEach(item->{
+            long nightLengthTimesUser = 0;
+            for (PatrolRecord pr : prList) {
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(pr.getStartTime());
+                int i = calendar.get(Calendar.HOUR);
+                pr.getStartTime();
+               Boolean is_night = i > limitTimeStart || i < limitTimeEnd;
+                if(item.equals(pr.getCrtUserId()) && is_night){
+                    long lengthTimes = pr.getEndTime().getTime() - pr.getStartTime().getTime();
+                    nightLengthTimesUser += lengthTimes;
+                }
+            }
+            if(nightLengthTimesUser == 0) {
+                nightRecordMap.put(item,"0.00");
+            }else{
+                String lengthHours = format.format(nightLengthTimesUser * 1.0 / DateUtils.MILLIS_PER_HOUR);
+                nightRecordMap.put(item,lengthHours);
+            }
+        });
+        return  nightRecordMap;
     }
 }

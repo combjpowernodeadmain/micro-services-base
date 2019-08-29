@@ -764,6 +764,8 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
                 }
             }
         }
+        //  夜间 巡查 时长结算
+        Map<String, String> nightPatrol = patrolRecordBiz.nightPatrolTimeLength(addition, userList);
         //整合数据
         for (JSONObject objTmp : jsonObjects) {
             //人员姓名并整合数据
@@ -795,6 +797,8 @@ public class AreaGridBiz extends BusinessBiz<AreaGridMapper, AreaGrid> {
             }
             //巡查时长
             objTmp.put("patrolTimeLength", longTime.get(objTmp.getString("grid_member")));
+            //夜间巡查时长
+            objTmp.put("nightPatrol",nightPatrol.get(objTmp.getString("grid_member")));
         }
         result.getData().setTotal(pageInfo.getTotal());
         result.getData().setRows(jsonObjects);
