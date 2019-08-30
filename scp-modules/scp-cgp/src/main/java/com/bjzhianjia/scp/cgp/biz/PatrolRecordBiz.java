@@ -410,7 +410,7 @@ public class PatrolRecordBiz extends BusinessBiz<PatrolRecordMapper, PatrolRecor
      * @param userIds
      * @return
      */
-    public Map<String,String> nightPatrolTimeLength(JSONObject addition, List<String> userIds){
+    /*public Map<String,String> nightPatrolTimeLength(JSONObject addition, List<String> userIds){
         Example example = new Example(PatrolRecord.class);
         Example.Criteria criteria = example.createCriteria();
         if(BeanUtil.isNotEmpty(userIds)){
@@ -433,10 +433,10 @@ public class PatrolRecordBiz extends BusinessBiz<PatrolRecordMapper, PatrolRecor
         List<PatrolRecord> prList = this.selectByExample(example);
 
         DecimalFormat format = new DecimalFormat("0.00");
-        /**
+        *//**
          * 定义夜 巡查 界定 boolean  下午 18:00:00  到 凌晨 06:00:00 未夜间巡查
          *          判断条件：   开始巡查时间在界定时间内  为   夜间巡查
-         */
+         *//*
         //时间界定范围
         int limitTimeStart = 18;
         int limitTimeEnd = 6;
@@ -463,5 +463,5 @@ public class PatrolRecordBiz extends BusinessBiz<PatrolRecordMapper, PatrolRecor
             }
         });
         return  nightRecordMap;
-    }
+    }*/
 }
