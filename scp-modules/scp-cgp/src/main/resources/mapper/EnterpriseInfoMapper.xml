@@ -58,4 +58,7 @@
 			#{regulaObjId}
 		</foreach>
 	</update>
+	<update id="updatCapitalIsNull">
+		update enterprise_info set regist_capital = null where id = #{id}
+	</update>
 </mapper>

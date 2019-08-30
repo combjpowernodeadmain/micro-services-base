@@ -163,9 +163,16 @@ public class CaseInfoBiz extends BusinessBiz<CaseInfoMapper, CaseInfo> {
             criteria.andEqualTo("isFinished", "0");
             criteria.andNotEqualTo("id", caseInfo.getId());
         }
-
-        if (caseInfo.getGrid() != null) {
-            criteria.andEqualTo("grid", caseInfo.getGrid());
+        //判断此网格下有无子网格，并且一并显示
+        if(BeanUtil.isNotEmpty(caseInfo.getGrid())){
+            List<AreaGrid> grids = areaGridBiz.getAreaGridBindChileren(caseInfo.getGrid());
+            Set<Integer> gridIdSet = new HashSet<>();
+            grids.forEach(item->{
+                gridIdSet.add(item.getId());
+            });
+            if(BeanUtil.isNotEmpty(gridIdSet)){
+                criteria.andIn("grid",gridIdSet);
+            }
         }
         if (StringUtils.isNotBlank(caseInfo.getRegulaObjList())) {
             criteria.andIn("regulaObjList", Arrays.asList(caseInfo.getRegulaObjList().split(",")));

@@ -33,6 +33,7 @@ import com.bjzhianjia.scp.security.common.msg.TableResultResponse;
 import com.github.pagehelper.PageHelper;
 import lombok.extern.log4j.Log4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.dao.DataAccessException;
@@ -338,6 +339,10 @@ public class RegulaObjectService {
         regulaObjectBiz.updateSelectiveById(regulaObject);
         if (isContainEnterpriseInfo) {
             enterpriseInfoBiz.updateSelectiveById(enterpriseInfo);
+            //监管对象管理 注册资金默认存储为null
+            if(BeanUtil.isEmpty(enterpriseInfo.getRegistCapital())){
+                enterpriseInfoBiz.updatCapitalIsNull(enterpriseInfo.getId());
+            }
         } else {
             enterpriseInfoBiz.insertSelective(enterpriseInfo);
         }
