@@ -49,3 +49,6 @@ git push origin issue_<修复功能描述>
 ```
 
 修复分支代码提交后，需要在gitee.com上提交代码合并请求pull request。
+
+## 二、目录结构
+[项目目录结构](https://gitee.com/lutuo/dev_rules/blob/develop/docs/SCP/DirectoryStructure.md)
